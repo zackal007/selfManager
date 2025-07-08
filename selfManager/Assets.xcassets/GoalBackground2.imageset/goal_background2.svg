@@ -1,0 +1,22 @@
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 渐变背景 -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8E8E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景矩形 -->
+  <rect width="400" height="200" fill="url(#grad1)" />
+  
+  <!-- 装饰图形 -->
+  <circle cx="50" cy="50" r="30" fill="#FFFFFF" fill-opacity="0.1" />
+  <circle cx="350" cy="150" r="40" fill="#FFFFFF" fill-opacity="0.1" />
+  
+  <!-- 装饰波浪线 -->
+  <path d="M0,120 C50,100 100,140 150,120 C200,100 250,140 300,120 C350,100 400,140 450,120" 
+        stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="5" fill="none" />
+  <path d="M0,150 C50,130 100,170 150,150 C200,130 250,170 300,150 C350,130 400,170 450,150" 
+        stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="5" fill="none" />
+</svg>

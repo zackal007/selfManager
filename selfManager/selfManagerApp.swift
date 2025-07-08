@@ -25,7 +25,19 @@ struct selfManagerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            TabView {
+                HomeView()
+                    .tabItem {
+                        Image(systemName: "house.fill")
+                        Text("首页")
+                    }
+                
+                GoalView()
+                    .tabItem {
+                        Image(systemName: "target")
+                        Text("目标")
+                    }
+            }
         }
         .modelContainer(sharedModelContainer)
     }
