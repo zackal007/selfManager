@@ -203,7 +203,6 @@ struct GoalView: View {
                 VStack(spacing: 0) {
                     // 顶部导航栏
                     HStack {
-                    // 删除左上角返回按钮
                     
                     Spacer()
                     
@@ -221,15 +220,21 @@ struct GoalView: View {
                     // 使用自定义视图替代复杂的Menu表达式
                     MenuButton {
                         // 视图切换选项
-                        viewModeMenuContent
+                        Group {
+                            viewModeMenuContent
+                        }
                         
                         Divider()
                         
                         // 分类子菜单
-                        categoryMenuContent
+                        Group {
+                            categoryMenuContent
+                        }
                         
                         // 排序子菜单
-                        sortMenuContent
+                        Group {
+                            sortMenuContent
+                        }
                     }
                 }
                 
@@ -252,34 +257,35 @@ struct GoalView: View {
                 }
                 
                 // 目标列表
-                ScrollView {
-                    VStack(spacing: 16) {
+                GeometryReader { geometry in
+                    ScrollView {
+                        VStack(spacing: 16) {
                         // 类别标题
                         HStack {
                             Text(selectedSegment == 0 ? "类别1" : (selectedSegment == 1 ? "年初" : "类别1"))
-                                .font(.system(.subheadline, design: .rounded))
-                                .fontWeight(.medium)
+                                .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                             Spacer()
                         }
                         .padding(.horizontal, 16) // 统一边距
-                        .padding(.top, 12)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
                         
                         // 根据视图模式显示不同的布局
                         if viewMode == .gallery {
                             // 画廊视图 - 网格布局，每行两个
                             let screenWidth = UIScreen.main.bounds.width
-                            let cardWidth = (screenWidth - 16*2 - 16) / 2 // 屏幕宽度减去左右边距和中间间距
+                            let cardWidth = (screenWidth - 16*2 - 12) / 2 // 屏幕宽度减去左右边距和中间间距
                             
                             LazyVGrid(columns: [
-                                GridItem(.fixed(cardWidth), spacing: 16),
-                                GridItem(.fixed(cardWidth), spacing: 16)
-                            ], spacing: 24) { // 增加垂直间距，避免与类别标题重叠
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)
+                            ], spacing: 16) { // 减小垂直间距，使布局更紧凑
                                 ForEach(selectedSegment == 1 ? processedYearGoals : processedPeriodGoals) { goal in
                                     GoalCard(goal: goal)
                                 }
                             }
-                            .padding(.horizontal, 16) // 统一边距
+                            .padding(.horizontal, 12) // 统一边距
                         } else {
                             // 列表视图
                             LazyVStack(spacing: 12) {
@@ -287,7 +293,7 @@ struct GoalView: View {
                                     GoalListItem(goal: goal)
                                 }
                             }
-                            .padding(.horizontal, 16) // 统一边距
+                            .padding(.horizontal, 12) // 统一边距
                         }
                         
                         // 类别标题
@@ -305,17 +311,17 @@ struct GoalView: View {
                         if viewMode == .gallery {
                             // 画廊视图 - 网格布局，每行两个
                             let screenWidth = UIScreen.main.bounds.width
-                            let cardWidth = (screenWidth - 16*2 - 16) / 2 // 屏幕宽度减去左右边距和中间间距
+                            let cardWidth = (screenWidth - 16*2 - 12) / 2 // 屏幕宽度减去左右边距和中间间距
                             
                             LazyVGrid(columns: [
-                                GridItem(.fixed(cardWidth), spacing: 16),
-                                GridItem(.fixed(cardWidth), spacing: 16)
-                            ], spacing: 24) { // 增加垂直间距，避免与类别标题重叠
-                                ForEach(selectedSegment == 1 ? processedYearGoals : processedPeriodGoals) { goal in
-                                    GoalCard(goal: goal)
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)
+                            ], spacing: 16) { // 减小垂直间距，使布局更紧凑
+                                ForEach(selectedSegment == 1 ? processedYearGoals.prefix(2) : processedPeriodGoals.prefix(2)) { goal in
+                                    GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
                                 }
                             }
-                            .padding(.horizontal, 16) // 统一边距
+                            .padding(.horizontal, 12) // 统一边距
                         } else {
                             // 列表视图
                             LazyVStack(spacing: 12) {
@@ -323,10 +329,12 @@ struct GoalView: View {
                                     GoalListItem(goal: goal)
                                 }
                             }
-                            .padding(.horizontal, 16) // 统一边距
+                            .padding(.horizontal, 12) // 统一边距
                         }
                     }
                     .padding(.bottom, 16)
+                        }
+                    }
                 }
             }
             .background(Color(UIColor.systemGroupedBackground))
@@ -346,7 +354,6 @@ struct GoalView: View {
             }
             .padding(.leading, 16)
             .padding(.bottom, 16)
-            }
         }
         .sheet(isPresented: $showAddGoalSheet) {
             AddGoalView(isPresented: $showAddGoalSheet, addedGoals: $addedGoals, selectedSegment: $selectedSegment)
@@ -357,10 +364,12 @@ struct GoalView: View {
 // 目标卡片视图
 struct GoalCard: View {
     let goal: Goal
+    var cardWidth: CGFloat
     
-    // 获取卡片宽度
-    private var cardWidth: CGFloat {
-        return (UIScreen.main.bounds.width - 16*2 - 16) / 2
+    // 初始化方法，提供默认值
+    init(goal: Goal, cardWidth: CGFloat? = nil) {
+        self.goal = goal
+        self.cardWidth = cardWidth ?? (UIScreen.main.bounds.width - 40) / 2
     }
     
     // 获取进度颜色
@@ -378,9 +387,9 @@ struct GoalCard: View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
             ZStack(alignment: .topLeading) {
                 // 卡片背景
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 20)
                     .fill(Color(UIColor.systemBackground))
-                    .shadow(color: Color.black.opacity(0.13), radius: 10, x: 0, y: 6)
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                 
                 // 内容容器
                 VStack(alignment: .leading, spacing: 0) {
@@ -406,25 +415,25 @@ struct GoalCard: View {
                         // 进度环形指示器
                         ZStack {
                             Circle()
-                                .fill(Color(UIColor.systemBackground))
-                                .frame(width: 36, height: 36)
-                                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                .fill(Color.white)
+                                .frame(width: 44, height: 44)
+                                .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
                             
                             Circle()
-                                .stroke(Color(UIColor.systemGray5), lineWidth: 3)
-                                .frame(width: 30, height: 30)
+                                .stroke(Color(UIColor.systemGray5), lineWidth: 3.5)
+                                .frame(width: 36, height: 36)
                             
                             Circle()
                                 .trim(from: 0, to: CGFloat(goal.progress))
-                                .stroke(progressColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                                .frame(width: 30, height: 30)
+                                .stroke(progressColor, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                                .frame(width: 36, height: 36)
                                 .rotationEffect(.degrees(-90))
                             
                             Text("\(Int(goal.progress * 100))%")
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(UIColor.label))
                         }
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .padding(8)
                     }
                     .frame(width: cardWidth)
@@ -442,37 +451,48 @@ struct GoalCard: View {
                             .fixedSize(horizontal: false, vertical: true)
                         // 标签
                         if !goal.tags.isEmpty {
-                            HStack(spacing: 4) {
-                                ForEach(goal.tags, id: \.self) { tag in
-                                    Text(tag)
-                                        .font(.system(size: 10, weight: .medium))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.blue.opacity(0.13))
-                                        .foregroundColor(Color.blue)
-                                        .cornerRadius(10)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 6) {
+                                    ForEach(goal.tags.prefix(2), id: \.self) { tag in
+                                        Text(tag)
+                                            .font(.system(size: 11, weight: .medium))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(Color.blue.opacity(0.1))
+                                            .foregroundColor(Color.blue)
+                                            .cornerRadius(10)
+                                    }
+                                    if goal.tags.count > 2 {
+                                        Text("+\(goal.tags.count - 2)")
+                                            .font(.system(size: 11, weight: .medium))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(Color.gray.opacity(0.1))
+                                            .foregroundColor(Color.gray)
+                                            .cornerRadius(10)
+                                    }
                                 }
                             }
-                            .frame(height: 20)
+                            .frame(height: 24)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.top, 10)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 12)
                     .padding(.bottom, 8)
                     
                     // 底部区域：子任务列表
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 6) {
                         // 子任务标题
                         HStack {
                             Text("子目标")
-                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                             
                             Spacer()
                             
                             // 完成数量
                             Text("\(goal.tasks.filter { $0.isCompleted }.count)/\(goal.tasks.count)")
-                                .font(.system(size: 10, design: .rounded))
+                                .font(.system(size: 11, design: .rounded))
                                 .foregroundColor(Color(UIColor.tertiaryLabel))
                         }
                         
@@ -483,27 +503,27 @@ struct GoalCard: View {
                                 // 由于Goal和Task是结构体且属性是let，这里只是UI演示
                                 // 实际应用中需要通过ViewModel或状态管理来更新
                             }) {
-                                HStack(spacing: 8) {
+                                HStack(spacing: 10) {
                                     // 圆形复选框 - 现代风格
                                     ZStack {
                                         Circle()
                                             .stroke(task.isCompleted ? progressColor : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                            .frame(width: 16, height: 16)
+                                            .frame(width: 18, height: 18)
                                         
                                         if task.isCompleted {
                                             Circle()
                                                 .fill(progressColor)
-                                                .frame(width: 16, height: 16)
+                                                .frame(width: 18, height: 18)
                                             
                                             Image(systemName: "checkmark")
-                                                .font(.system(size: 8, weight: .bold))
+                                                .font(.system(size: 9, weight: .bold))
                                                 .foregroundColor(.white)
                                         }
                                     }
                                     
                                     // 任务标题
                                     Text(task.title)
-                                        .font(.system(size: 12, design: .rounded))
+                                        .font(.system(size: 13, design: .rounded))
                                         .foregroundColor(task.isCompleted ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
                                         .strikethrough(task.isCompleted)
                                         .lineLimit(1)
@@ -516,20 +536,20 @@ struct GoalCard: View {
                         // 如果有更多任务，显示"更多"提示
                         if goal.tasks.count > 2 {
                             Text("还有\(goal.tasks.count - 2)个任务...")
-                                .font(.system(size: 10, design: .rounded))
+                                .font(.system(size: 11, design: .rounded))
                                 .foregroundColor(Color(UIColor.tertiaryLabel))
                                 .frame(maxWidth: .infinity, alignment: .trailing)
-                                .padding(.top, 2)
+                                .padding(.top, 3)
                         }
                     }
                     .padding(12)
                     .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(12)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
+                    .cornerRadius(16)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
                 }
             }
-            .frame(width: cardWidth, height: 224)
+            .frame(width: cardWidth, height: 240) // 调整卡片高度
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
@@ -631,26 +651,27 @@ enum SortOption {
 // 数据模型
 struct Goal: Identifiable {
     let id: UUID
-    let name: String
-    let description: String
-    let progress: Double
-    let tasks: [Task]
-    let backgroundImage: String? // 背景图片名称，nil表示使用默认白色背景
+    var name: String
+    var description: String
+    var progress: Double
+    var tasks: [Task]
+    var backgroundImage: String? // 背景图片名称，nil表示使用默认白色背景
     
     // 新增属性
-    let tags: [String]
-    let upperProject: [String]
-    let subProject: [String]
-    let recordNum: Int
-    let category: String
+    var tags: [String]
+    var upperProject: [String]
+    var subProject: [String]
+    var recordNum: Int
+    var category: String
     let createTime: Date
-    let modifyTime: Date
-    let visitTime: Date
+    var modifyTime: Date
+    var visitTime: Date
+    var dueDate: Date?
 }
 
 struct Task: Identifiable {
     let id: Int
-    let title: String
+    var title: String
     var isCompleted: Bool
 }
 
