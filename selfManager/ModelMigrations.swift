@@ -13,7 +13,7 @@ typealias GoalTask = ModelSchemaV2.GoalTask
 
 enum ModelSchemaV1: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 0, 0)
-    static var models: [any PersistentModel.Type] { [ModelSchemaV1.Goal.self, ModelSchemaV1.GoalTask.self, Item.self] }
+    static var models: [any PersistentModel.Type] { [ModelSchemaV1.Goal.self, ModelSchemaV1.GoalTask.self, Item.self, Record.self] }
 
     @Model
     final class Goal {
@@ -73,7 +73,7 @@ enum ModelSchemaV1: VersionedSchema {
 
 enum ModelSchemaV2: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 1, 0)
-    static var models: [any PersistentModel.Type] { [ModelSchemaV2.Goal.self, ModelSchemaV2.GoalTask.self, Item.self] }
+    static var models: [any PersistentModel.Type] { [ModelSchemaV2.Goal.self, ModelSchemaV2.GoalTask.self, Item.self, Record.self] }
 
     @Model
     final class Goal {

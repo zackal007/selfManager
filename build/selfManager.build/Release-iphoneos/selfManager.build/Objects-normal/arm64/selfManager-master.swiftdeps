@@ -1,7 +1,7 @@
 version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
 options: "47b7c3a7a8dc7facf34d4a3dcb19f3a8fb114bf06e553aab0ad3ff692c626eed"
-build_start_time: [1752214512, 687652000]
-build_end_time: [1752214551, 734381000]
+build_start_time: [1752215630, 945470000]
+build_end_time: [1752215677, 542992000]
 inputs:
   ? "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/DerivedSources/GeneratedAssetSymbols.swift"
   : !dirty [1752213889, 689088977]
@@ -12,4 +12,6 @@ inputs:
   "/Users/yack/Desktop/selfManager/selfManager/HomeView.swift": !dirty [1752212659, 343695794]
   "/Users/yack/Desktop/selfManager/selfManager/Item.swift": !dirty [1752204673, 245322369]
   "/Users/yack/Desktop/selfManager/selfManager/ModelMigrations.swift": !dirty [1752204673, 252553603]
-  "/Users/yack/Desktop/selfManager/selfManager/selfManagerApp.swift": !dirty [1752210908, 630534416]
+  "/Users/yack/Desktop/selfManager/selfManager/Record.swift": !dirty [1752215169, 183031790]
+  "/Users/yack/Desktop/selfManager/selfManager/RecordView.swift": !dirty [1752215436, 493456938]
+  "/Users/yack/Desktop/selfManager/selfManager/selfManagerApp.swift": !dirty [1752215184, 348743515]
