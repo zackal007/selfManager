@@ -12,16 +12,16 @@ import UIKit
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+    @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
+    
+    // 绑定到TabView的选中标签
+    @Binding var selectedTab: Int
     
     // 用户信息
     private let userInfo = "张三"
     
     // 资产信息
     private let assets = (现金: 10, 负债: 5, 其他: 8)
-    
-    // 目标信息
-    private let goals = ["减肥10斤", "学习Swift", "完成项目"]
-    private let goalProgress: [Double] = [0.7, 0.5, 0.3]
     
     // 心情记录
     private let moods = ["😊", "😢", "😡", "😴", "🤔", "😎"]
@@ -38,9 +38,15 @@ struct HomeView: View {
     // 最近焦虑
     private let anxieties = ["工作压力大", "睡眠不足", "缺乏锻炼"]
     
+    // 初始化方法，接收selectedTab绑定
+    init(selectedTab: Binding<Int>) {
+        self._selectedTab = selectedTab
+    }
+    
     var body: some View {
-        ZStack(alignment: .top) {
-            ScrollView {
+        NavigationView {
+            ZStack(alignment: .top) {
+                ScrollView {
                 VStack(spacing: 16) {
                     // 顶部标题
                     HStack {
@@ -131,6 +137,7 @@ struct HomeView: View {
             VisualEffectBlur(blurStyle: .systemMaterial)
                 .frame(height: 50)
                 .edgesIgnoringSafeArea(.top)
+        }
     }
     
     // 用户信息区域 - 健康风格设计
@@ -328,54 +335,90 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                // 目标总数
-                Text("\(goals.count)个目标")
-                    .font(.subheadline)
-                    .foregroundColor(Color(UIColor.secondaryLabel))
+                // 目标总数 - 可点击切换到目标标签页
+                Button(action: {
+                    // 切换到目标标签页（索引为1）
+                    selectedTab = 1
+                }) {
+                    Text("\(goals.count)个目标")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                }
+                .buttonStyle(PlainButtonStyle())
                 
-                // 详情按钮
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                // 详情按钮 - 可点击切换到目标标签页
+                Button(action: {
+                    // 切换到目标标签页（索引为1）
+                    selectedTab = 1
+                }) {
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                }
             }
             
-            // 目标列表 - 水平滚动
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(Array(zip(goals.indices, goals)), id: \.0) { index, goal in
-                        VStack(alignment: .leading, spacing: 6) {
-                            // 目标名称
-                            Text(goal)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-                            
-                            // 进度条
-                            ZStack(alignment: .leading) {
-                                // 背景
-                                RoundedRectangle(cornerRadius: 3)
-                                    .frame(height: 5)
-                                    .foregroundColor(Color(UIColor.systemGray5))
-                                
-                                // 进度
-                                RoundedRectangle(cornerRadius: 3)
-                                    .frame(width: CGFloat(goalProgress[index]) * 120, height: 5)
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                            }
-                            
-                            // 进度文本
-                            Text("\(Int(goalProgress[index] * 100))%")
-                                .font(.caption)
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                        }
-                        .frame(width: 150)
-                        .padding(10)
-                        .background(Color(UIColor.systemBackground))
-                        .cornerRadius(8)
+            if goals.isEmpty {
+                // 空状态
+                VStack(spacing: 8) {
+                    Text("暂无目标")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Button(action: {
+                        // 切换到目标标签页（索引为1）
+                        selectedTab = 1
+                    }) {
+                        Text("去添加目标")
+                            .font(.caption)
+                            .foregroundColor(Color(UIColor.systemBlue))
                     }
                 }
-                .padding(.horizontal, 2)
-                .padding(.vertical, 4)
+                .frame(height: 60)
+                .frame(maxWidth: .infinity)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(8)
+            } else {
+                // 目标列表 - 水平滚动
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(goals.prefix(5)) { goal in
+                            NavigationLink(destination: GoalDetailView(goal: goal)) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    // 目标名称
+                                    Text(goal.name)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .lineLimit(1)
+                                        .foregroundColor(Color(UIColor.label))
+                                    
+                                    // 进度条
+                                    ZStack(alignment: .leading) {
+                                        // 背景
+                                        RoundedRectangle(cornerRadius: 3)
+                                            .frame(height: 5)
+                                            .foregroundColor(Color(UIColor.systemGray5))
+                                        
+                                        // 进度
+                                        RoundedRectangle(cornerRadius: 3)
+                                            .frame(width: CGFloat(goal.progress) * 120, height: 5)
+                                            .foregroundColor(Color(UIColor.systemBlue))
+                                    }
+                                    
+                                    // 进度文本
+                                    Text("\(Int(goal.progress * 100))%")
+                                        .font(.caption)
+                                        .foregroundColor(Color(UIColor.secondaryLabel))
+                                }
+                                .frame(width: 150)
+                                .padding(10)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(8)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                    .padding(.vertical, 4)
+                }
             }
         }
     }
@@ -560,7 +603,7 @@ struct HomeView: View {
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView()
+        HomeView(selectedTab: .constant(0))
             .modelContainer(for: Item.self, inMemory: true)
     }
 }

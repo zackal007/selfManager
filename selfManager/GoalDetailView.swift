@@ -7,8 +7,31 @@
 
 import SwiftUI
 import UIKit
+import Foundation
+import SwiftData
 
 struct GoalDetailView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allGoals: [Goal]
+    
+    // 状态变量
+    @State private var selectedDate = Date()
+    @State private var showingDatePicker = false
+    @State private var showUpperGoalSelector = false
+    @State private var showSubGoalSelector = false
+    @State private var showDeleteAlert = false
+    @State private var selectedGoalType = 0
+    
+    // 常量
+    private let goalTypes = ["人生目标", "年度目标", "短期目标"]
+    private var availableUpperGoals: [String] {
+        allGoals.map { $0.name }.filter { $0 != goal.name }
+    }
+    private var availableSubGoals: [String] { 
+        allGoals.map { $0.name }.filter { $0 != goal.name }
+    }
+    
+    // 目标对象
     @State var goal: Goal
     
     // 状态变量
@@ -22,16 +45,260 @@ struct GoalDetailView: View {
     // 可编辑字段枚举
     enum EditableField {
         case name
-        case description
+        case goalDescription
         case progress
         case tag
         case upperProject
         case subProject
         case task
         case dueDate
+        case none
     }
     
     // 计算属性
+    
+    // 截止日期视图
+    private var dueDateView: some View {
+        HStack(spacing: 4) {
+            Text("截止日期: ")
+                .font(.system(size: 14))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+            Button(action: {
+                // 打开日期选择器
+                editingField = .dueDate
+                selectedDate = goal.dueDate ?? Date()
+                showingDatePicker = true
+            }) {
+                Text(formattedDueDate)
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(UIColor.systemBlue))
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+    }
+    
+    // 子任务视图
+    private var tasksView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("子任务:")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+            
+            ForEach(goal.tasks.indices, id: \.self) { index in
+                let task = goal.tasks[index]
+                HStack(spacing: 12) {
+                    // 复选框（参考备忘录样式）
+                    Button(action: {
+                        // 切换任务完成状态
+                        goal.tasks[index].isCompleted.toggle()
+                        goal.modifyTime = Date()
+                        
+                        do {
+                            try modelContext.save()
+                        } catch {
+                            print("Failed to save task update: \(error)")
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                                .frame(width: 22, height: 22)
+                            
+                            if task.isCompleted {
+                                Circle()
+                                    .fill(Color.blue)
+                                    .frame(width: 22, height: 22)
+                                
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 任务名称
+                    Text(task.title)
+                        .font(.system(size: 16))
+                        .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                        .strikethrough(task.isCompleted)
+                    
+                    Spacer()
+                    
+                    // 删除按钮
+                    Button(action: {
+                        // 删除任务
+                        let taskToDelete = goal.tasks[index]
+                        goal.tasks.remove(at: index)
+                        modelContext.delete(taskToDelete)
+                        goal.modifyTime = Date()
+                        
+                        do {
+                            try modelContext.save()
+                        } catch {
+                            print("Failed to delete task: \(error)")
+                        }
+                    }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(UIColor.systemRed))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+            
+            // 添加任务按钮
+            Button(action: {
+                showAddTaskSheet = true
+            }) {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 16))
+                    
+                    Text("添加任务")
+                        .font(.system(size: 16))
+                }
+                .foregroundColor(Color(UIColor.systemBlue))
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+    }
+    
+    // 上级目标和子目标视图
+    private var projectsView: some View {
+        HStack(spacing: 12) {
+            // 上级目标
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("上级目标:")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    
+                    Spacer()
+                    
+                    // 添加上级目标按钮
+                    Button(action: {
+                        showUpperGoalSelector = true
+                    }) {
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(goal.upperProject, id: \.self) { project in
+                            HStack {
+                                // 目标名称
+                                Text(project)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                // 删除按钮
+                                Button(action: {
+                                    // 删除上级目标
+                                    if let index = goal.upperProject.firstIndex(of: project) {
+                                        goal.upperProject.remove(at: index)
+                                        // 更新修改时间
+                                        goal.modifyTime = Date()
+                                        // 保存更改
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save upper project deletion: \(error)")
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Color(UIColor.systemGray3))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+            }
+            .padding(12)
+            .background(Color(UIColor.systemBlue).opacity(0.1))
+            .cornerRadius(12)
+            .frame(maxWidth: .infinity)
+            .frame(height: 150)
+            
+            // 子目标
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("子目标:")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    
+                    Spacer()
+                    
+                    // 添加子目标按钮
+                    Button(action: {
+                        showSubGoalSelector = true
+                    }) {
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(goal.subProject, id: \.self) { project in
+                            HStack {
+                                // 目标名称
+                                Text(project)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                // 删除按钮
+                                Button(action: {
+                                    // 删除子目标
+                                    if let index = goal.subProject.firstIndex(of: project) {
+                                        goal.subProject.remove(at: index)
+                                        // 更新修改时间
+                                        goal.modifyTime = Date()
+                                        // 保存更改
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save sub project deletion: \(error)")
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Color(UIColor.systemGray3))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+            }
+            .padding(12)
+            .background(Color(UIColor.systemBlue).opacity(0.1))
+            .cornerRadius(12)
+            .frame(maxWidth: .infinity)
+            .frame(height: 150)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+    }
     private var formattedCreateDate: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy年MM月dd日"
@@ -45,63 +312,27 @@ struct GoalDetailView: View {
         return dateFormatter.string(from: dueDate)
     }
     
-    // 日期选择状态
-    @State private var showDatePicker = false
-    @State private var selectedDate = Date()
-    
     // 目标类型选择状态
-    @State private var selectedGoalType = 0
     @State private var showGoalTypeMenu = false
-    private let goalTypes = ["人生", "年度", "短期"]
     
-    // 可选目标列表
-    @State private var availableUpperGoals: [String] = ["人生目标1", "年度目标1", "短期目标1", "其他目标1", "其他目标2"]
-    @State private var availableSubGoals: [String] = ["子目标1", "子目标2", "子目标3", "子目标4", "子目标5"]
-    @State private var showUpperGoalSelector = false
-    @State private var showSubGoalSelector = false
-    
-    // 初始化方法，设置通知监听
+    // 初始化方法
     init(goal: Goal) {
         _goal = State(initialValue: goal)
-        
-        // 添加通知监听器
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("SaveGoalEdit"), object: nil, queue: .main) { [self] notification in
-            handleSaveGoalEdit(notification: notification)
-        }
-        
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("SaveGoalDueDate"), object: nil, queue: .main) { [self] notification in
-            handleSaveGoalDueDate(notification: notification)
-        }
-        
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("AddGoalTask"), object: nil, queue: .main) { [self] notification in
-            handleAddGoalTask(notification: notification)
-        }
-        
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("SaveGoalRelation"), object: nil, queue: .main) { [self] notification in
-            handleSaveGoalRelation(notification: notification)
-        }
     }
     
-    // 处理保存目标编辑的通知
-    private func handleSaveGoalEdit(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let field = userInfo["field"] as? EditableField else { return }
+    // 处理保存目标编辑
+    private func handleSaveGoalEdit(field: EditableField?, value: String, progress: Double) {
+        guard let field = field else { return }
         
         switch field {
         case .name:
-            if let value = userInfo["value"] as? String {
-                goal.name = value
-            }
-        case .description:
-            if let value = userInfo["value"] as? String {
-                goal.description = value
-            }
+            goal.name = value
+        case .goalDescription:
+            goal.goalDescription = value
         case .progress:
-            if let progress = userInfo["progress"] as? Double {
-                goal.progress = progress
-            }
+            goal.progress = progress
         case .tag:
-            if let value = userInfo["value"] as? String, !value.isEmpty {
+            if !value.isEmpty {
                 // 添加新标签
                 if !goal.tags.contains(value) {
                     goal.tags.append(value)
@@ -110,67 +341,273 @@ struct GoalDetailView: View {
         case .upperProject, .subProject, .task, .dueDate, .none:
             // 这些字段在其他地方处理
             break
-        }
-        
-        // 更新修改时间
-        goal.modifyTime = Date()
-    }
-    
-    // 处理保存截止日期的通知
-    private func handleSaveGoalDueDate(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let selectedDate = userInfo["selectedDate"] as? Date else { return }
-        
-        goal.dueDate = selectedDate
-        goal.modifyTime = Date()
-    }
-    
-    // 处理添加任务的通知
-    private func handleAddGoalTask(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let taskTitle = userInfo["taskTitle"] as? String else { return }
-        
-        let newTask = Task(id: UUID().uuidString, title: taskTitle, completed: false)
-        goal.tasks.append(newTask)
-        goal.modifyTime = Date()
-    }
-    
-    // 处理保存目标关系的通知
-    private func handleSaveGoalRelation(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let relationType = userInfo["relationType"] as? String,
-              let selectedGoals = userInfo["selectedGoals"] as? [String] else { return }
-        
-        switch relationType {
-        case "upperProject":
-            goal.upperProject = selectedGoals
-        case "subProject":
-            goal.subProject = selectedGoals
-        default:
+        @unknown default:
+            // 处理未来可能添加的枚举值
+            print("未知的编辑字段类型")
             break
         }
         
+        // 更新修改时间
         goal.modifyTime = Date()
     }
     
+    // 此方法已被移除，因为 DatePickerView 直接使用 modelContext 保存数据
+    
+    // 此方法已被移除，因为 AddTaskView 直接使用 modelContext 保存数据
+    
+    // 此方法已被移除，因为 GoalSelectorView 直接使用 modelContext 保存数据
+    
     // 保存目标的所有修改
-    private func saveGoal() {
+    private func saveGoal() -> Void {
         // 更新修改时间
         goal.modifyTime = Date()
         
-        // 发送通知，通知其他视图目标已更新
-        NotificationCenter.default.post(
-            name: NSNotification.Name("GoalUpdated"),
-            object: nil,
-            userInfo: ["goal": goal]
-        )
+        do {
+            try modelContext.save()
+            
+            // 显示保存成功提示
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            
+            // 返回上一个视图
+            presentationMode.wrappedValue.dismiss()
+        } catch {
+            print("Failed to save goal: \(error)")
+        }
+    }
+    
+    // 删除目标
+    private func deleteGoal() {
+        // 删除关联的任务
+        for task in goal.tasks {
+            modelContext.delete(task)
+        }
         
-        // 显示保存成功提示
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+        // 处理上级目标关联
+        let goalId = goal.id
+        let upperGoalIds = goal.upperProject
+        let subGoalIds = goal.subProject
+        
+        // 将ID字符串数组转换为UUID数组
+        let upperGoalUUIDs = upperGoalIds.compactMap { UUID(uuidString: $0) }
+        let subGoalUUIDs = subGoalIds.compactMap { UUID(uuidString: $0) }
+
+        // 查询并更新上级目标
+        if !upperGoalUUIDs.isEmpty {
+            let upperGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { upperGoal in
+                upperGoalUUIDs.contains(upperGoal.id)
+            }))
+            
+            for upperGoal in upperGoals ?? [] {
+                upperGoal.subProject.removeAll(where: { $0 == goalId.uuidString })
+                upperGoal.modifyTime = Date()
+            }
+        }
+        
+        // 查询并更新子目标
+        if !subGoalUUIDs.isEmpty {
+            let subGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { subGoal in
+                subGoalUUIDs.contains(subGoal.id)
+            }))
+            
+            for subGoal in subGoals ?? [] {
+                subGoal.upperProject.removeAll(where: { $0 == goalId.uuidString })
+                subGoal.modifyTime = Date()
+            }
+        }
+        
+        // 删除目标本身
+        modelContext.delete(goal)
+        
+        // 保存更改
+        try? modelContext.save()
         
         // 返回上一个视图
         presentationMode.wrappedValue.dismiss()
+    }
+    
+    // 固定头部视图
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // 目标名称和进度
+            goalNameProgressView
+            
+            // 下拉菜单
+            goalTypeMenuView
+            
+            // 目标描述
+            goalDescriptionView
+            
+            // 标签
+            goalTagsView
+        }
+        .padding(.bottom, 16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, alignment: .top)
+    }
+    
+    // 标签视图
+    var goalTagsView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(goal.tags, id: \.self) { tag in
+                    HStack(spacing: 4) {
+                        Text("#")
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text(tag)
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        
+                        // 删除标签按钮
+                        Button(action: {
+                            // 删除标签
+                            if let index = goal.tags.firstIndex(of: tag) {
+                                goal.tags.remove(at: index)
+                                // 更新修改时间
+                                goal.modifyTime = Date()
+                                // 保存更改
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    print("Failed to save tag deletion: \(error)")
+                                }
+                            }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(Color(UIColor.systemGray3))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(12)
+                }
+                
+                // 添加标签按钮
+                Button(action: {
+                    editingField = .tag
+                    editingValue = ""
+                    showEditSheet = true
+                }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .frame(width: 24, height: 24)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+        }
+        .frame(height: 40)
+    }
+    
+    // 目标名称和进度视图
+    var goalNameProgressView: some View {
+        HStack {
+            Button(action: {
+                editingField = .name
+                editingValue = goal.name
+                showEditSheet = true
+            }) {
+                Text(goal.name)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+            }
+            .buttonStyle(PlainButtonStyle())
+            Spacer()
+            progressRingView
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+    }
+    
+    // 进度环形指示器
+    var progressRingView: some View {
+        Button(action: {
+            editingField = .progress
+            editingProgress = goal.progress
+            showEditSheet = true
+        }) {
+            ZStack {
+                Circle()
+                    .stroke(Color(UIColor.systemGray5), lineWidth: 6)
+                    .frame(width: 60, height: 60)
+                Circle()
+                    .trim(from: 0, to: CGFloat(goal.progress))
+                    .stroke(
+                        goal.progress > 0.7 ? Color(UIColor.systemGreen) : (goal.progress > 0.3 ? Color(UIColor.systemOrange) : Color(UIColor.systemRed)),
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                    )
+                    .frame(width: 60, height: 60)
+                    .rotationEffect(.degrees(-90))
+                Text("\(Int(goal.progress * 100))%")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+            }
+            .frame(width: 60, height: 60)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // 目标类型菜单视图
+    var goalTypeMenuView: some View {
+        Menu {
+            ForEach(0..<goalTypes.count, id: \.self) { index in
+                Button(action: {
+                    selectedGoalType = index
+                    // 更新目标类型
+                    switch index {
+                    case 0:
+                        goal.goalType = .life
+                    case 1:
+                        goal.goalType = .yearly
+                    case 2:
+                        goal.goalType = .shortTerm
+                    default:
+                        break
+                    }
+                    // 更新修改时间
+                    goal.modifyTime = Date()
+                    // 不立即保存，等待用户点击右上角的保存按钮
+                }) {
+                    Text(goalTypes[index])
+                }
+            }
+        } label: {
+            HStack {
+                Text(goalTypes[selectedGoalType])
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(UIColor.systemBlue))
+            }
+            .padding(.horizontal, 16)
+        }
+    }
+    
+    // 目标描述视图
+    var goalDescriptionView: some View {
+        Button(action: {
+            editingField = .goalDescription
+            editingValue = goal.goalDescription
+            showEditSheet = true
+        }) {
+            Text(goal.goalDescription)
+                .font(.system(size: 16))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     var body: some View {
@@ -182,433 +619,76 @@ struct GoalDetailView: View {
                     Color.clear.frame(height: 220) // 根据固定头部的高度调整
                     
                     // 截止日期（移到tag下方）
-                    HStack(spacing: 4) {
-                        Text("截止日期: ")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                        Button(action: {
-                            // 打开日期选择器
-                            editingField = .dueDate
-                            selectedDate = goal.dueDate ?? Date()
-                            showDatePicker = true
-                        }) {
-                            Text(formattedDueDate)
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                    dueDateView
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
                     
                     // 上级目标和子目标
-                HStack(spacing: 12) {
-                    // 上级目标
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("上级目标:")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                            
-                            Spacer()
-                            
-                            // 添加上级目标按钮
-                            Button(action: {
-                                showUpperGoalSelector = true
-                            }) {
-                                Image(systemName: "plus.circle")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                            }
-                        }
-                        
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(goal.upperProject, id: \.self) { project in
-                                    HStack {
-                                        // 目标名称
-                                        Text(project)
-                                            .font(.system(size: 14))
-                                            .foregroundColor(Color(UIColor.systemBlue))
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                        
-                                        // 删除按钮
-                                        Button(action: {
-                                            // 删除上级目标
-                                            if let index = goal.upperProject.firstIndex(of: project) {
-                                                goal.upperProject.remove(at: index)
-                                            }
-                                        }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(Color(UIColor.systemGray3))
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
-                        }
-                    }
-                    .padding(12)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(12)
-                    .frame(width: (UIScreen.main.bounds.width - 16*2 - 12) / 2)
-                    .frame(height: 150)
-                    // 子目标
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("子目标:")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                            
-                            Spacer()
-                            
-                            // 添加子目标按钮
-                            Button(action: {
-                                showSubGoalSelector = true
-                            }) {
-                                Image(systemName: "plus.circle")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                            }
-                        }
-                        
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(goal.subProject, id: \.self) { project in
-                                    HStack {
-                                        // 目标名称
-                                        Text(project)
-                                            .font(.system(size: 14))
-                                            .foregroundColor(Color(UIColor.systemBlue))
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                        
-                                        // 删除按钮
-                                        Button(action: {
-                                            // 删除子目标
-                                            if let index = goal.subProject.firstIndex(of: project) {
-                                                goal.subProject.remove(at: index)
-                                            }
-                                        }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(Color(UIColor.systemGray3))
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
-                        }
-                    }
-                    .padding(12)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(12)
-                    .frame(width: (UIScreen.main.bounds.width - 16*2 - 12) / 2)
-                    .frame(height: 150)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
-                
-                // 子任务
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("子任务:")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
+                    projectsView
                     
-                    ForEach(goal.tasks) { task in
-                        HStack(spacing: 12) {
-                            // 复选框（参考备忘录样式）
-                            Button(action: {
-                                // 切换任务完成状态
-                                // 在实际应用中，需要通过ViewModel或状态管理来更新
-                                if let index = goal.tasks.firstIndex(where: { $0.id == task.id }) {
-                                    goal.tasks[index].isCompleted.toggle()
-                                }
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                        .frame(width: 22, height: 22)
-                                    
-                                    if task.isCompleted {
-                                        Circle()
-                                            .fill(Color.blue)
-                                            .frame(width: 22, height: 22)
-                                        
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 12, weight: .bold))
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            
-                            // 任务标题
-                            Button(action: {
-                                editingField = .task
-                                editingValue = task.title
-                                showEditSheet = true
-                            }) {
-                                Text(task.title)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .strikethrough(task.isCompleted)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            
-                            // 删除按钮
-                            Button(action: {
-                                // 删除任务
-                                // 在实际应用中，需要通过ViewModel或状态管理来更新
-                                if let index = goal.tasks.firstIndex(where: { $0.id == task.id }) {
-                                    goal.tasks.remove(at: index)
-                                }
-                            }) {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Color(UIColor.systemRed))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(Color.white)
-                    }
-                    
-                    // 添加任务按钮
-                    Button(action: {
-                        // 打开添加任务表单
-                        showAddTaskSheet = true
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                            
-                            Text("添加任务")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                            
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(Color.white)
-                    }
+                    // 子任务
+                    tasksView
                 }
                 .padding(.bottom, 16)
-                
-                // 目标类型内容（替代原来的分段控制器）
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("目标类型")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                    
-                    // 这里显示选中的目标类型内容
-                    Text("短期目标内容")
-                        .font(.system(size: 14))
-                        .foregroundColor(Color(UIColor.label))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color.white)
-                
-                // 添加一个实际的View组件替代注释
-                VStack {
-                    Text("目标进度详情")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                        .padding(.top, 16)
-                        .padding(.horizontal, 16)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 16)
-                }
-                .background(Color.white)
-                .cornerRadius(12)
-                .padding(.horizontal, 16)
+              
             }
         }
         .background(Color(UIColor.systemGroupedBackground))
         .navigationBarTitle("", displayMode: .inline)
+        .navigationBarBackButtonHidden(true)
         .navigationBarItems(
             leading: Button(action: {
                 presentationMode.wrappedValue.dismiss()
             }) {
-                Text("返回")
-                    .foregroundColor(Color(UIColor.systemBlue))
+                HStack(spacing: 5) {
+                    Image(systemName: "chevron.left")
+                    Text("返回")
+                }
+                .foregroundColor(Color(UIColor.systemBlue))
             },
-            trailing: Button(action: {
-                // 保存所有修改
-                saveGoal()
-            }) {
-                Text("保存")
-                    .foregroundColor(Color(UIColor.systemBlue))
-            }
-        )
-        
-        // 固定在顶部的内容
-        .overlay(
-            VStack(alignment: .leading, spacing: 8) {
-                // 目标名称和进度
-                HStack {
-                    Button(action: {
-                        editingField = .name
-                        editingValue = goal.name
-                        showEditSheet = true
-                    }) {
-                        Text(goal.name)
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(Color(UIColor.label))
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    Spacer()
-                    // 进度环形指示器（放大1.5倍）
-                    Button(action: {
-                        editingField = .progress
-                        editingProgress = goal.progress
-                        showEditSheet = true
-                    }) {
-                        ZStack {
-                            Circle()
-                                .stroke(Color(UIColor.systemGray5), lineWidth: 6)
-                                .frame(width: 60, height: 60)
-                            Circle()
-                                .trim(from: 0, to: CGFloat(goal.progress))
-                                .stroke(
-                                    goal.progress > 0.7 ? Color(UIColor.systemGreen) : (goal.progress > 0.3 ? Color(UIColor.systemOrange) : Color(UIColor.systemRed)),
-                                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                                )
-                                .frame(width: 60, height: 60)
-                                .rotationEffect(.degrees(-90))
-                            Text("\(Int(goal.progress * 100))%")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(Color(UIColor.label))
-                        }
-                        .frame(width: 60, height: 60)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                
-                // 下拉菜单（替代分段控制器）
-                Menu {
-                    ForEach(0..<goalTypes.count, id: \.self) { index in
-                        Button(action: {
-                            selectedGoalType = index
-                        }) {
-                            Text(goalTypes[index])
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text(goalTypes[selectedGoalType])
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                    }
-                    .padding(.horizontal, 16)
-                }
-                
-                // 目标描述
+            trailing: HStack(spacing: 16) {
                 Button(action: {
-                    editingField = .description
-                    editingValue = goal.description
-                    showEditSheet = true
+                    showDeleteAlert = true
                 }) {
-                    Text(goal.description)
-                        .font(.system(size: 16))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                        .padding(.horizontal, 16)
-                        .padding(.top, 4)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
                 }
-                .buttonStyle(PlainButtonStyle())
                 
-                // 标签
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(goal.tags, id: \.self) { tag in
-                            HStack(spacing: 4) {
-                                Text("#")
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                Text(tag)
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                
-                                // 删除标签按钮
-                                Button(action: {
-                                    // 删除标签
-                                    if let index = goal.tags.firstIndex(of: tag) {
-                                        goal.tags.remove(at: index)
-                                    }
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray3))
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                            .font(.system(size: 14, weight: .medium))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                            .cornerRadius(12)
-                        }
-                        // 添加标签按钮
-                        Button(action: {
-                            editingField = .tag
-                            editingValue = ""
-                            showEditSheet = true
-                        }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 12))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .clipShape(Circle())
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                Button(action: {
+                    // 保存所有修改
+                    saveGoal()
+                }) {
+                    Text("保存")
+                        .foregroundColor(Color(UIColor.systemBlue))
                 }
-                .frame(height: 40)
             }
-            .padding(.bottom, 16)
-            .background(Color.white)
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, alignment: .top)
-            , alignment: .top
         )
         .sheet(isPresented: $showEditSheet) {
-            // 编辑目标的表单视图
-            EditFormView(editingField: $editingField, editingValue: $editingValue, editingProgress: $editingProgress)
+            EditFormView(editingField: $editingField, editingValue: $editingValue, editingProgress: $editingProgress, onSave: handleSaveGoalEdit)
         }
-        .sheet(isPresented: $showDatePicker) {
-            // 日期选择器视图
-            DatePickerView(selectedDate: $selectedDate, isPresented: $showDatePicker)
-        }
+        .sheet(isPresented: $showingDatePicker) {
+                DatePickerView(selectedDate: $selectedDate, isPresented: $showingDatePicker, goal: goal)
+            }
         .sheet(isPresented: $showAddTaskSheet) {
-            // 添加任务的表单视图
-            AddTaskView(goalId: goal.id)
+            AddTaskView(goalId: goal.id.uuidString)
         }
         .sheet(isPresented: $showUpperGoalSelector) {
-            // 上级目标选择器视图
-            GoalSelectorView(availableGoals: availableUpperGoals, selectedGoals: $goal.upperProject, isPresented: $showUpperGoalSelector, selectorType: "upperProject")
+            GoalSelectorView(availableGoals: availableUpperGoals, selectedGoals: $goal.upperProject, isPresented: $showUpperGoalSelector, selectorType: "upperProject", goal: goal)
         }
         .sheet(isPresented: $showSubGoalSelector) {
-            // 子目标选择器视图
-            GoalSelectorView(availableGoals: availableSubGoals, selectedGoals: $goal.subProject, isPresented: $showSubGoalSelector, selectorType: "subProject")
+            GoalSelectorView(availableGoals: availableSubGoals, selectedGoals: $goal.subProject, isPresented: $showSubGoalSelector, selectorType: "subProject", goal: goal)
         }
+        .alert(isPresented: $showDeleteAlert) {
+            Alert(
+                title: Text("确认删除"),
+                message: Text("确定要删除目标 \"\(goal.name)\" 吗？此操作将同时删除所有关联的任务，且无法恢复。"),
+                primaryButton: .destructive(Text("删除")) {
+                    deleteGoal()
+                },
+                secondaryButton: .cancel(Text("取消"))
+            )
+        }
+        .overlay(headerView, alignment: .top)
         .overlay(
             VStack {
                 Spacer()
@@ -633,13 +713,15 @@ struct GoalDetailView: View {
     }
 }
 
-
 // 编辑表单视图
 struct EditFormView: View {
     @Binding var editingField: GoalDetailView.EditableField?
     @Binding var editingValue: String
     @Binding var editingProgress: Double
     @Environment(\.presentationMode) var presentationMode
+    
+    // 添加回调函数
+    var onSave: ((GoalDetailView.EditableField?, String, Double) -> Void)? = nil
     
     var body: some View {
         NavigationView {
@@ -649,7 +731,7 @@ struct EditFormView: View {
                     TextField("目标名称", text: $editingValue)
                         .font(.system(size: 18))
                 
-                case .description:
+                case .goalDescription:
                     TextEditor(text: $editingValue)
                         .frame(minHeight: 100)
                 
@@ -687,6 +769,9 @@ struct EditFormView: View {
                 
                 case .none:
                     Text("请选择要编辑的内容")
+                    
+                @unknown default:
+                    Text("未知编辑类型")
                 }
             }
             .navigationBarTitle(getNavigationTitle(), displayMode: .inline)
@@ -695,16 +780,10 @@ struct EditFormView: View {
                     presentationMode.wrappedValue.dismiss()
                 },
                 trailing: Button("保存") {
-                    // 保存修改的内容到数据模型
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("SaveGoalEdit"),
-                        object: nil,
-                        userInfo: [
-                            "field": editingField as Any,
-                            "value": editingValue,
-                            "progress": editingProgress
-                        ]
-                    )
+                    // 直接调用回调函数而不是发送通知
+                    if let onSave = onSave {
+                        onSave(editingField, editingValue, editingProgress)
+                    }
                     presentationMode.wrappedValue.dismiss()
                 }
             )
@@ -715,7 +794,7 @@ struct EditFormView: View {
         switch editingField {
         case .name:
             return "编辑目标名称"
-        case .description:
+        case .goalDescription:
             return "编辑目标描述"
         case .progress:
             return "调整进度"
@@ -731,6 +810,8 @@ struct EditFormView: View {
             return "设置截止日期"
         case .none:
             return "编辑"
+        @unknown default:
+            return "编辑"
         }
     }
 }
@@ -740,6 +821,12 @@ struct AddTaskView: View {
     let goalId: String
     @State private var taskTitle = ""
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allGoals: [Goal]
+    
+    private var currentGoal: Goal? {
+        allGoals.first { $0.id.uuidString == goalId }
+    }
     
     var body: some View {
         NavigationView {
@@ -749,24 +836,36 @@ struct AddTaskView: View {
                 }
             }
             .navigationBarTitle("添加任务", displayMode: .inline)
+            .navigationBarBackButtonHidden(true)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button(action: {
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("取消")
                 },
-                trailing: Button("添加") {
-                    // 添加新任务到数据模型
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("AddGoalTask"),
-                        object: nil,
-                        userInfo: [
-                            "goalId": goalId,
-                            "taskTitle": taskTitle
-                        ]
-                    )
+                trailing: Button(action: {
+                    addTask()
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("添加")
                 }
                 .disabled(taskTitle.isEmpty)
             )
+        }
+    }
+    
+    private func addTask() {
+        guard let goal = currentGoal else { return }
+        
+        let newTask = GoalTask(title: taskTitle, isCompleted: false)
+        newTask.goal = goal
+        goal.tasks.append(newTask)
+        goal.modifyTime = Date()
+        
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to add task: \(error)")
         }
     }
 }
@@ -775,6 +874,8 @@ struct AddTaskView: View {
 struct DatePickerView: View {
     @Binding var selectedDate: Date
     @Binding var isPresented: Bool
+    let goal: Goal
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         NavigationView {
@@ -793,15 +894,21 @@ struct DatePickerView: View {
                     isPresented = false
                 },
                 trailing: Button("确定") {
-                    // 保存选择的日期到数据模型
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("SaveGoalDueDate"),
-                        object: nil,
-                        userInfo: ["selectedDate": selectedDate]
-                    )
+                    saveDueDate()
                     isPresented = false
                 }
             )
+        }
+    }
+    
+    private func saveDueDate() {
+        goal.dueDate = selectedDate
+        goal.modifyTime = Date()
+        
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save due date: \(error)")
         }
     }
 }
@@ -812,6 +919,8 @@ struct GoalSelectorView: View {
     @Binding var isPresented: Bool
     @State private var searchText = ""
     var selectorType: String // 用于区分上级目标和子目标
+    let goal: Goal
+    @Environment(\.modelContext) private var modelContext
     
     var filteredGoals: [String] {
         if searchText.isEmpty {
@@ -876,15 +985,7 @@ struct GoalSelectorView: View {
                     isPresented = false
                 },
                 trailing: Button("保存") {
-                    // 保存选择的目标
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("SaveGoalRelation"),
-                        object: nil,
-                        userInfo: [
-                            "relationType": selectorType,
-                            "selectedGoals": selectedGoals
-                        ]
-                    )
+                    saveGoalRelation()
                     isPresented = false
                 }
             )
@@ -898,29 +999,55 @@ struct GoalSelectorView: View {
             selectedGoals.append(goal)
         }
     }
+    
+    private func saveGoalRelation() {
+        if selectorType == "upperProject" {
+            goal.upperProject = selectedGoals
+        } else if selectorType == "subProject" {
+            goal.subProject = selectedGoals
+        }
+        
+        goal.modifyTime = Date()
+        
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save goal relation: \(error)")
+        }
+    }
 }
 
 #Preview {
-    NavigationView {
-        GoalDetailView(goal: Goal(
-            id: UUID(),
+    // 创建预览数据的函数
+    func createPreviewGoal() -> Goal {
+        let previewGoal = Goal(
             name: "目标名称",
             description: "描述一下这个目标的具体内容",
             progress: 0.7,
-            tasks: [
-                Task(id: 1, title: "子任务1", isCompleted: true),
-                Task(id: 2, title: "子任务2", isCompleted: false)
-            ],
             backgroundImage: nil,
             tags: ["tag1", "tag2", "tag3"],
             upperProject: ["上级目标1", "上级目标2"],
             subProject: ["子目标1", "子目标2"],
             recordNum: 5,
             category: "技能提升",
-            createTime: Date(),
-            modifyTime: Date(),
-            visitTime: Date(),
-            dueDate: nil
-        ))
+            dueDate: Date()
+        )
+        
+        let task1 = GoalTask(title: "子任务1", isCompleted: true)
+        let task2 = GoalTask(title: "子任务2", isCompleted: false)
+        task1.goal = previewGoal
+        task2.goal = previewGoal
+        previewGoal.tasks.append(task1)
+        previewGoal.tasks.append(task2)
+        
+        return previewGoal
     }
+    
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Goal.self, GoalTask.self, configurations: config)
+    
+    return NavigationView {
+        GoalDetailView(goal: createPreviewGoal())
+    }
+    .modelContainer(container)
 }

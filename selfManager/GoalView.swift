@@ -7,10 +7,32 @@
 
 import SwiftUI
 import UIKit
+import Foundation
+import SwiftData
+
+// 自定义按钮样式，添加缩放效果
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.9 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
 
 struct GoalView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
+    
     // 分段控制器选择
     @State private var selectedSegment = 0
+    
+    // 绑定到TabView的选中标签
+    @Binding var selectedTab: Int
+    
+    // 初始化方法，接收selectedTab绑定
+    init(selectedTab: Binding<Int>) {
+        self._selectedTab = selectedTab
+    }
     
     // 视图模式：画廊视图或列表视图
     @State private var viewMode: ViewMode = .gallery
@@ -55,7 +77,7 @@ struct GoalView: View {
             Button(action: {
                 categoryOption = .time
             }) {
-                Label("时间", systemImage: "")
+                Text("时间")
                 if categoryOption == .time {
                     Image(systemName: "checkmark")
                 }
@@ -64,7 +86,7 @@ struct GoalView: View {
             Button(action: {
                 categoryOption = .type
             }) {
-                Label("类型", systemImage: "")
+                Text("类型")
                 if categoryOption == .type {
                     Image(systemName: "checkmark")
                 }
@@ -80,7 +102,7 @@ struct GoalView: View {
             Button(action: {
                 sortOption = .name
             }) {
-                Label("名称", systemImage: "")
+                Text("名称")
                 if sortOption == .name {
                     Image(systemName: "checkmark")
                 }
@@ -89,7 +111,7 @@ struct GoalView: View {
             Button(action: {
                 sortOption = .createTime
             }) {
-                Label("创建时间", systemImage: "")
+                Text("创建时间")
                 if sortOption == .createTime {
                     Image(systemName: "checkmark")
                 }
@@ -98,7 +120,7 @@ struct GoalView: View {
             Button(action: {
                 sortOption = .modifyTime
             }) {
-                Label("修改时间", systemImage: "")
+                Text("修改时间")
                 if sortOption == .modifyTime {
                     Image(systemName: "checkmark")
                 }
@@ -107,7 +129,7 @@ struct GoalView: View {
             Button(action: {
                 sortOption = .visitTime
             }) {
-                Label("访问时间", systemImage: "")
+                Text("访问时间")
                 if sortOption == .visitTime {
                     Image(systemName: "checkmark")
                 }
@@ -117,58 +139,43 @@ struct GoalView: View {
         }
     }
     
-    // 目标数据
-    private let yearGoals = [
-        Goal(id: UUID(), name: "提高编程技能", description: "掌握Swift和SwiftUI开发，完成5个实际项目", progress: 0.65, tasks: [
-            Task(id: 1, title: "完成SwiftUI基础课程", isCompleted: true),
-            Task(id: 2, title: "开发一个完整的iOS应用", isCompleted: false)
-        ], backgroundImage: "GoalBackground", tags: ["技能", "编程", "学习"], 
-        upperProject: ["年度成长计划"], subProject: ["iOS开发", "Swift学习"], 
-        recordNum: 5, category: "技能提升", 
-        createTime: Date(), modifyTime: Date(), visitTime: Date()),
-        
-        Goal(id: UUID(), name: "健康生活", description: "保持健康的生活方式，增强体质", progress: 0.25, tasks: [
-            Task(id: 3, title: "每周锻炼3次", isCompleted: true),
-            Task(id: 4, title: "保持健康饮食", isCompleted: true)
-        ], backgroundImage: "GoalBackground2", tags: ["健康", "运动", "饮食"], 
-        upperProject: ["年度生活计划"], subProject: ["健身计划", "饮食计划"], 
-        recordNum: 3, category: "健康管理", 
-        createTime: Date(), modifyTime: Date(), visitTime: Date())
-    ]
-    
-    private let periodGoals = [
-        Goal(id: UUID(), name: "阅读计划", description: "拓展知识面，提高阅读量", progress: 0.45, tasks: [
-            Task(id: 5, title: "阅读10本技术书籍", isCompleted: false),
-            Task(id: 6, title: "每天阅读30分钟", isCompleted: false)
-        ], backgroundImage: "GoalBackground", tags: ["阅读", "学习", "知识"], 
-        upperProject: ["自我提升"], subProject: ["技术阅读", "每日阅读"], 
-        recordNum: 2, category: "知识获取", 
-        createTime: Date(), modifyTime: Date(), visitTime: Date()),
-        
-        Goal(id: UUID(), name: "旅行计划", description: "探索新的地方，体验不同文化", progress: 0.85, tasks: [
-            Task(id: 7, title: "制定旅行路线", isCompleted: true),
-            Task(id: 8, title: "预订机票和酒店", isCompleted: true)
-        ], backgroundImage: nil, tags: ["旅行", "探索", "文化"], 
-        upperProject: ["生活体验"], subProject: ["路线规划", "预订管理"], 
-        recordNum: 4, category: "休闲娱乐", 
-        createTime: Date(), modifyTime: Date(), visitTime: Date())
-    ]
-    
-    // 新添加的目标数组
-    @State private var addedGoals: [Goal] = []
+    // 初始化示例数据的标志
+    @State private var hasInitializedData = false
     
     // 当前年份
-    @State private var currentYear = 2025
+    @State private var currentYear = Calendar.current.component(.year, from: Date())
+    @State private var yearChangeAnimation = false // 用于年份变化动画
+    @State private var showYearChangeToast = false // 用于显示年份变化提示
+    @State private var yearChangeDirection = "" // 用于记录年份变化方向
     
     // 根据分类和排序选项处理后的目标数据
     private var processedYearGoals: [Goal] {
+        let yearGoals = allGoals.filter { goal in
+            // 首先按目标类型筛选
+            guard goal.goalType == .yearly else { return false }
+            
+            // 然后按截止日期年份筛选
+            if let dueDate = goal.dueDate {
+                let dueDateYear = Calendar.current.component(.year, from: dueDate)
+                return dueDateYear == currentYear
+            }
+            return false // 如果没有截止日期，则不显示
+        }
         return sortGoals(categorizeGoals(yearGoals))
     }
     
     private var processedPeriodGoals: [Goal] {
-        // 合并原有的短期目标和新添加的目标
-        let allPeriodGoals = periodGoals + addedGoals
-        return sortGoals(categorizeGoals(allPeriodGoals))
+        let periodGoals = allGoals.filter { goal in
+            return goal.goalType == .shortTerm
+        }
+        return sortGoals(categorizeGoals(periodGoals))
+    }
+    
+    private var processedLifeGoals: [Goal] {
+        let lifeGoals = allGoals.filter { goal in
+            return goal.goalType == .life
+        }
+        return sortGoals(categorizeGoals(lifeGoals))
     }
     
     // 根据分类选项对目标进行分类
@@ -197,10 +204,14 @@ struct GoalView: View {
         }
     }
     
+
+    
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .bottomLeading) {
+        ZStack {
+            // 主视图
+            NavigationView {
                 VStack(spacing: 0) {
+                    
                     // 顶部导航栏
                     HStack {
                     
@@ -213,9 +224,17 @@ struct GoalView: View {
                         Text("短期").tag(2)
                     }
                     .pickerStyle(SegmentedPickerStyle())
-                    .frame(width: UIScreen.main.bounds.width * 0.6)
+                    .frame(maxWidth: .infinity)
                     
                     Spacer()
+
+                    Button(action: {
+                        showAddGoalSheet = true
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 20))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
                     
                     // 使用自定义视图替代复杂的Menu表达式
                     MenuButton {
@@ -237,59 +256,123 @@ struct GoalView: View {
                         }
                     }
                 }
+                .padding(.horizontal, 16) // 添加水平内边距，使整个导航栏与屏幕边缘保持适当距离
                 
                 // 年份选择器
                 if selectedSegment == 1 {
-                    HStack(spacing: 20) {
-                        Button(action: { currentYear -= 1 }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(Color(UIColor.systemBlue))
-                        }
+                    HStack(spacing: 12) {
+                        Spacer()
+                        
+                        Button(action: {
+                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                 yearChangeAnimation = true
+                                 currentYear -= 1
+                                 yearChangeDirection = "减少"
+                             }
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                 yearChangeAnimation = false
+                                 showYearChangeToast = true
+                             }
+                             // 2秒后隐藏提示
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                 showYearChangeToast = false
+                             }
+                         }) {
+                             Image(systemName: "chevron.left.circle.fill")
+                                 .font(.system(size: 18))
+                                 .foregroundColor(Color(UIColor.systemBlue))
+                                 .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                         }
+                         .buttonStyle(ScaleButtonStyle())
+                        
                         Text("\(currentYear)年")
-                            .font(.system(.headline, design: .rounded))
-                            .fontWeight(.bold)
-                        Button(action: { currentYear += 1 }) {
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(Color(UIColor.systemBlue))
-                        }
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white)
+                            .frame(minWidth: 60)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 1)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                            .scaleEffect(yearChangeAnimation ? 0.9 : 1)
+                            .opacity(yearChangeAnimation ? 0.7 : 1)
+                            .rotationEffect(Angle(degrees: yearChangeAnimation ? 2 : 0))
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: yearChangeAnimation)
+                        
+                        Button(action: {
+                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                 yearChangeAnimation = true
+                                 currentYear += 1
+                                 yearChangeDirection = "增加"
+                             }
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                 yearChangeAnimation = false
+                                 showYearChangeToast = true
+                             }
+                             // 2秒后隐藏提示
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                 showYearChangeToast = false
+                             }
+                         }) {
+                             Image(systemName: "chevron.right.circle.fill")
+                                 .font(.system(size: 18))
+                                 .foregroundColor(Color(UIColor.systemBlue))
+                                 .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                         }
+                         .buttonStyle(ScaleButtonStyle())
+                        
+                        Spacer()
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
                 }
                 
                 // 目标列表
                 GeometryReader { geometry in
                     ScrollView {
                         VStack(spacing: 16) {
-                        // 类别标题
-                        HStack {
+                            // 类别标题
+                            HStack {
                             Text(selectedSegment == 0 ? "类别1" : (selectedSegment == 1 ? "年初" : "类别1"))
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundColor(Color(UIColor.secondaryLabel))
+                                .padding(6)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(8)
                             Spacer()
                         }
                         .padding(.horizontal, 16) // 统一边距
                         .padding(.top, 16)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 12)
                         
                         // 根据视图模式显示不同的布局
                         if viewMode == .gallery {
                             // 画廊视图 - 网格布局，每行两个
-                            let screenWidth = UIScreen.main.bounds.width
-                            let cardWidth = (screenWidth - 16*2 - 12) / 2 // 屏幕宽度减去左右边距和中间间距
-                            
                             LazyVGrid(columns: [
                                 GridItem(.flexible(), spacing: 12),
                                 GridItem(.flexible(), spacing: 12)
                             ], spacing: 16) { // 减小垂直间距，使布局更紧凑
-                                ForEach(selectedSegment == 1 ? processedYearGoals : processedPeriodGoals) { goal in
+                                ForEach(selectedSegment == 0 ? processedLifeGoals : (selectedSegment == 1 ? processedYearGoals : processedPeriodGoals)) { goal in
                                     GoalCard(goal: goal)
+                                        .frame(height: 280) // 确保网格中的卡片高度一致
                                 }
                             }
                             .padding(.horizontal, 12) // 统一边距
                         } else {
                             // 列表视图
                             LazyVStack(spacing: 12) {
-                                ForEach(selectedSegment == 1 ? processedYearGoals : processedPeriodGoals) { goal in
+                                ForEach(selectedSegment == 0 ? processedLifeGoals : (selectedSegment == 1 ? processedYearGoals : processedPeriodGoals)) { goal in
                                     GoalListItem(goal: goal)
                                 }
                             }
@@ -302,30 +385,32 @@ struct GoalView: View {
                                 .font(.system(.subheadline, design: .rounded))
                                 .fontWeight(.medium)
                                 .foregroundColor(Color(UIColor.secondaryLabel))
+                                .padding(6)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(8)
                             Spacer()
                         }
                         .padding(.horizontal, 16) // 统一边距
-                        .padding(.top, 12)
+                        .padding(.top, 16)
+                        .padding(.bottom, 12)
                         
                         // 根据视图模式显示不同的布局
                         if viewMode == .gallery {
                             // 画廊视图 - 网格布局，每行两个
-                            let screenWidth = UIScreen.main.bounds.width
-                            let cardWidth = (screenWidth - 16*2 - 12) / 2 // 屏幕宽度减去左右边距和中间间距
-                            
                             LazyVGrid(columns: [
                                 GridItem(.flexible(), spacing: 12),
                                 GridItem(.flexible(), spacing: 12)
-                            ], spacing: 16) { // 减小垂直间距，使布局更紧凑
-                                ForEach(selectedSegment == 1 ? processedYearGoals.prefix(2) : processedPeriodGoals.prefix(2)) { goal in
+                            ], spacing: 16) {
+                                ForEach((selectedSegment == 0 ? processedLifeGoals : (selectedSegment == 1 ? processedYearGoals : processedPeriodGoals)).prefix(2)) { goal in
                                     GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
+                                        .frame(height: 280)
                                 }
                             }
                             .padding(.horizontal, 12) // 统一边距
                         } else {
                             // 列表视图
                             LazyVStack(spacing: 12) {
-                                ForEach(selectedSegment == 1 ? processedYearGoals : processedPeriodGoals) { goal in
+                                ForEach(selectedSegment == 0 ? processedLifeGoals : (selectedSegment == 1 ? processedYearGoals : processedPeriodGoals)) { goal in
                                     GoalListItem(goal: goal)
                                 }
                             }
@@ -340,24 +425,38 @@ struct GoalView: View {
             .background(Color(UIColor.systemGroupedBackground))
             .edgesIgnoringSafeArea(.bottom)
             
-            // 添加目标的浮动按钮 - 完全参考iOS备忘录应用样式
-            Button(action: {
-                showAddGoalSheet = true
-            }) {
-                Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-                    .background(Color(UIColor.systemBlue))
-                    .clipShape(Circle())
-                    .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+            // 年份变化提示
+            if showYearChangeToast {
+                VStack {
+                    Spacer()
+                    
+                    HStack {
+                        Spacer()
+                        
+                        Text("已\(yearChangeDirection)到\(currentYear)年")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(
+                                Capsule()
+                                    .fill(Color.black.opacity(0.7))
+                            )
+                            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        
+                        Spacer()
+                    }
+                    
+                    Spacer().frame(height: 100)
+                }
+                .animation(.easeInOut, value: showYearChangeToast)
+                .zIndex(1)
             }
-            .padding(.leading, 16)
-            .padding(.bottom, 16)
         }
         .sheet(isPresented: $showAddGoalSheet) {
-            AddGoalView(isPresented: $showAddGoalSheet, addedGoals: $addedGoals, selectedSegment: $selectedSegment)
-        }
+                AddGoalView(isPresented: $showAddGoalSheet, selectedSegment: $selectedSegment)
+            }
     }
 }
 
@@ -369,7 +468,7 @@ struct GoalCard: View {
     // 初始化方法，提供默认值
     init(goal: Goal, cardWidth: CGFloat? = nil) {
         self.goal = goal
-        self.cardWidth = cardWidth ?? (UIScreen.main.bounds.width - 40) / 2
+        self.cardWidth = cardWidth ?? 160 // 使用固定宽度代替屏幕宽度计算
     }
     
     // 获取进度颜色
@@ -385,58 +484,72 @@ struct GoalCard: View {
     
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
-            ZStack(alignment: .topLeading) {
-                // 卡片背景
+            ZStack {
+                // 背景图片或默认渐变背景 - 置于底层
+                if let imageName = goal.backgroundImage, let uiImage = UIImage(named: imageName) {
+                    // 背景图片 - 占满整个卡片
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .opacity(0.7) // 降低不透明度，使内容更易读
+                } else {
+                    // 默认渐变背景 - 占满整个卡片
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
+                
+                // 添加半透明覆盖层，使内容更易读
+                Rectangle()
+                    .fill(Color(UIColor.systemBackground).opacity(0.5))
+                    .frame(width: cardWidth, height: 280)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                
+                // 卡片阴影
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(UIColor.systemBackground))
+                    .fill(Color.clear)
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                
+                // 进度环形指示器 - 固定在右上角
+                ZStack {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 44, height: 44)
+                        .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                    
+                    Circle()
+                        .stroke(Color(UIColor.systemGray5), lineWidth: 3.5)
+                        .frame(width: 36, height: 36)
+                    
+                    Circle()
+                        .trim(from: 0, to: CGFloat(goal.progress))
+                        .stroke(progressColor, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                        .frame(width: 36, height: 36)
+                        .rotationEffect(.degrees(-90))
+                    
+                    Text("\(Int(goal.progress * 100))%")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.label))
+                }
+                .frame(width: 44, height: 44)
+                .padding(12)
+                .position(x: cardWidth - 34, y: 34) // 固定在右上角
                 
                 // 内容容器
                 VStack(alignment: .leading, spacing: 0) {
-                    // 顶部区域：背景图片和渐变
+                    // 设置VStack宽度为卡片宽度
                     ZStack(alignment: .topTrailing) {
-                        // 背景图片或默认渐变背景
-                        if let imageName = goal.backgroundImage, let uiImage = UIImage(named: imageName) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(height: 80)
-                                .clipped()
-                        } else {
-                            // 默认渐变背景
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            .frame(height: 80)
-                        }
                         
-                        // 进度环形指示器
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 44, height: 44)
-                                .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
-                            
-                            Circle()
-                                .stroke(Color(UIColor.systemGray5), lineWidth: 3.5)
-                                .frame(width: 36, height: 36)
-                            
-                            Circle()
-                                .trim(from: 0, to: CGFloat(goal.progress))
-                                .stroke(progressColor, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
-                                .frame(width: 36, height: 36)
-                                .rotationEffect(.degrees(-90))
-                            
-                            Text("\(Int(goal.progress * 100))%")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(UIColor.label))
-                        }
-                        .frame(width: 44, height: 44)
-                        .padding(8)
+                        // 这里之前有重复的代码，已移除
                     }
-                    .frame(width: cardWidth)
+                    // 确保ZStack占满整个卡片宽度
+                    .frame(width: cardWidth, alignment: .center)
                     
                     // 中间区域：目标标题和描述
                     VStack(alignment: .leading, spacing: 6) {
@@ -444,7 +557,7 @@ struct GoalCard: View {
                             .font(.system(size: 17, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
                             .lineLimit(1)
-                        Text(goal.description)
+                        Text(goal.goalDescription)
                             .font(.system(size: 13, design: .rounded))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                             .lineLimit(2)
@@ -548,8 +661,9 @@ struct GoalCard: View {
                     .padding(.horizontal, 10)
                     .padding(.bottom, 10)
                 }
+                .frame(width: cardWidth) // 确保内容容器占满整个卡片宽度
             }
-            .frame(width: cardWidth, height: 240) // 调整卡片高度
+            .frame(width: cardWidth, height: 280) // 固定卡片高度
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
@@ -587,7 +701,7 @@ struct GoalListItem: View {
                         .fontWeight(.bold)
                         .lineLimit(1)
                     
-                    Text(goal.description)
+                    Text(goal.goalDescription)
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(Color(UIColor.secondaryLabel))
@@ -628,162 +742,205 @@ struct GoalListItem: View {
     }
 }
 
-// 视图模式枚举
-enum ViewMode {
-    case gallery // 画廊视图
-    case list    // 列表视图
-}
+// 数据模型已移至Models.swift文件
 
-// 分类选项枚举
-enum CategoryOption {
-    case time  // 按时间分类
-    case type  // 按类型分类
-}
-
-// 排序选项枚举
-enum SortOption {
-    case name       // 按名称排序
-    case createTime // 按创建时间排序
-    case modifyTime // 按修改时间排序
-    case visitTime  // 按访问时间排序
-}
-
-// 数据模型
-struct Goal: Identifiable {
-    let id: UUID
-    var name: String
-    var description: String
-    var progress: Double
-    var tasks: [Task]
-    var backgroundImage: String? // 背景图片名称，nil表示使用默认白色背景
+// Toast视图组件
+struct ToastView: View {
+    let message: String
+    let isSuccess: Bool
     
-    // 新增属性
-    var tags: [String]
-    var upperProject: [String]
-    var subProject: [String]
-    var recordNum: Int
-    var category: String
-    let createTime: Date
-    var modifyTime: Date
-    var visitTime: Date
-    var dueDate: Date?
-}
-
-struct Task: Identifiable {
-    let id: Int
-    var title: String
-    var isCompleted: Bool
+    var body: some View {
+        HStack {
+            Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                .foregroundColor(isSuccess ? .green : .red)
+            
+            Text(message)
+                .font(.subheadline)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.black.opacity(0.8))
+        .cornerRadius(20)
+        .shadow(radius: 4)
+    }
 }
 
 // 添加目标的表单视图
 struct AddGoalView: View {
     @Binding var isPresented: Bool
-    @Binding var addedGoals: [Goal]
     @Binding var selectedSegment: Int
+    @Environment(\.modelContext) private var modelContext
     
     // 表单字段
     @State private var goalName = ""
     @State private var goalDescription = ""
-    @State private var selectedCategory = "技能提升"
+    @State private var selectedCategory = "短期目标"
     @State private var tags = ""
+    @State private var hasDueDate = false
+    @State private var dueDate = Date()
+    
+    // 错误处理
+    @State private var showAlert = false
+    @State private var errorMessage = ""
+    
+    // 成功提示
+    @State private var showSuccessToast = false
+    @State private var successMessage = ""
     
     // 可选类别
-    private let categories = ["技能提升", "健康管理", "知识获取", "休闲娱乐", "其他"]
+    private let categories = ["人生目标", "年度目标", "短期目标"]
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("目标信息")) {
-                    TextField("目标名称", text: $goalName)
-                    
-                    TextField("目标描述", text: $goalDescription)
-                        .frame(height: 80)
-                    
-                    Picker("类别", selection: $selectedCategory) {
-                        ForEach(categories, id: \.self) { category in
-                            Text(category).tag(category)
+        ZStack {
+            NavigationView {
+                Form {
+                    Section(header: Text("目标信息")) {
+                        TextField("目标名称", text: $goalName)
+                            .overlay(
+                                goalName.isEmpty ? 
+                                Text("目标名称不能为空").foregroundColor(.red).font(.caption) : nil,
+                                alignment: .trailing
+                            )
+                        
+                        TextField("目标描述", text: $goalDescription)
+                            .frame(height: 80)
+                        
+                        Picker("类别", selection: $selectedCategory) {
+                            ForEach(categories, id: \.self) { category in
+                                Text(category).tag(category)
+                            }
+                        }
+                        
+                        TextField("标签 (用逗号分隔)", text: $tags)
+                        
+                        Toggle("设置截止日期", isOn: $hasDueDate)
+                        
+                        if hasDueDate {
+                            DatePicker("截止日期", selection: $dueDate, displayedComponents: [.date])
                         }
                     }
-                    
-                    TextField("标签 (用逗号分隔)", text: $tags)
                 }
-                
-                Section {
-                    Button(action: {
-                        // 创建新目标的逻辑
-                        let newGoal = Goal(
-                            id: UUID(),
-                            name: goalName,
-                            description: goalDescription,
-                            progress: 0.0,
-                            tasks: [],
-                            backgroundImage: nil,
-                            tags: tags.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
-                            upperProject: [],
-                            subProject: [],
-                            recordNum: 0,
-                            category: selectedCategory,
-                            createTime: Date(),
-                            modifyTime: Date(),
-                            visitTime: Date()
-                        )
-                        
-                        // 将新目标添加到addedGoals数组
-                        addedGoals.append(newGoal)
-                        
-                        // 切换到短期目标分段
-                        selectedSegment = 2
-                        
+                .navigationBarTitle("添加目标", displayMode: .inline)
+                .navigationBarItems(
+                    leading: Button("取消") {
                         isPresented = false
-                    }) {
-                        Text("保存")
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                    },
+                    trailing: Button("保存") {
+                        validateAndSaveGoal()
                     }
+                    .disabled(goalName.isEmpty)
+                )
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("提示"),
+                        message: Text(errorMessage),
+                        dismissButton: .default(Text("确定"))
+                    )
                 }
             }
-            .navigationBarTitle("添加目标", displayMode: .inline)
-            .navigationBarItems(
-                leading: Button("取消") {
-                    isPresented = false
-                },
-                trailing: Button("保存") {
-                    // 创建新目标的逻辑
-                    let newGoal = Goal(
-                        id: UUID(),
-                        name: goalName,
-                        description: goalDescription,
-                        progress: 0.0,
-                        tasks: [],
-                        backgroundImage: nil,
-                        tags: tags.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
-                        upperProject: [],
-                        subProject: [],
-                        recordNum: 0,
-                        category: selectedCategory,
-                        createTime: Date(),
-                        modifyTime: Date(),
-                        visitTime: Date()
-                    )
-                    
-                    // 将新目标添加到addedGoals数组
-                    addedGoals.append(newGoal)
-                    
-                    // 切换到短期目标分段
-                    selectedSegment = 2
-                    
-                    isPresented = false
+            
+            // 成功提示Toast
+            if showSuccessToast {
+                VStack {
+                    Spacer()
+                    ToastView(message: successMessage, isSuccess: true)
+                        .padding(.bottom, 20)
                 }
-            )
+                .transition(.move(edge: .bottom))
+                .animation(.easeInOut, value: showSuccessToast)
+                .zIndex(1)
+            }
+        }
+    }
+    
+    private func validateAndSaveGoal() {
+        // 验证输入
+        if goalName.isEmpty {
+            errorMessage = "目标名称不能为空"
+            showAlert = true
+            return
+        }
+        
+        if goalName.count < 2 {
+            errorMessage = "目标名称至少需要2个字符"
+            showAlert = true
+            return
+        }
+        
+        if goalDescription.isEmpty {
+            errorMessage = "请添加目标描述"
+            showAlert = true
+            return
+        }
+        
+        // 验证通过，保存目标
+        saveGoal()
+    }
+    
+    private func saveGoal() {
+        // 创建新目标
+        let newGoal = Goal(
+            name: goalName,
+            description: goalDescription,
+            progress: 0.0,
+            backgroundImage: nil,
+            tags: tags.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
+            upperProject: [],
+            subProject: [],
+            recordNum: 0,
+            category: selectedCategory,
+            goalType: GoalType.from(string: selectedCategory), // 根据选择的类别设置goalType
+            dueDate: hasDueDate ? dueDate : nil
+        )
+        
+        // 保存到数据库
+        modelContext.insert(newGoal)
+        
+        do {
+            try modelContext.save()
+            
+            // 根据新目标的类型切换分段
+            switch newGoal.goalType {
+            case .life:
+                selectedSegment = 0
+            case .yearly:
+                selectedSegment = 1
+            case .shortTerm:
+                selectedSegment = 2
+            }
+            
+            // 显示成功提示
+            successMessage = "目标「\(goalName)」添加成功！"
+            showSuccessToast = true
+            
+            // 延迟1.5秒后关闭表单，让用户有时间看到成功提示
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                isPresented = false
+            }
+        } catch {
+            errorMessage = "保存失败: \(error.localizedDescription)"
+            showAlert = true
         }
     }
 }
 
 #Preview {
-    GoalView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Goal.self, GoalTask.self, configurations: config)
+    
+    GoalView(selectedTab: .constant(0))
+        .modelContainer(container)
+}
+
+// MARK: - 扩展RoundedRectangle以支持指定角的圆角
+extension RoundedRectangle {
+    func corners(_ corners: UIRectCorner, radius: CGFloat = 10) -> Path {
+        let path = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: 100, height: 100), 
+                                byRoundingCorners: corners, 
+                                cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
+    }
 }
 
 // MARK: - 自定义菜单按钮
@@ -801,7 +958,7 @@ struct MenuButton<Content: View>: View {
             Image(systemName: "ellipsis.circle")
                 .font(.system(size: 20))
                 .foregroundColor(Color(UIColor.systemBlue))
-                .padding(.trailing, 8) // 添加右侧留白
+                .padding(.trailing, 20) // 增加右侧留白，使按钮不要太靠近屏幕边缘
         }
     }
 }

@@ -1,0 +1,336 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/GoalView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "画廊视图",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "列表视图",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 66
+        }
+      },
+      {
+        "comment": "",
+        "key": "时间",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "类型",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 89
+        }
+      },
+      {
+        "comment": "",
+        "key": "分类",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "名称",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "创建时间",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 114
+        }
+      },
+      {
+        "comment": "",
+        "key": "修改时间",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 123
+        }
+      },
+      {
+        "comment": "",
+        "key": "访问时间",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 132
+        }
+      },
+      {
+        "comment": "",
+        "key": "排序",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 138
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 221
+        }
+      },
+      {
+        "comment": "",
+        "key": "人生",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 222
+        }
+      },
+      {
+        "comment": "",
+        "key": "年度",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 223
+        }
+      },
+      {
+        "comment": "",
+        "key": "短期",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 224
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 288
+        }
+      },
+      {
+        "comment": "",
+        "key": "类别1",
+        "location": {
+          "startingColumn": 57,
+          "startingLine": 347
+        }
+      },
+      {
+        "comment": "",
+        "key": "年初",
+        "location": {
+          "startingColumn": 93,
+          "startingLine": 347
+        }
+      },
+      {
+        "comment": "",
+        "key": "类别1",
+        "location": {
+          "startingColumn": 104,
+          "startingLine": 347
+        }
+      },
+      {
+        "comment": "",
+        "key": "类别2",
+        "location": {
+          "startingColumn": 57,
+          "startingLine": 384
+        }
+      },
+      {
+        "comment": "",
+        "key": "年中",
+        "location": {
+          "startingColumn": 93,
+          "startingLine": 384
+        }
+      },
+      {
+        "comment": "",
+        "key": "类别2",
+        "location": {
+          "startingColumn": 104,
+          "startingLine": 384
+        }
+      },
+      {
+        "comment": "",
+        "key": "已%@到%lld年",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 436
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 536
+        }
+      },
+      {
+        "comment": "",
+        "key": "+%lld",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 579
+        }
+      },
+      {
+        "comment": "",
+        "key": "还有%lld个任务...",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 651
+        }
+      },
+      {
+        "comment": "",
+        "key": "子目标",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 600
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/%lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 607
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 691
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加目标",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 824
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 826
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 829
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标信息",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 798
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标名称不能为空",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 802
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标名称",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 799
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标描述",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 806
+        }
+      },
+      {
+        "comment": "",
+        "key": "类别",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 809
+        }
+      },
+      {
+        "comment": "",
+        "key": "标签 (用逗号分隔)",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 815
+        }
+      },
+      {
+        "comment": "",
+        "key": "设置截止日期",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 817
+        }
+      },
+      {
+        "comment": "",
+        "key": "截止日期",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 820
+        }
+      },
+      {
+        "comment": "",
+        "key": "提示",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 836
+        }
+      },
+      {
+        "comment": "",
+        "key": "确定",
+        "location": {
+          "startingColumn": 54,
+          "startingLine": 838
+        }
+      }
+    ]
+  },
+  "version": 1
+}

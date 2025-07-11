@@ -7,36 +7,44 @@
 
 import SwiftUI
 import SwiftData
+// 确保ModelMigrations和ModelVersion可用
+import Foundation
 
 @main
 struct selfManagerApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    let sharedModelContainer: ModelContainer
+    // 添加状态变量来跟踪当前选中的标签页
+    @State private var selectedTab = 0
 
+    init() {
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            // 配置模型迁移计划
+            let schema = Schema(versionedSchema: ModelSchemaV2.self)
+            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+            
+            // 创建包含Goal和GoalTask模型的容器
+            sharedModelContainer = try ModelContainer(for: Goal.self, GoalTask.self, Item.self, configurations: modelConfiguration)
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                HomeView()
+            TabView(selection: $selectedTab) {
+                HomeView(selectedTab: $selectedTab)
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("首页")
                     }
+                    .tag(0)
                 
-                GoalView()
+                GoalView(selectedTab: $selectedTab)
                     .tabItem {
                         Image(systemName: "target")
                         Text("目标")
                     }
+                    .tag(1)
             }
         }
         .modelContainer(sharedModelContainer)

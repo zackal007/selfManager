@@ -1,0 +1,40 @@
+//
+//  GoalType.swift
+//  selfManager
+//
+//  Created by zack on 24.6.25.
+//
+
+import Foundation
+
+/// 目标类型枚举
+@frozen
+enum GoalType: String, Codable, CaseIterable {
+    /// 人生目标
+    case life = "人生目标"
+    /// 年度目标
+    case yearly = "年度目标"
+    /// 短期目标
+    case shortTerm = "短期目标"
+    
+    /// 获取所有目标类型的数组
+    static var allCases: [GoalType] {
+        return [.life, .yearly, .shortTerm]
+    }
+    
+    /// 根据字符串创建GoalType，如果无法匹配则返回短期目标
+    static func from(string: String) -> GoalType {
+        return GoalType.allCases.first { $0.rawValue == string } ?? .shortTerm
+    }
+    
+    /// 根据类别字符串推断目标类型
+    static func inferFromCategory(_ category: String) -> GoalType {
+        if category.contains("人生") {
+            return .life
+        } else if category.contains("年度") {
+            return .yearly
+        } else {
+            return .shortTerm
+        }
+    }
+}
