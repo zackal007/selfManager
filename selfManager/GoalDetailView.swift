@@ -628,8 +628,23 @@ struct GoalDetailView: View {
                     
                     // 子任务
                     tasksView
+                    
+                    // 底部删除按钮
+                    Button(action: {
+                        showDeleteAlert = true
+                    }) {
+                        Text("删除目标")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.red)
+                            .cornerRadius(8)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 24)
+                    .padding(.bottom, 16)
                 }
-                .padding(.bottom, 16)
               
             }
         }
@@ -646,21 +661,12 @@ struct GoalDetailView: View {
                 }
                 .foregroundColor(Color(UIColor.systemBlue))
             },
-            trailing: HStack(spacing: 16) {
-                Button(action: {
-                    showDeleteAlert = true
-                }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                }
-                
-                Button(action: {
-                    // 保存所有修改
-                    saveGoal()
-                }) {
-                    Text("保存")
-                        .foregroundColor(Color(UIColor.systemBlue))
-                }
+            trailing: Button(action: {
+                // 保存所有修改
+                saveGoal()
+            }) {
+                Text("保存")
+                    .foregroundColor(Color(UIColor.systemBlue))
             }
         )
         .sheet(isPresented: $showEditSheet) {
