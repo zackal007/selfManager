@@ -34,11 +34,17 @@ struct RecordView: View {
     // 当前月份
     @State private var currentMonth = Calendar.current.component(.month, from: Date())
     
+    // 当前日
+    @State private var currentDay = Calendar.current.component(.day, from: Date())
+    
     // 当前季度
     @State private var currentQuarter = (Calendar.current.component(.month, from: Date()) - 1) / 3 + 1
     
     // 当前周
     @State private var currentWeek = Calendar.current.component(.weekOfYear, from: Date())
+    
+    // 控制日期选择器显示
+    @State private var showDatePicker = false
     
     // 年份变化动画
     @State private var dateChangeAnimation = false
@@ -53,9 +59,135 @@ struct RecordView: View {
     // 显示保存成功提示
     @State private var showSaveSuccessToast = false
     
+    // 日期格式化器 - 用于显示年月
+    private let yearMonthFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy年 M月"
+        return formatter
+    }()
+    
     // 初始化方法，接收selectedTab绑定
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
+    }
+    
+    // 日历日期结构体
+    struct CalendarDay: Identifiable {
+        let id = UUID()
+        let date: Date?
+        let dayNumber: String
+        let isSelected: Bool
+        let isToday: Bool
+        let isCurrentMonth: Bool
+    }
+    
+    // 生成当前月份的日期数组
+    private func daysInMonth(for date: Date) -> [CalendarDay] {
+        let calendar = Calendar.current
+        
+        // 获取当前月的第一天
+        var components = calendar.dateComponents([.year, .month], from: date)
+        components.day = 1
+        guard let firstDayOfMonth = calendar.date(from: components) else { return [] }
+        
+        // 获取当前月第一天是星期几（1是星期日，2是星期一...）
+        let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
+        
+        // 获取上个月的最后几天（用于填充当前月第一周的前几天）
+        var daysInPreviousMonth = [CalendarDay]()
+        if firstWeekday > 1 {
+            guard let previousMonth = calendar.date(byAdding: .month, value: -1, to: firstDayOfMonth) else { return [] }
+            let daysInMonth = calendar.range(of: .day, in: .month, for: previousMonth)?.count ?? 30
+            let startDay = daysInMonth - firstWeekday + 2
+            
+            for i in startDay...daysInMonth {
+                var dateComponents = calendar.dateComponents([.year, .month], from: previousMonth)
+                dateComponents.day = i
+                let dayDate = calendar.date(from: dateComponents)
+                
+                // 检查是否在当前选中日期的同一周内（针对周记）
+                let isInSelectedWeek = selectedRecordType == .weekly && dayDate != nil && 
+                    calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear)
+                
+                daysInPreviousMonth.append(CalendarDay(
+                    date: dayDate,
+                    dayNumber: "\(i)",
+                    isSelected: isInSelectedWeek,
+                    isToday: false,
+                    isCurrentMonth: false
+                ))
+            }
+        }
+        
+        // 获取当前月的天数
+        let daysInMonth = calendar.range(of: .day, in: .month, for: firstDayOfMonth)?.count ?? 30
+        
+        // 当前选中的日期
+        let selectedDateComponents = calendar.dateComponents([.year, .month, .day], from: currentDate)
+        
+        // 今天的日期
+        let todayComponents = calendar.dateComponents([.year, .month, .day], from: Date())
+        
+        // 添加当月的天数
+        var days = [CalendarDay]()
+        for day in 1...daysInMonth {
+            var dateComponents = components
+            dateComponents.day = day
+            let dayDate = calendar.date(from: dateComponents)
+            
+            let isToday = components.year == todayComponents.year &&
+                          components.month == todayComponents.month &&
+                          day == todayComponents.day
+            
+            // 根据记录类型决定选中逻辑
+            var isSelected = false
+            if selectedRecordType == .weekly && dayDate != nil {
+                // 周记：如果日期在当前选中日期的同一周内，则标记为选中
+                isSelected = calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear)
+            } else {
+                // 其他记录类型：只有当天被选中
+                isSelected = components.year == selectedDateComponents.year &&
+                             components.month == selectedDateComponents.month &&
+                             day == selectedDateComponents.day
+            }
+            
+            days.append(CalendarDay(
+                date: dayDate,
+                dayNumber: "\(day)",
+                isSelected: isSelected,
+                isToday: isToday,
+                isCurrentMonth: true
+            ))
+        }
+        
+        // 计算需要显示的下个月的天数（填充最后一行）
+        let totalDaysShown = daysInPreviousMonth.count + days.count
+        let remainingDays = 42 - totalDaysShown // 6行7列 = 42个日期单元格
+        
+        // 添加下个月的天数
+        if remainingDays > 0 {
+            guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: firstDayOfMonth) else { return [] }
+            
+            for day in 1...remainingDays {
+                var dateComponents = calendar.dateComponents([.year, .month], from: nextMonth)
+                dateComponents.day = day
+                let dayDate = calendar.date(from: dateComponents)
+                
+                // 检查是否在当前选中日期的同一周内（针对周记）
+                let isInSelectedWeek = selectedRecordType == .weekly && dayDate != nil && 
+                    calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear)
+                
+                days.append(CalendarDay(
+                    date: dayDate,
+                    dayNumber: "\(day)",
+                    isSelected: isInSelectedWeek,
+                    isToday: false,
+                    isCurrentMonth: false
+                ))
+            }
+        }
+        
+        return daysInPreviousMonth + days
     }
     
     var body: some View {
@@ -88,481 +220,567 @@ struct RecordView: View {
                     loadCurrentRecord()
                 }
                 
-                // 日期选择器
-                VStack {
-                    // 根据选择的记录类型显示不同的日期选择器
-                    switch selectedRecordType {
+                // 日期选择器 - 只在下拉时显示
+                if showDatePicker {
+                    VStack {
+                        // 根据选择的记录类型显示不同的日期选择器
+                        switch selectedRecordType {
                     case .daily: // 日记
-                        HStack(spacing: 12) {
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
-                                    dateChangeDirection = "减少"
-                                }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
+                        VStack(spacing: 8) {
+                            // 年月选择器
+                            HStack {
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                                
+                                Spacer()
+                                
+                                Text(yearMonthFormatter.string(from: currentDate))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                }
                             }
-                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.horizontal, 8)
                             
-                            Text(formattedDate)
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 120)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
+                            // 星期标题行
+                            HStack(spacing: 0) {
+                                ForEach(["日", "一", "二", "三", "四", "五", "六"], id: \.self) { weekday in
+                                    Text(weekday)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.horizontal, 8)
+                            
+                            // 日历网格
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
+                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
+                                    Button(action: {
+                                        if day.date != nil {
+                                            withAnimation {
+                                                currentDate = day.date!
+                                                updateDateComponents()
+                                                loadCurrentRecord()
+                                            }
+                                        }
+                                    }) {
+                                        Text(day.dayNumber)
+                                            .font(.system(size: 14))
+                                            .fontWeight(day.isSelected ? .bold : .regular)
+                                            .foregroundColor(day.isToday ? .white : (day.isSelected ? .purple : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(height: 36)
+                                            .frame(maxWidth: .infinity)
+                                            .background(
+                                                ZStack {
+                                                    if day.isToday {
+                                                        Circle()
+                                                            .fill(Color.blue)
+                                                    } else if day.isSelected {
+                                                        Circle()
+                                                            .fill(Color.purple.opacity(0.2))
+                                                    }
+                                                }
                                             )
-                                        )
-                                        .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                )
-                                .scaleEffect(dateChangeAnimation ? 0.9 : 1)
-                                .opacity(dateChangeAnimation ? 0.7 : 1)
-                                .rotationEffect(Angle(degrees: dateChangeAnimation ? 2 : 0))
-                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: dateChangeAnimation)
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
-                                    dateChangeDirection = "增加"
-                                }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
                                     }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .disabled(day.date == nil)
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.right.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.horizontal, 8)
                             
-                            Spacer()
+                            // 移除当前选中日期显示
                         }
                         .padding(.vertical, 4)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .weekly: // 周记
-                        HStack(spacing: 12) {
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentWeek -= 1
-                                    if currentWeek < 1 {
-                                        currentYear -= 1
-                                        currentWeek = 52 // 假设一年有52周
+                        VStack(spacing: 8) {
+                            // 年月选择器
+                            HStack {
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
-                                    dateChangeDirection = "减少"
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
+                                
+                                Spacer()
+                                
+                                Text(yearMonthFormatter.string(from: currentDate))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.horizontal, 8)
                             
-                            Text("\(currentYear)年第\(currentWeek)周")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 120)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
+                            // 星期标题行
+                            HStack(spacing: 0) {
+                                ForEach(["日", "一", "二", "三", "四", "五", "六"], id: \.self) { weekday in
+                                    Text(weekday)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.horizontal, 8)
+                            
+                            // 周选择器 - 使用日历网格样式
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
+                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
+                                    Button(action: {
+                                        if day.date != nil {
+                                            withAnimation {
+                                                currentDate = day.date!
+                                                updateDateComponents()
+                                                loadCurrentRecord()
+                                            }
+                                        }
+                                    }) {
+                                        Text(day.dayNumber)
+                                            .font(.system(size: 14))
+                                            .fontWeight(day.isSelected ? .bold : .regular)
+                                            .foregroundColor(day.isToday ? .white : (day.isSelected ? .purple : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(height: 36)
+                                            .frame(maxWidth: .infinity)
+                                            .background(
+                                                ZStack {
+                                                    if day.isToday {
+                                                        Circle()
+                                                            .fill(Color.blue)
+                                                    } else if day.isSelected {
+                                                        // 周记选中样式：使用圆角矩形而不是圆形，更好地表示整周选中
+                                                        RoundedRectangle(cornerRadius: 8)
+                                                            .fill(Color.purple.opacity(0.2))
+                                                    }
+                                                }
                                             )
-                                        )
-                                        .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                )
-                                .scaleEffect(dateChangeAnimation ? 0.9 : 1)
-                                .opacity(dateChangeAnimation ? 0.7 : 1)
-                                .rotationEffect(Angle(degrees: dateChangeAnimation ? 2 : 0))
-                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: dateChangeAnimation)
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentWeek += 1
-                                    if currentWeek > 52 { // 假设一年有52周
-                                        currentYear += 1
-                                        currentWeek = 1
                                     }
-                                    dateChangeDirection = "增加"
+                                    .buttonStyle(PlainButtonStyle())
+                                    .disabled(day.date == nil)
                                 }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
-                                    }
-                                }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.right.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
-                            
-                            Spacer()
+                            .padding(.horizontal, 8)
                         }
                         .padding(.vertical, 4)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .monthly: // 月记
-                        HStack(spacing: 12) {
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentMonth -= 1
-                                    if currentMonth < 1 {
-                                        currentYear -= 1
-                                        currentMonth = 12
+                        VStack(spacing: 8) {
+                            // 年月选择器
+                            HStack {
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
-                                    dateChangeDirection = "减少"
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
+                                
+                                Spacer()
+                                
+                                Text(yearMonthFormatter.string(from: currentDate))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.horizontal, 8)
                             
-                            Text("\(currentYear)年\(currentMonth)月")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 120)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
+                            // 星期标题行
+                            HStack(spacing: 0) {
+                                ForEach(["日", "一", "二", "三", "四", "五", "六"], id: \.self) { weekday in
+                                    Text(weekday)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.horizontal, 8)
+                            
+                            // 日历网格
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
+                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
+                                    Button(action: {
+                                        if day.date != nil {
+                                            withAnimation {
+                                                currentDate = day.date!
+                                                updateDateComponents()
+                                                loadCurrentRecord()
+                                            }
+                                        }
+                                    }) {
+                                        Text(day.dayNumber)
+                                            .font(.system(size: 14))
+                                            .fontWeight(day.isSelected ? .bold : .regular)
+                                            .foregroundColor(day.isToday ? .white : (day.isSelected ? .purple : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(height: 36)
+                                            .frame(maxWidth: .infinity)
+                                            .background(
+                                                ZStack {
+                                                    if day.isToday {
+                                                        Circle()
+                                                            .fill(Color.blue)
+                                                    } else if day.isSelected {
+                                                        Circle()
+                                                            .fill(Color.purple.opacity(0.2))
+                                                    }
+                                                }
                                             )
-                                        )
-                                        .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                )
-                                .scaleEffect(dateChangeAnimation ? 0.9 : 1)
-                                .opacity(dateChangeAnimation ? 0.7 : 1)
-                                .rotationEffect(Angle(degrees: dateChangeAnimation ? 2 : 0))
-                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: dateChangeAnimation)
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentMonth += 1
-                                    if currentMonth > 12 {
-                                        currentYear += 1
-                                        currentMonth = 1
                                     }
-                                    dateChangeDirection = "增加"
+                                    .buttonStyle(PlainButtonStyle())
+                                    .disabled(day.date == nil)
                                 }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
-                                    }
-                                }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.right.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
-                            
-                            Spacer()
+                            .padding(.horizontal, 8)
                         }
                         .padding(.vertical, 4)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .quarterly: // 季记
-                        HStack(spacing: 12) {
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentQuarter -= 1
-                                    if currentQuarter < 1 {
-                                        currentYear -= 1
-                                        currentQuarter = 4
+                        VStack(spacing: 8) {
+                            // 年月选择器
+                            HStack {
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: -3, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
-                                    dateChangeDirection = "减少"
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
+                                
+                                Spacer()
+                                
+                                // 显示年份和季度
+                                let calendar = Calendar.current
+                                let year = calendar.component(.year, from: currentDate)
+                                let month = calendar.component(.month, from: currentDate)
+                                let quarter = (month - 1) / 3 + 1
+                                
+                                Text("\(year)年 第\(quarter)季度")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .month, value: 3, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.horizontal, 8)
                             
-                            Text("\(currentYear)年第\(currentQuarter)季度")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 120)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
+                            // 星期标题行
+                            HStack(spacing: 0) {
+                                ForEach(["日", "一", "二", "三", "四", "五", "六"], id: \.self) { weekday in
+                                    Text(weekday)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.horizontal, 8)
+                            
+                            // 日历网格
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
+                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
+                                    Button(action: {
+                                        if day.date != nil {
+                                            withAnimation {
+                                                currentDate = day.date!
+                                                updateDateComponents()
+                                                loadCurrentRecord()
+                                            }
+                                        }
+                                    }) {
+                                        Text(day.dayNumber)
+                                            .font(.system(size: 14))
+                                            .fontWeight(day.isSelected ? .bold : .regular)
+                                            .foregroundColor(day.isToday ? .white : (day.isSelected ? .purple : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(height: 36)
+                                            .frame(maxWidth: .infinity)
+                                            .background(
+                                                ZStack {
+                                                    if day.isToday {
+                                                        Circle()
+                                                            .fill(Color.blue)
+                                                    } else if day.isSelected {
+                                                        Circle()
+                                                            .fill(Color.purple.opacity(0.2))
+                                                    }
+                                                }
                                             )
-                                        )
-                                        .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                )
-                                .scaleEffect(dateChangeAnimation ? 0.9 : 1)
-                                .opacity(dateChangeAnimation ? 0.7 : 1)
-                                .rotationEffect(Angle(degrees: dateChangeAnimation ? 2 : 0))
-                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: dateChangeAnimation)
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentQuarter += 1
-                                    if currentQuarter > 4 {
-                                        currentYear += 1
-                                        currentQuarter = 1
                                     }
-                                    dateChangeDirection = "增加"
+                                    .buttonStyle(PlainButtonStyle())
+                                    .disabled(day.date == nil)
                                 }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
-                                    }
-                                }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.right.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
-                            
-                            Spacer()
+                            .padding(.horizontal, 8)
                         }
                         .padding(.vertical, 4)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .yearly: // 年记
-                        HStack(spacing: 12) {
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentYear -= 1
-                                    dateChangeDirection = "减少"
-                                }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
+                        VStack(spacing: 8) {
+                            // 年份选择器
+                            HStack {
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .year, value: -5, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "chevron.left.2")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .year, value: -1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                }
+                                
+                                Spacer()
+                                
+                                let year = Calendar.current.component(.year, from: currentDate)
+                                Text("\(year)年")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .year, value: 1, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                }
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        if let newDate = Calendar.current.date(byAdding: .year, value: 5, to: currentDate) {
+                                            currentDate = newDate
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "chevron.right.2")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                }
                             }
-                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.horizontal, 8)
                             
-                            Text("\(currentYear)年")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 60)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
+                            // 年份快速选择器 - 使用网格布局
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
+                                let currentYear = Calendar.current.component(.year, from: currentDate)
+                                ForEach(-10...10, id: \.self) { offset in
+                                    let year = currentYear + offset
+                                    Button(action: {
+                                        withAnimation {
+                                            var components = Calendar.current.dateComponents([.month, .day], from: currentDate)
+                                            components.year = year
+                                            if let newDate = Calendar.current.date(from: components) {
+                                                currentDate = newDate
+                                                updateDateComponents()
+                                                loadCurrentRecord()
+                                            }
+                                        }
+                                    }) {
+                                        Text("\(year)")
+                                            .font(.system(size: 16))
+                                            .fontWeight(currentYear == year ? .bold : .regular)
+                                            .foregroundColor(currentYear == year ? .white : .primary)
+                                            .padding(.vertical, 10)
+                                            .padding(.horizontal, 16)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .fill(currentYear == year ? Color.purple : Color.clear)
                                             )
-                                        )
-                                        .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 1)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                )
-                                .scaleEffect(dateChangeAnimation ? 0.9 : 1)
-                                .opacity(dateChangeAnimation ? 0.7 : 1)
-                                .rotationEffect(Angle(degrees: dateChangeAnimation ? 2 : 0))
-                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: dateChangeAnimation)
-                            
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    dateChangeAnimation = true
-                                    currentYear += 1
-                                    dateChangeDirection = "增加"
-                                }
-                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                    dateChangeAnimation = false
-                                    showDateChangeToast = true
-                                    
-                                    // 嵌套Timer替代第二个DispatchQueue
-                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                        showDateChangeToast = false
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(currentYear == year ? Color.clear : Color.gray.opacity(0.3), lineWidth: 1)
+                                            )
                                     }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                // 加载选择日期的记录
-                                loadCurrentRecord()
-                            }) {
-                                Image(systemName: "chevron.right.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                             }
-                            .buttonStyle(ScaleButtonStyle())
-                            
-                            Spacer()
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 8)
                         }
                         .padding(.vertical, 4)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     default:
                         EmptyView()
                     }
+                    }
+                    .padding(.bottom, 8)
                 }
-                .padding(.bottom, 8)
                 
                 // 记录内容区域
                 ScrollView {
+                    // 下拉区域 - 用于显示/隐藏日期选择器
+                    HStack {
+                        Spacer()
+                        
+                        VStack(spacing: 4) {
+                            Text(recordTitle)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 8)
+                        .onTapGesture {
+                            withAnimation {
+                                showDatePicker.toggle()
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
                     VStack(alignment: .leading, spacing: 16) {
                         // 显示记录内容
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(recordTitle)
-                                .font(.headline)
-                                .padding(.horizontal)
+                            // 移除记录标题
                             
                             TextEditor(text: $recordContent)
-                                .frame(minHeight: UIScreen.main.bounds.height * 0.4) // 使用屏幕高度的40%作为最小高度
+                                .frame(minHeight: UIScreen.main.bounds.height * 0.5) // 使用屏幕高度的50%作为最小高度
                                 .padding(8)
                                 .background(Color(UIColor.systemBackground))
                                 .cornerRadius(8)
@@ -678,19 +896,43 @@ struct RecordView: View {
         return formatter.string(from: currentDate)
     }
     
+    // 注意：yearMonthFormatter 已在文件顶部声明
+    
+    // 更新日期组件
+    private func updateDateComponents() {
+        let calendar = Calendar.current
+        currentYear = calendar.component(.year, from: currentDate)
+        currentMonth = calendar.component(.month, from: currentDate)
+        currentDay = calendar.component(.day, from: currentDate)
+        currentWeek = calendar.component(.weekOfYear, from: currentDate)
+        currentQuarter = (calendar.component(.month, from: currentDate) - 1) / 3 + 1
+    }
+    
     // 记录标题
     var recordTitle: String {
         switch selectedRecordType {
         case .daily:
             return "\(formattedDate) 日记"
         case .weekly:
-            return "\(currentYear)年第\(currentWeek)周 周记"
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let week = calendar.component(.weekOfYear, from: currentDate)
+            return "\(year)年第\(week)周 周记"
         case .monthly:
-            return "\(currentYear)年\(currentMonth)月 月记"
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            return "\(year)年\(month)月 月记"
         case .quarterly:
-            return "\(currentYear)年第\(currentQuarter)季度 季记"
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            let quarter = (month - 1) / 3 + 1
+            return "\(year)年第\(quarter)季度 季记"
         case .yearly:
-            return "\(currentYear)年 年记"
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            return "\(year)年 年记"
         }
     }
     
@@ -711,44 +953,50 @@ struct RecordView: View {
             // 使用当前选择的日期
         case .weekly: // 周记
             recordTypeString = "周记"
-            // 获取所选周的第一天
+            // 使用当前选择的日期，但获取该日期所在周的第一天（周日）
             let calendar = Calendar.current
-            var components = DateComponents()
-            components.year = currentYear
-            components.weekOfYear = currentWeek
-            components.weekday = 1 // 周日
-            if let date = calendar.date(from: components) {
-                recordDate = date
+            let weekday = calendar.component(.weekday, from: currentDate)
+            // 计算到本周第一天（周日）的偏移量
+            let daysToSubtract = weekday - 1
+            if let weekStartDate = calendar.date(byAdding: .day, value: -daysToSubtract, to: currentDate) {
+                recordDate = weekStartDate
             }
         case .monthly: // 月记
             recordTypeString = "月记"
-            // 获取所选月的第一天
+            // 使用当前选择的日期，但获取该日期所在月的第一天
             let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
             var components = DateComponents()
-            components.year = currentYear
-            components.month = currentMonth
+            components.year = year
+            components.month = month
             components.day = 1
             if let date = calendar.date(from: components) {
                 recordDate = date
             }
         case .quarterly: // 季记
             recordTypeString = "季记"
-            // 获取所选季度的第一天
+            // 获取当前日期所在季度的第一天
             let calendar = Calendar.current
-            let month = (currentQuarter - 1) * 3 + 1
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            let quarter = (month - 1) / 3 + 1
+            let firstMonthOfQuarter = (quarter - 1) * 3 + 1
+            
             var components = DateComponents()
-            components.year = currentYear
-            components.month = month
+            components.year = year
+            components.month = firstMonthOfQuarter
             components.day = 1
             if let date = calendar.date(from: components) {
                 recordDate = date
             }
         case .yearly: // 年记
             recordTypeString = "年记"
-            // 获取所选年的第一天
+            // 获取当前日期所在年份的第一天
             let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
             var components = DateComponents()
-            components.year = currentYear
+            components.year = year
             components.month = 1
             components.day = 1
             if let date = calendar.date(from: components) {
@@ -811,34 +1059,50 @@ struct RecordView: View {
             }
             
         case .weekly: // 周记
-            // 查找当前年份和周数的周记
+            // 查找当前日期所在周的周记
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let week = calendar.component(.weekOfYear, from: currentDate)
+            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .weekly &&
-                record.year == currentYear &&
-                record.week == currentWeek
+                record.year == year &&
+                record.week == week
             }
             
         case .monthly: // 月记
-            // 查找当前年份和月份的月记
+            // 查找当前日期所在月的月记
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .monthly &&
-                record.year == currentYear &&
-                record.month == currentMonth
+                record.year == year &&
+                record.month == month
             }
             
         case .quarterly: // 季记
-            // 查找当前年份和季度的季记
+            // 查找当前日期所在季度的季记
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            let quarter = (month - 1) / 3 + 1
+            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .quarterly &&
-                record.year == currentYear &&
-                record.quarter == currentQuarter
+                record.year == year &&
+                record.quarter == quarter
             }
             
         case .yearly: // 年记
-            // 查找当前年份的年记
+            // 查找当前日期所在年份的年记
+            let calendar = Calendar.current
+            let year = calendar.component(.year, from: currentDate)
+            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .yearly &&
-                record.year == currentYear
+                record.year == year
             }
         }
         
