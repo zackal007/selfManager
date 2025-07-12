@@ -441,6 +441,18 @@ struct GoalDetailView: View {
     
     // 保存目标的所有修改
     private func saveGoal() -> Void {
+        // 根据selectedGoalType更新goal.goalType
+        switch selectedGoalType {
+        case 0:
+            goal.goalType = .life
+        case 1:
+            goal.goalType = .yearly
+        case 2:
+            goal.goalType = .shortTerm
+        default:
+            break
+        }
+        
         // 更新修改时间
         goal.modifyTime = Date()
         
@@ -643,21 +655,9 @@ struct GoalDetailView: View {
         Menu {
             ForEach(0..<goalTypes.count, id: \.self) { index in
                 Button(action: {
+                    // 只更新selectedGoalType，不直接修改goal对象
+                    // 这样可以避免SwiftData自动保存导致页面跳转
                     selectedGoalType = index
-                    // 更新目标类型
-                    switch index {
-                    case 0:
-                        goal.goalType = .life
-                    case 1:
-                        goal.goalType = .yearly
-                    case 2:
-                        goal.goalType = .shortTerm
-                    default:
-                        break
-                    }
-                    // 更新修改时间
-                    goal.modifyTime = Date()
-                    // 不立即保存，等待用户点击右上角的保存按钮
                 }) {
                     Text(goalTypes[index])
                 }
@@ -716,20 +716,9 @@ struct GoalDetailView: View {
                         Menu {
                             ForEach(0..<goalTypes.count, id: \.self) { index in
                                 Button(action: {
+                                    // 只更新selectedGoalType，不直接修改goal对象
+                                    // 这样可以避免SwiftData自动保存导致页面跳转
                                     selectedGoalType = index
-                                    // 更新目标类型
-                                    switch index {
-                                    case 0:
-                                        goal.goalType = .life
-                                    case 1:
-                                        goal.goalType = .yearly
-                                    case 2:
-                                        goal.goalType = .shortTerm
-                                    default:
-                                        break
-                                    }
-                                    // 更新修改时间
-                                    goal.modifyTime = Date()
                                 }) {
                                     Text(goalTypes[index])
                                 }
