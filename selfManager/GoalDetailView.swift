@@ -388,6 +388,18 @@ struct GoalDetailView: View {
     // 初始化方法
     init(goal: Goal) {
         _goal = State(initialValue: goal)
+        
+        // 根据goal.goalType初始化selectedGoalType
+        let initialGoalType: Int
+        switch goal.goalType {
+        case .life:
+            initialGoalType = 0
+        case .yearly:
+            initialGoalType = 1
+        case .shortTerm:
+            initialGoalType = 2
+        }
+        _selectedGoalType = State(initialValue: initialGoalType)
     }
     
     // 处理保存目标编辑
