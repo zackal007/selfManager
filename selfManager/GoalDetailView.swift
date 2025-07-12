@@ -59,10 +59,18 @@ struct GoalDetailView: View {
     
     // 截止日期视图
     private var dueDateView: some View {
-        HStack(spacing: 4) {
-            Text("截止日期: ")
-                .font(.system(size: 14))
-                .foregroundColor(Color(UIColor.secondaryLabel))
+        HStack(spacing: 8) {
+            Image(systemName: "calendar")
+                .font(.system(size: 16))
+                .foregroundColor(Color(UIColor.systemBlue))
+                .frame(width: 24, height: 24)
+            
+            Text("截止日期")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(UIColor.label))
+            
+            Spacer()
+            
             Button(action: {
                 // 打开日期选择器
                 editingField = .dueDate
@@ -70,116 +78,141 @@ struct GoalDetailView: View {
                 showingDatePicker = true
             }) {
                 Text(formattedDueDate)
-                    .font(.system(size: 14))
+                    .font(.system(size: 15))
                     .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(15)
             }
             .buttonStyle(PlainButtonStyle())
         }
+        .padding(.horizontal, 16)
     }
     
     // 子任务视图
     private var tasksView: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("子任务:")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(UIColor.secondaryLabel))
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-            
-            ForEach(goal.tasks.indices, id: \.self) { index in
-                let task = goal.tasks[index]
-                HStack(spacing: 12) {
-                    // 复选框（参考备忘录样式）
-                    Button(action: {
-                        // 切换任务完成状态
-                        goal.tasks[index].isCompleted.toggle()
-                        goal.modifyTime = Date()
-                        
-                        do {
-                            try modelContext.save()
-                        } catch {
-                            print("Failed to save task update: \(error)")
-                        }
-                    }) {
-                        ZStack {
-                            Circle()
-                                .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                .frame(width: 22, height: 22)
-                            
-                            if task.isCompleted {
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 22, height: 22)
-                                
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    // 任务名称
-                    Text(task.title)
-                        .font(.system(size: 16))
-                        .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                        .strikethrough(task.isCompleted)
-                    
-                    Spacer()
-                    
-                    // 删除按钮
-                    Button(action: {
-                        // 删除任务
-                        let taskToDelete = goal.tasks[index]
-                        goal.tasks.remove(at: index)
-                        modelContext.delete(taskToDelete)
-                        goal.modifyTime = Date()
-                        
-                        do {
-                            try modelContext.save()
-                        } catch {
-                            print("Failed to delete task: \(error)")
-                        }
-                    }) {
-                        Image(systemName: "trash")
+            HStack {
+                Image(systemName: "checklist")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .frame(width: 24, height: 24)
+                
+                Text("子任务")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+                
+                Spacer()
+                
+                // 添加任务按钮
+                Button(action: {
+                    showAddTaskSheet = true
+                }) {
+                    HStack(spacing: 4) {
+                        Text("添加")
                             .font(.system(size: 14))
-                            .foregroundColor(Color(UIColor.systemRed))
+                        Image(systemName: "plus")
+                            .font(.system(size: 12))
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(15)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .buttonStyle(PlainButtonStyle())
             }
+            .padding(.horizontal, 16)
             
-            // 添加任务按钮
-            Button(action: {
-                showAddTaskSheet = true
-            }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 16))
-                    
-                    Text("添加任务")
-                        .font(.system(size: 16))
+            if goal.tasks.isEmpty {
+                Text("暂无子任务")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 20)
+                    .padding(.horizontal, 16)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(goal.tasks.indices, id: \.self) { index in
+                        let task = goal.tasks[index]
+                        HStack(spacing: 12) {
+                            // 复选框（参考备忘录样式）
+                            Button(action: {
+                                // 切换任务完成状态
+                                goal.tasks[index].isCompleted.toggle()
+                                goal.modifyTime = Date()
+                                
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    print("Failed to save task update: \(error)")
+                                }
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                                        .frame(width: 22, height: 22)
+                                    
+                                    if task.isCompleted {
+                                        Circle()
+                                            .fill(Color.blue)
+                                            .frame(width: 22, height: 22)
+                                        
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            // 任务名称
+                            Text(task.title)
+                                .font(.system(size: 15))
+                                .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                .strikethrough(task.isCompleted)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            // 删除按钮
+                            Button(action: {
+                                // 删除任务
+                                let taskToDelete = goal.tasks[index]
+                                goal.tasks.remove(at: index)
+                                modelContext.delete(taskToDelete)
+                                goal.modifyTime = Date()
+                                
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    print("Failed to delete task: \(error)")
+                                }
+                            }) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(UIColor.systemRed))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(10)
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(8)
+                    }
                 }
-                .foregroundColor(Color(UIColor.systemBlue))
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
             }
-            .buttonStyle(PlainButtonStyle())
         }
     }
     
     // 上级目标和子目标视图
     private var projectsView: some View {
-        HStack(spacing: 12) {
+        VStack(spacing: 20) {
             // 上级目标
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("上级目标:")
+                    Text("上级目标")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .foregroundColor(Color(UIColor.label))
                     
                     Spacer()
                     
@@ -187,20 +220,40 @@ struct GoalDetailView: View {
                     Button(action: {
                         showUpperGoalSelector = true
                     }) {
-                        Image(systemName: "plus.circle")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(UIColor.systemBlue))
+                        HStack(spacing: 4) {
+                            Text("添加")
+                                .font(.system(size: 14))
+                            Image(systemName: "plus")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(15)
                     }
                 }
                 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
+                if goal.upperProject.isEmpty {
+                    Text("暂无上级目标")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                } else {
+                    VStack(spacing: 10) {
                         ForEach(goal.upperProject, id: \.self) { project in
                             HStack {
-                                // 目标名称
-                                Text(project)
+                                // 目标图标
+                                Image(systemName: "arrow.up.forward")
                                     .font(.system(size: 14))
                                     .foregroundColor(Color(UIColor.systemBlue))
+                                    .frame(width: 24, height: 24)
+                                
+                                // 目标名称
+                                Text(project)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(Color(UIColor.label))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 
                                 // 删除按钮
@@ -219,28 +272,29 @@ struct GoalDetailView: View {
                                     }
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 14))
+                                        .font(.system(size: 16))
                                         .foregroundColor(Color(UIColor.systemGray3))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
+                            .padding(10)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(8)
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
-            .padding(12)
-            .background(Color(UIColor.systemBlue).opacity(0.1))
-            .cornerRadius(12)
-            .frame(maxWidth: .infinity)
-            .frame(height: 150)
+            .padding(.horizontal, 16)
+            
+            Divider()
+                .padding(.horizontal, 16)
             
             // 子目标
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("子目标:")
+                    Text("子目标")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .foregroundColor(Color(UIColor.label))
                     
                     Spacer()
                     
@@ -248,20 +302,40 @@ struct GoalDetailView: View {
                     Button(action: {
                         showSubGoalSelector = true
                     }) {
-                        Image(systemName: "plus.circle")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(UIColor.systemBlue))
+                        HStack(spacing: 4) {
+                            Text("添加")
+                                .font(.system(size: 14))
+                            Image(systemName: "plus")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(15)
                     }
                 }
                 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
+                if goal.subProject.isEmpty {
+                    Text("暂无子目标")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                } else {
+                    VStack(spacing: 10) {
                         ForEach(goal.subProject, id: \.self) { project in
                             HStack {
+                                // 目标图标
+                                Image(systemName: "arrow.down.forward")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(UIColor.systemGreen))
+                                    .frame(width: 24, height: 24)
+                                
                                 // 目标名称
                                 Text(project)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .font(.system(size: 15))
+                                    .foregroundColor(Color(UIColor.label))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 
                                 // 删除按钮
@@ -280,24 +354,20 @@ struct GoalDetailView: View {
                                     }
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 14))
+                                        .font(.system(size: 16))
                                         .foregroundColor(Color(UIColor.systemGray3))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
+                            .padding(10)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(8)
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
-            .padding(12)
-            .background(Color(UIColor.systemBlue).opacity(0.1))
-            .cornerRadius(12)
-            .frame(maxWidth: .infinity)
-            .frame(height: 150)
+            .padding(.horizontal, 16)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 16)
     }
     private var formattedCreateDate: String {
         let dateFormatter = DateFormatter()
@@ -611,41 +681,329 @@ struct GoalDetailView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // 滚动内容
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    // 顶部留白（为固定头部预留空间）
-                    Color.clear.frame(height: 220) // 根据固定头部的高度调整
+        ScrollView {
+            VStack(spacing: 20) {
+                // 目标信息卡片
+                VStack(alignment: .leading, spacing: 16) {
+                    // 目标名称和进度
+                    goalNameProgressView
                     
-                    // 截止日期（移到tag下方）
-                    dueDateView
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
-                    
-                    // 上级目标和子目标
-                    projectsView
-                    
-                    // 子任务
-                    tasksView
-                    
-                    // 底部删除按钮
-                    Button(action: {
-                        showDeleteAlert = true
-                    }) {
-                        Text("删除目标")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.red)
-                            .cornerRadius(8)
+                    // 目标类型
+                    HStack {
+                        Image(systemName: "tag")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .frame(width: 24, height: 24)
+                        
+                        Text("目标类型")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.label))
+                        
+                        Spacer()
+                        
+                        Menu {
+                            ForEach(0..<goalTypes.count, id: \.self) { index in
+                                Button(action: {
+                                    selectedGoalType = index
+                                    // 更新目标类型
+                                    switch index {
+                                    case 0:
+                                        goal.goalType = .life
+                                    case 1:
+                                        goal.goalType = .yearly
+                                    case 2:
+                                        goal.goalType = .shortTerm
+                                    default:
+                                        break
+                                    }
+                                    // 更新修改时间
+                                    goal.modifyTime = Date()
+                                }) {
+                                    Text(goalTypes[index])
+                                }
+                            }
+                        } label: {
+                            Text(goalTypes[selectedGoalType])
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                        }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 24)
-                    .padding(.bottom, 16)
+                    
+                    // 目标描述
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "text.alignleft")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            
+                            Text("目标描述")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        
+                        Button(action: {
+                            editingField = .goalDescription
+                            editingValue = goal.goalDescription
+                            showEditSheet = true
+                        }) {
+                            Text(goal.goalDescription)
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.label))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 标签
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "tag.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            
+                            Text("标签")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            // 添加标签按钮
+                            Button(action: {
+                                editingField = .tag
+                                editingValue = ""
+                                showEditSheet = true
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("添加")
+                                        .font(.system(size: 14))
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 12))
+                                }
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        
+                        if goal.tags.isEmpty {
+                            Text("暂无标签")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.tertiaryLabel))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 16)
+                        } else {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(goal.tags, id: \.self) { tag in
+                                        HStack(spacing: 4) {
+                                            Text("#")
+                                                .foregroundColor(Color(UIColor.systemBlue))
+                                            Text(tag)
+                                                .foregroundColor(Color(UIColor.systemBlue))
+                                            
+                                            // 删除标签按钮
+                                            Button(action: {
+                                                // 删除标签
+                                                if let index = goal.tags.firstIndex(of: tag) {
+                                                    goal.tags.remove(at: index)
+                                                    // 更新修改时间
+                                                    goal.modifyTime = Date()
+                                                    // 保存更改
+                                                    do {
+                                                        try modelContext.save()
+                                                    } catch {
+                                                        print("Failed to save tag deletion: \(error)")
+                                                    }
+                                                }
+                                            }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(Color(UIColor.systemGray3))
+                                            }
+                                            .buttonStyle(PlainButtonStyle())
+                                        }
+                                        .font(.system(size: 14, weight: .medium))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                                        .cornerRadius(12)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 5)
+                            }
+                            .frame(height: 40)
+                        }
+                    }
+                    
+                    // 截止日期
+                    dueDateView
+                    
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
                 }
-              
+                .padding(.vertical, 16)
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                
+                // 上级目标和子目标卡片
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("目标关联")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                        .padding(.horizontal, 16)
+                    
+                    projectsView
+                }
+                .padding(.vertical, 16)
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                
+                // 子任务卡片
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("子任务")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                        .padding(.horizontal, 16)
+                    
+                    // 子任务列表
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(goal.tasks.indices, id: \.self) { index in
+                            let task = goal.tasks[index]
+                            HStack(spacing: 12) {
+                                // 复选框
+                                Button(action: {
+                                    goal.tasks[index].isCompleted.toggle()
+                                    goal.modifyTime = Date()
+                                    
+                                    do {
+                                        try modelContext.save()
+                                    } catch {
+                                        print("Failed to save task update: \(error)")
+                                    }
+                                }) {
+                                    ZStack {
+                                        Circle()
+                                            .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                                            .frame(width: 22, height: 22)
+                                        
+                                        if task.isCompleted {
+                                            Circle()
+                                                .fill(Color.blue)
+                                                .frame(width: 22, height: 22)
+                                            
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                // 任务名称
+                                Text(task.title)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                    .strikethrough(task.isCompleted)
+                                
+                                Spacer()
+                                
+                                // 删除按钮
+                                Button(action: {
+                                    let taskToDelete = goal.tasks[index]
+                                    goal.tasks.remove(at: index)
+                                    modelContext.delete(taskToDelete)
+                                    goal.modifyTime = Date()
+                                    
+                                    do {
+                                        try modelContext.save()
+                                    } catch {
+                                        print("Failed to delete task: \(error)")
+                                    }
+                                }) {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Color(UIColor.systemRed))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            
+                            if index < goal.tasks.count - 1 {
+                                Divider()
+                                    .padding(.leading, 50)
+                                    .padding(.trailing, 16)
+                            }
+                        }
+                        
+                        // 添加任务按钮
+                        Button(action: {
+                            showAddTaskSheet = true
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 16))
+                                
+                                Text("添加任务")
+                                    .font(.system(size: 16))
+                            }
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                            .padding(.bottom, 8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.vertical, 16)
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                
+                // 底部删除按钮
+                Button(action: {
+                    showDeleteAlert = true
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16))
+                        Text("删除目标")
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(Color.red)
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
             }
         }
         .background(Color(UIColor.systemGroupedBackground))
@@ -673,8 +1031,8 @@ struct GoalDetailView: View {
             EditFormView(editingField: $editingField, editingValue: $editingValue, editingProgress: $editingProgress, onSave: handleSaveGoalEdit)
         }
         .sheet(isPresented: $showingDatePicker) {
-                DatePickerView(selectedDate: $selectedDate, isPresented: $showingDatePicker, goal: goal)
-            }
+            DatePickerView(selectedDate: $selectedDate, isPresented: $showingDatePicker, goal: goal)
+        }
         .sheet(isPresented: $showAddTaskSheet) {
             AddTaskView(goalId: goal.id.uuidString)
         }
@@ -694,7 +1052,6 @@ struct GoalDetailView: View {
                 secondaryButton: .cancel(Text("取消"))
             )
         }
-        .overlay(headerView, alignment: .top)
         .overlay(
             VStack {
                 Spacer()
@@ -704,15 +1061,21 @@ struct GoalDetailView: View {
                         // 点击hit按钮的操作
                     }) {
                         Image(systemName: "flame.fill")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 48, height: 48) // 原来60*0.8=48
-                            .background(Color.blue)
+                            .frame(width: 56, height: 56)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                             .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                            .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                     }
-                    .padding(.trailing, 20)
-                    .padding(.bottom, 20)
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 32)
                 }
             }
         )
