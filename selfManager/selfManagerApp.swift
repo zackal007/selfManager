@@ -22,8 +22,8 @@ struct selfManagerApp: App {
             let schema = Schema(versionedSchema: ModelSchemaV2.self)
             let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             
-            // 创建包含Goal、GoalTask和Record模型的容器
-            sharedModelContainer = try ModelContainer(for: Goal.self, GoalTask.self, Item.self, Record.self, configurations: modelConfiguration)
+            // 创建包含Goal、GoalTask、Record和Contact模型的容器
+            sharedModelContainer = try ModelContainer(for: Goal.self, GoalTask.self, Item.self, Record.self, Contact.self, configurations: modelConfiguration)
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -52,6 +52,13 @@ struct selfManagerApp: App {
                         Text("记录")
                     }
                     .tag(2)
+                
+                ContactView(selectedTab: $selectedTab)
+                    .tabItem {
+                        Image(systemName: "person.3.fill")
+                        Text("人脉")
+                    }
+                    .tag(3)
             }
         }
         .modelContainer(sharedModelContainer)

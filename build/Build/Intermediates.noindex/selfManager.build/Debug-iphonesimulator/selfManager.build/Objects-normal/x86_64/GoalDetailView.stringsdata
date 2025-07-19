@@ -4,42 +4,82 @@
     "Localizable": [
       {
         "comment": "",
-        "key": "截止日期: ",
+        "key": "截止日期",
         "location": {
           "startingColumn": 18,
-          "startingLine": 63
+          "startingLine": 68
         }
       },
       {
         "comment": "",
-        "key": "子任务:",
+        "key": "暂无子任务",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 83
+          "startingColumn": 22,
+          "startingLine": 129
         }
       },
       {
         "comment": "",
-        "key": "添加任务",
+        "key": "子任务",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无上级目标",
         "location": {
           "startingColumn": 26,
-          "startingLine": 162
+          "startingLine": 238
         }
       },
       {
         "comment": "",
-        "key": "上级目标:",
+        "key": "上级目标",
         "location": {
           "startingColumn": 26,
-          "startingLine": 180
+          "startingLine": 213
         }
       },
       {
         "comment": "",
-        "key": "子目标:",
+        "key": "添加",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 224
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无子目标",
         "location": {
           "startingColumn": 26,
-          "startingLine": 241
+          "startingLine": 320
+        }
+      },
+      {
+        "comment": "",
+        "key": "子目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 295
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 306
         }
       },
       {
@@ -47,7 +87,7 @@
         "key": "#",
         "location": {
           "startingColumn": 30,
-          "startingLine": 458
+          "startingLine": 556
         }
       },
       {
@@ -55,7 +95,7 @@
         "key": "%lld%%",
         "location": {
           "startingColumn": 22,
-          "startingLine": 550
+          "startingLine": 648
         }
       },
       {
@@ -63,7 +103,87 @@
         "key": "",
         "location": {
           "startingColumn": 29,
-          "startingLine": 637
+          "startingLine": 1015
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标类型",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 714
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标描述",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 750
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无标签",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 811
+        }
+      },
+      {
+        "comment": "",
+        "key": "标签",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 783
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 796
+        }
+      },
+      {
+        "comment": "",
+        "key": "#",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 822
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标关联",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 877
+        }
+      },
+      {
+        "comment": "",
+        "key": "子任务",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 892
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加任务",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 976
+        }
+      },
+      {
+        "comment": "",
+        "key": "删除目标",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1000
         }
       },
       {
@@ -71,15 +191,15 @@
         "key": "返回",
         "location": {
           "startingColumn": 26,
-          "startingLine": 645
+          "startingLine": 1023
         }
       },
       {
         "comment": "",
         "key": "保存",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 661
+          "startingColumn": 22,
+          "startingLine": 1031
         }
       },
       {
@@ -87,7 +207,7 @@
         "key": "确认删除",
         "location": {
           "startingColumn": 29,
-          "startingLine": 683
+          "startingLine": 1052
         }
       },
       {
@@ -95,7 +215,7 @@
         "key": "确定要删除目标 \"%@\" 吗？此操作将同时删除所有关联的任务，且无法恢复。",
         "location": {
           "startingColumn": 31,
-          "startingLine": 684
+          "startingLine": 1053
         }
       },
       {
@@ -103,7 +223,7 @@
         "key": "删除",
         "location": {
           "startingColumn": 50,
-          "startingLine": 685
+          "startingLine": 1054
         }
       },
       {
@@ -111,7 +231,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 47,
-          "startingLine": 688
+          "startingLine": 1057
         }
       },
       {
@@ -119,7 +239,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 33,
-          "startingLine": 779
+          "startingLine": 1153
         }
       },
       {
@@ -127,7 +247,7 @@
         "key": "保存",
         "location": {
           "startingColumn": 34,
-          "startingLine": 782
+          "startingLine": 1156
         }
       },
       {
@@ -135,7 +255,7 @@
         "key": "请使用日期选择器设置截止日期",
         "location": {
           "startingColumn": 26,
-          "startingLine": 766
+          "startingLine": 1140
         }
       },
       {
@@ -143,7 +263,7 @@
         "key": "未知编辑类型",
         "location": {
           "startingColumn": 26,
-          "startingLine": 774
+          "startingLine": 1148
         }
       },
       {
@@ -151,7 +271,7 @@
         "key": "请选择要编辑的内容",
         "location": {
           "startingColumn": 26,
-          "startingLine": 771
+          "startingLine": 1145
         }
       },
       {
@@ -159,7 +279,7 @@
         "key": "目标名称",
         "location": {
           "startingColumn": 31,
-          "startingLine": 731
+          "startingLine": 1105
         }
       },
       {
@@ -167,7 +287,7 @@
         "key": "标签",
         "location": {
           "startingColumn": 31,
-          "startingLine": 750
+          "startingLine": 1124
         }
       },
       {
@@ -175,7 +295,7 @@
         "key": "上级目标",
         "location": {
           "startingColumn": 31,
-          "startingLine": 754
+          "startingLine": 1128
         }
       },
       {
@@ -183,7 +303,7 @@
         "key": "子目标",
         "location": {
           "startingColumn": 31,
-          "startingLine": 758
+          "startingLine": 1132
         }
       },
       {
@@ -191,7 +311,7 @@
         "key": "任务",
         "location": {
           "startingColumn": 31,
-          "startingLine": 762
+          "startingLine": 1136
         }
       },
       {
@@ -199,7 +319,7 @@
         "key": "%lld%%",
         "location": {
           "startingColumn": 30,
-          "startingLine": 740
+          "startingLine": 1114
         }
       },
       {
@@ -207,7 +327,7 @@
         "key": "添加任务",
         "location": {
           "startingColumn": 33,
-          "startingLine": 838
+          "startingLine": 1212
         }
       },
       {
@@ -215,7 +335,7 @@
         "key": "任务信息",
         "location": {
           "startingColumn": 38,
-          "startingLine": 834
+          "startingLine": 1208
         }
       },
       {
@@ -223,7 +343,7 @@
         "key": "任务标题",
         "location": {
           "startingColumn": 31,
-          "startingLine": 835
+          "startingLine": 1209
         }
       },
       {
@@ -231,7 +351,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 26,
-          "startingLine": 844
+          "startingLine": 1218
         }
       },
       {
@@ -239,7 +359,7 @@
         "key": "添加",
         "location": {
           "startingColumn": 26,
-          "startingLine": 850
+          "startingLine": 1224
         }
       },
       {
@@ -247,7 +367,7 @@
         "key": "选择截止日期",
         "location": {
           "startingColumn": 33,
-          "startingLine": 891
+          "startingLine": 1265
         }
       },
       {
@@ -255,7 +375,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 33,
-          "startingLine": 893
+          "startingLine": 1267
         }
       },
       {
@@ -263,7 +383,7 @@
         "key": "确定",
         "location": {
           "startingColumn": 34,
-          "startingLine": 896
+          "startingLine": 1270
         }
       },
       {
@@ -271,7 +391,7 @@
         "key": "选择日期",
         "location": {
           "startingColumn": 21,
-          "startingLine": 884
+          "startingLine": 1258
         }
       },
       {
@@ -279,7 +399,7 @@
         "key": "选择目标",
         "location": {
           "startingColumn": 33,
-          "startingLine": 982
+          "startingLine": 1356
         }
       },
       {
@@ -287,7 +407,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 33,
-          "startingLine": 984
+          "startingLine": 1358
         }
       },
       {
@@ -295,7 +415,7 @@
         "key": "保存",
         "location": {
           "startingColumn": 34,
-          "startingLine": 987
+          "startingLine": 1361
         }
       },
       {
@@ -303,7 +423,7 @@
         "key": "搜索目标",
         "location": {
           "startingColumn": 27,
-          "startingLine": 937
+          "startingLine": 1311
         }
       }
     ]
