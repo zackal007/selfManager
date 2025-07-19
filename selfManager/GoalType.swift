@@ -16,10 +16,12 @@ enum GoalType: String, Codable, CaseIterable {
     case yearly = "年度目标"
     /// 短期目标
     case shortTerm = "短期目标"
+    /// 习惯
+    case habit = "习惯"
     
     /// 获取所有目标类型的数组
     static var allCases: [GoalType] {
-        return [.life, .yearly, .shortTerm]
+        return [.life, .yearly, .shortTerm, .habit]
     }
     
     /// 根据字符串创建GoalType，如果无法匹配则返回短期目标
@@ -33,6 +35,8 @@ enum GoalType: String, Codable, CaseIterable {
             return .life
         } else if category.contains("年度") {
             return .yearly
+        } else if category.contains("习惯") {
+            return .habit
         } else {
             return .shortTerm
         }

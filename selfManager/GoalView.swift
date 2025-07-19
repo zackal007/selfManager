@@ -178,6 +178,13 @@ struct GoalView: View {
         return sortGoals(categorizeGoals(lifeGoals))
     }
     
+    private var processedHabitGoals: [Goal] {
+        let habitGoals = allGoals.filter { goal in
+            return goal.goalType == .habit
+        }
+        return sortGoals(categorizeGoals(habitGoals))
+    }
+    
     // 根据分类选项对目标进行分类
     private func categorizeGoals(_ goals: [Goal]) -> [Goal] {
         switch categoryOption {
@@ -258,6 +265,7 @@ struct GoalView: View {
                         Text("人生").tag(0)
                         Text("年度").tag(1)
                         Text("短期").tag(2)
+                        Text("习惯").tag(3)
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
@@ -354,7 +362,7 @@ struct GoalView: View {
                         VStack(spacing: 16) {
                             // 类别标题
                             HStack {
-                                Text(selectedSegment == 0 ? "类别1" : (selectedSegment == 1 ? "年初" : "类别1"))
+                                Text(getCategoryTitle(for: selectedSegment, category: 1))
                                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                                     .foregroundColor(.primary)
                                     .padding(.vertical, 6)
@@ -394,7 +402,7 @@ struct GoalView: View {
                         
                         // 类别标题
                         HStack {
-                            Text(selectedSegment == 0 ? "类别2" : (selectedSegment == 1 ? "年中" : "类别2"))
+                            Text(getCategoryTitle(for: selectedSegment, category: 2))
                                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                                 .foregroundColor(.primary)
                                 .padding(.vertical, 6)
@@ -483,6 +491,8 @@ struct GoalView: View {
             goals = processedYearGoals
         case 2:
             goals = processedPeriodGoals
+        case 3:
+            goals = processedHabitGoals
         default:
             goals = []
         }
@@ -493,6 +503,22 @@ struct GoalView: View {
             return Array(goals.prefix(half))
         } else {
             return Array(goals.suffix(goals.count - half))
+        }
+    }
+    
+    // 获取类别标题
+    private func getCategoryTitle(for segment: Int, category: Int) -> String {
+        switch segment {
+        case 0: // 人生目标
+            return category == 1 ? "长期规划" : "核心价值"
+        case 1: // 年度目标
+            return category == 1 ? "年初" : "年中"
+        case 2: // 短期目标
+            return category == 1 ? "进行中" : "待开始"
+        case 3: // 习惯
+            return category == 1 ? "日常习惯" : "培养中"
+        default:
+            return "类别\(category)"
         }
     }
 }
@@ -826,7 +852,7 @@ struct AddGoalView: View {
     @State private var successMessage = ""
     
     // 可选类别
-    private let categories = ["人生目标", "年度目标", "短期目标"]
+    private let categories = ["人生目标", "年度目标", "短期目标", "习惯"]
     
     var body: some View {
         ZStack {
@@ -945,6 +971,8 @@ struct AddGoalView: View {
                 selectedSegment = 1
             case .shortTerm:
                 selectedSegment = 2
+            case .habit:
+                selectedSegment = 3
             }
             
             // 显示成功提示

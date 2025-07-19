@@ -398,6 +398,8 @@ struct GoalDetailView: View {
             initialGoalType = 1
         case .shortTerm:
             initialGoalType = 2
+        case .habit:
+            initialGoalType = 3
         }
         _selectedGoalType = State(initialValue: initialGoalType)
     }
@@ -449,6 +451,8 @@ struct GoalDetailView: View {
             goal.goalType = .yearly
         case 2:
             goal.goalType = .shortTerm
+        case 3:
+            goal.goalType = .habit
         default:
             break
         }
