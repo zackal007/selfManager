@@ -43,6 +43,9 @@ struct RecordView: View {
     // 当前周
     @State private var currentWeek: Int = 0
     
+    // 年份列表的基准年份（用于控制年份选择器显示的年份范围）
+    @State private var yearListBaseYear: Int = 0
+    
     // 初始化日期组件
     private func initDateComponents() {
         let cal = self.calendar
@@ -51,6 +54,8 @@ struct RecordView: View {
         currentDay = cal.component(.day, from: Date())
         currentQuarter = (cal.component(.month, from: Date()) - 1) / 3 + 1
         currentWeek = cal.component(.weekOfYear, from: Date())
+        // 设置年份列表的基准年份，使当前年份位于年份列表的中间位置（第2行中间）
+        yearListBaseYear = max(1, currentYear - 7) // 确保年份不小于1
     }
     
     // 控制日期选择器显示
@@ -241,6 +246,14 @@ struct RecordView: View {
                     if contentModified {
                         autoSaveRecord(recordType: oldValue)
                     }
+                    
+                    // 如果切换到年记，重置为当前系统时间并设置年份列表的基准年份
+                    if newValue == .yearly {
+                        currentDate = Date() // 重置为当前系统时间
+                        updateDateComponents() // 更新日期组件
+                        yearListBaseYear = max(1, currentYear - 7) // 确保年份不小于1
+                    }
+                    
                     // 当记录类型变化时，加载对应的记录
                     loadCurrentRecord()
                     // 重置修改状态
@@ -682,6 +695,8 @@ struct RecordView: View {
                                             loadCurrentRecord()
                                             // 重置修改状态
                                             contentModified = false
+                                            // 调整年份列表的基准年份
+                                            yearListBaseYear = max(1, yearListBaseYear - 5) // 确保年份不小于1
                                         }
                                 }) {
                                     Image(systemName: "chevron.left.2")
@@ -701,6 +716,8 @@ struct RecordView: View {
                                             loadCurrentRecord()
                                             // 重置修改状态
                                             contentModified = false
+                                            // 调整年份列表的基准年份
+                                            yearListBaseYear = max(1, yearListBaseYear - 1) // 确保年份不小于1
                                         }
                                 }) {
                                     Image(systemName: "chevron.left")
@@ -729,6 +746,8 @@ struct RecordView: View {
                                             loadCurrentRecord()
                                             // 重置修改状态
                                             contentModified = false
+                                            // 调整年份列表的基准年份
+                                            yearListBaseYear += 1
                                         }
                                 }) {
                                     Image(systemName: "chevron.right")
@@ -748,6 +767,8 @@ struct RecordView: View {
                                             loadCurrentRecord()
                                             // 重置修改状态
                                             contentModified = false
+                                            // 调整年份列表的基准年份
+                                            yearListBaseYear += 5
                                         }
                                 }) {
                                     Image(systemName: "chevron.right.2")
@@ -758,12 +779,11 @@ struct RecordView: View {
                             }
                             .padding(.horizontal, 8)
                             
-                            // 年份快速选择器 - 使用网格布局
+                            // 年份快速选择器 - 使用网格布局（3行，每行5个年份）
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 24), count: 5), spacing: 24) {
                                 let currentYear = self.calendar.component(.year, from: currentDate)
-                                let currentSystemYear = self.calendar.component(.year, from: Date())
-                                // 使用固定范围的年份，而不是基于当前选中年份的相对范围
-                                ForEach((currentSystemYear-10)...(currentSystemYear+10), id: \.self) { year in
+                                // 使用基于 yearListBaseYear 的范围，显示3行年份（共15个）
+                                ForEach(yearListBaseYear...(yearListBaseYear+14), id: \.self) { year in
                                     Button(action: {
                                             // 如果内容已修改，先保存当前记录
                                             if contentModified {
@@ -777,6 +797,7 @@ struct RecordView: View {
                                                 loadCurrentRecord()
                                                 // 重置修改状态
                                                 contentModified = false
+                                                // 注意：点击年份按钮时不改变 yearListBaseYear 的值
                                             }
                                     }) {
                                         ZStack {
@@ -784,7 +805,8 @@ struct RecordView: View {
                                                 RoundedRectangle(cornerRadius: 12)
                                                     .fill(Color.blue)
                                                     .frame(height: 36)
-                                            } else if self.calendar.component(.year, from: Date()) == year {
+                                            } else if self.calendar.component(.year, from: Date()) == year && 
+                                                     self.calendar.component(.year, from: Date()) != currentYear {
                                                 RoundedRectangle(cornerRadius: 12)
                                                     .stroke(Color.blue, lineWidth: 2)
                                                     .frame(height: 36)
@@ -1013,8 +1035,11 @@ struct RecordView: View {
     
     // 保存记录方法
     private func saveRecord() {
+        // 提取用户输入的内容（排除归拢内容）
+        let userContent = extractUserContent(from: recordContent, recordType: selectedRecordType)
+        
         // 检查内容是否为空
-        guard !recordContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard !userContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
         }
         
@@ -1084,7 +1109,7 @@ struct RecordView: View {
         // 创建新记录
         let newRecord = Record(
             title: recordTitle,
-            content: recordContent,
+            content: userContent, // 只保存用户输入的内容
             recordType: selectedRecordType,
             year: currentYear,
             month: selectedRecordType == .daily || selectedRecordType == .monthly ? currentMonth : nil,
@@ -1111,12 +1136,48 @@ struct RecordView: View {
         
         // 更新当前记录
         currentRecord = newRecord
+        
+        // 重新加载记录，以显示归拢内容
+        loadCurrentRecord()
+    }
+    
+    // 从记录内容中提取用户输入的部分（排除归拢内容）
+    private func extractUserContent(from content: String, recordType: RecordType) -> String {
+        // 如果是日记，直接返回全部内容
+        if recordType == .daily {
+            return content
+        }
+        
+        // 对于其他类型的记录，查找归拢标记
+        var userContent = content
+        
+        // 根据记录类型查找对应的归拢标记
+        let markers = [
+            "--- 本周日记归纳 ---",
+            "--- 本月周记归纳 ---",
+            "--- 本季度月记归纳 ---",
+            "--- 本年季记归纳 ---"
+        ]
+        
+        // 查找第一个出现的归拢标记
+        for marker in markers {
+            if let range = userContent.range(of: marker) {
+                // 只保留标记之前的内容（用户输入的部分）
+                userContent = String(userContent[..<range.lowerBound])
+                break
+            }
+        }
+        
+        return userContent
     }
     
     // 自动保存记录，不显示保存成功提示
     private func autoSaveRecord(recordType: RecordType) {
+        // 提取用户输入的内容（排除归拢内容）
+        let userContent = extractUserContent(from: recordContent, recordType: recordType)
+        
         // 检查内容是否为空
-        guard !recordContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard !userContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
         }
         
@@ -1186,7 +1247,7 @@ struct RecordView: View {
         // 创建新记录
         let newRecord = Record(
             title: recordTitle,
-            content: recordContent,
+            content: userContent, // 只保存用户输入的内容
             recordType: recordType,
             year: currentYear,
             month: recordType == .daily || recordType == .monthly ? currentMonth : nil,
@@ -1204,19 +1265,148 @@ struct RecordView: View {
         currentRecord = newRecord
     }
     
+    // 获取下一级记录内容
+    private func getLowerLevelRecordsContent(recordType: RecordType, year: Int, month: Int? = nil, week: Int? = nil, quarter: Int? = nil) -> String {
+        var lowerLevelRecords: [Record] = []
+        var contentBuilder = ""
+        
+        switch recordType {
+        case .weekly: // 获取周记对应的日记
+            guard let week = week else { return "" }
+            
+            // 获取该周的所有日记
+            lowerLevelRecords = allRecords.filter { record in
+                record.recordType == .daily &&
+                record.year == year &&
+                record.week == week
+            }
+            
+            if !lowerLevelRecords.isEmpty {
+                contentBuilder += "\n\n--- 本周日记归纳 ---\n"
+                
+                // 按日期排序
+                let sortedRecords = lowerLevelRecords.sorted { record1, record2 in
+                    guard let day1 = record1.day, let day2 = record2.day else { return false }
+                    return day1 < day2
+                }
+                
+                for record in sortedRecords {
+                    if let day = record.day, let month = record.month {
+                        contentBuilder += "\n【\(month)月\(day)日】\(record.title)\n"
+                        contentBuilder += record.content
+                        contentBuilder += "\n"
+                    }
+                }
+            }
+            
+        case .monthly: // 获取月记对应的周记
+            guard let month = month else { return "" }
+            
+            // 获取该月的所有周记
+            lowerLevelRecords = allRecords.filter { record in
+                record.recordType == .weekly &&
+                record.year == year &&
+                calendar.component(.month, from: calendar.date(from: DateComponents(year: year, weekday: 1, weekOfYear: record.week)) ?? Date()) == month
+            }
+            
+            if !lowerLevelRecords.isEmpty {
+                contentBuilder += "\n\n--- 本月周记归纳 ---\n"
+                
+                // 按周排序
+                let sortedRecords = lowerLevelRecords.sorted { record1, record2 in
+                    guard let week1 = record1.week, let week2 = record2.week else { return false }
+                    return week1 < week2
+                }
+                
+                for record in sortedRecords {
+                    if let week = record.week {
+                        contentBuilder += "\n【第\(week)周】\(record.title)\n"
+                        contentBuilder += record.content
+                        contentBuilder += "\n"
+                    }
+                }
+            }
+            
+        case .quarterly: // 获取季记对应的月记
+            guard let quarter = quarter else { return "" }
+            
+            // 计算季度对应的月份范围
+            let startMonth = (quarter - 1) * 3 + 1
+            let endMonth = startMonth + 2
+            
+            // 获取该季度的所有月记
+            lowerLevelRecords = allRecords.filter { record in
+                record.recordType == .monthly &&
+                record.year == year &&
+                record.month != nil &&
+                record.month! >= startMonth &&
+                record.month! <= endMonth
+            }
+            
+            if !lowerLevelRecords.isEmpty {
+                contentBuilder += "\n\n--- 本季度月记归纳 ---\n"
+                
+                // 按月份排序
+                let sortedRecords = lowerLevelRecords.sorted { record1, record2 in
+                    guard let month1 = record1.month, let month2 = record2.month else { return false }
+                    return month1 < month2
+                }
+                
+                for record in sortedRecords {
+                    if let month = record.month {
+                        contentBuilder += "\n【\(month)月】\(record.title)\n"
+                        contentBuilder += record.content
+                        contentBuilder += "\n"
+                    }
+                }
+            }
+            
+        case .yearly: // 获取年记对应的季记
+            // 获取该年的所有季记
+            lowerLevelRecords = allRecords.filter { record in
+                record.recordType == .quarterly &&
+                record.year == year
+            }
+            
+            if !lowerLevelRecords.isEmpty {
+                contentBuilder += "\n\n--- 本年季记归纳 ---\n"
+                
+                // 按季度排序
+                let sortedRecords = lowerLevelRecords.sorted { record1, record2 in
+                    guard let quarter1 = record1.quarter, let quarter2 = record2.quarter else { return false }
+                    return quarter1 < quarter2
+                }
+                
+                for record in sortedRecords {
+                    if let quarter = record.quarter {
+                        contentBuilder += "\n【第\(quarter)季度】\(record.title)\n"
+                        contentBuilder += record.content
+                        contentBuilder += "\n"
+                    }
+                }
+            }
+            
+        default:
+            break
+        }
+        
+        return contentBuilder
+    }
+    
     // 加载当前选择日期的记录
     private func loadCurrentRecord() {
         // 根据记录类型和日期查找记录
         var filteredRecords: [Record] = []
+        let calendar = self.calendar
+        let year = calendar.component(.year, from: currentDate)
+        let month = calendar.component(.month, from: currentDate)
+        let day = calendar.component(.day, from: currentDate)
+        let week = calendar.component(.weekOfYear, from: currentDate)
+        let quarter = (month - 1) / 3 + 1
         
         switch selectedRecordType {
         case .daily: // 日记
             // 查找当前日期的日记
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            let month = calendar.component(.month, from: currentDate)
-            let day = calendar.component(.day, from: currentDate)
-            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .daily &&
                 record.year == year &&
@@ -1226,10 +1416,6 @@ struct RecordView: View {
             
         case .weekly: // 周记
             // 查找当前日期所在周的周记
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            let week = calendar.component(.weekOfYear, from: currentDate)
-            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .weekly &&
                 record.year == year &&
@@ -1238,10 +1424,6 @@ struct RecordView: View {
             
         case .monthly: // 月记
             // 查找当前日期所在月的月记
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            let month = calendar.component(.month, from: currentDate)
-            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .monthly &&
                 record.year == year &&
@@ -1250,11 +1432,6 @@ struct RecordView: View {
             
         case .quarterly: // 季记
             // 查找当前日期所在季度的季记
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            let month = calendar.component(.month, from: currentDate)
-            let quarter = (month - 1) / 3 + 1
-            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .quarterly &&
                 record.year == year &&
@@ -1263,9 +1440,6 @@ struct RecordView: View {
             
         case .yearly: // 年记
             // 查找当前日期所在年份的年记
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            
             filteredRecords = allRecords.filter { record in
                 record.recordType == .yearly &&
                 record.year == year
@@ -1277,11 +1451,51 @@ struct RecordView: View {
             currentRecord = latestRecord
             recordContent = latestRecord.content
             selectedMood = latestRecord.mood
+            
+            // 根据记录类型，添加下一级记录内容
+            var lowerLevelContent = ""
+            switch selectedRecordType {
+            case .weekly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .weekly, year: year, week: week)
+            case .monthly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .monthly, year: year, month: month)
+            case .quarterly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .quarterly, year: year, quarter: quarter)
+            case .yearly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .yearly, year: year)
+            default:
+                break
+            }
+            
+            // 如果有下一级记录内容，添加到当前记录内容中
+            if !lowerLevelContent.isEmpty {
+                recordContent += lowerLevelContent
+            }
         } else {
-            // 如果没有找到记录，则清空内容
+            // 如果没有找到记录，则清空内容，但仍然可以显示下一级记录内容
             currentRecord = nil
             recordContent = ""
             selectedMood = nil
+            
+            // 根据记录类型，添加下一级记录内容作为参考
+            var lowerLevelContent = ""
+            switch selectedRecordType {
+            case .weekly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .weekly, year: year, week: week)
+            case .monthly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .monthly, year: year, month: month)
+            case .quarterly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .quarterly, year: year, quarter: quarter)
+            case .yearly:
+                lowerLevelContent = getLowerLevelRecordsContent(recordType: .yearly, year: year)
+            default:
+                break
+            }
+            
+            // 如果有下一级记录内容，添加到当前记录内容中
+            if !lowerLevelContent.isEmpty {
+                recordContent = lowerLevelContent
+            }
         }
     }
 }
