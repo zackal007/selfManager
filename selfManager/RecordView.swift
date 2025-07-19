@@ -29,19 +29,29 @@ struct RecordView: View {
     @State private var currentDate = Date()
     
     // 当前年份
-    @State private var currentYear = Calendar.current.component(.year, from: Date())
+    @State private var currentYear: Int = 0
     
     // 当前月份
-    @State private var currentMonth = Calendar.current.component(.month, from: Date())
+    @State private var currentMonth: Int = 0
     
     // 当前日
-    @State private var currentDay = Calendar.current.component(.day, from: Date())
+    @State private var currentDay: Int = 0
     
     // 当前季度
-    @State private var currentQuarter = (Calendar.current.component(.month, from: Date()) - 1) / 3 + 1
+    @State private var currentQuarter: Int = 0
     
     // 当前周
-    @State private var currentWeek = Calendar.current.component(.weekOfYear, from: Date())
+    @State private var currentWeek: Int = 0
+    
+    // 初始化日期组件
+    private func initDateComponents() {
+        let cal = self.calendar
+        currentYear = cal.component(.year, from: Date())
+        currentMonth = cal.component(.month, from: Date())
+        currentDay = cal.component(.day, from: Date())
+        currentQuarter = (cal.component(.month, from: Date()) - 1) / 3 + 1
+        currentWeek = cal.component(.weekOfYear, from: Date())
+    }
     
     // 控制日期选择器显示
     @State private var showDatePicker = false
@@ -69,6 +79,7 @@ struct RecordView: View {
     // 初始化方法，接收selectedTab绑定
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
+        initDateComponents()
     }
     
     // 日历日期结构体
@@ -81,9 +92,16 @@ struct RecordView: View {
         let isCurrentMonth: Bool
     }
     
+    // 自定义日历配置，设置每周从周日开始
+    private var calendar: Calendar {
+        var calendar = Calendar.current
+        calendar.firstWeekday = 1 // 1表示周日，2表示周一
+        return calendar
+    }
+    
     // 生成当前月份的日期数组
     private func daysInMonth(for date: Date) -> [CalendarDay] {
-        let calendar = Calendar.current
+        let calendar = self.calendar
         
         // 获取当前月的第一天
         var components = calendar.dateComponents([.year, .month], from: date)
@@ -106,8 +124,8 @@ struct RecordView: View {
                 let dayDate = calendar.date(from: dateComponents)
                 
                 // 检查是否在当前选中日期的同一周内（针对周记）
-                let isInSelectedWeek = selectedRecordType == .weekly && dayDate != nil && 
-                    calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear)
+                let isInSameWeek = dayDate != nil ? calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear) : false
+                let isInSelectedWeek = selectedRecordType == .weekly && isInSameWeek
                 
                 daysInPreviousMonth.append(CalendarDay(
                     date: dayDate,
@@ -174,8 +192,8 @@ struct RecordView: View {
                 let dayDate = calendar.date(from: dateComponents)
                 
                 // 检查是否在当前选中日期的同一周内（针对周记）
-                let isInSelectedWeek = selectedRecordType == .weekly && dayDate != nil && 
-                    calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear)
+                let isInSameWeek = dayDate != nil ? calendar.isDate(dayDate!, equalTo: currentDate, toGranularity: .weekOfYear) : false
+                let isInSelectedWeek = selectedRecordType == .weekly && isInSameWeek
                 
                 days.append(CalendarDay(
                     date: dayDate,
@@ -225,19 +243,16 @@ struct RecordView: View {
                     VStack {
                         // 根据选择的记录类型显示不同的日期选择器
                         switch selectedRecordType {
-                    // 日记
                     case .daily: // 日记
                         VStack(spacing: 8) {
                             // 年月选择器
                             HStack {
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) {
+                                        if let newDate = self.calendar.date(byAdding: .month, value: -1, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
                                             loadCurrentRecord()
                                         }
-                                    }
                                 }) {
                                     Image(systemName: "chevron.left")
                                         .font(.system(size: 16, weight: .bold))
@@ -254,13 +269,11 @@ struct RecordView: View {
                                 Spacer()
                                 
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) {
+                                        if let newDate = self.calendar.date(byAdding: .month, value: 1, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
                                             loadCurrentRecord()
                                         }
-                                    }
                                 }) {
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 16, weight: .bold))
@@ -284,28 +297,30 @@ struct RecordView: View {
                             
                             // 日历网格
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
-                                ForEach(daysInMonth(for: currentDate), id: \ .id) { day in
+                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
                                     Button(action: {
                                         if day.date != nil {
-                                            withAnimation {
-                                                currentDate = day.date!
-                                                updateDateComponents()
-                                                loadCurrentRecord()
-                                            }
+                                            currentDate = day.date!
+                                            updateDateComponents()
+                                            loadCurrentRecord()
                                         }
                                     }) {
                                         Text(day.dayNumber)
-                                            .font(.system(size: 16, weight: day.isSelected ? .bold : .regular))
-                                            .foregroundColor(day.isSelected ? .white : (day.isToday ? Color.purple : (day.isCurrentMonth ? .primary : .secondary)))
-                                            .frame(width: 36, height: 36)
+                                            .font(.system(size: 16))
+                                            .fontWeight(day.isSelected ? .bold : .regular)
+                                            .foregroundColor(day.isSelected ? .white : (day.isToday ? .blue : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(height: 36)
+                                            .frame(maxWidth: .infinity)
                                             .background(
                                                 ZStack {
                                                     if day.isSelected {
                                                         Circle()
-                                                            .fill(Color.purple)
+                                                            .fill(Color.blue)
+                                                            .frame(width: 36, height: 36)
                                                     } else if day.isToday {
                                                         Circle()
-                                                            .stroke(Color.purple, lineWidth: 2)
+                                                            .stroke(Color.blue, lineWidth: 2)
+                                                            .frame(width: 36, height: 36)
                                                     }
                                                 }
                                             )
@@ -381,7 +396,7 @@ struct RecordView: View {
                             
                             // 周选择器 - 使用日历网格样式
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
-                                ForEach(daysInMonth(for: currentDate), id: \ .id) { day in
+                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
                                     Button(action: {
                                         if day.date != nil {
                                             withAnimation {
@@ -392,20 +407,26 @@ struct RecordView: View {
                                         }
                                     }) {
                                         Text(day.dayNumber)
-                                            .font(.system(size: 16, weight: day.isSelected ? .bold : .regular))
-                                            .foregroundColor(day.isSelected ? .white : (day.isToday ? Color.purple : (day.isCurrentMonth ? .primary : .secondary)))
-                                            .frame(width: 36, height: 36)
+                                            .font(.system(size: 16))
+                                            .fontWeight(day.isSelected ? .bold : .regular)
+                                            .foregroundColor(day.isSelected ? .white : (day.isToday ? .blue : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(height: 36)
+                                            .frame(maxWidth: .infinity)
                                             .background(
                                                 ZStack {
                                                     if day.isSelected {
                                                         Circle()
-                                                            .fill(Color.purple)
+                                                            .fill(Color.blue)
+                                                            .frame(width: 36, height: 36)
                                                     } else if day.isToday {
                                                         Circle()
-                                                            .stroke(Color.purple, lineWidth: 2)
+                                                            .stroke(Color.blue, lineWidth: 2)
+                                                            .frame(width: 36, height: 36)
                                                     }
                                                 }
                                             )
+                                    .font(.system(size: 16, weight: day.isSelected ? .bold : .regular))
+                                    .foregroundColor(day.isSelected ? .white : .primary)
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                     .disabled(day.date == nil)
@@ -423,12 +444,10 @@ struct RecordView: View {
                             // 年份选择器
                             HStack {
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: -1, to: currentDate) {
-                                            currentDate = newDate
-                                            updateDateComponents()
-                                            loadCurrentRecord()
-                                        }
+                                    if let newDate = self.calendar.date(byAdding: .year, value: -1, to: currentDate) {
+                                        currentDate = newDate
+                                        updateDateComponents()
+                                        loadCurrentRecord()
                                     }
                                 }) {
                                     Image(systemName: "chevron.left")
@@ -437,17 +456,15 @@ struct RecordView: View {
                                         .padding(8)
                                 }
                                 Spacer()
-                                Text("\(Calendar.current.component(.year, from: currentDate))年")
-                                    .font(.system(size: 24, weight: .bold))
+                                Text("\(self.calendar.component(.year, from: currentDate))年")
+                                    .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: 1, to: currentDate) {
-                                            currentDate = newDate
-                                            updateDateComponents()
-                                            loadCurrentRecord()
-                                        }
+                                    if let newDate = self.calendar.date(byAdding: .year, value: 1, to: currentDate) {
+                                        currentDate = newDate
+                                        updateDateComponents()
+                                        loadCurrentRecord()
                                     }
                                 }) {
                                     Image(systemName: "chevron.right")
@@ -461,25 +478,29 @@ struct RecordView: View {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 3), spacing: 24) {
                                 ForEach(1...12, id: \ .self) { month in
                                     Button(action: {
-                                        let calendar = Calendar.current
-                                        var components = calendar.dateComponents([.year, .month, .day], from: currentDate)
+                                        var components = self.calendar.dateComponents([.year, .month, .day], from: currentDate)
                                         components.month = month
                                         components.day = 1
-                                        if let newDate = calendar.date(from: components) {
+                                        if let newDate = self.calendar.date(from: components) {
                                             currentDate = newDate
                                             updateDateComponents()
                                             loadCurrentRecord()
                                         }
                                     }) {
                                         ZStack {
-                                            if Calendar.current.component(.month, from: currentDate) == month {
-                                                RoundedRectangle(cornerRadius: 16)
-                                                    .fill(Color.purple)
-                                                    .frame(height: 56)
+                                            if self.calendar.component(.month, from: currentDate) == month {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(Color.blue)
+                                                    .frame(height: 36)
+                                            } else if self.calendar.component(.month, from: Date()) == month && 
+                                                     self.calendar.component(.year, from: currentDate) == self.calendar.component(.year, from: Date()) {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.blue, lineWidth: 2)
+                                                    .frame(height: 36)
                                             }
                                             Text("\(month)月")
-                                                .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(Calendar.current.component(.month, from: currentDate) == month ? .white : .primary)
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundColor(self.calendar.component(.month, from: currentDate) == month ? .white : .primary)
                                         }
                                     }
                                     .buttonStyle(PlainButtonStyle())
@@ -498,89 +519,89 @@ struct RecordView: View {
                             // 年份选择器
                             HStack {
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: -1, to: currentDate) {
-                                            currentDate = newDate
-                                            updateDateComponents()
-                                            loadCurrentRecord()
-                                        }
+                                    if let newDate = self.calendar.date(byAdding: .year, value: -1, to: currentDate) {
+                                        currentDate = newDate
+                                        updateDateComponents()
+                                        loadCurrentRecord()
                                     }
                                 }) {
                                     Image(systemName: "chevron.left")
-                                        .font(.system(size: 20, weight: .bold))
+                                        .font(.system(size: 16, weight: .bold))
                                         .foregroundColor(.primary)
                                         .padding(8)
                                 }
                                 Spacer()
-                                let year = Calendar.current.component(.year, from: currentDate)
+                                let year = self.calendar.component(.year, from: currentDate)
                                 Text("\(year)年")
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: 1, to: currentDate) {
-                                            currentDate = newDate
-                                            updateDateComponents()
-                                            loadCurrentRecord()
-                                        }
+                                    if let newDate = self.calendar.date(byAdding: .year, value: 1, to: currentDate) {
+                                        currentDate = newDate
+                                        updateDateComponents()
+                                        loadCurrentRecord()
                                     }
                                 }) {
                                     Image(systemName: "chevron.right")
-                                        .font(.system(size: 20, weight: .bold))
+                                        .font(.system(size: 16, weight: .bold))
                                         .foregroundColor(.primary)
                                         .padding(8)
                                 }
                             }
                             .padding(.horizontal, 8)
                             // 季度选择器
-                            HStack(spacing: 32) {
+                            HStack(spacing: 24) {
                                 ForEach(1...4, id: \ .self) { q in
                                     Button(action: {
-                                        let calendar = Calendar.current
-                                        let year = calendar.component(.year, from: currentDate)
+                                        let year = self.calendar.component(.year, from: currentDate)
                                         let month = (q - 1) * 3 + 1
-                                        var components = calendar.dateComponents([.year, .month, .day], from: currentDate)
+                                        var components = self.calendar.dateComponents([.year, .month, .day], from: currentDate)
                                         components.year = year
                                         components.month = month
                                         components.day = 1
-                                        if let newDate = calendar.date(from: components) {
+                                        if let newDate = self.calendar.date(from: components) {
                                             currentDate = newDate
                                             updateDateComponents()
                                             loadCurrentRecord()
                                         }
                                     }) {
                                         ZStack {
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .fill(getCurrentQuarter(currentDate) == q ? Color.purple : Color.clear)
-                                                .frame(width: 80, height: 48)
+                                            if getCurrentQuarter(currentDate) == q {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(Color.blue)
+                                                    .frame(width: 70, height: 36)
+                                            } else if getCurrentQuarter(Date()) == q && 
+                                                     self.calendar.component(.year, from: currentDate) == self.calendar.component(.year, from: Date()) {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.blue, lineWidth: 2)
+                                                    .frame(width: 70, height: 36)
+                                            }
                                             Text("Q\(q)")
-                                                .font(.system(size: 20, weight: .semibold))
+                                                .font(.system(size: 16, weight: .semibold))
                                                 .foregroundColor(getCurrentQuarter(currentDate) == q ? .white : .primary)
                                         }
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
                             }
-                            .padding(.top, 16)
+                            .padding(.top, 8)
                         }
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 4)
                         .background(Color(UIColor.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .yearly: // 年记
-                        VStack(spacing: 8) {
+                        VStack(spacing: 16) {
                             // 年份选择器
                             HStack {
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: -5, to: currentDate) {
+                                        if let newDate = self.calendar.date(byAdding: .year, value: -5, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
-                                            loadCurrentRecord()
+                                            // 不调用loadCurrentRecord()，保持列表内容不变
                                         }
-                                    }
                                 }) {
                                     Image(systemName: "chevron.left.2")
                                         .font(.system(size: 16, weight: .bold))
@@ -589,13 +610,11 @@ struct RecordView: View {
                                 }
                                 
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: -1, to: currentDate) {
+                                        if let newDate = self.calendar.date(byAdding: .year, value: -1, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
-                                            loadCurrentRecord()
+                                            // 不调用loadCurrentRecord()，保持列表内容不变
                                         }
-                                    }
                                 }) {
                                     Image(systemName: "chevron.left")
                                         .font(.system(size: 16, weight: .bold))
@@ -605,21 +624,19 @@ struct RecordView: View {
                                 
                                 Spacer()
                                 
-                                let year = Calendar.current.component(.year, from: currentDate)
+                                let year = self.calendar.component(.year, from: currentDate)
                                 Text("\(year)年")
-                                    .font(.system(size: 18, weight: .bold))
+                                    .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
                                 Spacer()
                                 
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: 1, to: currentDate) {
+                                        if let newDate = self.calendar.date(byAdding: .year, value: 1, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
-                                            loadCurrentRecord()
+                                            // 不调用loadCurrentRecord()，保持列表内容不变
                                         }
-                                    }
                                 }) {
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 16, weight: .bold))
@@ -628,13 +645,11 @@ struct RecordView: View {
                                 }
                                 
                                 Button(action: {
-                                    withAnimation {
-                                        if let newDate = Calendar.current.date(byAdding: .year, value: 5, to: currentDate) {
+                                        if let newDate = self.calendar.date(byAdding: .year, value: 5, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
-                                            loadCurrentRecord()
+                                            // 不调用loadCurrentRecord()，保持列表内容不变
                                         }
-                                    }
                                 }) {
                                     Image(systemName: "chevron.right.2")
                                         .font(.system(size: 16, weight: .bold))
@@ -645,35 +660,34 @@ struct RecordView: View {
                             .padding(.horizontal, 8)
                             
                             // 年份快速选择器 - 使用网格布局
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
-                                let currentYear = Calendar.current.component(.year, from: currentDate)
-                                ForEach(-10...10, id: \.self) { offset in
-                                    let year = currentYear + offset
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 24), count: 5), spacing: 24) {
+                                let currentYear = self.calendar.component(.year, from: currentDate)
+                                let currentSystemYear = self.calendar.component(.year, from: Date())
+                                // 使用固定范围的年份，而不是基于当前选中年份的相对范围
+                                ForEach((currentSystemYear-10)...(currentSystemYear+10), id: \.self) { year in
                                     Button(action: {
-                                        withAnimation {
-                                            var components = Calendar.current.dateComponents([.month, .day], from: currentDate)
+                                            var components = self.calendar.dateComponents([.month, .day], from: currentDate)
                                             components.year = year
-                                            if let newDate = Calendar.current.date(from: components) {
+                                            if let newDate = self.calendar.date(from: components) {
                                                 currentDate = newDate
                                                 updateDateComponents()
-                                                loadCurrentRecord()
+                                                // 不调用loadCurrentRecord()，保持列表内容不变
                                             }
-                                        }
                                     }) {
-                                        Text("\(year)")
-                                            .font(.system(size: 16))
-                                            .fontWeight(currentYear == year ? .bold : .regular)
-                                            .foregroundColor(currentYear == year ? .white : .primary)
-                                            .padding(.vertical, 10)
-                                            .padding(.horizontal, 16)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 20)
-                                                    .fill(currentYear == year ? Color.purple : Color.clear)
-                                            )
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 20)
-                                                    .stroke(currentYear == year ? Color.clear : Color.gray.opacity(0.3), lineWidth: 1)
-                                            )
+                                        ZStack {
+                                            if currentYear == year {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(Color.blue)
+                                                    .frame(height: 36)
+                                            } else if self.calendar.component(.year, from: Date()) == year {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.blue, lineWidth: 2)
+                                                    .frame(height: 36)
+                                            }
+                                            Text("\(year)")
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundColor(currentYear == year ? .white : .primary)
+                                        }
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
@@ -847,12 +861,18 @@ struct RecordView: View {
     
     // 更新日期组件
     private func updateDateComponents() {
-        let calendar = Calendar.current
+        let calendar = self.calendar
         currentYear = calendar.component(.year, from: currentDate)
         currentMonth = calendar.component(.month, from: currentDate)
         currentDay = calendar.component(.day, from: currentDate)
         currentWeek = calendar.component(.weekOfYear, from: currentDate)
         currentQuarter = (calendar.component(.month, from: currentDate) - 1) / 3 + 1
+    }
+    
+    // 工具函数：获取当前日期所在季度
+    private func getCurrentQuarter(_ date: Date) -> Int {
+        let month = self.calendar.component(.month, from: date)
+        return (month - 1) / 3 + 1
     }
     
     // 记录标题
@@ -861,23 +881,23 @@ struct RecordView: View {
         case .daily:
             return "\(formattedDate) 日记"
         case .weekly:
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
             return "\(year)年第\(week)周 周记"
         case .monthly:
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             return "\(year)年\(month)月 月记"
         case .quarterly:
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
             return "\(year)年第\(quarter)季度 季记"
         case .yearly:
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             return "\(year)年 年记"
         }
@@ -901,7 +921,7 @@ struct RecordView: View {
         case .weekly: // 周记
             recordTypeString = "周记"
             // 使用当前选择的日期，但获取该日期所在周的第一天（周日）
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let weekday = calendar.component(.weekday, from: currentDate)
             // 计算到本周第一天（周日）的偏移量
             let daysToSubtract = weekday - 1
@@ -911,7 +931,7 @@ struct RecordView: View {
         case .monthly: // 月记
             recordTypeString = "月记"
             // 使用当前选择的日期，但获取该日期所在月的第一天
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             var components = DateComponents()
@@ -924,7 +944,7 @@ struct RecordView: View {
         case .quarterly: // 季记
             recordTypeString = "季记"
             // 获取当前日期所在季度的第一天
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
@@ -940,7 +960,7 @@ struct RecordView: View {
         case .yearly: // 年记
             recordTypeString = "年记"
             // 获取当前日期所在年份的第一天
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             var components = DateComponents()
             components.year = year
@@ -960,7 +980,7 @@ struct RecordView: View {
             recordType: selectedRecordType,
             year: currentYear,
             month: selectedRecordType == .daily || selectedRecordType == .monthly ? currentMonth : nil,
-            day: selectedRecordType == .daily ? Calendar.current.component(.day, from: currentDate) : nil,
+            day: selectedRecordType == .daily ? self.calendar.component(.day, from: currentDate) : nil,
             week: selectedRecordType == .weekly ? currentWeek : nil,
             quarter: selectedRecordType == .quarterly ? currentQuarter : nil,
             mood: selectedRecordType == .daily ? selectedMood : nil,
@@ -993,7 +1013,7 @@ struct RecordView: View {
         switch selectedRecordType {
         case .daily: // 日记
             // 查找当前日期的日记
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let day = calendar.component(.day, from: currentDate)
@@ -1007,7 +1027,7 @@ struct RecordView: View {
             
         case .weekly: // 周记
             // 查找当前日期所在周的周记
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
             
@@ -1019,7 +1039,7 @@ struct RecordView: View {
             
         case .monthly: // 月记
             // 查找当前日期所在月的月记
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             
@@ -1031,7 +1051,7 @@ struct RecordView: View {
             
         case .quarterly: // 季记
             // 查找当前日期所在季度的季记
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
@@ -1044,7 +1064,7 @@ struct RecordView: View {
             
         case .yearly: // 年记
             // 查找当前日期所在年份的年记
-            let calendar = Calendar.current
+            let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             
             filteredRecords = allRecords.filter { record in
@@ -1075,8 +1095,3 @@ struct RecordView_Previews: PreviewProvider {
 }
 
 // 使用项目中已有的 ScaleButtonStyle
-// 工具函数：获取当前日期所在季度
-    private func getCurrentQuarter(_ date: Date) -> Int {
-        let month = Calendar.current.component(.month, from: date)
-        return (month - 1) / 3 + 1
-    }
