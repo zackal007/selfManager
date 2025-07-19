@@ -225,6 +225,7 @@ struct RecordView: View {
                     VStack {
                         // 根据选择的记录类型显示不同的日期选择器
                         switch selectedRecordType {
+                    // 日记
                     case .daily: // 日记
                         VStack(spacing: 8) {
                             // 年月选择器
@@ -283,7 +284,7 @@ struct RecordView: View {
                             
                             // 日历网格
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
-                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
+                                ForEach(daysInMonth(for: currentDate), id: \ .id) { day in
                                     Button(action: {
                                         if day.date != nil {
                                             withAnimation {
@@ -294,19 +295,17 @@ struct RecordView: View {
                                         }
                                     }) {
                                         Text(day.dayNumber)
-                                            .font(.system(size: 14))
-                                            .fontWeight(day.isSelected ? .bold : .regular)
-                                            .foregroundColor(day.isToday ? .white : (day.isSelected ? .purple : (day.isCurrentMonth ? .primary : .secondary)))
-                                            .frame(height: 36)
-                                            .frame(maxWidth: .infinity)
+                                            .font(.system(size: 16, weight: day.isSelected ? .bold : .regular))
+                                            .foregroundColor(day.isSelected ? .white : (day.isToday ? Color.purple : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(width: 36, height: 36)
                                             .background(
                                                 ZStack {
-                                                    if day.isToday {
+                                                    if day.isSelected {
                                                         Circle()
-                                                            .fill(Color.blue)
-                                                    } else if day.isSelected {
+                                                            .fill(Color.purple)
+                                                    } else if day.isToday {
                                                         Circle()
-                                                            .fill(Color.purple.opacity(0.2))
+                                                            .stroke(Color.purple, lineWidth: 2)
                                                     }
                                                 }
                                             )
@@ -382,7 +381,7 @@ struct RecordView: View {
                             
                             // 周选择器 - 使用日历网格样式
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 8) {
-                                ForEach(daysInMonth(for: currentDate), id: \.id) { day in
+                                ForEach(daysInMonth(for: currentDate), id: \ .id) { day in
                                     Button(action: {
                                         if day.date != nil {
                                             withAnimation {
@@ -393,19 +392,17 @@ struct RecordView: View {
                                         }
                                     }) {
                                         Text(day.dayNumber)
-                                            .font(.system(size: 14))
-                                            .fontWeight(day.isSelected ? .bold : .regular)
-                                            .foregroundColor(day.isToday ? .white : (day.isSelected ? .purple : (day.isCurrentMonth ? .primary : .secondary)))
-                                            .frame(height: 36)
-                                            .frame(maxWidth: .infinity)
+                                            .font(.system(size: 16, weight: day.isSelected ? .bold : .regular))
+                                            .foregroundColor(day.isSelected ? .white : (day.isToday ? Color.purple : (day.isCurrentMonth ? .primary : .secondary)))
+                                            .frame(width: 36, height: 36)
                                             .background(
                                                 ZStack {
                                                     if day.isSelected {
                                                         Circle()
-                                                            .fill(Color.blue)
+                                                            .fill(Color.purple)
                                                     } else if day.isToday {
                                                         Circle()
-                                                            .stroke(Color.blue, lineWidth: 2)
+                                                            .stroke(Color.purple, lineWidth: 2)
                                                     }
                                                 }
                                             )
@@ -476,12 +473,12 @@ struct RecordView: View {
                                     }) {
                                         ZStack {
                                             if Calendar.current.component(.month, from: currentDate) == month {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                RoundedRectangle(cornerRadius: 16)
                                                     .fill(Color.purple)
                                                     .frame(height: 56)
                                             }
                                             Text("\(month)月")
-                                                .font(.system(size: 22, weight: .semibold))
+                                                .font(.system(size: 20, weight: .semibold))
                                                 .foregroundColor(Calendar.current.component(.month, from: currentDate) == month ? .white : .primary)
                                         }
                                     }
@@ -556,9 +553,9 @@ struct RecordView: View {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 16)
                                                 .fill(getCurrentQuarter(currentDate) == q ? Color.purple : Color.clear)
-                                                .frame(width: 90, height: 60)
+                                                .frame(width: 80, height: 48)
                                             Text("Q\(q)")
-                                                .font(.system(size: 26, weight: .semibold))
+                                                .font(.system(size: 20, weight: .semibold))
                                                 .foregroundColor(getCurrentQuarter(currentDate) == q ? .white : .primary)
                                         }
                                     }
