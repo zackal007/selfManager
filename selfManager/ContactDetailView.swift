@@ -143,9 +143,9 @@ struct ContactDetailView: View {
             }
         }
         .padding(20)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     // 联系方式
@@ -178,9 +178,9 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
     
     // 分类信息
@@ -214,9 +214,9 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
     
     // 标签
@@ -244,9 +244,9 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
     
     // 联系记录
@@ -303,9 +303,9 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
     
     // 备注
@@ -325,9 +325,9 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
     
     // 操作按钮

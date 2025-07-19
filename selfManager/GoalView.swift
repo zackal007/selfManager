@@ -577,14 +577,14 @@ struct GoalCard: View {
                 // 卡片阴影
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.clear)
-                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
                 
                 // 进度环形指示器 - 固定在右上角
                 ZStack {
                     Circle()
-                        .fill(Color.white)
+                        .fill(Color(UIColor.systemBackground))
                         .frame(width: 44, height: 44)
-                        .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                        .shadow(color: Color(UIColor.label).opacity(0.15), radius: 3, x: 0, y: 2)
                     
                     Circle()
                         .stroke(Color(UIColor.systemGray5), lineWidth: 3.5)
@@ -797,9 +797,9 @@ struct GoalListItem: View {
                     .foregroundColor(Color(UIColor.tertiaryLabel))
             }
             .padding(12)
-            .background(Color.white)
+            .background(Color(UIColor.systemBackground))
             .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
@@ -823,7 +823,7 @@ struct ToastView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color.black.opacity(0.8))
+        .background(Color(UIColor.label).opacity(0.8))
         .cornerRadius(20)
         .shadow(radius: 4)
     }

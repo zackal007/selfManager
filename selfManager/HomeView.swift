@@ -151,7 +151,7 @@ struct HomeView: View {
                     .background(Color(UIColor.systemBackground))
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color(UIColor.systemGray5), lineWidth: 1))
-                    .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     // 用户名
@@ -210,7 +210,7 @@ struct HomeView: View {
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.03), radius: 3, x: 0, y: 1)
+        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 资产区域 - 健康风格设计
@@ -316,7 +316,7 @@ struct HomeView: View {
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.03), radius: 3, x: 0, y: 1)
+        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 目标区域 - 扁平化设计

@@ -540,9 +540,9 @@ struct GoalDetailView: View {
             goalTagsView
         }
         .padding(.bottom, 16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, alignment: .top)
     }
@@ -769,6 +769,7 @@ struct GoalDetailView: View {
                                 .cornerRadius(8)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, 16)
                     
@@ -861,14 +862,11 @@ struct GoalDetailView: View {
                     
                     // 截止日期
                     dueDateView
-                    
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
                 }
                 .padding(.vertical, 16)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 
@@ -882,9 +880,9 @@ struct GoalDetailView: View {
                     projectsView
                 }
                 .padding(.vertical, 16)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
                 .padding(.horizontal, 16)
                 
                 // 子任务卡片
@@ -985,9 +983,9 @@ struct GoalDetailView: View {
                     }
                 }
                 .padding(.vertical, 16)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
                 .padding(.horizontal, 16)
                 
                 // 底部删除按钮

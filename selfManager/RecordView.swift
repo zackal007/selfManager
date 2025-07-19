@@ -940,7 +940,7 @@ struct RecordView: View {
                                 .shadow(radius: 3)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                        .background(Color.black.opacity(0.2))
+                        .background(Color(UIColor.label).opacity(0.2))
                         .edgesIgnoringSafeArea(.all)
                         .transition(.opacity)
                         .onAppear {

@@ -453,9 +453,9 @@ struct ContactCard: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
     
     private let dateFormatter: DateFormatter = {
@@ -527,9 +527,9 @@ struct ContactListItem: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(8)
-        .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
+        .shadow(color: Color(UIColor.label).opacity(0.05), radius: 1, x: 0, y: 1)
     }
 }
 
