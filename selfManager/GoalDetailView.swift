@@ -900,72 +900,81 @@ struct GoalDetailView: View {
                     
                     // 子任务列表
                     VStack(alignment: .leading, spacing: 12) {
-                        ForEach(goal.tasks.indices, id: \.self) { index in
-                            let task = goal.tasks[index]
-                            HStack(spacing: 12) {
-                                // 复选框
-                                Button(action: {
-                                    goal.tasks[index].isCompleted.toggle()
-                                    goal.modifyTime = Date()
-                                    
-                                    do {
-                                        try modelContext.save()
-                                    } catch {
-                                        print("Failed to save task update: \(error)")
-                                    }
-                                }) {
-                                    ZStack {
-                                        Circle()
-                                            .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                            .frame(width: 22, height: 22)
+                        if goal.tasks.isEmpty {
+                            Text("暂无子任务")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.tertiaryLabel))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 20)
+                                .padding(.horizontal, 16)
+                        } else {
+                            ForEach(goal.tasks.indices, id: \.self) { index in
+                                let task = goal.tasks[index]
+                                HStack(spacing: 12) {
+                                    // 复选框
+                                    Button(action: {
+                                        goal.tasks[index].isCompleted.toggle()
+                                        goal.modifyTime = Date()
                                         
-                                        if task.isCompleted {
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save task update: \(error)")
+                                        }
+                                    }) {
+                                        ZStack {
                                             Circle()
-                                                .fill(Color.blue)
+                                                .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
                                                 .frame(width: 22, height: 22)
                                             
-                                            Image(systemName: "checkmark")
-                                                .font(.system(size: 10, weight: .bold))
-                                                .foregroundColor(.white)
+                                            if task.isCompleted {
+                                                Circle()
+                                                    .fill(Color.blue)
+                                                    .frame(width: 22, height: 22)
+                                                
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                    .foregroundColor(.white)
+                                            }
                                         }
                                     }
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                                
-                                // 任务名称
-                                Text(task.title)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                                    .strikethrough(task.isCompleted)
-                                
-                                Spacer()
-                                
-                                // 删除按钮
-                                Button(action: {
-                                    let taskToDelete = goal.tasks[index]
-                                    goal.tasks.remove(at: index)
-                                    modelContext.delete(taskToDelete)
-                                    goal.modifyTime = Date()
+                                    .buttonStyle(PlainButtonStyle())
                                     
-                                    do {
-                                        try modelContext.save()
-                                    } catch {
-                                        print("Failed to delete task: \(error)")
+                                    // 任务名称
+                                    Text(task.title)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                        .strikethrough(task.isCompleted)
+                                    
+                                    Spacer()
+                                    
+                                    // 删除按钮
+                                    Button(action: {
+                                        let taskToDelete = goal.tasks[index]
+                                        goal.tasks.remove(at: index)
+                                        modelContext.delete(taskToDelete)
+                                        goal.modifyTime = Date()
+                                        
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to delete task: \(error)")
+                                        }
+                                    }) {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(Color(UIColor.systemRed))
                                     }
-                                }) {
-                                    Image(systemName: "trash")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(Color(UIColor.systemRed))
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            
-                            if index < goal.tasks.count - 1 {
-                                Divider()
-                                    .padding(.leading, 50)
-                                    .padding(.trailing, 16)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                
+                                if index < goal.tasks.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 50)
+                                        .padding(.trailing, 16)
+                                }
                             }
                         }
                         
@@ -987,6 +996,7 @@ struct GoalDetailView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
+                    .frame(maxWidth: .infinity)
                 }
                 .padding(.vertical, 16)
                 .background(Color(UIColor.systemBackground))

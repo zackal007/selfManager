@@ -47,7 +47,7 @@ struct GoalView: View {
             Button(action: {
                 viewMode = .gallery
             }) {
-                Label("画廊视图", systemImage: "square.grid.2x2")
+                Label("卡片视图", systemImage: "square.grid.2x2")
                 if viewMode == .gallery {
                     Image(systemName: "checkmark")
                 }
