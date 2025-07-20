@@ -553,8 +553,6 @@ struct GoalDetailView: View {
             HStack(spacing: 8) {
                 ForEach(goal.tags, id: \.self) { tag in
                     HStack(spacing: 4) {
-                        Text("#")
-                            .foregroundColor(Color(UIColor.systemBlue))
                         Text(tag)
                             .foregroundColor(Color(UIColor.systemBlue))
                         
@@ -686,12 +684,17 @@ struct GoalDetailView: View {
             editingValue = goal.goalDescription
             showEditSheet = true
         }) {
-            Text(goal.goalDescription)
-                .font(.system(size: 16))
-                .foregroundColor(Color(UIColor.secondaryLabel))
-                .padding(.horizontal, 16)
-                .padding(.top, 4)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text(goal.goalDescription)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -760,13 +763,18 @@ struct GoalDetailView: View {
                             editingValue = goal.goalDescription
                             showEditSheet = true
                         }) {
-                            Text(goal.goalDescription)
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.label))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(12)
-                                .background(Color(UIColor.systemGray6))
-                                .cornerRadius(8)
+                            HStack {
+                                Text(goal.goalDescription)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color(UIColor.label))
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(8)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .padding(.horizontal, 16)
@@ -820,8 +828,6 @@ struct GoalDetailView: View {
                                 HStack(spacing: 8) {
                                     ForEach(goal.tags, id: \.self) { tag in
                                         HStack(spacing: 4) {
-                                            Text("#")
-                                                .foregroundColor(Color(UIColor.systemBlue))
                                             Text(tag)
                                                 .foregroundColor(Color(UIColor.systemBlue))
                                             

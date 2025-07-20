@@ -10,14 +10,7 @@ import UIKit
 import Foundation
 import SwiftData
 
-// 自定义按钮样式，添加缩放效果
-struct ScaleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.9 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
-    }
-}
+// 使用SharedComponents.swift中的ScaleButtonStyle
 
 struct GoalView: View {
     @Environment(\.modelContext) private var modelContext
@@ -228,16 +221,28 @@ struct GoalView: View {
                         
                         Spacer()
                         
+                        // 搜索按钮
+                        Button(action: {
+                            // 搜索功能的实现将在后续添加
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 24))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        
+                        // 添加目标按钮
+                        Button(action: {
+                            showAddGoalSheet = true
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        
                         // 使用自定义视图替代复杂的Menu表达式
                         MenuButton {
-                            // 添加目标选项
-                            Button(action: {
-                                showAddGoalSheet = true
-                            }) {
-                                Label("添加目标", systemImage: "plus")
-                            }
-                            
-                            Divider()
                             
                             // 视图切换选项
                             Group {
@@ -807,28 +812,6 @@ struct GoalListItem: View {
 
 // 数据模型已移至Models.swift文件
 
-// Toast视图组件
-struct ToastView: View {
-    let message: String
-    let isSuccess: Bool
-    
-    var body: some View {
-        HStack {
-            Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                .foregroundColor(isSuccess ? .green : .red)
-            
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(.white)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color(UIColor.label).opacity(0.8))
-        .cornerRadius(20)
-        .shadow(radius: 4)
-    }
-}
-
 // 添加目标的表单视图
 struct AddGoalView: View {
     @Binding var isPresented: Bool
@@ -1009,23 +992,4 @@ extension RoundedRectangle {
     }
 }
 
-// MARK: - 自定义菜单按钮
-struct MenuButton<Content: View>: View {
-    let content: Content
-    
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-    
-    var body: some View {
-        Menu {
-            content
-        } label: {
-            Image(systemName: "ellipsis.circle.fill")
-                .font(.system(size: 24))
-                .foregroundColor(.blue)
-                .padding(.trailing, 8) // 减少右侧留白，与添加按钮保持一致
-        }
-        .buttonStyle(ScaleButtonStyle())
-    }
-}
+// 使用SharedComponents.swift中的MenuButton

@@ -161,7 +161,7 @@ struct HomeView: View {
                     
                     // 标签
                     HStack(spacing: 6) {
-                        Text("#自律")
+                        Text("自律")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .padding(.horizontal, 10)
@@ -170,7 +170,7 @@ struct HomeView: View {
                             .foregroundColor(Color(UIColor.systemBlue))
                             .cornerRadius(12)
                         
-                        Text("#高效")
+                        Text("高效")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .padding(.horizontal, 10)
@@ -179,7 +179,7 @@ struct HomeView: View {
                             .foregroundColor(Color(UIColor.systemBlue))
                             .cornerRadius(12)
                         
-                        Text("#成长")
+                        Text("成长")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .padding(.horizontal, 10)

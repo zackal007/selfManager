@@ -1,0 +1,216 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/AssetDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "资产已更新",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 79
+        }
+      },
+      {
+        "comment": "",
+        "key": "资产管理",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "关闭",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "编辑",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "确定",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "您的资产信息已成功保存",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "上次更新：%@",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "总资产",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 91
+        }
+      },
+      {
+        "comment": "",
+        "key": "万元",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 100
+        }
+      },
+      {
+        "comment": "",
+        "key": "资产详情",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 121
+        }
+      },
+      {
+        "comment": "",
+        "key": "资产趋势",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 170
+        }
+      },
+      {
+        "comment": "",
+        "key": "📊",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 199
+        }
+      },
+      {
+        "comment": "",
+        "key": "本月变化",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "+2.3万",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 185
+        }
+      },
+      {
+        "comment": "",
+        "key": "记录历史",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 214
+        }
+      },
+      {
+        "comment": "",
+        "key": "查看全部",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 220
+        }
+      },
+      {
+        "comment": "",
+        "key": "💡 资产管理小贴士",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 243
+        }
+      },
+      {
+        "comment": "",
+        "key": "• 建议每月更新一次资产状况",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 248
+        }
+      },
+      {
+        "comment": "",
+        "key": "• 关注资产配置的合理性",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 249
+        }
+      },
+      {
+        "comment": "",
+        "key": "• 定期评估投资收益和风险",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 250
+        }
+      },
+      {
+        "comment": "",
+        "key": "• 保持适当的现金储备",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 251
+        }
+      },
+      {
+        "comment": "",
+        "key": "万",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 285
+        }
+      },
+      {
+        "comment": "",
+        "key": "0.0",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 281
+        }
+      },
+      {
+        "comment": "",
+        "key": "万",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 295
+        }
+      },
+      {
+        "comment": "",
+        "key": "总资产 %@万",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 310
+        }
+      }
+    ]
+  },
+  "version": 1
+}

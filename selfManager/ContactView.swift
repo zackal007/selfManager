@@ -418,7 +418,7 @@ struct ContactCard: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         ForEach(contact.tags, id: \.self) { tag in
-                            Text("#\(tag)")
+                            Text(tag)
                                 .font(.caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)

@@ -232,7 +232,7 @@ struct ContactDetailView: View {
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
                     ForEach(contact.tags, id: \.self) { tag in
-                        Text("#\(tag)")
+                        Text(tag)
                             .font(.caption)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
