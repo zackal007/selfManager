@@ -215,35 +215,42 @@ struct HomeView: View {
     
     // 资产区域 - 健康风格设计
     private var assetSection: some View {
+        NavigationLink(destination: AssetDetailView()) {
+            assetCardContent
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var assetCardContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                // 标题和emoji图标
-                HStack(spacing: 6) {
-                    Text("💰")
-                        .font(.title3)
-                    Text("资产概览")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(UIColor.label))
+                    // 标题和emoji图标
+                    HStack(spacing: 6) {
+                        Text("💰")
+                            .font(.title3)
+                        Text("资产概览")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color(UIColor.label))
+                    }
+                    
+                    Spacer()
+                    
+                    // 总资产
+                    HStack(spacing: 2) {
+                        Text("\(assets.现金 + assets.其他 - assets.负债)")
+                            .fontWeight(.heavy)
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("W")
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                    }
+                    .font(.subheadline)
+                    
+                    // 详情按钮
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
                 }
-                
-                Spacer()
-                
-                // 总资产
-                HStack(spacing: 2) {
-                    Text("\(assets.现金 + assets.其他 - assets.负债)")
-                        .fontWeight(.heavy)
-                        .foregroundColor(Color(UIColor.systemBlue))
-                    Text("W")
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                }
-                .font(.subheadline)
-                
-                // 详情按钮
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
-            }
             
             // 资产数据
             HStack(spacing: 0) {
