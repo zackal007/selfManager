@@ -742,85 +742,7 @@ struct GoalDetailView: View {
                     // 目标名称和进度
                     goalNameProgressView
                     
-                    // 背景图片选择
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "photo.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            
-                            Text("背景图片")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                editingField = .backgroundImage
-                                selectedBackgroundImage = goal.backgroundImage
-                                showImagePicker = true
-                            }) {
-                                Text("选择")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(15)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        
-                        // 显示当前背景图片预览
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(backgroundImages, id: \.self) { imageName in
-                                    Button(action: {
-                                        goal.backgroundImage = imageName
-                                        goal.modifyTime = Date()
-                                        do {
-                                            try modelContext.save()
-                                        } catch {
-                                            print("Failed to save background image: \(error)")
-                                        }
-                                    }) {
-                                        if let imageName = imageName, let uiImage = UIImage(named: imageName) {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 80, height: 60)
-                                                .cornerRadius(8)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
-                                                )
-                                        } else {
-                                            ZStack {
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                                .frame(width: 80, height: 60)
-                                                .cornerRadius(8)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
-                                                )
-                                                
-                                                Text("默认")
-                                                    .font(.system(size: 12, weight: .medium))
-                                                    .foregroundColor(.white)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                        }
-                        .frame(height: 70)
-                    }
+                        // 背景图片选择部分已移至独立卡片
                     
                     // 目标类型
                     HStack {
@@ -889,68 +811,7 @@ struct GoalDetailView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // 关联人选择区
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "person.2.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            Text("关联人")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            Spacer()
-                            Button(action: { showContactSelector = true }) {
-                                Text("选择")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(15)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .padding(.horizontal, 16)
-                        // 已选联系人列表
-                        if goal.relatedContactIds.isEmpty {
-                            Text("未关联联系人")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .padding(.horizontal, 16)
-                        } else {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(goal.relatedContactIds, id: \ .self) { id in
-                                        if let contact = allContacts.first(where: { $0.id == id }) {
-                                            HStack(spacing: 4) {
-                                                Text(contact.name)
-                                                    .foregroundColor(Color(UIColor.systemBlue))
-                                                Button(action: {
-                                                    if let idx = goal.relatedContactIds.firstIndex(of: id) {
-                                                        goal.relatedContactIds.remove(at: idx)
-                                                        goal.modifyTime = Date()
-                                                        do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
-                                                    }
-                                                }) {
-                                                    Image(systemName: "xmark.circle.fill")
-                                                        .font(.system(size: 12))
-                                                        .foregroundColor(Color(UIColor.systemGray3))
-                                                }
-                                                .buttonStyle(PlainButtonStyle())
-                                            }
-                                            .font(.system(size: 14, weight: .medium))
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 5)
-                                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                                            .cornerRadius(12)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                            }
-                        }
-                    }
+                    // 关联人选择区已移至独立卡片
                     
                     // 目标描述
                     VStack(alignment: .leading, spacing: 8) {
@@ -1197,6 +1058,178 @@ struct GoalDetailView: View {
                 .cornerRadius(12)
                 .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
                 .padding(.horizontal, 16)
+                
+                // 关联人卡片
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("关联人")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                        .padding(.horizontal, 16)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "person.2.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            Text("关联人")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            Spacer()
+                            Button(action: { showContactSelector = true }) {
+                                Text("选择")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                                    .cornerRadius(15)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.horizontal, 16)
+                        // 已选联系人列表
+                        if goal.relatedContactIds.isEmpty {
+                            Text("未关联联系人")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.tertiaryLabel))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                        } else {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(goal.relatedContactIds, id: \ .self) { id in
+                                        if let contact = allContacts.first(where: { $0.id == id }) {
+                                            HStack(spacing: 4) {
+                                                Text(contact.name)
+                                                    .foregroundColor(Color(UIColor.systemBlue))
+                                                Button(action: {
+                                                    if let idx = goal.relatedContactIds.firstIndex(of: id) {
+                                                        goal.relatedContactIds.remove(at: idx)
+                                                        goal.modifyTime = Date()
+                                                        do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
+                                                    }
+                                                }) {
+                                                    Image(systemName: "xmark.circle.fill")
+                                                        .font(.system(size: 12))
+                                                        .foregroundColor(Color(UIColor.systemGray3))
+                                                }
+                                                .buttonStyle(PlainButtonStyle())
+                                            }
+                                            .font(.system(size: 14, weight: .medium))
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(Color(UIColor.systemBlue).opacity(0.1))
+                                            .cornerRadius(12)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 5)
+                            }
+                            .frame(height: 40)
+                        }
+                    }
+                }
+                .padding(.vertical, 16)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(12)
+                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                
+                // 背景图片卡片
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("背景图片")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                        .padding(.horizontal, 16)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "photo.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            
+                            Text("背景图片")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                editingField = .backgroundImage
+                                selectedBackgroundImage = goal.backgroundImage
+                                showImagePicker = true
+                            }) {
+                                Text("选择")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                                    .cornerRadius(15)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        
+                        // 显示当前背景图片预览
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(backgroundImages, id: \.self) { imageName in
+                                    Button(action: {
+                                        goal.backgroundImage = imageName
+                                        goal.modifyTime = Date()
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save background image: \(error)")
+                                        }
+                                    }) {
+                                        if let imageName = imageName, let uiImage = UIImage(named: imageName) {
+                                            Image(uiImage: uiImage)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 80, height: 60)
+                                                .cornerRadius(8)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 8)
+                                                        .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
+                                                )
+                                        } else {
+                                            ZStack {
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                                .frame(width: 80, height: 60)
+                                                .cornerRadius(8)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 8)
+                                                        .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
+                                                )
+                                                
+                                                Text("默认")
+                                                    .font(.system(size: 12, weight: .medium))
+                                                    .foregroundColor(.white)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 5)
+                        }
+                        .frame(height: 70)
+                    }
+                }
+                .padding(.vertical, 16)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(12)
+                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
                 
                 // 底部删除按钮
                 Button(action: {
