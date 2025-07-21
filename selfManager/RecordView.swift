@@ -227,6 +227,37 @@ struct RecordView: View {
                         .foregroundColor(.primary)
                     
                     Spacer()
+                    
+                    // 菜单按钮
+                    MenuButton {
+                        // 视图模式菜单内容
+                        Button(action: {
+                            // 日期选择器显示/隐藏
+                            withAnimation {
+                                showDatePicker.toggle()
+                            }
+                        }) {
+                            Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "calendar.badge.minus" : "calendar.badge.plus")
+                        }
+                        
+                        Divider()
+                        
+                        // 跳转到今天
+                        Button(action: {
+                            // 如果内容已修改，先保存当前记录
+                            if contentModified {
+                                autoSaveRecord(recordType: selectedRecordType)
+                            }
+                            // 重置为当前日期
+                            currentDate = Date()
+                            updateDateComponents()
+                            loadCurrentRecord()
+                            // 重置修改状态
+                            contentModified = false
+                        }) {
+                            Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
+                        }
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)

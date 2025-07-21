@@ -550,18 +550,40 @@ struct GoalCard: View {
         }
     }
     
+    // 获取应用文档目录
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
             ZStack {
                 // 背景图片或默认渐变背景 - 置于底层
-                if let imageName = goal.backgroundImage, let uiImage = UIImage(named: imageName) {
-                    // 背景图片 - 占满整个卡片
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: cardWidth, height: 280) // 占满整个卡片高度
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .opacity(0.7) // 降低不透明度，使内容更易读
+                if let imageName = goal.backgroundImage {
+                    // 首先尝试从应用资源中加载预设图片
+                    if let uiImage = UIImage(named: imageName) {
+                        // 预设背景图片 - 占满整个卡片
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .opacity(0.7) // 降低不透明度，使内容更易读
+                    } else {
+                        // 尝试从文档目录加载用户自定义图片
+                        let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
+                        if let uiImage = UIImage(contentsOfFile: fileURL.path) {
+                            // 用户自定义背景图片 - 占满整个卡片
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .opacity(0.7) // 降低不透明度，使内容更易读
+                                // 添加模糊效果，提高可读性
+                                .blur(radius: 1.5)
+                        }
+                    }
                 } else {
                     // 默认渐变背景 - 占满整个卡片
                     LinearGradient(
