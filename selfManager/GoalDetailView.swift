@@ -40,6 +40,7 @@ struct GoalDetailView: View {
     @State private var editingField: EditableField? = nil
     @State private var editingValue: String = ""
     @State private var editingProgress: Double = 0
+    @State private var editingTask: GoalTask? = nil
     @Environment(\.presentationMode) var presentationMode
     
     // 可编辑字段枚举
@@ -172,6 +173,12 @@ struct GoalDetailView: View {
                                 .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
                                 .strikethrough(task.isCompleted)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .onTapGesture {
+                                    editingField = .task
+                                    editingTask = task
+                                    editingValue = task.title
+                                    showEditSheet = true
+                                }
                         }
                         .padding(10)
                         .background(Color(UIColor.systemGray6))
@@ -404,7 +411,10 @@ struct GoalDetailView: View {
                     goal.tags.append(value)
                 }
             }
-        case .upperProject, .subProject, .task, .dueDate, .none:
+        case .task:
+            if let task = editingTask {
+                task.title = value
+            }        case .upperProject, .subProject, .dueDate, .none:
             // 这些字段在其他地方处理
             break
         @unknown default:
@@ -937,10 +947,16 @@ struct GoalDetailView: View {
                                         .buttonStyle(PlainButtonStyle())
                                         
                                         // 任务名称
-                                        Text(task.title)
-                                            .font(.system(size: 16))
-                                            .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                                            .strikethrough(task.isCompleted)
+                            Text(task.title)
+                                .font(.system(size: 16))
+                                .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                .strikethrough(task.isCompleted)
+                                .onTapGesture {
+                                    editingField = .task
+                                    editingTask = task
+                                    editingValue = task.title
+                                    showEditSheet = true
+                                }
                                         
                                         Spacer()
                                     }
