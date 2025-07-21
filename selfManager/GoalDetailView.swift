@@ -133,14 +133,13 @@ struct GoalDetailView: View {
                     .padding(.vertical, 20)
                     .padding(.horizontal, 16)
             } else {
-                VStack(spacing: 10) {
-                    ForEach(goal.tasks.indices, id: \.self) { index in
-                        let task = goal.tasks[index]
+                List {
+                    ForEach(goal.tasks) { task in
                         HStack(spacing: 12) {
                             // 复选框（参考备忘录样式）
                             Button(action: {
                                 // 切换任务完成状态
-                                goal.tasks[index].isCompleted.toggle()
+                                task.isCompleted.toggle()
                                 goal.modifyTime = Date()
                                 
                                 do {
@@ -173,32 +172,15 @@ struct GoalDetailView: View {
                                 .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
                                 .strikethrough(task.isCompleted)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            // 删除按钮
-                            Button(action: {
-                                // 删除任务
-                                let taskToDelete = goal.tasks[index]
-                                goal.tasks.remove(at: index)
-                                modelContext.delete(taskToDelete)
-                                goal.modifyTime = Date()
-                                
-                                do {
-                                    try modelContext.save()
-                                } catch {
-                                    print("Failed to delete task: \(error)")
-                                }
-                            }) {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Color(UIColor.systemRed))
-                            }
-                            .buttonStyle(PlainButtonStyle())
                         }
                         .padding(10)
                         .background(Color(UIColor.systemGray6))
                         .cornerRadius(8)
                     }
+                    .onDelete(perform: deleteTask)
                 }
+                .listStyle(.plain)
+                .frame(height: CGFloat(goal.tasks.count) * 60) // 动态调整高度
                 .padding(.horizontal, 16)
             }
         }
@@ -522,6 +504,20 @@ struct GoalDetailView: View {
         
         // 返回上一个视图
         presentationMode.wrappedValue.dismiss()
+    }
+    
+    // 删除任务
+    private func deleteTask(at offsets: IndexSet) {
+        for index in offsets {
+            let taskToDelete = goal.tasks[index]
+            modelContext.delete(taskToDelete)
+        }
+        
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to delete task: \(error)")
+        }
     }
     
     // 固定头部视图
@@ -908,74 +904,53 @@ struct GoalDetailView: View {
                                 .padding(.vertical, 20)
                                 .padding(.horizontal, 16)
                         } else {
-                            ForEach(goal.tasks.indices, id: \.self) { index in
-                                let task = goal.tasks[index]
-                                HStack(spacing: 12) {
-                                    // 复选框
-                                    Button(action: {
-                                        goal.tasks[index].isCompleted.toggle()
-                                        goal.modifyTime = Date()
-                                        
-                                        do {
-                                            try modelContext.save()
-                                        } catch {
-                                            print("Failed to save task update: \(error)")
-                                        }
-                                    }) {
-                                        ZStack {
-                                            Circle()
-                                                .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                                .frame(width: 22, height: 22)
+                            List {
+                                ForEach(goal.tasks) { task in
+                                    HStack(spacing: 12) {
+                                        // 复选框
+                                        Button(action: {
+                                            task.isCompleted.toggle()
+                                            goal.modifyTime = Date()
                                             
-                                            if task.isCompleted {
+                                            do {
+                                                try modelContext.save()
+                                            } catch {
+                                                print("Failed to save task update: \(error)")
+                                            }
+                                        }) {
+                                            ZStack {
                                                 Circle()
-                                                    .fill(Color.blue)
+                                                    .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
                                                     .frame(width: 22, height: 22)
                                                 
-                                                Image(systemName: "checkmark")
-                                                    .font(.system(size: 10, weight: .bold))
-                                                    .foregroundColor(.white)
+                                                if task.isCompleted {
+                                                    Circle()
+                                                        .fill(Color.blue)
+                                                        .frame(width: 22, height: 22)
+                                                    
+                                                    Image(systemName: "checkmark")
+                                                        .font(.system(size: 10, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                }
                                             }
                                         }
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                    
-                                    // 任务名称
-                                    Text(task.title)
-                                        .font(.system(size: 16))
-                                        .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                                        .strikethrough(task.isCompleted)
-                                    
-                                    Spacer()
-                                    
-                                    // 删除按钮
-                                    Button(action: {
-                                        let taskToDelete = goal.tasks[index]
-                                        goal.tasks.remove(at: index)
-                                        modelContext.delete(taskToDelete)
-                                        goal.modifyTime = Date()
+                                        .buttonStyle(PlainButtonStyle())
                                         
-                                        do {
-                                            try modelContext.save()
-                                        } catch {
-                                            print("Failed to delete task: \(error)")
-                                        }
-                                    }) {
-                                        Image(systemName: "trash")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(Color(UIColor.systemRed))
+                                        // 任务名称
+                                        Text(task.title)
+                                            .font(.system(size: 16))
+                                            .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                            .strikethrough(task.isCompleted)
+                                        
+                                        Spacer()
                                     }
-                                    .buttonStyle(PlainButtonStyle())
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                
-                                if index < goal.tasks.count - 1 {
-                                    Divider()
-                                        .padding(.leading, 50)
-                                        .padding(.trailing, 16)
-                                }
+                                .onDelete(perform: deleteTask)
                             }
+                            .listStyle(.plain)
+                            .frame(height: CGFloat(goal.tasks.count) * 70) // 动态调整高度
                         }
                         
                         // 添加任务按钮
