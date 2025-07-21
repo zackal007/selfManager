@@ -32,7 +32,17 @@ struct HomeView: View {
     }
     
     // 资产信息
-    private let assets = (现金: 10, 负债: 5, 其他: 8)
+    @Query private var assets: [Asset]
+    
+    private var asset: Asset {
+        if let firstAsset = assets.first {
+            return firstAsset
+        } else {
+            let newAsset = Asset()
+            modelContext.insert(newAsset)
+            return newAsset
+        }
+    }
     
     // 心情记录
     private let moods = ["😊", "😢", "😡", "😴", "🤔", "😎"]
@@ -236,7 +246,7 @@ struct HomeView: View {
                     
                     // 总资产
                     HStack(spacing: 2) {
-                        Text("\(assets.现金 + assets.其他 - assets.负债)")
+                        Text(String(format: "%.1f", asset.totalAssets))
                             .fontWeight(.heavy)
                             .foregroundColor(Color(UIColor.systemBlue))
                         Text("W")
@@ -262,7 +272,7 @@ struct HomeView: View {
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
-                    Text("\(assets.现金)W")
+                    Text(String(format: "%.1f", asset.cashAmount) + "W")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))
@@ -284,7 +294,7 @@ struct HomeView: View {
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
-                    Text("\(assets.负债)W")
+                    Text(String(format: "%.1f", asset.debtAmount) + "W")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))
@@ -306,7 +316,7 @@ struct HomeView: View {
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
-                    Text("\(assets.其他)W")
+                    Text(String(format: "%.1f", asset.otherAmount) + "W")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))

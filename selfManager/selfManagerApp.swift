@@ -37,7 +37,8 @@ struct selfManagerApp: App {
                 Item.self,
                 Record.self,
                 Contact.self,
-                User.self
+                User.self,
+                Asset.self
             ])
             // 不使用迁移计划，避免未知模型版本的问题
             self.sharedModelContainer = try ModelContainer(for: schema)

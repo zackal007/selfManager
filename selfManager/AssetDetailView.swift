@@ -12,11 +12,19 @@ struct AssetDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
-    // 资产数据 - 这里可以后续改为从数据库读取
-    @State private var cashAmount: Double = 10.0
-    @State private var debtAmount: Double = 5.0
-    @State private var otherAmount: Double = 8.0
-    @State private var lastUpdateDate: Date = Date()
+    // 使用 SwiftData 查询资产数据
+    @Query(sort: \Asset.lastUpdateDate, order: .reverse) private var assets: [Asset]
+    
+    // 当前资产对象
+    private var asset: Asset {
+        if let firstAsset = assets.first {
+            return firstAsset
+        } else {
+            let newAsset = Asset()
+            modelContext.insert(newAsset)
+            return newAsset
+        }
+    }
     
     // 编辑状态
     @State private var isEditing: Bool = false
@@ -28,40 +36,45 @@ struct AssetDetailView: View {
     @State private var tempOther: String = ""
     
     var totalAssets: Double {
-        cashAmount + otherAmount - debtAmount
+        asset.totalAssets
     }
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // 总资产概览卡片
-                    totalAssetCard
-                    
-                    // 资产分类详情
-                    assetBreakdownCard
-                    
-                    // 资产趋势图表区域（占位）
-                    assetTrendCard
-                    
-                    // 资产记录历史
-                    assetHistoryCard
-                    
-                    // 底部说明
-                    assetGuidanceCard
+        NavigationStack {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // 总资产概览卡片
+                        totalAssetCard
+                        
+                        // 资产分类详情
+                        assetBreakdownCard
+                        
+                        // 资产趋势图表区域（占位）
+                        assetTrendCard
+                        
+                        // 资产记录历史
+                        assetHistoryCard
+                        
+                        // 底部说明
+                        assetGuidanceCard
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .background(Color(UIColor.systemGroupedBackground))
             }
-            .background(Color(UIColor.systemGroupedBackground))
             .navigationTitle("资产管理")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("关闭") {
+                    Button(action: {
                         dismiss()
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "chevron.left")
+                            Text("返回")
+                        }
                     }
-                    .foregroundColor(Color(UIColor.systemBlue))
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -72,14 +85,13 @@ struct AssetDetailView: View {
                             startEditing()
                         }
                     }
-                    .foregroundColor(Color(UIColor.systemBlue))
                 }
             }
-        }
-        .alert("资产已更新", isPresented: $showingSaveAlert) {
-            Button("确定", role: .cancel) { }
-        } message: {
-            Text("您的资产信息已成功保存")
+            .alert("资产已更新", isPresented: $showingSaveAlert) {
+                Button("确定", role: .cancel) { }
+            } message: {
+                Text("您的资产信息已成功保存")
+            }
         }
     }
     
@@ -105,7 +117,7 @@ struct AssetDetailView: View {
             }
             
             // 上次更新时间
-            Text("上次更新：\(formatDate(lastUpdateDate))")
+            Text("上次更新：\(formatDate(asset.lastUpdateDate))")
                 .font(.caption)
                 .foregroundColor(Color(UIColor.tertiaryLabel))
         }
@@ -113,6 +125,7 @@ struct AssetDetailView: View {
         .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 16)
     }
     
     // 资产分类详情卡片
@@ -127,7 +140,7 @@ struct AssetDetailView: View {
                 assetRow(
                     icon: "💰",
                     title: "现金资产",
-                    amount: cashAmount,
+                    amount: asset.cashAmount,
                     color: Color(UIColor.systemGreen),
                     isEditing: isEditing,
                     editValue: $tempCash
@@ -139,7 +152,7 @@ struct AssetDetailView: View {
                 assetRow(
                     icon: "📈",
                     title: "其他资产",
-                    amount: otherAmount,
+                    amount: asset.otherAmount,
                     color: Color(UIColor.systemBlue),
                     isEditing: isEditing,
                     editValue: $tempOther
@@ -151,7 +164,7 @@ struct AssetDetailView: View {
                 assetRow(
                     icon: "💳",
                     title: "负债",
-                    amount: debtAmount,
+                    amount: asset.debtAmount,
                     color: Color(UIColor.systemRed),
                     isEditing: isEditing,
                     editValue: $tempDebt
@@ -162,6 +175,7 @@ struct AssetDetailView: View {
         .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 16)
     }
     
     // 资产趋势卡片（占位）
@@ -205,6 +219,7 @@ struct AssetDetailView: View {
         .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 16)
     }
     
     // 资产记录历史卡片
@@ -235,6 +250,7 @@ struct AssetDetailView: View {
         .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 16)
     }
     
     // 资产管理指导卡片
@@ -256,6 +272,7 @@ struct AssetDetailView: View {
         .padding(20)
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(16)
+        .padding(.horizontal, 16)
     }
     
     // 资产行组件
@@ -324,9 +341,9 @@ struct AssetDetailView: View {
     
     // 开始编辑
     private func startEditing() {
-        tempCash = String(format: "%.1f", cashAmount)
-        tempDebt = String(format: "%.1f", debtAmount)
-        tempOther = String(format: "%.1f", otherAmount)
+        tempCash = String(format: "%.1f", asset.cashAmount)
+        tempDebt = String(format: "%.1f", asset.debtAmount)
+        tempOther = String(format: "%.1f", asset.otherAmount)
         isEditing = true
     }
     
@@ -334,12 +351,14 @@ struct AssetDetailView: View {
     private func saveAssets() {
         // 验证并保存数据
         if let cash = Double(tempCash), let debt = Double(tempDebt), let other = Double(tempOther) {
-            cashAmount = cash
-            debtAmount = debt
-            otherAmount = other
-            lastUpdateDate = Date()
+            // 更新资产模型
+            asset.cashAmount = cash
+            asset.debtAmount = debt
+            asset.otherAmount = other
+            asset.lastUpdateDate = Date()
             
-            // 这里可以添加保存到数据库的逻辑
+            // 保存到数据库
+            try? modelContext.save()
             
             isEditing = false
             showingSaveAlert = true

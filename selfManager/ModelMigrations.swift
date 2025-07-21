@@ -22,8 +22,11 @@ enum ModelSchemaV1: VersionedSchema {
         var goalDescription: String
         var progress: Double
         var backgroundImage: String?
+        @Attribute(.externalStorage)
         var tags: [String]
+        @Attribute(.externalStorage)
         var upperProject: [String]
+        @Attribute(.externalStorage)
         var subProject: [String]
         var recordNum: Int
         var category: String
@@ -75,7 +78,7 @@ enum ModelSchemaV1: VersionedSchema {
 
 enum ModelSchemaV3: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 2, 0)
-    static var models: [any PersistentModel.Type] { [ModelSchemaV3.Goal.self, ModelSchemaV3.GoalTask.self, Item.self, Record.self, User.self, Contact.self] }
+    static var models: [any PersistentModel.Type] { [ModelSchemaV3.Goal.self, ModelSchemaV3.GoalTask.self, Item.self, Record.self, User.self, Contact.self, Asset.self] }
 
     @Model
     final class Goal {
@@ -84,8 +87,11 @@ enum ModelSchemaV3: VersionedSchema {
         var goalDescription: String
         var progress: Double
         var backgroundImage: String?
+        @Attribute(.externalStorage)
         var tags: [String]
+        @Attribute(.externalStorage)
         var upperProject: [String]
+        @Attribute(.externalStorage)
         var subProject: [String]
         var recordNum: Int
         var category: String
@@ -94,6 +100,7 @@ enum ModelSchemaV3: VersionedSchema {
         var modifyTime: Date
         var visitTime: Date
         var dueDate: Date?
+        @Attribute(.externalStorage)
         var relatedContactIds: [UUID] = []
         var importance: Int = 1
         
@@ -155,8 +162,11 @@ enum ModelSchemaV2: VersionedSchema {
         var goalDescription: String
         var progress: Double
         var backgroundImage: String?
+        @Attribute(.externalStorage)
         var tags: [String]
+        @Attribute(.externalStorage)
         var upperProject: [String]
+        @Attribute(.externalStorage)
         var subProject: [String]
         var recordNum: Int
         var category: String

@@ -100,6 +100,7 @@ final class Contact {
     var contactType: ContactType
     var importance: ContactImportance
     var frequency: ContactFrequency
+    @Attribute(.externalStorage)
     var tags: [String]
     var lastContactDate: Date?
     var nextContactDate: Date?

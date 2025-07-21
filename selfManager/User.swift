@@ -5,6 +5,7 @@ import SwiftData
 class User {
     var name: String
     var avatar: String // e.g., emoji or image name
+    @Attribute(.externalStorage)
     var tags: [String]
     var userDescription: String
     
