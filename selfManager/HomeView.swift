@@ -16,9 +16,20 @@ struct HomeView: View {
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
+    @State private var showingEdit = false
     
     // 用户信息
-    private let userInfo = "张三"
+    @Query private var users: [User]
+
+    private var user: User {
+        if let firstUser = users.first {
+            return firstUser
+        } else {
+            let newUser = User()
+            modelContext.insert(newUser)
+            return newUser
+        }
+    }
     
     // 资产信息
     private let assets = (现金: 10, 负债: 5, 其他: 8)
@@ -65,6 +76,9 @@ struct HomeView: View {
                 
                 // 用户信息卡片
                 userProfileSection
+                    .sheet(isPresented: $showingEdit) {
+                        UserEditView(user: user)
+                    }
                 
                 // 资产信息
                 assetSection
@@ -145,7 +159,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 // 用户头像
-                Text("👤")
+                Text(user.avatar)
                     .font(.system(size: 50))
                     .frame(width: 60, height: 60)
                     .background(Color(UIColor.systemBackground))
@@ -155,45 +169,29 @@ struct HomeView: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     // 用户名
-                    Text(userInfo)
+                    Text(user.name)
                         .font(.title3)
                         .fontWeight(.bold)
                     
                     // 标签
                     HStack(spacing: 6) {
-                        Text("自律")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .cornerRadius(12)
-                        
-                        Text("高效")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .cornerRadius(12)
-                        
-                        Text("成长")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .cornerRadius(12)
+                        ForEach(user.tags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .cornerRadius(12)
+                        }
                     }
                 }
                 
                 Spacer()
                 
                 // 编辑按钮
-                Button(action: {}) {
+                Button(action: { showingEdit = true }) {
                     Image(systemName: "pencil")
                         .foregroundColor(Color(UIColor.systemBlue))
                         .font(.headline)
@@ -201,7 +199,7 @@ struct HomeView: View {
             }
             
             // 用户描述
-            Text("热爱生活，追求自我提升的普通人")
+            Text(user.userDescription)
                 .font(.footnote)
                 .foregroundColor(Color(UIColor.secondaryLabel))
                 .padding(.top, 4)

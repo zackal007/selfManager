@@ -13,6 +13,7 @@ import SwiftData
 struct GoalDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
+    @Query private var allContacts: [Contact]
     
     // 状态变量
     @State private var selectedDate = Date()
@@ -21,6 +22,8 @@ struct GoalDetailView: View {
     @State private var showSubGoalSelector = false
     @State private var showDeleteAlert = false
     @State private var selectedGoalType = 0
+    @State private var showContactSelector = false
+    @State private var editingImportance: Int = 1
     
     // 常量
     private let goalTypes = ["人生目标", "年度目标", "短期目标"]
@@ -373,11 +376,13 @@ struct GoalDetailView: View {
     
     // 目标类型选择状态
     @State private var showGoalTypeMenu = false
+    // 优先级选择状态
+    // 注释掉重复声明的变量，因为已经在前面第26行声明过了
+    // @State private var editingImportance: Int = 1
     
     // 初始化方法
     init(goal: Goal) {
         _goal = State(initialValue: goal)
-        
         // 根据goal.goalType初始化selectedGoalType
         let initialGoalType: Int
         switch goal.goalType {
@@ -391,6 +396,8 @@ struct GoalDetailView: View {
             initialGoalType = 3
         }
         _selectedGoalType = State(initialValue: initialGoalType)
+        // 初始化优先级
+        _editingImportance = State(initialValue: goal.importance)
     }
     
     // 处理保存目标编辑
@@ -530,20 +537,37 @@ struct GoalDetailView: View {
         }
     }
     
-    // 固定头部视图
+    // headerView部分插入优先级选择器
     private var headerView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // 目标名称和进度
-            goalNameProgressView
-            
-            // 下拉菜单
-            goalTypeMenuView
-            
-            // 目标描述
-            goalDescriptionView
-            
-            // 标签
-            goalTagsView
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("优先级")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+                Picker("优先级", selection: $editingImportance) {
+                    Text("低").tag(1)
+                    Text("中").tag(2)
+                    Text("高").tag(3)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .frame(width: 160)
+                .onChange(of: editingImportance) { newValue in
+                    goal.importance = newValue
+                    goal.modifyTime = Date()
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to save importance: \(error)")
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(12)
+            .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, alignment: .top)
         }
         .padding(.bottom, 16)
         .background(Color(UIColor.systemBackground))
@@ -748,6 +772,101 @@ struct GoalDetailView: View {
                     }
                     .padding(.horizontal, 16)
                     
+                    // 优先级选择器
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "flag.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemRed))
+                                .frame(width: 24, height: 24)
+                            Text("优先级")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            Spacer()
+                            Picker("优先级", selection: $editingImportance) {
+                                Text("低").tag(1)
+                                Text("中").tag(2)
+                                Text("高").tag(3)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            .frame(width: 160)
+                            .onChange(of: editingImportance) { newValue in
+                                goal.importance = newValue
+                                goal.modifyTime = Date()
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    print("Failed to save importance: \(error)")
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 关联人选择区
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "person.2.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            Text("关联人")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            Spacer()
+                            Button(action: { showContactSelector = true }) {
+                                Text("选择")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                                    .cornerRadius(15)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.horizontal, 16)
+                        // 已选联系人列表
+                        if goal.relatedContactIds.isEmpty {
+                            Text("未关联联系人")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.tertiaryLabel))
+                                .padding(.horizontal, 16)
+                        } else {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(goal.relatedContactIds, id: \ .self) { id in
+                                        if let contact = allContacts.first(where: { $0.id == id }) {
+                                            HStack(spacing: 4) {
+                                                Text(contact.name)
+                                                    .foregroundColor(Color(UIColor.systemBlue))
+                                                Button(action: {
+                                                    if let idx = goal.relatedContactIds.firstIndex(of: id) {
+                                                        goal.relatedContactIds.remove(at: idx)
+                                                        goal.modifyTime = Date()
+                                                        do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
+                                                    }
+                                                }) {
+                                                    Image(systemName: "xmark.circle.fill")
+                                                        .font(.system(size: 12))
+                                                        .foregroundColor(Color(UIColor.systemGray3))
+                                                }
+                                                .buttonStyle(PlainButtonStyle())
+                                            }
+                                            .font(.system(size: 14, weight: .medium))
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(Color(UIColor.systemBlue).opacity(0.1))
+                                            .cornerRadius(12)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                            }
+                        }
+                    }
+                    
                     // 目标描述
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -782,7 +901,6 @@ struct GoalDetailView: View {
                             .background(Color(UIColor.systemGray6))
                             .cornerRadius(8)
                         }
-                        .buttonStyle(PlainButtonStyle())
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, 16)
@@ -1051,6 +1169,17 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showSubGoalSelector) {
             GoalSelectorView(availableGoals: availableSubGoals, selectedGoals: $goal.subProject, isPresented: $showSubGoalSelector, selectorType: "subProject", goal: goal)
+        }
+        .sheet(isPresented: $showContactSelector) {
+            ContactSelectorView(allContacts: allContacts, selectedIds: goal.relatedContactIds, onSelect: { selectedIds in
+                goal.relatedContactIds = selectedIds
+                goal.modifyTime = Date()
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to save contact relation: \(error)")
+                }
+            })
         }
         .alert(isPresented: $showDeleteAlert) {
             Alert(
