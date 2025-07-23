@@ -14,7 +14,8 @@ import SwiftData
 
 struct GoalView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
+    @Query(filter: #Predicate<Goal> { $0.isDeleted == false }, 
+           sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
     
     // 分段控制器选择
     @State private var selectedSegment = 0
@@ -39,6 +40,9 @@ struct GoalView: View {
     
     // 添加目标的状态变量
     @State private var showAddGoalSheet = false
+    
+    // 回收站相关状态变量
+    @State private var showTrashView = false
     
     // 搜索相关状态变量
     @State private var showSearchBar = false
@@ -256,6 +260,16 @@ struct GoalView: View {
                             Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
                                 .font(.system(size: 24))
                                 .foregroundColor(.blue)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        
+                        // 回收站按钮
+                        Button(action: {
+                            showTrashView = true
+                        }) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 24))
+                                .foregroundColor(.gray)
                         }
                         .buttonStyle(ScaleButtonStyle())
                         
@@ -519,6 +533,9 @@ struct GoalView: View {
         .sheet(isPresented: $showAddGoalSheet) {
                 AddGoalView(isPresented: $showAddGoalSheet, selectedSegment: $selectedSegment)
             }
+        .sheet(isPresented: $showTrashView) {
+            TrashView()
+        }
         .onChange(of: searchText) { _, newValue in
             isSearching = !newValue.isEmpty
         }

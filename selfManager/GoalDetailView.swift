@@ -558,7 +558,7 @@ struct GoalDetailView: View {
         return (hasUpperGoals: !upperGoalNames.isEmpty, hasSubGoals: !subGoalNames.isEmpty, upperGoalNames: upperGoalNames, subGoalNames: subGoalNames)
     }
     
-    // 删除目标
+    // 删除目标（移到回收站）
     private func deleteGoal() {
         // 检查目标依赖关系
         let dependencies = checkGoalDependencies()
@@ -591,50 +591,15 @@ struct GoalDetailView: View {
             return
         }
         
-        // 如果没有关联，继续删除流程
-        // 删除关联的任务
-        for task in goal.tasks {
-            modelContext.delete(task)
-        }
-        
-        // 处理上级目标关联
-        let goalId = goal.id
-        let upperGoalIds = goal.upperProject
-        let subGoalIds = goal.subProject
-        
-        // 将ID字符串数组转换为UUID数组
-        let upperGoalUUIDs = upperGoalIds.compactMap { UUID(uuidString: $0) }
-        let subGoalUUIDs = subGoalIds.compactMap { UUID(uuidString: $0) }
-
-        // 查询并更新上级目标
-        if !upperGoalUUIDs.isEmpty {
-            let upperGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { upperGoal in
-                upperGoalUUIDs.contains(upperGoal.id)
-            }))
-            
-            for upperGoal in upperGoals ?? [] {
-                upperGoal.subProject.removeAll(where: { $0 == goalId.uuidString })
-                upperGoal.modifyTime = Date()
-            }
-        }
-        
-        // 查询并更新子目标
-        if !subGoalUUIDs.isEmpty {
-            let subGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { subGoal in
-                subGoalUUIDs.contains(subGoal.id)
-            }))
-            
-            for subGoal in subGoals ?? [] {
-                subGoal.upperProject.removeAll(where: { $0 == goalId.uuidString })
-                subGoal.modifyTime = Date()
-            }
-        }
-        
-        // 删除目标本身
-        modelContext.delete(goal)
+        // 如果没有关联，将目标移到回收站（软删除）
+        goal.moveToTrash()
         
         // 保存更改
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            print("移动目标到回收站失败: \(error)")
+        }
         
         // 返回上一个视图
         presentationMode.wrappedValue.dismiss()
@@ -1424,9 +1389,9 @@ struct GoalDetailView: View {
         }
         .alert(isPresented: $showDeleteAlert) {
             Alert(
-                title: Text("确认删除"),
-                message: Text("确定要删除目标 \"\(goal.name)\" 吗？此操作将同时删除所有关联的任务，且无法恢复。"),
-                primaryButton: .destructive(Text("删除")) {
+                title: Text("移到回收站"),
+                message: Text("确定要将目标 \"\(goal.name)\" 移到回收站吗？目标将在回收站保留30天，期间可以恢复。"),
+                primaryButton: .destructive(Text("移到回收站")) {
                     deleteGoal()
                 },
                 secondaryButton: .cancel(Text("取消"))

@@ -1,0 +1,616 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/GoalDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "截止日期",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无子任务",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 157
+        }
+      },
+      {
+        "comment": "",
+        "key": "子任务",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无上级目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 254
+        }
+      },
+      {
+        "comment": "",
+        "key": "上级目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 229
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 240
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标不存在",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 275
+        }
+      },
+      {
+        "comment": "",
+        "key": "未知目标",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 285
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无子目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 353
+        }
+      },
+      {
+        "comment": "",
+        "key": "子目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 328
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 339
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标不存在",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 374
+        }
+      },
+      {
+        "comment": "",
+        "key": "未知目标",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 384
+        }
+      },
+      {
+        "comment": "",
+        "key": "优先级",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 626
+        }
+      },
+      {
+        "comment": "",
+        "key": "优先级",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 630
+        }
+      },
+      {
+        "comment": "",
+        "key": "低",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 631
+        }
+      },
+      {
+        "comment": "",
+        "key": "中",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 632
+        }
+      },
+      {
+        "comment": "",
+        "key": "高",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 633
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 758
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 1333
+        }
+      },
+      {
+        "comment": "",
+        "key": "无法删除目标",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 1400
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标类型",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 831
+        }
+      },
+      {
+        "comment": "",
+        "key": "优先级",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 866
+        }
+      },
+      {
+        "comment": "",
+        "key": "优先级",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 870
+        }
+      },
+      {
+        "comment": "",
+        "key": "低",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 871
+        }
+      },
+      {
+        "comment": "",
+        "key": "中",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 872
+        }
+      },
+      {
+        "comment": "",
+        "key": "高",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 873
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标描述",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 901
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无标签",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 967
+        }
+      },
+      {
+        "comment": "",
+        "key": "标签",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 939
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 952
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标关联",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1028
+        }
+      },
+      {
+        "comment": "",
+        "key": "子任务",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1043
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无子任务",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1051
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加任务",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1121
+        }
+      },
+      {
+        "comment": "",
+        "key": "关联人",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1141
+        }
+      },
+      {
+        "comment": "",
+        "key": "未关联联系人",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1170
+        }
+      },
+      {
+        "comment": "",
+        "key": "关联人",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1152
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1157
+        }
+      },
+      {
+        "comment": "",
+        "key": "背景图片",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1219
+        }
+      },
+      {
+        "comment": "",
+        "key": "背景图片",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1231
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1242
+        }
+      },
+      {
+        "comment": "",
+        "key": "默认",
+        "location": {
+          "startingColumn": 54,
+          "startingLine": 1290
+        }
+      },
+      {
+        "comment": "",
+        "key": "删除目标",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1318
+        }
+      },
+      {
+        "comment": "",
+        "key": "返回",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1341
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1349
+        }
+      },
+      {
+        "comment": "",
+        "key": "移到回收站",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 1392
+        }
+      },
+      {
+        "comment": "",
+        "key": "确定要将目标 \"%@\" 移到回收站吗？目标将在回收站保留30天，期间可以恢复。",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1393
+        }
+      },
+      {
+        "comment": "",
+        "key": "移到回收站",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 1394
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 1397
+        }
+      },
+      {
+        "comment": "",
+        "key": "确定",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 1401
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1498
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1501
+        }
+      },
+      {
+        "comment": "",
+        "key": "请使用日期选择器设置截止日期",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1485
+        }
+      },
+      {
+        "comment": "",
+        "key": "未知编辑类型",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1493
+        }
+      },
+      {
+        "comment": "",
+        "key": "请选择要编辑的内容",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1490
+        }
+      },
+      {
+        "comment": "",
+        "key": "目标名称",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1450
+        }
+      },
+      {
+        "comment": "",
+        "key": "标签",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1469
+        }
+      },
+      {
+        "comment": "",
+        "key": "上级目标",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1473
+        }
+      },
+      {
+        "comment": "",
+        "key": "子目标",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1477
+        }
+      },
+      {
+        "comment": "",
+        "key": "任务",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1481
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1459
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加任务",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1557
+        }
+      },
+      {
+        "comment": "",
+        "key": "任务信息",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1553
+        }
+      },
+      {
+        "comment": "",
+        "key": "任务标题",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1554
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1563
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1569
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择截止日期",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1610
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1612
+        }
+      },
+      {
+        "comment": "",
+        "key": "确定",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1615
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择日期",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 1603
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择目标",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1714
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1716
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1719
+        }
+      },
+      {
+        "comment": "",
+        "key": "搜索目标",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 1669
+        }
+      }
+    ]
+  },
+  "version": 1
+}

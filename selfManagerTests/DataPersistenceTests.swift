@@ -279,7 +279,7 @@ struct DataPersistenceTests {
         let queryTime = endTime.timeIntervalSince(startTime)
         
         #expect(contacts.count == 500)
-        #expect(workContacts.count > 0)
+        #expect(colleagueContacts.count > 0)
         #expect(searchResults.count > 0)
         #expect(taggedContacts.count == 500) // 所有联系人都有"性能"标签
         #expect(queryTime < 1.0) // 查询应该在1秒内完成

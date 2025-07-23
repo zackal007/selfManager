@@ -1,0 +1,216 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/HomeView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "个人概览",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "今天也要加油哦 💪",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "积极的",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "需要改进的",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 161
+        }
+      },
+      {
+        "comment": "",
+        "key": "💰",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 304
+        }
+      },
+      {
+        "comment": "",
+        "key": "资产概览",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 306
+        }
+      },
+      {
+        "comment": "",
+        "key": "W",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 319
+        }
+      },
+      {
+        "comment": "",
+        "key": "现金",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 338
+        }
+      },
+      {
+        "comment": "",
+        "key": "负债",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 360
+        }
+      },
+      {
+        "comment": "",
+        "key": "其他",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 382
+        }
+      },
+      {
+        "comment": "",
+        "key": "🎯",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 410
+        }
+      },
+      {
+        "comment": "",
+        "key": "近期目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 412
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 425
+        }
+      },
+      {
+        "comment": "",
+        "key": "个目标",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 428
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无目标",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 449
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加目标",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 459
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 495
+        }
+      },
+      {
+        "comment": "",
+        "key": "😊",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 529
+        }
+      },
+      {
+        "comment": "",
+        "key": "心情",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 531
+        }
+      },
+      {
+        "comment": "",
+        "key": "🏆",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 585
+        }
+      },
+      {
+        "comment": "",
+        "key": "成就",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 587
+        }
+      },
+      {
+        "comment": "",
+        "key": "📝",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 650
+        }
+      },
+      {
+        "comment": "",
+        "key": "待改进",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 652
+        }
+      },
+      {
+        "comment": "",
+        "key": "😰",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 703
+        }
+      },
+      {
+        "comment": "",
+        "key": "最近焦虑",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 705
+        }
+      },
+      {
+        "comment": "",
+        "key": "⚠️",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 723
+        }
+      }
+    ]
+  },
+  "version": 1
+}

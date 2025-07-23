@@ -1,0 +1,64 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/ImagePickerView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "选择背景图片",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 158
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 160
+        }
+      },
+      {
+        "comment": "",
+        "key": "预设背景",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "默认渐变",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "自定义背景",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "从相册选择",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "使用此图片",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 142
+        }
+      }
+    ]
+  },
+  "version": 1
+}

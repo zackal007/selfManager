@@ -8,8 +8,8 @@
 import Foundation
 import SwiftData
 
-typealias Goal = ModelSchemaV3.Goal
-typealias GoalTask = ModelSchemaV3.GoalTask
+typealias Goal = ModelSchemaV4.Goal
+typealias GoalTask = ModelSchemaV4.GoalTask
 
 enum ModelSchemaV1: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 0, 0)
@@ -221,13 +221,109 @@ enum ModelSchemaV2: VersionedSchema {
     }
 }
 
+// 新增ModelSchemaV4，支持回收站功能
+enum ModelSchemaV4: VersionedSchema {
+    static var versionIdentifier = Schema.Version(1, 3, 0)
+    static var models: [any PersistentModel.Type] { [ModelSchemaV4.Goal.self, ModelSchemaV4.GoalTask.self, Item.self, Record.self, User.self, Contact.self, Asset.self] }
+
+    @Model
+    final class Goal {
+        var id: UUID
+        var name: String
+        var goalDescription: String
+        var progress: Double
+        var backgroundImage: String?
+        @Attribute(.externalStorage)
+        var tags: [String]
+        @Attribute(.externalStorage)
+        var upperProject: [String]
+        @Attribute(.externalStorage)
+        var subProject: [String]
+        var recordNum: Int
+        var category: String
+        var goalTypes: String
+        var createTime: Date
+        var modifyTime: Date
+        var visitTime: Date
+        var dueDate: Date?
+        @Attribute(.externalStorage)
+        var relatedContactIds: [UUID] = []
+        var importance: Int = 1
+        
+        // 回收站相关字段
+        var isDeleted: Bool = false
+        var deletedDate: Date?
+        
+        var goalType: GoalType {
+            get { GoalType.from(string: goalTypes) }
+            set { goalTypes = newValue.rawValue }
+        }
+
+        @Relationship(deleteRule: .cascade, inverse: \GoalTask.goal)
+        var tasks: [GoalTask] = []
+
+        init(name: String, description: String, progress: Double = 0.0, backgroundImage: String? = nil, tags: [String] = [], upperProject: [String] = [], subProject: [String] = [], recordNum: Int = 0, category: String = "", goalType: GoalType = .shortTerm, dueDate: Date? = nil, relatedContactIds: [UUID] = [], importance: Int = 1) {
+            self.id = UUID()
+            self.name = name
+            self.goalDescription = description
+            self.progress = progress
+            self.backgroundImage = backgroundImage
+            self.tags = tags
+            self.upperProject = upperProject
+            self.subProject = subProject
+            self.recordNum = recordNum
+            self.category = category
+            self.goalTypes = goalType.rawValue
+            self.createTime = Date()
+            self.modifyTime = Date()
+            self.visitTime = Date()
+            self.dueDate = dueDate
+            self.relatedContactIds = relatedContactIds
+            self.importance = importance
+            self.isDeleted = false
+            self.deletedDate = nil
+        }
+        
+        // 软删除方法
+        func moveToTrash() {
+            self.isDeleted = true
+            self.deletedDate = Date()
+            self.modifyTime = Date()
+        }
+        
+        // 从回收站恢复
+        func restoreFromTrash() {
+            self.isDeleted = false
+            self.deletedDate = nil
+            self.modifyTime = Date()
+        }
+    }
+
+    @Model
+    final class GoalTask {
+        var id: UUID
+        var title: String
+        var isCompleted: Bool
+        var createTime: Date
+
+        var goal: Goal?
+
+        init(title: String, isCompleted: Bool = false) {
+            self.id = UUID()
+            self.title = title
+            self.isCompleted = isCompleted
+            self.createTime = Date()
+        }
+    }
+}
+
 enum ModelMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [ModelSchemaV1.self, ModelSchemaV2.self, ModelSchemaV3.self]
+        [ModelSchemaV1.self, ModelSchemaV2.self, ModelSchemaV3.self, ModelSchemaV4.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4]
     }
 
     static let migrateV1toV2 = MigrationStage.custom(
@@ -244,4 +340,6 @@ enum ModelMigrationPlan: SchemaMigrationPlan {
     )
 
     static let migrateV2toV3 = MigrationStage.lightweight(fromVersion: ModelSchemaV2.self, toVersion: ModelSchemaV3.self)
+    
+    static let migrateV3toV4 = MigrationStage.lightweight(fromVersion: ModelSchemaV3.self, toVersion: ModelSchemaV4.self)
 }

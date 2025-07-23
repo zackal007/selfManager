@@ -32,8 +32,8 @@ struct selfManagerApp: App {
         do {
             // 使用简化的方式创建模型容器，只包含当前版本的模型
             let schema = Schema([
-                ModelSchemaV3.Goal.self,
-                ModelSchemaV3.GoalTask.self,
+                ModelSchemaV4.Goal.self,
+                ModelSchemaV4.GoalTask.self,
                 Item.self,
                 Record.self,
                 Contact.self,
@@ -83,6 +83,10 @@ struct selfManagerApp: App {
                             .tag(3)
                     }
                     .modelContainer(container)
+                    .onAppear {
+                        // 启动回收站清理服务
+                        TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
+                    }
                 } else {
                     // 显示加载视图和错误处理
                     VStack {

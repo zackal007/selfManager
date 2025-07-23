@@ -1,0 +1,152 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/RecordView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "记录类型",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 278
+        }
+      },
+      {
+        "comment": "",
+        "key": "记录",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "隐藏日期选择器",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "显示日期选择器",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "跳转到今天",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 270
+        }
+      },
+      {
+        "comment": "",
+        "key": "日记",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 279
+        }
+      },
+      {
+        "comment": "",
+        "key": "周记",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 280
+        }
+      },
+      {
+        "comment": "",
+        "key": "月记",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 281
+        }
+      },
+      {
+        "comment": "",
+        "key": "季记",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 282
+        }
+      },
+      {
+        "comment": "",
+        "key": "年记",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 566
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld月",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 614
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 654
+        }
+      },
+      {
+        "comment": "",
+        "key": "Q%lld",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 711
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 775
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 857
+        }
+      },
+      {
+        "comment": "",
+        "key": "心情",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 943
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存成功",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 982
+        }
+      }
+    ]
+  },
+  "version": 1
+}

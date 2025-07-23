@@ -1,0 +1,88 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/UserEditView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "编辑用户信息",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 91,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "基本信息",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 11
+        }
+      },
+      {
+        "comment": "",
+        "key": "标签",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "用户名",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 12
+        }
+      },
+      {
+        "comment": "",
+        "key": "头像 (Emoji 或图像名)",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 13
+        }
+      },
+      {
+        "comment": "",
+        "key": "描述",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 14
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加标签",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "标签",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 20
+        }
+      }
+    ]
+  },
+  "version": 1
+}
