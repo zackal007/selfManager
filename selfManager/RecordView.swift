@@ -16,6 +16,10 @@ struct RecordView: View {
     // 查询记录
     @Query(sort: \Record.createTime, order: .reverse) private var allRecords: [Record]
     
+    // 查询所有目标和联系人（用于链接导航）
+    @Query private var allGoals: [Goal]
+    @Query private var allContacts: [Contact]
+    
     // 当前显示的记录
     @State private var currentRecord: Record?
     
@@ -76,6 +80,14 @@ struct RecordView: View {
     
     // 显示保存成功提示
     @State private var showSaveSuccessToast = false
+    
+    // 导航相关状态
+    @State private var selectedGoalId: UUID? = nil
+    @State private var selectedContactId: UUID? = nil
+    @State private var selectedRecordId: UUID? = nil
+    @State private var showGoalDetail = false
+    @State private var showContactDetail = false
+    @State private var showRecordDetail = false
     
     // 日期格式化器 - 用于显示年月
     private let yearMonthFormatter: DateFormatter = {
@@ -898,26 +910,31 @@ struct RecordView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             // 移除记录标题
                             
-                            TextEditor(text: $recordContent)
-                                .frame(minHeight: UIScreen.main.bounds.height * 0.5) // 使用屏幕高度的50%作为最小高度
-                                .padding(8)
-                                .background(Color(UIColor.systemBackground))
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                                )
-                                .padding(.horizontal)
-                                .onChange(of: recordContent) { _, _ in
-                                    // 标记内容已修改
-                                    contentModified = true
-                                }
-                                .onAppear {
-                                    // 加载当前选择日期的记录
-                                    loadCurrentRecord()
-                                    // 重置修改状态
-                                    contentModified = false
-                                }
+                            MarkdownTextEditor(text: $recordContent, minHeight: UIScreen.main.bounds.height * 0.5) { linkType, linkId in
+                // 处理链接点击
+                switch linkType {
+                case .goal:
+                    selectedGoalId = linkId
+                    showGoalDetail = true
+                case .contact:
+                    selectedContactId = linkId
+                    showContactDetail = true
+                case .record:
+                    selectedRecordId = linkId
+                    showRecordDetail = true
+                }
+            }
+            .padding(.horizontal)
+            .onChange(of: recordContent) { _, _ in
+                // 标记内容已修改
+                contentModified = true
+            }
+            .onAppear {
+                // 加载当前选择日期的记录
+                loadCurrentRecord()
+                // 重置修改状态
+                contentModified = false
+            }
                         }
                         
                         // 心情选择（只在日记页签中显示）
@@ -988,6 +1005,55 @@ struct RecordView: View {
                 .cornerRadius(16)
             }
             .navigationBarHidden(true)
+            .background(
+                Group {
+                    // 目标详情页导航
+                    NavigationLink(
+                        destination: Group {
+                            if let goalId = selectedGoalId,
+                               let goal = allGoals.first(where: { $0.id == goalId }) {
+                                GoalDetailView(goal: goal)
+                            } else {
+                                EmptyView()
+                            }
+                        },
+                        isActive: $showGoalDetail
+                    ) {
+                        EmptyView()
+                    }
+                    
+                    // 联系人详情页导航
+                    NavigationLink(
+                        destination: Group {
+                            if let contactId = selectedContactId,
+                               let contact = allContacts.first(where: { $0.id == contactId }) {
+                                ContactDetailView(contact: contact)
+                            } else {
+                                EmptyView()
+                            }
+                        },
+                        isActive: $showContactDetail
+                    ) {
+                        EmptyView()
+                    }
+                    
+                    // 记录详情页导航（如果需要的话）
+                    NavigationLink(
+                        destination: Group {
+                            if let recordId = selectedRecordId,
+                               let record = allRecords.first(where: { $0.id == recordId }) {
+                                // 这里可以创建一个记录详情视图，或者直接跳转到对应日期
+                                RecordView(selectedTab: .constant(2))
+                            } else {
+                                EmptyView()
+                            }
+                        },
+                        isActive: $showRecordDetail
+                    ) {
+                        EmptyView()
+                    }
+                }
+            )
             .onAppear {
                 // 视图首次加载时加载当前记录
                 loadCurrentRecord()
