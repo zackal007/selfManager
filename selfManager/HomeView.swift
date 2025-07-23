@@ -75,21 +75,38 @@ struct HomeView: View {
         NavigationView {
             ZStack(alignment: .top) {
                 ScrollView {
-                VStack(spacing: 16) {
-                    // 顶部标题
-                    HStack {
-                        Text("个人概览")
-                    .font(.largeTitle)
-                    .fontWeight(.heavy)
+                VStack(spacing: 20) {
+                    // 顶部标题 - 优化设计
+                    HStack(alignment: .center) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("个人概览")
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Text("今天也要加油哦 💪")
+                                .font(.subheadline)
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                        }
+                        
                         Spacer()
+                        
+                        // 通知按钮 - 优化设计
                         Button(action: {}) {
-                            Image(systemName: "bell.badge")
-                                .font(.title2)
-                                .foregroundColor(Color(UIColor.systemBlue))
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                    .frame(width: 40, height: 40)
+                                
+                                Image(systemName: "bell.badge")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
                 
                 // 用户信息卡片
                 userProfileSection
@@ -100,64 +117,67 @@ struct HomeView: View {
                 // 资产信息
                 assetSection
                 
-                // 积极的模块标题
+                // 积极的模块标题 - 优化设计
                 HStack {
-                    Text("积极的")
-                        .font(.subheadline)
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                        .padding(.horizontal, 4)
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(Color(UIColor.systemGreen).opacity(0.2))
+                            .frame(width: 6, height: 6)
+                        
+                        Text("积极的")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(Color(UIColor.systemGreen))
+                    }
                     Spacer()
                 }
-                .padding(.horizontal, 4)
-                .padding(.top, 8)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
                 
                 // 目标信息 - 独立卡片
                 goalSection
-                    .padding(12)
+                    .padding(18)
                     .background(Color(UIColor.secondarySystemGroupedBackground))
-                    .cornerRadius(12)
+                    .cornerRadius(16)
+                    .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
                 
                 // 心情记录和成就展示 - 放在同一行
-                HStack(spacing: 12) {
+                HStack(spacing: 16) {
                     // 心情记录 - 独立卡片
                     moodSection
-                        .padding(12)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                     // 成就展示 - 独立卡片
                     achievementSection
-                        .padding(12)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(12)
                         .frame(maxWidth: .infinity)
                 }
                 
-                // 需要改进的模块标题
+                // 需要改进的模块标题 - 优化设计
                 HStack {
-                    Text("需要改进的")
-                        .font(.subheadline)
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                        .padding(.horizontal, 4)
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(Color(UIColor.systemOrange).opacity(0.2))
+                            .frame(width: 6, height: 6)
+                        
+                        Text("需要改进的")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(Color(UIColor.systemOrange))
+                    }
                     Spacer()
                 }
-                .padding(.horizontal, 4)
-                .padding(.top, 8)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
                 
                 // 待改进 - 独立卡片
                 improvementSection
-                    .padding(12)
-                    .background(Color(UIColor.secondarySystemGroupedBackground))
-                    .cornerRadius(12)
                 
                 // 最近焦虑 - 独立卡片
                 anxietySection
-                    .padding(12)
+                    .padding(18)
                     .background(Color(UIColor.secondarySystemGroupedBackground))
-                    .cornerRadius(12)
+                    .cornerRadius(16)
+                    .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
                 }
                 .padding(.top, 50) // 为顶部模糊效果留出空间
             }
@@ -171,61 +191,96 @@ struct HomeView: View {
         }
     }
     
-    // 用户信息区域 - 健康风格设计
+    // 用户信息区域 - 现代化精致设计
     private var userProfileSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
-                // 用户头像
+                // 用户头像 - 现代化设计
                 Text(user.avatar)
-                    .font(.system(size: 50))
-                    .frame(width: 60, height: 60)
-                    .background(Color(UIColor.systemBackground))
+                    .font(.system(size: 52))
+                    .frame(width: 68, height: 68)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.1), Color(UIColor.systemBlue).opacity(0.05)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color(UIColor.systemGray5), lineWidth: 1))
-                    .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                    )
+                    .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    // 用户名
+                VStack(alignment: .leading, spacing: 6) {
+                    // 用户名 - 精致字体
                     Text(user.name)
-                        .font(.title3)
-                        .fontWeight(.bold)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.label))
                     
-                    // 标签
-                    HStack(spacing: 6) {
+                    // 标签 - 现代化样式
+                    HStack(spacing: 8) {
                         ForEach(user.tags, id: \.self) { tag in
                             Text(tag)
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(Color(UIColor.systemBlue).opacity(0.12))
+                                )
                                 .foregroundColor(Color(UIColor.systemBlue))
-                                .cornerRadius(12)
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color(UIColor.systemBlue).opacity(0.2), lineWidth: 0.5)
+                                )
                         }
                     }
                 }
                 
                 Spacer()
                 
-                // 编辑按钮
+                // 编辑按钮 - 现代化设计
                 Button(action: { showingEdit = true }) {
                     Image(systemName: "pencil")
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.systemBlue))
-                        .font(.headline)
+                        .frame(width: 36, height: 36)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color(UIColor.systemBlue).opacity(0.2), lineWidth: 0.5)
+                        )
                 }
             }
             
-            // 用户描述
+            // 用户描述 - 精致排版
             Text(user.userDescription)
-                .font(.footnote)
+                .font(.system(size: 15, weight: .medium))
                 .foregroundColor(Color(UIColor.secondaryLabel))
-                .padding(.top, 4)
-                .lineLimit(2)
+                .lineSpacing(2)
+                .lineLimit(3)
+                .padding(.top, 2)
         }
-        .padding(16)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(UIColor.systemGray5).opacity(0.5), lineWidth: 0.5)
+                )
+        )
+        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
     }
     
     // 资产区域 - 健康风格设计
@@ -346,17 +401,16 @@ struct HomeView: View {
         .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
-    // 目标区域 - 扁平化设计
+    // 目标区域 - 优化设计
     private var goalSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 // 标题和emoji图标
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Text("🎯")
-                        .font(.title3)
+                        .font(.system(size: 20))
                     Text("近期目标")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(UIColor.label))
                 }
                 
@@ -367,9 +421,14 @@ struct HomeView: View {
                     // 切换到目标标签页（索引为1）
                     selectedTab = 1
                 }) {
-                    Text("\(goals.count)个目标")
-                        .font(.subheadline)
-                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    HStack(spacing: 4) {
+                        Text("\(goals.count)")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("个目标")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                    }
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -379,66 +438,77 @@ struct HomeView: View {
                     selectedTab = 1
                 }) {
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                 }
             }
             
             if goals.isEmpty {
-                // 空状态
-                VStack(spacing: 8) {
+                // 空状态 - 优化设计
+                VStack(spacing: 12) {
                     Text("暂无目标")
-                        .font(.subheadline)
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Button(action: {
                         // 切换到目标标签页（索引为1）
                         selectedTab = 1
                     }) {
-                        Text("去添加目标")
-                            .font(.caption)
-                            .foregroundColor(Color(UIColor.systemBlue))
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 14))
+                            Text("添加目标")
+                                .font(.system(size: 14, weight: .medium))
+                        }
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(20)
                     }
                 }
-                .frame(height: 60)
+                .frame(height: 80)
                 .frame(maxWidth: .infinity)
                 .background(Color(UIColor.systemBackground))
-                .cornerRadius(8)
+                .cornerRadius(12)
+                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
             } else {
-                // 目标列表 - 水平滚动
+                // 目标列表 - 水平滚动优化
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 16) {
                         ForEach(goals.prefix(5)) { goal in
                             NavigationLink(destination: GoalDetailView(goal: goal)) {
-                                VStack(alignment: .leading, spacing: 6) {
+                                VStack(alignment: .leading, spacing: 10) {
                                     // 目标名称
                                     Text(goal.name)
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                        .lineLimit(1)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
                                         .foregroundColor(Color(UIColor.label))
                                     
-                                    // 进度条
-                                    ZStack(alignment: .leading) {
-                                        // 背景
-                                        RoundedRectangle(cornerRadius: 3)
-                                            .frame(height: 5)
-                                            .foregroundColor(Color(UIColor.systemGray5))
+                                    // 进度条优化
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        ProgressView(value: goal.progress, total: 1.0)
+                                            .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
+                                            .scaleEffect(y: 1.2)
                                         
-                                        // 进度
-                                        RoundedRectangle(cornerRadius: 3)
-                                            .frame(width: CGFloat(goal.progress) * 120, height: 5)
-                                            .foregroundColor(Color(UIColor.systemBlue))
+                                        HStack {
+                                            Text("\(Int(goal.progress * 100))%")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(Color(UIColor.systemBlue))
+                                            Spacer()
+                                            if goal.progress >= 1.0 {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(Color(UIColor.systemGreen))
+                                            }
+                                        }
                                     }
-                                    
-                                    // 进度文本
-                                    Text("\(Int(goal.progress * 100))%")
-                                        .font(.caption)
-                                        .foregroundColor(Color(UIColor.secondaryLabel))
                                 }
-                                .frame(width: 150)
-                                .padding(10)
+                                .frame(width: 150, height: 80)
+                                .padding(16)
                                 .background(Color(UIColor.systemBackground))
-                                .cornerRadius(8)
+                                .cornerRadius(12)
+                                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -450,17 +520,16 @@ struct HomeView: View {
         }
     }
     
-    // 心情区域 - 扁平化设计
+    // 心情区域 - 优化设计
     var moodSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 // 标题和emoji图标
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Text("😊")
-                        .font(.title3)
+                        .font(.system(size: 20))
                     Text("心情")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(UIColor.label))
                 }
                 
@@ -468,30 +537,31 @@ struct HomeView: View {
                 
                 // 详情按钮
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color(UIColor.tertiaryLabel))
             }
             
             // 心情图标 - 横向滚动
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     ForEach(moods, id: \.self) { mood in
                         Text(mood)
-                            .font(.title2)
-                            .frame(width: 42, height: 42)
+                            .font(.system(size: 24))
+                            .frame(width: 44, height: 44)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                            .cornerRadius(12)
+                            .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                     }
                 }
-                .padding(.horizontal, 2)
-                .padding(.vertical, 4)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 6)
             }
-            .frame(height: 60) // 固定高度
+            .frame(height: 56)
         }
-        .padding(16)
+        .padding(18)
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
+        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
     }
     
     // 成就展示区域 - 扁平化设计
@@ -624,17 +694,16 @@ struct HomeView: View {
         .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
-    // 最近焦虑区域 - 扁平化设计
+    // 最近焦虑区域 - 优化设计
     var anxietySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 // 标题和emoji图标
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Text("😰")
-                        .font(.title3)
+                        .font(.system(size: 20))
                     Text("最近焦虑")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(UIColor.label))
                 }
                 
@@ -642,34 +711,33 @@ struct HomeView: View {
                 
                 // 详情按钮
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color(UIColor.tertiaryLabel))
             }
             
             // 焦虑列表
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 ForEach(anxieties, id: \.self) { anxiety in
-                    HStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         // 焦虑图标
                         Text("⚠️")
-                            .font(.body)
+                            .font(.system(size: 16))
                         
                         // 焦虑内容
                         Text(anxiety)
-                            .font(.subheadline)
+                            .font(.system(size: 15, weight: .medium))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         
                         Spacer()
                     }
-                    .padding(10)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
                     .background(Color(UIColor.systemBackground))
-                    .cornerRadius(8)
+                    .cornerRadius(12)
+                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                 }
             }
         }
-        .padding(12)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(12)
     }
 }
 
