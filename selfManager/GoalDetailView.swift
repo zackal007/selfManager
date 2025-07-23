@@ -21,21 +21,40 @@ struct GoalDetailView: View {
     @State private var showUpperGoalSelector = false
     @State private var showSubGoalSelector = false
     @State private var showDeleteAlert = false
+    @State private var showDependencyWarning = false
+    @State private var dependencyWarningMessage = ""
     @State private var selectedGoalType = 0
     @State private var showContactSelector = false
     @State private var editingImportance: Int = 1
     @State private var showImagePicker = false
     @State private var selectedImage: UIImage? = nil
+    
+    // 根据目标名称获取目标对象
+    private func getGoalByName(name: String) -> Goal? {
+        // 首先尝试通过UUID查找（如果名称是UUID字符串）
+        if let uuid = UUID(uuidString: name) {
+            let descriptor = FetchDescriptor<Goal>(predicate: #Predicate<Goal> { goal in
+                goal.id == uuid
+            })
+            return try? modelContext.fetch(descriptor).first
+        }
+        
+        // 如果不是UUID或通过UUID未找到，则通过名称查找
+        let descriptor = FetchDescriptor<Goal>(predicate: #Predicate<Goal> { goal in
+            goal.name == name
+        })
+        return try? modelContext.fetch(descriptor).first
+    }
     @State private var selectedBackgroundImage: String? = nil
     
     // 常量
     private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
     private let backgroundImages = ["GoalBackground", "GoalBackground2", nil]
     private var availableUpperGoals: [String] {
-        allGoals.map { $0.name }.filter { $0 != goal.name }
+        allGoals.filter { $0.id != goal.id }.map { $0.id.uuidString }
     }
     private var availableSubGoals: [String] { 
-        allGoals.map { $0.name }.filter { $0 != goal.name }
+        allGoals.filter { $0.id != goal.id }.map { $0.id.uuidString }
     }
     
     // 目标对象
@@ -247,11 +266,28 @@ struct GoalDetailView: View {
                                     .foregroundColor(Color(UIColor.systemBlue))
                                     .frame(width: 24, height: 24)
                                 
-                                // 目标名称
-                                Text(project)
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                // 目标名称 - 添加导航链接
+                                NavigationLink(destination: Group {
+                                    if let uuid = UUID(uuidString: project),
+                                       let targetGoal = allGoals.first(where: { $0.id == uuid }) {
+                                        GoalDetailView(goal: targetGoal)
+                                    } else {
+                                        Text("目标不存在")
+                                    }
+                                }) {
+                                    if let uuid = UUID(uuidString: project),
+                                       let targetGoal = allGoals.first(where: { $0.id == uuid }) {
+                                        Text(targetGoal.name)
+                                            .font(.system(size: 15))
+                                            .foregroundColor(Color(UIColor.label))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    } else {
+                                        Text("未知目标")
+                                            .font(.system(size: 15))
+                                            .foregroundColor(Color(UIColor.secondaryLabel))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
                                 
                                 // 删除按钮
                                 Button(action: {
@@ -329,11 +365,28 @@ struct GoalDetailView: View {
                                     .foregroundColor(Color(UIColor.systemGreen))
                                     .frame(width: 24, height: 24)
                                 
-                                // 目标名称
-                                Text(project)
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                // 目标名称 - 添加导航链接
+                                NavigationLink(destination: Group {
+                                    if let uuid = UUID(uuidString: project),
+                                       let targetGoal = allGoals.first(where: { $0.id == uuid }) {
+                                        GoalDetailView(goal: targetGoal)
+                                    } else {
+                                        Text("目标不存在")
+                                    }
+                                }) {
+                                    if let uuid = UUID(uuidString: project),
+                                       let targetGoal = allGoals.first(where: { $0.id == uuid }) {
+                                        Text(targetGoal.name)
+                                            .font(.system(size: 15))
+                                            .foregroundColor(Color(UIColor.label))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    } else {
+                                        Text("未知目标")
+                                            .font(.system(size: 15))
+                                            .foregroundColor(Color(UIColor.secondaryLabel))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
                                 
                                 // 删除按钮
                                 Button(action: {
@@ -478,8 +531,67 @@ struct GoalDetailView: View {
         }
     }
     
+    // 检查目标是否被其他目标关联
+    private func checkGoalDependencies() -> (hasUpperGoals: Bool, hasSubGoals: Bool, upperGoalNames: [String], subGoalNames: [String]) {
+        let goalId = goal.id.uuidString
+        var upperGoalNames: [String] = []
+        var subGoalNames: [String] = []
+        
+        // 查询所有目标
+        let allGoals = try? modelContext.fetch(FetchDescriptor<Goal>())
+        
+        for otherGoal in allGoals ?? [] {
+            // 跳过当前目标
+            if otherGoal.id == goal.id { continue }
+            
+            // 检查是否有其他目标将当前目标作为上级目标
+            if otherGoal.upperProject.contains(goalId) {
+                upperGoalNames.append(otherGoal.name)
+            }
+            
+            // 检查是否有其他目标将当前目标作为子目标
+            if otherGoal.subProject.contains(goalId) {
+                subGoalNames.append(otherGoal.name)
+            }
+        }
+        
+        return (hasUpperGoals: !upperGoalNames.isEmpty, hasSubGoals: !subGoalNames.isEmpty, upperGoalNames: upperGoalNames, subGoalNames: subGoalNames)
+    }
+    
     // 删除目标
     private func deleteGoal() {
+        // 检查目标依赖关系
+        let dependencies = checkGoalDependencies()
+        
+        // 如果有关联目标，显示警告并阻止删除
+        if dependencies.hasUpperGoals || dependencies.hasSubGoals {
+            var warningMessage = "无法删除目标 \"\(goal.name)\"，因为它被以下目标关联：\n\n"
+            
+            if dependencies.hasUpperGoals {
+                warningMessage += "作为上级目标被关联：\n"
+                for name in dependencies.upperGoalNames {
+                    warningMessage += "• \(name)\n"
+                }
+                warningMessage += "\n"
+            }
+            
+            if dependencies.hasSubGoals {
+                warningMessage += "作为子目标被关联：\n"
+                for name in dependencies.subGoalNames {
+                    warningMessage += "• \(name)\n"
+                }
+                warningMessage += "\n"
+            }
+            
+            warningMessage += "请先在相关目标中解除关联，然后再删除此目标。"
+            
+            // 显示警告对话框
+            showDependencyWarning = true
+            dependencyWarningMessage = warningMessage
+            return
+        }
+        
+        // 如果没有关联，继续删除流程
         // 删除关联的任务
         for task in goal.tasks {
             modelContext.delete(task)
@@ -1320,6 +1432,11 @@ struct GoalDetailView: View {
                 secondaryButton: .cancel(Text("取消"))
             )
         }
+        .alert("无法删除目标", isPresented: $showDependencyWarning) {
+            Button("确定", role: .cancel) { }
+        } message: {
+            Text(dependencyWarningMessage)
+        }
         .overlay(
             VStack {
                 Spacer()
@@ -1551,19 +1668,32 @@ struct DatePickerView: View {
 }
 
 struct GoalSelectorView: View {
-    var availableGoals: [String]
-    @Binding var selectedGoals: [String]
+    var availableGoals: [String] // 目标ID列表
+    @Binding var selectedGoals: [String] // 选中的目标ID列表
     @Binding var isPresented: Bool
     @State private var searchText = ""
     var selectorType: String // 用于区分上级目标和子目标
     let goal: Goal
     @Environment(\.modelContext) private var modelContext
+    @Query private var allGoals: [Goal] // 添加查询所有目标
+    
+    // 根据ID获取目标名称的方法
+    private func getGoalName(id: String) -> String {
+        if let uuid = UUID(uuidString: id),
+           let foundGoal = allGoals.first(where: { $0.id == uuid }) {
+            return foundGoal.name
+        }
+        return "未知目标"
+    }
     
     var filteredGoals: [String] {
         if searchText.isEmpty {
             return availableGoals
         } else {
-            return availableGoals.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            return availableGoals.filter { goalId in
+                let name = getGoalName(id: goalId)
+                return name.localizedCaseInsensitiveContains(searchText)
+            }
         }
     }
     
@@ -1598,15 +1728,15 @@ struct GoalSelectorView: View {
                     .padding(.top, 10)
                 
                 List {
-                    ForEach(filteredGoals, id: \.self) { goal in
+                    ForEach(filteredGoals, id: \.self) { goalId in
                         Button(action: {
-                            toggleGoalSelection(goal)
+                            toggleGoalSelection(goalId)
                         }) {
                             HStack {
-                                Text(goal)
+                                Text(getGoalName(id: goalId))
                                     .foregroundColor(.primary)
                                 Spacer()
-                                if selectedGoals.contains(goal) {
+                                if selectedGoals.contains(goalId) {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
                                 }
@@ -1629,19 +1759,107 @@ struct GoalSelectorView: View {
         }
     }
     
-    private func toggleGoalSelection(_ goal: String) {
-        if let index = selectedGoals.firstIndex(of: goal) {
+    private func toggleGoalSelection(_ goalId: String) {
+        if let index = selectedGoals.firstIndex(of: goalId) {
             selectedGoals.remove(at: index)
         } else {
-            selectedGoals.append(goal)
+            selectedGoals.append(goalId)
         }
     }
     
+
+    
     private func saveGoalRelation() {
+        // 获取当前目标的ID字符串
+        let currentGoalId = goal.id.uuidString
+        
+        // 处理上级目标关系
         if selectorType == "upperProject" {
+            // 获取之前的上级目标列表，用于后续比较
+            let previousUpperProjects = goal.upperProject
+            
+            // 更新当前目标的上级目标列表
             goal.upperProject = selectedGoals
-        } else if selectorType == "subProject" {
+            
+            // 找出被移除的上级目标
+            let removedUpperProjects = previousUpperProjects.filter { !selectedGoals.contains($0) }
+            
+            // 找出新增的上级目标
+            let addedUpperProjects = selectedGoals.filter { !previousUpperProjects.contains($0) }
+            
+            // 将UUID字符串转换为UUID
+            let removedUpperUUIDs = removedUpperProjects.compactMap { UUID(uuidString: $0) }
+            let addedUpperUUIDs = addedUpperProjects.compactMap { UUID(uuidString: $0) }
+            
+            // 处理被移除的上级目标：从它们的子目标列表中移除当前目标
+            if !removedUpperUUIDs.isEmpty {
+                let removedUpperGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { upperGoal in
+                    removedUpperUUIDs.contains(upperGoal.id)
+                }))
+                
+                for upperGoal in removedUpperGoals ?? [] {
+                    upperGoal.subProject.removeAll(where: { $0 == currentGoalId })
+                    upperGoal.modifyTime = Date()
+                }
+            }
+            
+            // 处理新增的上级目标：将当前目标添加到它们的子目标列表中
+            if !addedUpperUUIDs.isEmpty {
+                let addedUpperGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { upperGoal in
+                    addedUpperUUIDs.contains(upperGoal.id)
+                }))
+                
+                for upperGoal in addedUpperGoals ?? [] {
+                    if !upperGoal.subProject.contains(currentGoalId) {
+                        upperGoal.subProject.append(currentGoalId)
+                        upperGoal.modifyTime = Date()
+                    }
+                }
+            }
+        } 
+        // 处理子目标关系
+        else if selectorType == "subProject" {
+            // 获取之前的子目标列表，用于后续比较
+            let previousSubProjects = goal.subProject
+            
+            // 更新当前目标的子目标列表
             goal.subProject = selectedGoals
+            
+            // 找出被移除的子目标
+            let removedSubProjects = previousSubProjects.filter { !selectedGoals.contains($0) }
+            
+            // 找出新增的子目标
+            let addedSubProjects = selectedGoals.filter { !previousSubProjects.contains($0) }
+            
+            // 将UUID字符串转换为UUID
+            let removedSubUUIDs = removedSubProjects.compactMap { UUID(uuidString: $0) }
+            let addedSubUUIDs = addedSubProjects.compactMap { UUID(uuidString: $0) }
+            
+            // 处理被移除的子目标：从它们的上级目标列表中移除当前目标
+            if !removedSubUUIDs.isEmpty {
+                let removedSubGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { subGoal in
+                    removedSubUUIDs.contains(subGoal.id)
+                }))
+                
+                for subGoal in removedSubGoals ?? [] {
+                    subGoal.upperProject.removeAll(where: { $0 == currentGoalId })
+                    subGoal.modifyTime = Date()
+                }
+            }
+            
+            // 处理新增的子目标：将当前目标添加到它们的上级目标列表中
+            if !addedSubUUIDs.isEmpty {
+                let addedSubGoals = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { subGoal in
+                    addedSubUUIDs.contains(subGoal.id)
+                }))
+                
+                for subGoal in addedSubGoals ?? [] {
+                    if !subGoal.upperProject.contains(currentGoalId) {
+                        subGoal.upperProject.append(currentGoalId)
+                        subGoal.modifyTime = Date()
+                    }
+                }
+            }
         }
         
         goal.modifyTime = Date()
