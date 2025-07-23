@@ -35,7 +35,7 @@ struct HomeView: View {
     }
     
     // 资产信息
-    @Query private var assets: [Asset]
+    @Query(sort: \Asset.lastUpdateDate, order: .reverse) private var assets: [Asset]
     
     private var asset: Asset {
         if let firstAsset = assets.first {
