@@ -10,6 +10,48 @@ import UIKit
 import Foundation
 import SwiftData
 
+// 目标优先级枚举
+enum GoalImportance: Int, CaseIterable {
+    case low = 1      // 低
+    case medium = 2   // 中
+    case high = 3     // 高
+    case critical = 4 // 关键
+    
+    var displayName: String {
+        switch self {
+        case .low: return "低"
+        case .medium: return "中"
+        case .high: return "高"
+        case .critical: return "关键"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .low: return Color.gray
+        case .medium: return Color.blue
+        case .high: return Color.orange
+        case .critical: return Color.red
+        }
+    }
+    
+    var iconName: String {
+        switch self {
+        case .low: return "minus.circle.fill"
+        case .medium: return "circle.fill"
+        case .high: return "exclamationmark.circle.fill"
+        case .critical: return "exclamationmark.triangle.fill"
+        }
+    }
+}
+
+// Goal扩展，添加优先级计算属性
+extension Goal {
+    var goalImportance: GoalImportance {
+        return GoalImportance(rawValue: importance) ?? .medium
+    }
+}
+
 // 使用SharedComponents.swift中的ScaleButtonStyle
 
 struct GoalView: View {
@@ -724,6 +766,20 @@ struct GoalCard: View {
                     .fill(Color.clear)
                     .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
                 
+                // 优先级指示器 - 固定在左上角
+                ZStack {
+                    Circle()
+                        .fill(goal.goalImportance.color.opacity(0.2))
+                        .frame(width: 32, height: 32)
+                    
+                    Image(systemName: goal.goalImportance.iconName)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(goal.goalImportance.color)
+                }
+                .frame(width: 32, height: 32)
+                .padding(12)
+                .position(x: 32, y: 32) // 固定在左上角
+                
                 // 进度环形指示器 - 固定在右上角
                 ZStack {
                     Circle()
@@ -884,6 +940,18 @@ struct GoalListItem: View {
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
             HStack(alignment: .center, spacing: 16) {
+                // 优先级指示器
+                ZStack {
+                    Circle()
+                        .fill(goal.goalImportance.color.opacity(0.2))
+                        .frame(width: 28, height: 28)
+                    
+                    Image(systemName: goal.goalImportance.iconName)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(goal.goalImportance.color)
+                }
+                .frame(width: 28, height: 28)
+                
                 // 左侧进度环
                 ZStack {
                     Circle()
