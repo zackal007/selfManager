@@ -17,6 +17,7 @@ struct HomeView: View {
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
     @State private var showingEdit = false
+    @State private var showingAssetDetail = false
     
     // 用户信息
     @Query private var users: [User]
@@ -223,10 +224,15 @@ struct HomeView: View {
     
     // 资产区域 - 健康风格设计
     private var assetSection: some View {
-        NavigationLink(destination: AssetDetailView()) {
+        Button(action: {
+            showingAssetDetail = true
+        }) {
             assetCardContent
         }
         .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showingAssetDetail) {
+            AssetDetailView()
+        }
     }
     
     private var assetCardContent: some View {

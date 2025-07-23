@@ -1,2 +1,0 @@
-Target dependency graph (1 target)
-Target 'selfManager' in project 'selfManager' (no dependencies)

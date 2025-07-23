@@ -40,6 +40,11 @@ struct GoalView: View {
     // 添加目标的状态变量
     @State private var showAddGoalSheet = false
     
+    // 搜索相关状态变量
+    @State private var showSearchBar = false
+    @State private var searchText = ""
+    @State private var isSearching = false
+    
     // MARK: - 菜单组件
     // 视图模式菜单内容
     private var viewModeMenuContent: some View {
@@ -141,9 +146,23 @@ struct GoalView: View {
     @State private var showYearChangeToast = false // 用于显示年份变化提示
     @State private var yearChangeDirection = "" // 用于记录年份变化方向
     
+    // 搜索过滤后的目标
+    private var filteredGoals: [Goal] {
+        if searchText.isEmpty {
+            return allGoals
+        } else {
+            return allGoals.filter { goal in
+                goal.name.localizedCaseInsensitiveContains(searchText) ||
+                goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
+                goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
+    }
+    
     // 根据分类和排序选项处理后的目标数据
     private var processedYearGoals: [Goal] {
-        let yearGoals = allGoals.filter { goal in
+        let goals = isSearching ? filteredGoals : allGoals
+        let yearGoals = goals.filter { goal in
             // 首先按目标类型筛选
             guard goal.goalType == .yearly else { return false }
             
@@ -158,21 +177,24 @@ struct GoalView: View {
     }
     
     private var processedPeriodGoals: [Goal] {
-        let periodGoals = allGoals.filter { goal in
+        let goals = isSearching ? filteredGoals : allGoals
+        let periodGoals = goals.filter { goal in
             return goal.goalType == .shortTerm
         }
         return sortGoals(periodGoals)
     }
     
     private var processedLifeGoals: [Goal] {
-        let lifeGoals = allGoals.filter { goal in
+        let goals = isSearching ? filteredGoals : allGoals
+        let lifeGoals = goals.filter { goal in
             return goal.goalType == .life
         }
         return sortGoals(categorizeGoals(lifeGoals))
     }
     
     private var processedHabitGoals: [Goal] {
-        let habitGoals = allGoals.filter { goal in
+        let goals = isSearching ? filteredGoals : allGoals
+        let habitGoals = goals.filter { goal in
             return goal.goalType == .habit
         }
         return sortGoals(categorizeGoals(habitGoals))
@@ -223,9 +245,15 @@ struct GoalView: View {
                         
                         // 搜索按钮
                         Button(action: {
-                            // 搜索功能的实现将在后续添加
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showSearchBar.toggle()
+                                if !showSearchBar {
+                                    searchText = ""
+                                    isSearching = false
+                                }
+                            }
                         }) {
-                            Image(systemName: "magnifyingglass")
+                            Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
                                 .font(.system(size: 24))
                                 .foregroundColor(.blue)
                         }
@@ -273,7 +301,13 @@ struct GoalView: View {
                         Text("习惯").tag(3)
                     }
                     .pickerStyle(SegmentedPickerStyle())
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.bottom, 12)
+                    
+                    // 搜索栏
+                    if showSearchBar {
+                        searchBarView
+                    }
                 
                 // 年份选择器
                 if selectedSegment == 1 {
@@ -485,6 +519,44 @@ struct GoalView: View {
         .sheet(isPresented: $showAddGoalSheet) {
                 AddGoalView(isPresented: $showAddGoalSheet, selectedSegment: $selectedSegment)
             }
+        .onChange(of: searchText) { _, newValue in
+            isSearching = !newValue.isEmpty
+        }
+        .overlay(
+            // 搜索状态指示器
+            Group {
+                if isSearching {
+                    VStack {
+                        HStack {
+                            Text("搜索: \"\(searchText)\"")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.blue)
+                                .cornerRadius(15)
+                            
+                            Button("清除") {
+                                searchText = ""
+                                isSearching = false
+                            }
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(10)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        
+                        Spacer()
+                    }
+                }
+            }
+        )
     }
     
     private func goalsForSelectedSegment(category: Int) -> [Goal] {
@@ -525,6 +597,36 @@ struct GoalView: View {
         default:
             return "类别\(category)"
         }
+    }
+    
+    // 搜索栏视图
+    private var searchBarView: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+                .padding(.leading, 8)
+            
+            TextField("搜索目标...", text: $searchText)
+                .textFieldStyle(PlainTextFieldStyle())
+                .onTapGesture {
+                    isSearching = true
+                }
+            
+            if !searchText.isEmpty {
+                Button(action: {
+                    searchText = ""
+                    isSearching = false
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                }
+                .padding(.trailing, 8)
+            }
+        }
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
+        .padding(.horizontal)
     }
 }
 

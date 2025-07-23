@@ -29,7 +29,7 @@ struct GoalDetailView: View {
     @State private var selectedBackgroundImage: String? = nil
     
     // 常量
-    private let goalTypes = ["人生目标", "年度目标", "短期目标"]
+    private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
     private let backgroundImages = ["GoalBackground", "GoalBackground2", nil]
     private var availableUpperGoals: [String] {
         allGoals.map { $0.name }.filter { $0 != goal.name }

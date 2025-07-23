@@ -1,5 +1,0 @@
----
-triple:          'arm64-apple-darwin'
-binary-path:     '/Users/yack/Desktop/selfManager/build/Release-iphoneos/selfManager.app/selfManager'
-relocations:     []
-...

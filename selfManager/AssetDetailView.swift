@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 
 struct AssetDetailView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
     // 使用 SwiftData 查询资产数据
@@ -66,17 +65,6 @@ struct AssetDetailView: View {
             .navigationTitle("资产管理")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        HStack(spacing: 5) {
-                            Image(systemName: "chevron.left")
-                            Text("返回")
-                        }
-                    }
-                }
-                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(isEditing ? "保存" : "编辑") {
                         if isEditing {
