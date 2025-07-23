@@ -36,7 +36,9 @@ struct GoalDetailView: View {
             let descriptor = FetchDescriptor<Goal>(predicate: #Predicate<Goal> { goal in
                 goal.id == uuid
             })
-            return try? modelContext.fetch(descriptor).first
+            if let goal = try? modelContext.fetch(descriptor).first {
+                return goal
+            }
         }
         
         // 如果不是UUID或通过UUID未找到，则通过名称查找
@@ -45,16 +47,143 @@ struct GoalDetailView: View {
         })
         return try? modelContext.fetch(descriptor).first
     }
+    
+    // MARK: - 循环引用检测
+    
+    /// 检查添加目标关系是否会造成循环引用
+    /// - Parameters:
+    ///   - targetGoalId: 要添加的目标ID
+    ///   - relationType: 关系类型（"upper" 或 "sub"）
+    ///   - currentGoalId: 当前目标ID
+    /// - Returns: 如果会造成循环引用返回true，否则返回false
+    private func wouldCreateCycle(adding targetGoalId: String, as relationType: String, to currentGoalId: String) -> Bool {
+        // 如果目标ID相同，直接返回true（自引用）
+        if targetGoalId == currentGoalId {
+            return true
+        }
+        
+        // 获取目标对象
+        guard let targetUUID = UUID(uuidString: targetGoalId),
+              let targetGoal = allGoals.first(where: { $0.id == targetUUID }) else {
+            return false
+        }
+        
+        // 根据关系类型检查循环引用
+        if relationType == "upper" {
+            // 如果要添加为上级目标，检查该目标的所有上级目标链中是否包含当前目标
+            return checkUpwardCycle(from: targetGoalId, target: currentGoalId, visited: Set<String>())
+        } else {
+            // 如果要添加为子目标，检查该目标的所有子目标链中是否包含当前目标
+            return checkDownwardCycle(from: targetGoalId, target: currentGoalId, visited: Set<String>())
+        }
+    }
+    
+    /// 向上检查循环引用（检查上级目标链）
+    private func checkUpwardCycle(from startGoalId: String, target targetGoalId: String, visited: Set<String>) -> Bool {
+        // 如果已经访问过这个目标，说明存在循环
+        if visited.contains(startGoalId) {
+            return true
+        }
+        
+        // 如果找到目标，说明存在循环引用
+        if startGoalId == targetGoalId {
+            return true
+        }
+        
+        // 获取当前目标
+        guard let startUUID = UUID(uuidString: startGoalId),
+              let startGoal = allGoals.first(where: { $0.id == startUUID }) else {
+            return false
+        }
+        
+        // 将当前目标添加到已访问集合
+        var newVisited = visited
+        newVisited.insert(startGoalId)
+        
+        // 递归检查所有上级目标
+        for upperProjectId in startGoal.upperProject {
+            if checkUpwardCycle(from: upperProjectId, target: targetGoalId, visited: newVisited) {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    /// 向下检查循环引用（检查子目标链）
+    private func checkDownwardCycle(from startGoalId: String, target targetGoalId: String, visited: Set<String>) -> Bool {
+        // 如果已经访问过这个目标，说明存在循环
+        if visited.contains(startGoalId) {
+            return true
+        }
+        
+        // 如果找到目标，说明存在循环引用
+        if startGoalId == targetGoalId {
+            return true
+        }
+        
+        // 获取当前目标
+        guard let startUUID = UUID(uuidString: startGoalId),
+              let startGoal = allGoals.first(where: { $0.id == startUUID }) else {
+            return false
+        }
+        
+        // 将当前目标添加到已访问集合
+        var newVisited = visited
+        newVisited.insert(startGoalId)
+        
+        // 递归检查所有子目标
+        for subProjectId in startGoal.subProject {
+            if checkDownwardCycle(from: subProjectId, target: targetGoalId, visited: newVisited) {
+                return true
+            }
+        }
+        
+        return false
+    }
     @State private var selectedBackgroundImage: String? = nil
     
     // 常量
     private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
     private let backgroundImages = ["GoalBackground", "GoalBackground2", nil]
     private var availableUpperGoals: [String] {
-        allGoals.filter { $0.id != goal.id }.map { $0.id.uuidString }
+        // 过滤掉当前目标、已经是子目标的目标、以及会造成循环引用的目标
+        allGoals.filter { otherGoal in
+            let otherGoalId = otherGoal.id.uuidString
+            let currentGoalId = goal.id.uuidString
+            
+            // 排除当前目标
+            if otherGoal.id == goal.id { return false }
+            
+            // 排除已经是当前目标的子目标的目标（防止循环引用）
+            if goal.subProject.contains(otherGoalId) { return false }
+            
+            // 排除已经将当前目标作为上级目标的目标（防止重复关系）
+            if otherGoal.upperProject.contains(currentGoalId) { return false }
+            
+            // 递归检查是否会造成循环引用
+            return !wouldCreateCycle(adding: otherGoalId, as: "upper", to: currentGoalId)
+        }.map { $0.id.uuidString }
     }
+    
     private var availableSubGoals: [String] { 
-        allGoals.filter { $0.id != goal.id }.map { $0.id.uuidString }
+        // 过滤掉当前目标、已经是上级目标的目标、以及会造成循环引用的目标
+        allGoals.filter { otherGoal in
+            let otherGoalId = otherGoal.id.uuidString
+            let currentGoalId = goal.id.uuidString
+            
+            // 排除当前目标
+            if otherGoal.id == goal.id { return false }
+            
+            // 排除已经是当前目标的上级目标的目标（防止循环引用）
+            if goal.upperProject.contains(otherGoalId) { return false }
+            
+            // 排除已经将当前目标作为子目标的目标（防止重复关系）
+            if otherGoal.subProject.contains(currentGoalId) { return false }
+            
+            // 递归检查是否会造成循环引用
+            return !wouldCreateCycle(adding: otherGoalId, as: "sub", to: currentGoalId)
+        }.map { $0.id.uuidString }
     }
     
     // 目标对象
@@ -856,40 +985,6 @@ struct GoalDetailView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // 优先级选择器
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "flag.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemRed))
-                                .frame(width: 24, height: 24)
-                            Text("优先级")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            Spacer()
-                            Picker("优先级", selection: $editingImportance) {
-                                Text("低").tag(1)
-                                Text("中").tag(2)
-                                Text("高").tag(3)
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                            .frame(width: 160)
-                            .onChange(of: editingImportance) { newValue in
-                                goal.importance = newValue
-                                goal.modifyTime = Date()
-                                do {
-                                    try modelContext.save()
-                                } catch {
-                                    print("Failed to save importance: \(error)")
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    // 关联人选择区已移至独立卡片
-                    
                     // 目标描述
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -904,7 +999,6 @@ struct GoalDetailView: View {
                             
                             Spacer()
                         }
-                        .padding(.horizontal, 16)
                         
                         Button(action: {
                             editingField = .goalDescription
@@ -924,9 +1018,42 @@ struct GoalDetailView: View {
                             .background(Color(UIColor.systemGray6))
                             .cornerRadius(8)
                         }
-                        .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, 16)
+                    
+                    // 优先级选择器
+                    HStack {
+                        Image(systemName: "flag.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(UIColor.systemRed))
+                            .frame(width: 24, height: 24)
+                        
+                        Text("优先级")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.label))
+                        
+                        Spacer()
+                        
+                        Picker("优先级", selection: $editingImportance) {
+                            Text("低").tag(1)
+                            Text("中").tag(2)
+                            Text("高").tag(3)
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .frame(width: 160)
+                        .onChange(of: editingImportance) { newValue in
+                            goal.importance = newValue
+                            goal.modifyTime = Date()
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                print("Failed to save importance: \(error)")
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 关联人选择区已移至独立卡片
                     
                     // 标签
                     VStack(alignment: .leading, spacing: 8) {

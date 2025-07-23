@@ -263,16 +263,6 @@ struct GoalView: View {
                         }
                         .buttonStyle(ScaleButtonStyle())
                         
-                        // 回收站按钮
-                        Button(action: {
-                            showTrashView = true
-                        }) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 24))
-                                .foregroundColor(.gray)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        
                         // 添加目标按钮
                         Button(action: {
                             showAddGoalSheet = true
@@ -285,6 +275,15 @@ struct GoalView: View {
                         
                         // 使用自定义视图替代复杂的Menu表达式
                         MenuButton {
+                            
+                            // 回收站选项
+                            Button(action: {
+                                showTrashView = true
+                            }) {
+                                Label("回收站", systemImage: "trash")
+                            }
+                            
+                            Divider()
                             
                             // 视图切换选项
                             Group {
