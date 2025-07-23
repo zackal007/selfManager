@@ -18,6 +18,8 @@ struct HomeView: View {
     @Binding var selectedTab: Int
     @State private var showingEdit = false
     @State private var showingAssetDetail = false
+    @State private var showingImprovementDetail = false
+    @State private var showingAchievementDetail = false
     
     // 用户信息
     @Query private var users: [User]
@@ -50,12 +52,16 @@ struct HomeView: View {
     
     // 成就图标
     private let achievements = ["🏆", "🥇", "🥈", "🥉", "🎖️"]
+    private let achievementLabels = ["早起达人", "阅读先锋", "运动健将", "社交达人", "工作能手"]
     
     // 缺点/待改进项
     private let weakPoints = ["🍔", "🛌", "📱"]
     
     // 待改进项
     private let improvements = ["📱", "🍔", "🛌", "🎮", "💤"]
+    
+    // 待改进项标签
+    private let improvementLabels = ["手机使用", "饮食习惯", "作息时间", "游戏时间", "午休习惯"]
     
     // 最近焦虑
     private let anxieties = ["工作压力大", "睡眠不足", "缺乏锻炼"]
@@ -482,13 +488,26 @@ struct HomeView: View {
             }
             .frame(height: 60) // 固定高度
         }
-        .padding(12)
+        .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(12)
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 成就展示区域 - 扁平化设计
     var achievementSection: some View {
+        Button(action: {
+            showingAchievementDetail = true
+        }) {
+            achievementCardContent
+        }
+        .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showingAchievementDetail) {
+            AchievementDetailView()
+        }
+    }
+    
+    private var achievementCardContent: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 // 标题和emoji图标
@@ -513,25 +532,47 @@ struct HomeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(achievements, id: \.self) { achievement in
-                        Text(achievement)
-                            .font(.title2)
-                            .frame(width: 42, height: 42)
-                            .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                        VStack(spacing: 4) {
+                            Text(achievement)
+                                .font(.title2)
+                                .frame(width: 42, height: 42)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(8)
+                            
+                            // 添加简短标签
+                            Text(achievementLabels[achievements.firstIndex(of: achievement) ?? 0])
+                                .font(.caption2)
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .lineLimit(1)
+                        }
+                        .frame(width: 60)
                     }
                 }
                 .padding(.horizontal, 2)
                 .padding(.vertical, 4)
             }
-            .frame(height: 60) // 固定高度
+            .frame(height: 80) // 增加高度以适应标签
         }
-        .padding(12)
+        .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(12)
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 待改进区域 - 扁平化设计
     var improvementSection: some View {
+        Button(action: {
+            showingImprovementDetail = true
+        }) {
+            improvementCardContent
+        }
+        .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showingImprovementDetail) {
+            ImprovementDetailView()
+        }
+    }
+    
+    private var improvementCardContent: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 // 标题和emoji图标
@@ -556,21 +597,31 @@ struct HomeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(improvements, id: \.self) { improvement in
-                        Text(improvement)
-                            .font(.title2)
-                            .frame(width: 42, height: 42)
-                            .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                        VStack(spacing: 4) {
+                            Text(improvement)
+                                .font(.title2)
+                                .frame(width: 42, height: 42)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(8)
+                            
+                            // 添加简短标签
+                            Text(improvementLabels[improvements.firstIndex(of: improvement) ?? 0])
+                                .font(.caption2)
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .lineLimit(1)
+                        }
+                        .frame(width: 60)
                     }
                 }
                 .padding(.horizontal, 2)
                 .padding(.vertical, 4)
             }
-            .frame(height: 60) // 固定高度
+            .frame(height: 80) // 增加高度以适应标签
         }
-        .padding(12)
+        .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(12)
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 最近焦虑区域 - 扁平化设计
