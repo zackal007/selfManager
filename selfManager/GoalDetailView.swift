@@ -1265,20 +1265,18 @@ struct GoalDetailView: View {
                 
                 // 关联人卡片
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("关联人")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Color(UIColor.label))
-                        .padding(.horizontal, 16)
-                    
+                    HStack(alignment: .center, spacing: 6) {
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("关联人")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Image(systemName: "person.2.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            Text("关联人")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
                             Spacer()
                             Button(action: { showContactSelector = true }) {
                                 Text("选择")
@@ -1343,24 +1341,19 @@ struct GoalDetailView: View {
                 
                 // 背景图片卡片
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("背景图片")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Color(UIColor.label))
-                        .padding(.horizontal, 16)
-                    
+                    HStack(alignment: .center, spacing: 6) {
+                        Image(systemName: "photo.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("背景图片")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Image(systemName: "photo.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            
-                            Text("背景图片")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            
                             Spacer()
-                            
                             Button(action: {
                                 editingField = .backgroundImage
                                 selectedBackgroundImage = goal.backgroundImage
