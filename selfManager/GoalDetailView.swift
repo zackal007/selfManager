@@ -1152,10 +1152,16 @@ struct GoalDetailView: View {
                 
                 // 上级目标和子目标卡片
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("目标关联")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Color(UIColor.label))
-                        .padding(.horizontal, 16)
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.triangle.branch")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("目标关联")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
                     
                     projectsView
                 }
@@ -1167,10 +1173,16 @@ struct GoalDetailView: View {
                 
                 // 子任务卡片
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("子任务")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Color(UIColor.label))
-                        .padding(.horizontal, 16)
+                    HStack(spacing: 8) {
+                        Image(systemName: "checklist")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("子任务")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
                     
                     // 子任务列表
                     VStack(alignment: .leading, spacing: 12) {
