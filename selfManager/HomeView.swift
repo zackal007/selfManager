@@ -80,7 +80,7 @@ struct HomeView: View {
                         // 顶部空间占位，与顶部标题栏高度相同
                         Rectangle()
                             .fill(Color.clear)
-                            .frame(height: 120) // 增加高度以匹配顶部栏
+                            .frame(height: 140) // 增加高度以匹配顶部栏
                         
                         // 用户个人信息卡片
                         userProfileSection
@@ -324,8 +324,9 @@ struct HomeView: View {
             HStack {
                 // 左侧标题
                 HStack(spacing: 6) {
-                    Text("💰")
+                    Image(systemName: "dollarsign.circle.fill")
                         .font(.title3)
+                        .foregroundColor(Color(UIColor.systemGreen))
                     Text("资产概览")
                         .font(.headline)
                         .fontWeight(.bold)
@@ -403,109 +404,116 @@ struct HomeView: View {
             // 跳转到目标页面
             selectedTab = 1
         }) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 8) {
-                    Image(systemName: "target")
-                        .font(.title3)
+            goalCardContent
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var goalCardContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "target")
+                    .font(.title3)
+                    .foregroundColor(Color(UIColor.systemBlue))
+                Text("近期目标")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+                
+                // 目标数量
+                HStack(spacing: 4) {
+                    Text("\(goals.count)")
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemBlue))
-                    Text("近期目标")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(UIColor.label))
-                    Spacer()
-                    
-                    // 目标数量
-                    HStack(spacing: 4) {
-                        Text("\(goals.count)")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        Text("个目标")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                    }
-                    
-                    // 详情按钮
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                    Text("个目标")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
                 }
                 
-                if goals.isEmpty {
-                    // 空状态
-                    VStack(spacing: 12) {
-                        Text("暂无目标")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                        Button(action: {
-                            // 跳转到目标页面
-                            selectedTab = 1
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 14))
-                                Text("添加目标")
-                                    .font(.system(size: 14, weight: .medium))
-                            }
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                            .cornerRadius(20)
+                // 详情按钮
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(Color(UIColor.tertiaryLabel))
+            }
+            
+            if goals.isEmpty {
+                // 空状态
+                VStack(spacing: 12) {
+                    Text("暂无目标")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Button(action: {
+                        // 跳转到目标页面
+                        selectedTab = 1
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 14))
+                            Text("添加目标")
+                                .font(.system(size: 14, weight: .medium))
                         }
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(20)
                     }
-                    .frame(height: 80)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(UIColor.systemBackground))
-                    .cornerRadius(12)
-                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
-                } else {
-                    // 目标列表 - 横向滚动
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(goals.prefix(5)) { goal in
-                                NavigationLink(destination: GoalDetailView(goal: goal)) {
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        // 目标名称
-                                        Text(goal.name)
-                                            .font(.system(size: 15, weight: .medium))
-                                            .lineLimit(2)
-                                            .multilineTextAlignment(.leading)
-                                            .foregroundColor(Color(UIColor.label))
+                }
+                .frame(height: 80)
+                .frame(maxWidth: .infinity)
+            } else {
+                // 目标列表 - 横向滚动
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(goals.prefix(5)) { goal in
+                            NavigationLink(destination: GoalDetailView(goal: goal)) {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    // 目标名称
+                                    Text(goal.name)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+                                        .foregroundColor(Color(UIColor.label))
+                                    
+                                    // 进度条
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        ProgressView(value: goal.progress, total: 1.0)
+                                            .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
+                                            .scaleEffect(y: 1.2)
                                         
-                                        // 进度条
-                                        VStack(alignment: .leading, spacing: 6) {
-                                            ProgressView(value: goal.progress, total: 1.0)
-                                                .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
-                                                .scaleEffect(y: 1.2)
-                                            
-                                            HStack {
-                                                Text("\(Int(goal.progress * 100))%")
-                                                    .font(.system(size: 12, weight: .semibold))
-                                                    .foregroundColor(Color(UIColor.systemBlue))
-                                                Spacer()
-                                                if goal.progress >= 1.0 {
-                                                    Image(systemName: "checkmark.circle.fill")
-                                                        .font(.system(size: 12))
-                                                        .foregroundColor(Color(UIColor.systemGreen))
-                                                }
+                                        HStack {
+                                            Text("\(Int(goal.progress * 100))%")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(Color(UIColor.systemBlue))
+                                            Spacer()
+                                            if goal.progress >= 1.0 {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(Color(UIColor.systemGreen))
                                             }
                                         }
                                     }
-                                    .frame(width: 150, height: 80)
-                                    .padding(16)
-                                    .background(Color(UIColor.systemBackground))
-                                    .cornerRadius(12)
-                                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                                 }
-                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 150, height: 80)
+                                .padding(16)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(12)
+                                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                             }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                        .padding(.horizontal, 2)
-                        .padding(.vertical, 4)
                     }
+                    .padding(.horizontal, 2)
+                    .padding(.vertical, 4)
                 }
+                .frame(height: 140) // 增加高度以适应卡片
             }
         }
+        .padding(16)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
     }
     
     // 心情区域 - 扁平化设计
@@ -533,9 +541,10 @@ struct HomeView: View {
                 // 心情图标 - 横向滚动
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(moods, id: \.self) { mood in
-                            Text(mood)
+                        ForEach(0..<moods.count, id: \.self) { index in
+                            Image(systemName: getMoodIcon(for: index))
                                 .font(.system(size: 24))
+                                .foregroundColor(getMoodColor(for: index))
                                 .frame(width: 44, height: 44)
                                 .background(Color(UIColor.systemBackground))
                                 .cornerRadius(12)
@@ -580,16 +589,17 @@ struct HomeView: View {
                 // 成就图标 - 横向滚动
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        ForEach(achievements, id: \.self) { achievement in
+                        ForEach(0..<achievements.count, id: \.self) { index in
                             VStack(spacing: 4) {
-                                Text(achievement)
+                                Image(systemName: getAchievementIcon(for: index))
                                     .font(.title2)
+                                    .foregroundColor(Color(UIColor.systemYellow))
                                     .frame(width: 42, height: 42)
                                     .background(Color(UIColor.systemBackground))
                                     .cornerRadius(8)
                                 
                                 // 添加简短标签
-                                Text(achievementLabels[achievements.firstIndex(of: achievement) ?? 0])
+                                Text(achievementLabels[index])
                                     .font(.caption2)
                                     .foregroundColor(Color(UIColor.secondaryLabel))
                                     .lineLimit(1)
@@ -784,6 +794,31 @@ struct HomeView: View {
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+    
+    // 获取成就图标的辅助函数
+    func getAchievementIcon(for index: Int) -> String {
+        let achievementIcons = ["sunrise.fill", "book.fill", "figure.run", "person.2.fill", "briefcase.fill"]
+        return index < achievementIcons.count ? achievementIcons[index] : "star.fill"
+    }
+    
+    // 获取心情图标的辅助函数
+    func getMoodIcon(for index: Int) -> String {
+        let moodIcons = ["face.smiling", "face.sad", "face.angry", "face.sleeping", "face.thinking", "face.sunglasses"]
+        return index < moodIcons.count ? moodIcons[index] : "face.dashed"
+    }
+    
+    // 获取心情颜色的辅助函数
+    func getMoodColor(for index: Int) -> Color {
+        let moodColors = [
+            Color(UIColor.systemYellow),  // 开心
+            Color(UIColor.systemBlue),    // 悲伤
+            Color(UIColor.systemRed),     // 愤怒
+            Color(UIColor.systemGray),    // 疲倦
+            Color(UIColor.systemPurple),  // 思考
+            Color(UIColor.systemOrange)   // 酷
+        ]
+        return index < moodColors.count ? moodColors[index] : Color(UIColor.systemGray)
     }
 }
 
