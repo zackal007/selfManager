@@ -948,7 +948,43 @@ struct GoalDetailView: View {
                     // 目标名称和进度
                     goalNameProgressView
                     
-                        // 背景图片选择部分已移至独立卡片
+                    // 目标描述
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "text.alignleft")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            
+                            Text("目标描述")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                        }
+                        
+                        Button(action: {
+                            editingField = .goalDescription
+                            editingValue = goal.goalDescription
+                            showEditSheet = true
+                        }) {
+                            HStack {
+                                Text(goal.goalDescription)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color(UIColor.label))
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .lineLimit(3) // 设置为3行高度
+                                    .fixedSize(horizontal: false, vertical: true) // 确保显示完整的3行
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(8)
+                        }
+                    }
+                    .padding(.horizontal, 16)
                     
                     // 目标类型
                     HStack {
@@ -984,43 +1020,7 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    
-                    // 目标描述
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "text.alignleft")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            
-                            Text("目标描述")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            
-                            Spacer()
-                        }
-                        
-                        Button(action: {
-                            editingField = .goalDescription
-                            editingValue = goal.goalDescription
-                            showEditSheet = true
-                        }) {
-                            HStack {
-                                Text(goal.goalDescription)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .multilineTextAlignment(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                Spacer()
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(12)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(8)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    
+                                       
                     // 优先级选择器
                     HStack {
                         Image(systemName: "flag.fill")
@@ -1052,8 +1052,7 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    
-                    // 关联人选择区已移至独立卡片
+                                       
                     
                     // 标签
                     VStack(alignment: .leading, spacing: 8) {
@@ -1139,9 +1138,6 @@ struct GoalDetailView: View {
                             .frame(height: 40)
                         }
                     }
-                    
-                    // 截止日期
-                    dueDateView
                 }
                 .padding(.vertical, 16)
                 .background(Color(UIColor.systemBackground))
