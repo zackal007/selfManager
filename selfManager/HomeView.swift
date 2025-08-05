@@ -80,7 +80,7 @@ struct HomeView: View {
                         // 顶部空间占位，与顶部标题栏高度相同
                         Rectangle()
                             .fill(Color.clear)
-                            .frame(height: 140) // 增加高度以匹配顶部栏
+                            .frame(height: 40) // 将高度从 140 减小到 80
                         
                         // 用户个人信息卡片
                         userProfileSection

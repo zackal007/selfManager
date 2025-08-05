@@ -1285,23 +1285,19 @@ struct GoalDetailView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color(UIColor.label))
                         Spacer()
+                        Button(action: { showContactSelector = true }) {
+                            Text("选择")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 16)
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Spacer()
-                            Button(action: { showContactSelector = true }) {
-                                Text("选择")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(15)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .padding(.horizontal, 16)
                         // 已选联系人列表
                         if goal.relatedContactIds.isEmpty {
                             Text("未关联联系人")
@@ -1361,27 +1357,24 @@ struct GoalDetailView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color(UIColor.label))
                         Spacer()
+                        Button(action: {
+                            editingField = .backgroundImage
+                            selectedBackgroundImage = goal.backgroundImage
+                            showImagePicker = true
+                        }) {
+                            Text("选择")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 16)
+                    // 背景图片内容区域
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Spacer()
-                            Button(action: {
-                                editingField = .backgroundImage
-                                selectedBackgroundImage = goal.backgroundImage
-                                showImagePicker = true
-                            }) {
-                                Text("选择")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(15)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        
                         // 显示当前背景图片预览
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
