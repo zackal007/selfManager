@@ -80,7 +80,7 @@ struct HomeView: View {
                         // 顶部空间占位，与顶部标题栏高度相同
                         Rectangle()
                             .fill(Color.clear)
-                            .frame(height: 60)
+                            .frame(height: 120) // 增加高度以匹配顶部栏
                         
                         // 用户个人信息卡片
                         userProfileSection
@@ -150,59 +150,55 @@ struct HomeView: View {
                 .coordinateSpace(name: "scroll")
                 
                 // 悬浮的顶部标题栏
-                GeometryReader { geometry in 
-                    VStack {
-                        HStack(alignment: .center) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("个人概览")
-                                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                                    .foregroundColor(Color(UIColor.label))
-                            }
-                            
-                            Spacer()
-                            
-                            // 设置按钮
-                            Button(action: {
-                                showingSettings = true
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(UIColor.systemGray4).opacity(0.2))
-                                        .frame(width: 40, height: 40)
-                                    
-                                    Image(systemName: "gearshape.fill")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(Color(UIColor.systemGray))
-                                }
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.trailing, 8)
-                            
-                            // 通知按钮
-                            Button(action: {}) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(UIColor.systemBlue).opacity(0.1))
-                                        .frame(width: 40, height: 40)
-                                    
-                                    Image(systemName: "bell.badge")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(Color(UIColor.systemBlue))
-                                }
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                VStack(spacing: 0) {
+                    HStack(alignment: .center) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("个人概览")
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(UIColor.label))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            Color(UIColor.systemBackground)
-                                .opacity(0.95)
-                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 5)
-                        )
+                        
+                        Spacer()
+                        
+                        // 设置按钮
+                        Button(action: {
+                            showingSettings = true
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemGray4).opacity(0.2))
+                                    .frame(width: 40, height: 40)
+                                
+                                Image(systemName: "gearshape.fill")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(Color(UIColor.systemGray))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .padding(.trailing, 8)
+                        
+                        // 通知按钮
+                        Button(action: {}) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                    .frame(width: 40, height: 40)
+                                
+                                Image(systemName: "bell.badge")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .background(BlurView(style: .systemMaterial))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .padding(.top, 44) // 使用固定值代替弃用的API
                 }
-                .frame(height: 60)
+                .frame(maxWidth: .infinity)
+                .background(BlurView(style: .systemMaterial))
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 5)
+                .ignoresSafeArea(.all, edges: .top)
             }
             .navigationBarHidden(true)
         }
@@ -212,6 +208,7 @@ struct HomeView: View {
     }
     
     // 模糊背景视图
+    // BlurView结构体 - 用于创建模糊效果背景
     struct BlurView: UIViewRepresentable {
         var style: UIBlurEffect.Style
         

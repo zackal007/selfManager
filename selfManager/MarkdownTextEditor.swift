@@ -116,7 +116,7 @@ struct MarkdownTextEditor: View {
             // 文本编辑器或预览
             if isPreviewMode {
                 MarkdownDisplayView(text: text, onLinkTapped: onLinkTapped)
-                    .frame(minHeight: minHeight, maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .leading)
                     .padding(8)
                     .background(Color(UIColor.systemBackground))
                     .cornerRadius(8)
