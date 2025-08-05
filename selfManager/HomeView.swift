@@ -20,6 +20,7 @@ struct HomeView: View {
     @State private var showingAssetDetail = false
     @State private var showingImprovementDetail = false
     @State private var showingAchievementDetail = false
+    @State private var showingSettings = false
     
     // 用户信息
     @Query private var users: [User]
@@ -81,13 +82,26 @@ struct HomeView: View {
                             Text("个人概览")
                                 .font(.system(size: 28, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(UIColor.label))
-                            
-                            Text("今天也要加油哦 💪")
-                                .font(.subheadline)
-                                .foregroundColor(Color(UIColor.secondaryLabel))
                         }
                         
                         Spacer()
+                        
+                        // 设置按钮
+                        Button(action: {
+                            showingSettings = true
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemGray4).opacity(0.2))
+                                    .frame(width: 40, height: 40)
+                                
+                                Image(systemName: "gearshape.fill")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(Color(UIColor.systemGray))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .padding(.trailing, 8)
                         
                         // 通知按钮
                         Button(action: {}) {
@@ -179,6 +193,9 @@ struct HomeView: View {
                 .padding(.horizontal, 20)
             }
             .background(Color(UIColor.systemGroupedBackground))
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
     
