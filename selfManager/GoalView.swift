@@ -274,7 +274,7 @@ struct GoalView: View {
     
 
     
-    var body: some View {
+    var body: some View { 
         ZStack {
             // 主视图
             NavigationView {
