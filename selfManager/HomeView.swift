@@ -74,128 +74,154 @@ struct HomeView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // 顶部标题栏
-                    HStack(alignment: .center) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("个人概览")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(UIColor.label))
-                        }
+            ZStack(alignment: .top) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 顶部空间占位，与顶部标题栏高度相同
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(height: 60)
                         
-                        Spacer()
-                        
-                        // 设置按钮
-                        Button(action: {
-                            showingSettings = true
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(UIColor.systemGray4).opacity(0.2))
-                                    .frame(width: 40, height: 40)
-                                
-                                Image(systemName: "gearshape.fill")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(Color(UIColor.systemGray))
+                        // 用户个人信息卡片
+                        userProfileSection
+                            .sheet(isPresented: $showingEdit) {
+                                UserEditView(user: user)
                             }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .padding(.trailing, 8)
                         
-                        // 通知按钮
-                        Button(action: {}) {
-                            ZStack {
+                        // 资产信息卡片
+                        assetSection
+                        
+                        // 积极的标签
+                        HStack {
+                            HStack(spacing: 8) {
                                 Circle()
-                                    .fill(Color(UIColor.systemBlue).opacity(0.1))
-                                    .frame(width: 40, height: 40)
+                                    .fill(Color(UIColor.systemGreen).opacity(0.2))
+                                    .frame(width: 6, height: 6)
                                 
-                                Image(systemName: "bell.badge")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(Color(UIColor.systemBlue))
+                                Text("积极的")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color(UIColor.systemGreen))
                             }
+                            Spacer()
                         }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 8)
-                
-                    // 用户信息卡片
-                    userProfileSection
-                        .sheet(isPresented: $showingEdit) {
-                            UserEditView(user: user)
-                        }
-                
-                    // 资产信息卡片
-                    assetSection
-                
-                    // 积极的标签
-                    HStack {
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(Color(UIColor.systemGreen).opacity(0.2))
-                                .frame(width: 6, height: 6)
-                            
-                            Text("积极的")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(Color(UIColor.systemGreen))
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                
-                    // 目标区域
-                    goalSection
-                        .padding(18)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(16)
-                        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
-                
-                    // 心情和成就区域
-                    HStack(spacing: 16) {
-                        // 心情区域
-                        moodSection
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 4)
+                        .padding(.top, 4)
                         
-                        // 成就区域
-                        achievementSection
-                            .frame(maxWidth: .infinity)
-                    }
-                
-                    // 需要改进的标签
-                    HStack {
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(Color(UIColor.systemOrange).opacity(0.2))
-                                .frame(width: 6, height: 6)
+                        // 目标区域
+                        goalSection
+                        
+                        // 心情和成就区域
+                        HStack(spacing: 16) {
+                            // 心情区域
+                            moodSection
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             
-                            Text("需要改进的")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(Color(UIColor.systemOrange))
+                            // 成就区域
+                            achievementSection
+                                .frame(maxWidth: .infinity)
                         }
-                        Spacer()
+                        
+                        // 需要改进的标签
+                        HStack {
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(Color(UIColor.systemOrange).opacity(0.2))
+                                    .frame(width: 6, height: 6)
+                                
+                                Text("需要改进的")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color(UIColor.systemOrange))
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.top, 4)
+                        
+                        // 待改进区域
+                        improvementSection
+                        
+                        // 焦虑区域
+                        anxietySection
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                
-                    // 待改进区域
-                    improvementSection
-                
-                    // 焦虑区域
-                    anxietySection
-                        .padding(18)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(16)
-                        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 30)
                 }
-                .padding(.horizontal, 20)
+                .background(Color(UIColor.systemGroupedBackground))
+                .coordinateSpace(name: "scroll")
+                
+                // 悬浮的顶部标题栏
+                GeometryReader { geometry in 
+                    VStack {
+                        HStack(alignment: .center) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("个人概览")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(Color(UIColor.label))
+                            }
+                            
+                            Spacer()
+                            
+                            // 设置按钮
+                            Button(action: {
+                                showingSettings = true
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemGray4).opacity(0.2))
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Image(systemName: "gearshape.fill")
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(Color(UIColor.systemGray))
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .padding(.trailing, 8)
+                            
+                            // 通知按钮
+                            Button(action: {}) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Image(systemName: "bell.badge")
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            Color(UIColor.systemBackground)
+                                .opacity(0.95)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 5)
+                        )
+                    }
+                    .background(BlurView(style: .systemMaterial))
+                }
+                .frame(height: 60)
             }
-            .background(Color(UIColor.systemGroupedBackground))
+            .navigationBarHidden(true)
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+    }
+    
+    // 模糊背景视图
+    struct BlurView: UIViewRepresentable {
+        var style: UIBlurEffect.Style
+        
+        func makeUIView(context: Context) -> UIVisualEffectView {
+            let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
+            return view
+        }
+        
+        func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+            uiView.effect = UIBlurEffect(style: style)
         }
     }
     
