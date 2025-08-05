@@ -376,21 +376,22 @@ struct HomeView: View {
     
     // 目标区域
     private var goalSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "target")
-                    .font(.system(size: 20))
-                    .foregroundColor(Color(UIColor.systemBlue))
-                Text("近期目标")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundColor(Color(UIColor.label))
-                Spacer()
-                
-                // 目标数量
-                Button(action: {
-                    // 跳转到目标页面
-                    selectedTab = 1
-                }) {
+        Button(action: {
+            // 跳转到目标页面
+            selectedTab = 1
+        }) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 8) {
+                    Image(systemName: "target")
+                        .font(.title3)
+                        .foregroundColor(Color(UIColor.systemBlue))
+                    Text("近期目标")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    
+                    // 目标数量
                     HStack(spacing: 4) {
                         Text("\(goals.count)")
                             .font(.system(size: 15, weight: .semibold))
@@ -399,92 +400,86 @@ struct HomeView: View {
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                // 箭头
-                Button(action: {
-                    // 跳转到目标页面
-                    selectedTab = 1
-                }) {
+                    
+                    // 详情按钮
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.caption)
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                 }
-            }
-            
-            if goals.isEmpty {
-                // 空状态
-                VStack(spacing: 12) {
-                    Text("暂无目标")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                    Button(action: {
-                        // 跳转到目标页面
-                        selectedTab = 1
-                    }) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 14))
-                            Text("添加目标")
-                                .font(.system(size: 14, weight: .medium))
+                
+                if goals.isEmpty {
+                    // 空状态
+                    VStack(spacing: 12) {
+                        Text("暂无目标")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        Button(action: {
+                            // 跳转到目标页面
+                            selectedTab = 1
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 14))
+                                Text("添加目标")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color(UIColor.systemBlue).opacity(0.1))
+                            .cornerRadius(20)
                         }
-                        .foregroundColor(Color(UIColor.systemBlue))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .cornerRadius(20)
                     }
-                }
-                .frame(height: 80)
-                .frame(maxWidth: .infinity)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
-            } else {
-                // 目标列表 - 横向滚动
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(goals.prefix(5)) { goal in
-                            NavigationLink(destination: GoalDetailView(goal: goal)) {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    // 目标名称
-                                    Text(goal.name)
-                                        .font(.system(size: 15, weight: .medium))
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
-                                        .foregroundColor(Color(UIColor.label))
-                                    
-                                    // 进度条
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        ProgressView(value: goal.progress, total: 1.0)
-                                            .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
-                                            .scaleEffect(y: 1.2)
+                    .frame(height: 80)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                } else {
+                    // 目标列表 - 横向滚动
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(goals.prefix(5)) { goal in
+                                NavigationLink(destination: GoalDetailView(goal: goal)) {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        // 目标名称
+                                        Text(goal.name)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .lineLimit(2)
+                                            .multilineTextAlignment(.leading)
+                                            .foregroundColor(Color(UIColor.label))
                                         
-                                        HStack {
-                                            Text("\(Int(goal.progress * 100))%")
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .foregroundColor(Color(UIColor.systemBlue))
-                                            Spacer()
-                                            if goal.progress >= 1.0 {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(Color(UIColor.systemGreen))
+                                        // 进度条
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            ProgressView(value: goal.progress, total: 1.0)
+                                                .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
+                                                .scaleEffect(y: 1.2)
+                                            
+                                            HStack {
+                                                Text("\(Int(goal.progress * 100))%")
+                                                    .font(.system(size: 12, weight: .semibold))
+                                                    .foregroundColor(Color(UIColor.systemBlue))
+                                                Spacer()
+                                                if goal.progress >= 1.0 {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .font(.system(size: 12))
+                                                        .foregroundColor(Color(UIColor.systemGreen))
+                                                }
                                             }
                                         }
                                     }
+                                    .frame(width: 150, height: 80)
+                                    .padding(16)
+                                    .background(Color(UIColor.systemBackground))
+                                    .cornerRadius(12)
+                                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                                 }
-                                .frame(width: 150, height: 80)
-                                .padding(16)
-                                .background(Color(UIColor.systemBackground))
-                                .cornerRadius(12)
-                                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
+                        .padding(.horizontal, 2)
+                        .padding(.vertical, 4)
                     }
-                    .padding(.horizontal, 2)
-                    .padding(.vertical, 4)
                 }
             }
         }
@@ -492,38 +487,49 @@ struct HomeView: View {
     
     // 心情区域 - 扁平化设计
     private var moodSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "face.smiling")
-                    .font(.system(size: 20))
-                    .foregroundColor(Color(UIColor.systemYellow))
-                Text("心情")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundColor(Color(UIColor.label))
-                Spacer()
-            }
-            
-            // 心情图标 - 横向滚动
-            ScrollView(.horizontal, showsIndicators: false) {
+        Button(action: {
+            // 这里可以添加心情详情页面的跳转
+        }) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
-                    ForEach(moods, id: \.self) { mood in
-                        Text(mood)
-                            .font(.system(size: 24))
-                            .frame(width: 44, height: 44)
-                            .background(Color(UIColor.systemBackground))
-                            .cornerRadius(12)
-                            .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
-                    }
+                    Image(systemName: "face.smiling")
+                        .font(.title3)
+                        .foregroundColor(Color(UIColor.systemYellow))
+                    Text("心情")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    
+                    // 详情按钮
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
                 }
-                .padding(.horizontal, 4)
-                .padding(.vertical, 6)
+                
+                // 心情图标 - 横向滚动
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(moods, id: \.self) { mood in
+                            Text(mood)
+                                .font(.system(size: 24))
+                                .frame(width: 44, height: 44)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(12)
+                                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 6)
+                }
+                .frame(height: 56)
             }
-            .frame(height: 56)
+            .padding(16)
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(16)
+            .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
-        .padding(18)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
+        .buttonStyle(PlainButtonStyle())
     }
     
     // 成就展示区域 - 扁平化设计
@@ -531,7 +537,52 @@ struct HomeView: View {
         Button(action: {
             showingAchievementDetail = true
         }) {
-            achievementCardContent
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "trophy.fill")
+                        .font(.title3)
+                        .foregroundColor(Color(UIColor.systemYellow))
+                    Text("成就")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    
+                    // 详情按钮
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                }
+                
+                // 成就图标 - 横向滚动
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(achievements, id: \.self) { achievement in
+                            VStack(spacing: 4) {
+                                Text(achievement)
+                                    .font(.title2)
+                                    .frame(width: 42, height: 42)
+                                    .background(Color(UIColor.systemBackground))
+                                    .cornerRadius(8)
+                                
+                                // 添加简短标签
+                                Text(achievementLabels[achievements.firstIndex(of: achievement) ?? 0])
+                                    .font(.caption2)
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                    .lineLimit(1)
+                            }
+                            .frame(width: 60)
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                    .padding(.vertical, 4)
+                }
+                .frame(height: 80) // 增加高度以适应标签
+            }
+            .padding(16)
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(16)
+            .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingAchievementDetail) {
@@ -661,40 +712,55 @@ struct HomeView: View {
     
     // 焦虑区域 - 扁平化设计
     private var anxietySection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(Color(UIColor.systemRed))
-                Text("最近焦虑")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundColor(Color(UIColor.label))
-                Spacer()
-            }
-            
-            // 焦虑列表
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(anxieties, id: \.self) { anxiety in
-                    HStack(spacing: 12) {
-                        // 警告图标
-                        Text("⚠️")
-                            .font(.system(size: 16))
-                        
-                        // 焦虑内容
-                        Text(anxiety)
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                        
-                        Spacer()
+        Button(action: {
+            // 这里可以添加焦虑详情页面的跳转
+        }) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.title3)
+                        .foregroundColor(Color(UIColor.systemRed))
+                    Text("最近焦虑")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    
+                    // 详情按钮
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                }
+                
+                // 焦虑列表
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(anxieties, id: \.self) { anxiety in
+                        HStack(spacing: 12) {
+                            // 警告图标
+                            Text("⚠️")
+                                .font(.system(size: 16))
+                            
+                            // 焦虑内容
+                            Text(anxiety)
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(Color(UIColor.systemBackground))
-                    .cornerRadius(12)
-                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                 }
             }
+            .padding(16)
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(16)
+            .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
