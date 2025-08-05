@@ -1020,10 +1020,7 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                              
-                    
-                    
-                    
+                                         
                     // 优先级选择器
                     HStack {
                         Image(systemName: "flag.fill")
@@ -1055,6 +1052,9 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                    
+                    // 截止日期
+                    dueDateView
                                         
                     // 标签
                     VStack(alignment: .leading, spacing: 8) {
