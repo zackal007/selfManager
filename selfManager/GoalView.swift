@@ -91,6 +91,9 @@ struct GoalView: View {
     @State private var searchText = ""
     @State private var isSearching = false
     
+    // 刷新目标数据的状态变量
+    @State private var refreshGoals = false
+    
     // MARK: - 菜单组件
     // 视图模式菜单内容
     private var viewModeMenuContent: some View {
@@ -317,28 +320,31 @@ struct GoalView: View {
                         
                         // 使用自定义视图替代复杂的Menu表达式
                         MenuButton {
-                            
+                            // 刷新目标数据按钮
+                            Button(action: {
+                                // 重新加载目标数据
+                                // 通过切换一个刷新状态变量强制刷新视图
+                                refreshGoals.toggle()
+                            }) {
+                                Label("刷新目标", systemImage: "arrow.clockwise")
+                            }
+                            Divider()
                             // 回收站选项
                             Button(action: {
                                 showTrashView = true
                             }) {
                                 Label("回收站", systemImage: "trash")
                             }
-                            
                             Divider()
-                            
                             // 视图切换选项
                             Group {
                                 viewModeMenuContent
                             }
-                            
                             Divider()
-                            
                             // 分类子菜单
                             Group {
                                 categoryMenuContent
                             }
-                            
                             // 排序子菜单
                             Group {
                                 sortMenuContent

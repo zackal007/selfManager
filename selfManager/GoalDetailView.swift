@@ -425,6 +425,17 @@ struct GoalDetailView: View {
                                         goal.upperProject.remove(at: index)
                                         // 更新修改时间
                                         goal.modifyTime = Date()
+                                        
+                                        // 同时从上级目标的子目标列表中移除当前目标
+                                        if let uuid = UUID(uuidString: project),
+                                           let upperGoal = allGoals.first(where: { $0.id == uuid }) {
+                                            let currentGoalId = goal.id.uuidString
+                                            if let subIndex = upperGoal.subProject.firstIndex(of: currentGoalId) {
+                                                upperGoal.subProject.remove(at: subIndex)
+                                                upperGoal.modifyTime = Date()
+                                            }
+                                        }
+                                        
                                         // 保存更改
                                         do {
                                             try modelContext.save()
@@ -451,8 +462,41 @@ struct GoalDetailView: View {
             Divider()
                 .padding(.horizontal, 16)
             
-            // 子目标
-            VStack(alignment: .leading, spacing: 12) {
+            // 单独添加上级目标的逻辑（确保双向同步）
+                .onChange(of: goal.upperProject, initial: false) { oldUpperProjects, newUpperProjects in
+                    let oldSet = Set(oldUpperProjects)
+                    let newSet = Set(newUpperProjects)
+                    let added = newSet.subtracting(oldSet)
+                    let removed = oldSet.subtracting(newSet)
+                    let currentGoalId = goal.id.uuidString
+                    // 新增上级目标时，自动同步到对应目标的subProject
+                    for upperId in added {
+                        if let uuid = UUID(uuidString: upperId),
+                           let upperGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if !upperGoal.subProject.contains(currentGoalId) {
+                                upperGoal.subProject.append(currentGoalId)
+                                upperGoal.modifyTime = Date()
+                            }
+                        }
+                    }
+                    // 移除上级目标时，自动同步到对应目标的subProject
+                    for upperId in removed {
+                        if let uuid = UUID(uuidString: upperId),
+                           let upperGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if let idx = upperGoal.subProject.firstIndex(of: currentGoalId) {
+                                upperGoal.subProject.remove(at: idx)
+                                upperGoal.modifyTime = Date()
+                            }
+                        }
+                    }
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to sync upperProject add/remove: \(error)")
+                    }
+                }
+                // 子目标
+                VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("子目标")
                         .font(.system(size: 16, weight: .medium))
@@ -464,6 +508,7 @@ struct GoalDetailView: View {
                     Button(action: {
                         showSubGoalSelector = true
                     }) {
+
                         HStack(spacing: 4) {
                             Text("添加")
                                 .font(.system(size: 14))
@@ -478,6 +523,39 @@ struct GoalDetailView: View {
                     }
                 }
                 
+                // 单独添加子目标的逻辑（确保双向同步）
+                .onChange(of: goal.subProject, initial: false) { oldSubProjects, newSubProjects in
+                    let oldSet = Set(oldSubProjects)
+                    let newSet = Set(newSubProjects)
+                    let added = newSet.subtracting(oldSet)
+                    let removed = oldSet.subtracting(newSet)
+                    let currentGoalId = goal.id.uuidString
+                    // 新增子目标时，自动同步到对应目标的upperProject
+                    for subId in added {
+                        if let uuid = UUID(uuidString: subId),
+                           let subGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if !subGoal.upperProject.contains(currentGoalId) {
+                                subGoal.upperProject.append(currentGoalId)
+                                subGoal.modifyTime = Date()
+                            }
+                        }
+                    }
+                    // 移除子目标时，自动同步到对应目标的upperProject
+                    for subId in removed {
+                        if let uuid = UUID(uuidString: subId),
+                           let subGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if let idx = subGoal.upperProject.firstIndex(of: currentGoalId) {
+                                subGoal.upperProject.remove(at: idx)
+                                subGoal.modifyTime = Date()
+                            }
+                        }
+                    }
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to sync subProject add/remove: \(error)")
+                    }
+                }
                 if goal.subProject.isEmpty {
                     Text("暂无子目标")
                         .font(.system(size: 14))
@@ -524,6 +602,17 @@ struct GoalDetailView: View {
                                         goal.subProject.remove(at: index)
                                         // 更新修改时间
                                         goal.modifyTime = Date()
+                                        
+                                        // 同时从子目标的上级目标列表中移除当前目标
+                                        if let uuid = UUID(uuidString: project),
+                                           let subGoal = allGoals.first(where: { $0.id == uuid }) {
+                                            let currentGoalId = goal.id.uuidString
+                                            if let upperIndex = subGoal.upperProject.firstIndex(of: currentGoalId) {
+                                                subGoal.upperProject.remove(at: upperIndex)
+                                                subGoal.modifyTime = Date()
+                                            }
+                                        }
+                                        
                                         // 保存更改
                                         do {
                                             try modelContext.save()

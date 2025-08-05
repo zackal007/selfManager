@@ -874,7 +874,7 @@ struct HomeView: View {
     
     // 获取心情图标的辅助函数
     func getMoodIcon(for index: Int) -> String {
-        let moodIcons = ["face.smiling", "face.sad", "face.angry", "face.sleeping", "face.thinking", "face.sunglasses"]
+        let moodIcons = ["face.smiling"]
         return index < moodIcons.count ? moodIcons[index] : "face.dashed"
     }
     

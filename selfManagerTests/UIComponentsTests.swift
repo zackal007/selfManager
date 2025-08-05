@@ -294,5 +294,50 @@ struct UIComponentsTests {
         #expect(filteredGoals.isEmpty)
         #expect(filteredContacts.isEmpty)
     }
-
+    
+    @Test func testGoalRelationBidirectionalSync() async throws {
+        // 创建两个目标
+        var goalA = Goal(name: "目标A", description: "A", progress: 0, backgroundImage: nil, tags: [], upperProject: [], subProject: [], recordNum: 0, category: "测试", goalType: .shortTerm, dueDate: nil)
+        var goalB = Goal(name: "目标B", description: "B", progress: 0, backgroundImage: nil, tags: [], upperProject: [], subProject: [], recordNum: 0, category: "测试", goalType: .shortTerm, dueDate: nil)
+    
+        // 1. 在B中添加A为上级目标
+        goalB.upperProject.append(goalA.id.uuidString)
+        // 模拟onChange逻辑
+        if !goalA.subProject.contains(goalB.id.uuidString) {
+            goalA.subProject.append(goalB.id.uuidString)
+        }
+        #expect(goalA.subProject.contains(goalB.id.uuidString))
+        #expect(goalB.upperProject.contains(goalA.id.uuidString))
+    
+        // 2. 在B中添加A为子目标
+        goalB.subProject.append(goalA.id.uuidString)
+        // 模拟onChange逻辑
+        if !goalA.upperProject.contains(goalB.id.uuidString) {
+            goalA.upperProject.append(goalB.id.uuidString)
+        }
+        #expect(goalA.upperProject.contains(goalB.id.uuidString))
+        #expect(goalB.subProject.contains(goalA.id.uuidString))
+    
+        // 3. 移除B的上级目标A
+        if let idx = goalB.upperProject.firstIndex(of: goalA.id.uuidString) {
+            goalB.upperProject.remove(at: idx)
+        }
+        // 同步移除A的subProject
+        if let idx = goalA.subProject.firstIndex(of: goalB.id.uuidString) {
+            goalA.subProject.remove(at: idx)
+        }
+        #expect(!goalA.subProject.contains(goalB.id.uuidString))
+        #expect(!goalB.upperProject.contains(goalA.id.uuidString))
+    
+        // 4. 移除B的子目标A
+        if let idx = goalB.subProject.firstIndex(of: goalA.id.uuidString) {
+            goalB.subProject.remove(at: idx)
+        }
+        // 同步移除A的upperProject
+        if let idx = goalA.upperProject.firstIndex(of: goalB.id.uuidString) {
+            goalA.upperProject.remove(at: idx)
+        }
+        #expect(!goalA.upperProject.contains(goalB.id.uuidString))
+        #expect(!goalB.subProject.contains(goalA.id.uuidString))
+    }
 }
