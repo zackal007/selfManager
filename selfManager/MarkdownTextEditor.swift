@@ -116,7 +116,7 @@ struct MarkdownTextEditor: View {
             // 文本编辑器或预览
             if isPreviewMode {
                 MarkdownDisplayView(text: text, onLinkTapped: onLinkTapped)
-                    .frame(minHeight: minHeight)
+                    .frame(minHeight: minHeight, maxWidth: .infinity, alignment: .leading)
                     .padding(8)
                     .background(Color(UIColor.systemBackground))
                     .cornerRadius(8)
@@ -335,35 +335,42 @@ struct MarkdownDisplayView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(parseMarkdownText(text), id: \.id) { element in
-                switch element {
-                case .text(let content):
-                    Text(content)
-                        .font(.body)
-                        .foregroundColor(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        
-                case .link(let title, let url):
-                    if let linkInfo = parseLinkURL(url) {
-                        Button(action: {
-                            onLinkTapped?(linkInfo.type, linkInfo.id)
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: linkInfo.type.iconName)
-                                    .font(.caption)
-                                Text(title)
-                                    .underline()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(parseMarkdownText(text), id: \.id) { element in
+                    switch element {
+                    case .text(let content):
+                        Text(content)
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                    case .link(let title, let url):
+                        if let linkInfo = parseLinkURL(url) {
+                            Button(action: {
+                                onLinkTapped?(linkInfo.type, linkInfo.id)
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: linkInfo.type.iconName)
+                                        .font(.caption)
+                                    Text(title)
+                                        .underline()
+                                }
+                                .foregroundColor(.blue)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .foregroundColor(.blue)
+                            .buttonStyle(PlainButtonStyle())
+                        } else {
+                            Link(title, destination: URL(string: url) ?? URL(string: "https://example.com")!)
+                                .foregroundColor(.blue)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .buttonStyle(PlainButtonStyle())
-                    } else {
-                        Link(title, destination: URL(string: url) ?? URL(string: "https://example.com")!)
-                            .foregroundColor(.blue)
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 4)
         }
     }
     
