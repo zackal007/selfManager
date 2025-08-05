@@ -947,6 +947,41 @@ struct GoalDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // 目标名称和进度
                     goalNameProgressView
+                                                           
+                    // 目标类型
+                    HStack {
+                        Image(systemName: "tag")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .frame(width: 24, height: 24)
+                        
+                        Text("目标类型")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.label))
+                        
+                        Spacer()
+                        
+                        Menu {
+                            ForEach(0..<goalTypes.count, id: \.self) { index in
+                                Button(action: {
+                                    // 只更新selectedGoalType，不直接修改goal对象
+                                    // 这样可以避免SwiftData自动保存导致页面跳转
+                                    selectedGoalType = index
+                                }) {
+                                    Text(goalTypes[index])
+                                }
+                            }
+                        } label: {
+                            Text(goalTypes[selectedGoalType])
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                    }
+                    .padding(.horizontal, 16)
                     
                     // 目标描述
                     VStack(alignment: .leading, spacing: 8) {
@@ -985,42 +1020,10 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                              
                     
-                    // 目标类型
-                    HStack {
-                        Image(systemName: "tag")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .frame(width: 24, height: 24)
-                        
-                        Text("目标类型")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.label))
-                        
-                        Spacer()
-                        
-                        Menu {
-                            ForEach(0..<goalTypes.count, id: \.self) { index in
-                                Button(action: {
-                                    // 只更新selectedGoalType，不直接修改goal对象
-                                    // 这样可以避免SwiftData自动保存导致页面跳转
-                                    selectedGoalType = index
-                                }) {
-                                    Text(goalTypes[index])
-                                }
-                            }
-                        } label: {
-                            Text(goalTypes[selectedGoalType])
-                                .font(.system(size: 15))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(15)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                                       
+                    
+                    
                     // 优先级选择器
                     HStack {
                         Image(systemName: "flag.fill")
@@ -1052,8 +1055,7 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                                       
-                    
+                                        
                     // 标签
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {

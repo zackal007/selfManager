@@ -399,14 +399,28 @@ struct HomeView: View {
     }
     
     // 目标区域
+    @State private var showingGoalPopup = false
+    @State private var goalFilterExpanded = true
+    @State private var selectedGoalType: GoalType? = nil
+    @State private var selectedImportance: GoalImportance? = nil
+    @State private var savedFilteredGoals: [Goal] = []
+    
     private var goalSection: some View {
         Button(action: {
-            // 跳转到目标页面
-            selectedTab = 1
+            // 显示目标弹窗
+            showingGoalPopup = true
         }) {
             goalCardContent
         }
         .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showingGoalPopup) {
+            GoalPopupView(
+                goalFilterExpanded: $goalFilterExpanded,
+                selectedGoalType: $selectedGoalType,
+                selectedImportance: $selectedImportance,
+                savedFilteredGoals: $savedFilteredGoals
+            )
+        }
     }
     
     private var goalCardContent: some View {
@@ -431,13 +445,19 @@ struct HomeView: View {
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
                 
-                // 详情按钮
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                // 筛选按钮
+                Image(systemName: "line.3.horizontal.decrease.circle")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(6)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .clipShape(Circle())
             }
             
-            if goals.isEmpty {
+            // 确定要显示的目标列表：如果有保存的筛选结果则显示筛选结果，否则显示所有目标
+            let goalsToDisplay = !savedFilteredGoals.isEmpty ? savedFilteredGoals : goals
+            
+            if goalsToDisplay.isEmpty {
                 // 空状态
                 VStack(spacing: 12) {
                     Text("暂无目标")
@@ -466,40 +486,69 @@ struct HomeView: View {
                 // 目标列表 - 横向滚动
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(goals.prefix(5)) { goal in
-                            NavigationLink(destination: GoalDetailView(goal: goal)) {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    // 目标名称
+                        ForEach(goalsToDisplay.prefix(3)) { goal in
+                            VStack(alignment: .leading, spacing: 10) {
+                                // 目标名称和优先级
+                                HStack {
+                                    Image(systemName: goal.goalImportance.iconName)
+                                        .foregroundColor(goal.goalImportance.color)
+                                        .font(.system(size: 14))
+                                    
                                     Text(goal.name)
                                         .font(.system(size: 15, weight: .medium))
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
+                                        .lineLimit(1)
                                         .foregroundColor(Color(UIColor.label))
+                                }
+                                
+                                // 进度条
+                                VStack(alignment: .leading, spacing: 6) {
+                                    ProgressView(value: goal.progress, total: 1.0)
+                                        .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
+                                        .scaleEffect(y: 1.2)
                                     
-                                    // 进度条
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        ProgressView(value: goal.progress, total: 1.0)
-                                            .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
-                                            .scaleEffect(y: 1.2)
+                                    HStack {
+                                        Text("\(Int(goal.progress * 100))%")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(Color(UIColor.systemBlue))
                                         
-                                        HStack {
-                                            Text("\(Int(goal.progress * 100))%")
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .foregroundColor(Color(UIColor.systemBlue))
-                                            Spacer()
-                                            if goal.progress >= 1.0 {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(Color(UIColor.systemGreen))
-                                            }
-                                        }
+                                        Spacer()
+                                        
+                                        // 目标类型标签
+                                        Text(goal.goalType.rawValue)
+                                            .font(.system(size: 10))
+                                            .foregroundColor(Color(UIColor.systemGray))
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color(UIColor.systemGray6))
+                                            .cornerRadius(4)
                                     }
                                 }
-                                .frame(width: 150, height: 80)
+                            }
+                            .frame(width: 150, height: 80)
+                            .padding(16)
+                            .background(Color(UIColor.systemBackground))
+                            .cornerRadius(12)
+                            .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                        }
+                        
+                        // 查看更多按钮
+                        if goalsToDisplay.count > 3 {
+                            Button(action: {
+                                showingGoalPopup = true
+                            }) {
+                                VStack(spacing: 10) {
+                                    Image(systemName: "ellipsis.circle.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                    
+                                    Text("查看更多")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                }
+                                .frame(width: 100, height: 80)
                                 .padding(16)
-                                .background(Color(UIColor.systemBackground))
+                                .background(Color(UIColor.systemBlue).opacity(0.05))
                                 .cornerRadius(12)
-                                .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -509,6 +558,27 @@ struct HomeView: View {
                 }
                 .frame(height: 140) // 增加高度以适应卡片
             }
+            
+            // 底部提示文本
+            HStack {
+                Spacer()
+                if !savedFilteredGoals.isEmpty {
+                    // 显示筛选状态
+                    HStack(spacing: 4) {
+                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                            .font(.system(size: 10))
+                        Text("已筛选 · 点击修改")
+                    }
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                } else {
+                    Text("点击查看全部目标并筛选")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                }
+                Spacer()
+            }
+            .padding(.top, 4)
         }
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
