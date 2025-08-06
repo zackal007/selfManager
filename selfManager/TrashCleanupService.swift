@@ -24,9 +24,11 @@ class TrashCleanupService {
             // 查询超过30天的已删除目标
             let descriptor = FetchDescriptor<Goal>(
                 predicate: #Predicate<Goal> { goal in
-                    goal.isDeleted == true &&                     
-                    let date = goal.deletedDate,
-                    date < thirtyDaysAgo
+                    if let date = goal.deletedDate {
+                        return goal.isDeleted == true && date < thirtyDaysAgo
+                    } else {
+                        return false
+                    }
                 }
             )
             
