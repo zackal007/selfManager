@@ -363,6 +363,7 @@ struct GoalView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
+                    .padding(.top, 8)
                     .padding(.bottom, 12)
                     
                     // 搜索栏
@@ -762,15 +763,20 @@ struct GoalCard: View {
                     
                     // 中间区域：目标标题和描述
                     VStack(alignment: .leading, spacing: 6) {
+                        // 为目标名称添加左侧padding，避免与左上角的优先级指示器重叠
                         Text(goal.name)
                             .font(.system(size: 17, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
                             .lineLimit(1)
+                            .padding(.top, 8) // 增加顶部间距
+                            .padding(.trailing, 50) // 右侧留出进度环的空间
+                        
                         Text(goal.goalDescription)
                             .font(.system(size: 13, design: .rounded))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
+                            .padding(.trailing, 10) // 右侧留出空间
                         // 标签
                         if !goal.tags.isEmpty {
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -803,7 +809,7 @@ struct GoalCard: View {
                     .padding(.bottom, 8)
                     
                     // 底部区域：子任务列表
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 8) { // 增加间距
                         // 子任务标题
                         HStack {
                             Text("子任务")
@@ -817,58 +823,72 @@ struct GoalCard: View {
                                 .font(.system(size: 11, design: .rounded))
                                 .foregroundColor(Color(UIColor.tertiaryLabel))
                         }
+                        .padding(.top, 4) // 增加顶部间距
                         
-                        // 子任务列表
-                        ForEach(goal.tasks.prefix(2)) { task in
-                            Button(action: {
-                                // 这里需要修改task的isCompleted状态
-                                // 由于Goal和Task是结构体且属性是let，这里只是UI演示
-                                // 实际应用中需要通过ViewModel或状态管理来更新
-                            }) {
-                                HStack(spacing: 10) {
-                                    // 圆形复选框 - 现代风格
-                                    ZStack {
-                                        Circle()
-                                            .stroke(task.isCompleted ? progressColor : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                            .frame(width: 18, height: 18)
-                                        
-                                        if task.isCompleted {
+                        // 子任务列表 - 使用ScrollView确保不会挤压其他元素
+                        VStack(spacing: 6) { // 使用VStack包装子任务
+                            ForEach(goal.tasks.prefix(2)) { task in
+                                Button(action: {
+                                    // 这里需要修改task的isCompleted状态
+                                    // 由于Goal和Task是结构体且属性是let，这里只是UI演示
+                                    // 实际应用中需要通过ViewModel或状态管理来更新
+                                }) {
+                                    HStack(spacing: 10) {
+                                        // 圆形复选框 - 现代风格
+                                        ZStack {
                                             Circle()
-                                                .fill(progressColor)
+                                                .stroke(task.isCompleted ? progressColor : Color(UIColor.systemGray3), lineWidth: 1.5)
                                                 .frame(width: 18, height: 18)
                                             
-                                            Image(systemName: "checkmark")
-                                                .font(.system(size: 9, weight: .bold))
-                                                .foregroundColor(.white)
+                                            if task.isCompleted {
+                                                Circle()
+                                                    .fill(progressColor)
+                                                    .frame(width: 18, height: 18)
+                                                
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 9, weight: .bold))
+                                                    .foregroundColor(.white)
+                                            }
                                         }
+                                        
+                                        // 任务标题
+                                        Text(task.title)
+                                            .font(.system(size: 13, design: .rounded))
+                                            .foregroundColor(task.isCompleted ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
+                                            .strikethrough(task.isCompleted)
+                                            .lineLimit(1)
+                                            .truncationMode(.tail) // 确保文本过长时正确截断
                                     }
-                                    
-                                    // 任务标题
-                                    Text(task.title)
-                                        .font(.system(size: 13, design: .rounded))
-                                        .foregroundColor(task.isCompleted ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
-                                        .strikethrough(task.isCompleted)
-                                        .lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.vertical, 2) // 增加垂直间距
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
+                        .padding(.vertical, 2) // 为整个任务列表添加垂直间距
                         
                         // 如果有更多任务，显示"更多"提示
                         if goal.tasks.count > 2 {
-                            Text("还有\(goal.tasks.count - 2)个任务...")
-                                .font(.system(size: 11, design: .rounded))
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                                .padding(.top, 3)
+                            HStack {
+                                Spacer()
+                                Text("还有\(goal.tasks.count - 2)个任务...")
+                                    .font(.system(size: 11, design: .rounded))
+                                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color(UIColor.systemGray6))
+                                    .cornerRadius(8)
+                            }
+                            .padding(.top, 4)
+                            .padding(.bottom, 2)
                         }
                     }
-                    .padding(12)
+                    .padding(14)
                     .background(Color(UIColor.secondarySystemBackground))
                     .cornerRadius(16)
                     .padding(.horizontal, 10)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 12)
+                    .padding(.top, 6) // 增加顶部间距
                 }
                 .frame(width: cardWidth) // 确保内容容器占满整个卡片宽度
             }

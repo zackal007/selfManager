@@ -62,7 +62,7 @@ struct AssetDetailView: View {
                 }
                 .background(Color(UIColor.systemGroupedBackground))
             }
-            .navigationTitle("资产管理")
+            .navigationTitle("我的资产")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

@@ -25,8 +25,8 @@ class TrashCleanupService {
             let descriptor = FetchDescriptor<Goal>(
                 predicate: #Predicate<Goal> { goal in
                     goal.isDeleted == true &&                     
-                    goal.deletedDate != nil && 
-                    goal.deletedDate! < thirtyDaysAgo
+                    let date = goal.deletedDate,
+                    date < thirtyDaysAgo
                 }
             )
             

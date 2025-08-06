@@ -283,7 +283,9 @@ struct RecordView: View {
                     Text("年记").tag(RecordType.yearly)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .padding()
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
                 .onChange(of: selectedRecordType) { oldValue, newValue in
                     // 如果内容已修改，先保存当前记录
                     if contentModified {
