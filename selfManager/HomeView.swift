@@ -154,7 +154,7 @@ struct HomeView: View {
                     HStack(alignment: .center) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("个人概览")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .font(.system(size: 26, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(UIColor.label))
                         }
                         
@@ -166,11 +166,11 @@ struct HomeView: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(Color(UIColor.systemGray4).opacity(0.2))
-                                    .frame(width: 40, height: 40)
+                                    .fill(Color(UIColor.systemGray5).opacity(0.3))
+                                    .frame(width: 38, height: 38)
                                 
-                                Image(systemName: "gearshape.fill")
-                                    .font(.system(size: 18, weight: .medium))
+                                Image(systemName: "gearshape")
+                                    .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(Color(UIColor.systemGray))
                             }
                         }
@@ -182,10 +182,10 @@ struct HomeView: View {
                             ZStack {
                                 Circle()
                                     .fill(Color(UIColor.systemBlue).opacity(0.1))
-                                    .frame(width: 40, height: 40)
+                                    .frame(width: 38, height: 38)
                                 
-                                Image(systemName: "bell.badge")
-                                    .font(.system(size: 18, weight: .medium))
+                                Image(systemName: "bell")
+                                    .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(Color(UIColor.systemBlue))
                             }
                         }
@@ -197,7 +197,7 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .background(BlurView(style: .systemMaterial))
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
                 .ignoresSafeArea(.all, edges: .top)
             }
             .navigationBarHidden(true)
@@ -278,11 +278,17 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                // 详情按钮（替换铅笔按钮为右上角箭头）
+                // 详情按钮
                 Button(action: { showingEdit = true }) {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                    ZStack {
+                        Circle()
+                            .fill(Color(UIColor.systemGray5).opacity(0.3))
+                            .frame(width: 36, height: 36)
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemGray))
+                    }
                 }
             }
             
@@ -315,7 +321,11 @@ struct HomeView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingAssetDetail) {
-            AssetDetailView()
+            NavigationStack {
+                AssetDetailView()
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -325,11 +335,10 @@ struct HomeView: View {
                 // 左侧标题
                 HStack(spacing: 6) {
                     Image(systemName: "dollarsign.circle.fill")
-                        .font(.title3)
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemGreen))
                     Text("资产概览")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color(UIColor.label))
                 }
                 
@@ -351,7 +360,7 @@ struct HomeView: View {
                 // 现金
                 VStack(alignment: .leading, spacing: 4) {
                     Text("现金")
-                        .font(.caption)
+                        .font(.system(size: 13))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text(String(format: "%.1f", asset.cashAmount))
                         .font(.system(size: 16, weight: .semibold))
@@ -361,7 +370,7 @@ struct HomeView: View {
                 // 其他资产
                 VStack(alignment: .leading, spacing: 4) {
                     Text("其他")
-                        .font(.caption)
+                        .font(.system(size: 13))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text(String(format: "%.1f", asset.otherAmount))
                         .font(.system(size: 16, weight: .semibold))
@@ -371,7 +380,7 @@ struct HomeView: View {
                 // 负债
                 VStack(alignment: .leading, spacing: 4) {
                     Text("负债")
-                        .font(.caption)
+                        .font(.system(size: 13))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text(String(format: "%.1f", asset.debtAmount))
                         .font(.system(size: 16, weight: .semibold))
@@ -380,10 +389,16 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                // 箭头
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                // 详情按钮
+                HStack(spacing: 4) {
+                    Text("查看详情")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                }
             }
         }
         .padding(20)
@@ -639,7 +654,7 @@ struct HomeView: View {
         Button(action: {
             showingAchievementDetail = true
         }) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "trophy.fill")
                         .font(.title3)
@@ -650,37 +665,125 @@ struct HomeView: View {
                         .foregroundColor(Color(UIColor.label))
                     Spacer()
                     
+                    // 成就数量
+                    HStack(spacing: 4) {
+                        Text("\(achievements.count)")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color(UIColor.systemYellow))
+                        Text("个成就")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                    }
+                    
                     // 详情按钮
                     Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(UIColor.systemYellow))
+                        .padding(6)
+                        .background(Color(UIColor.systemYellow).opacity(0.1))
+                        .clipShape(Circle())
                 }
                 
                 // 成就图标 - 横向滚动
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 16) {
                         ForEach(0..<achievements.count, id: \.self) { index in
-                            VStack(spacing: 4) {
-                                Image(systemName: getAchievementIcon(for: index))
-                                    .font(.title2)
-                                    .foregroundColor(Color(UIColor.systemYellow))
-                                    .frame(width: 42, height: 42)
-                                    .background(Color(UIColor.systemBackground))
-                                    .cornerRadius(8)
+                            VStack(alignment: .leading, spacing: 10) {
+                                // 成就名称和图标
+                                HStack {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(UIColor.systemYellow).opacity(0.1))
+                                            .frame(width: 32, height: 32)
+                                        
+                                        Image(systemName: getAchievementIcon(for: index))
+                                            .font(.system(size: 16))
+                                            .foregroundColor(Color(UIColor.systemYellow))
+                                    }
+                                    
+                                    Text(achievementLabels[index])
+                                        .font(.system(size: 15, weight: .medium))
+                                        .lineLimit(1)
+                                        .foregroundColor(Color(UIColor.label))
+                                }
                                 
-                                // 添加简短标签
-                                Text(achievementLabels[index])
-                                    .font(.caption2)
-                                    .foregroundColor(Color(UIColor.secondaryLabel))
-                                    .lineLimit(1)
+                                // 进度条
+                                VStack(alignment: .leading, spacing: 6) {
+                                    ProgressView(value: index % 2 == 0 ? 1.0 : Double(30 + index * 15) / 100.0, total: 1.0)
+                                        .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemYellow)))
+                                        .scaleEffect(y: 1.2)
+                                    
+                                    HStack {
+                                        if index % 2 == 0 { // 假设部分成就已完成
+                                            Text("已完成")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(Color(UIColor.systemGreen))
+                                        } else {
+                                            Text("\(30 + index * 15)%")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(Color(UIColor.systemYellow))
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        // 成就类型标签
+                                        Text(index % 2 == 0 ? "个人成长" : "健康生活")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(Color(UIColor.systemGray))
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color(UIColor.systemGray6))
+                                            .cornerRadius(4)
+                                    }
+                                }
                             }
-                            .frame(width: 60)
+                            .frame(width: 150, height: 80)
+                            .padding(16)
+                            .background(Color(UIColor.systemBackground))
+                            .cornerRadius(12)
+                            .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                showingAchievementDetail = true
+                            }
+                        }
+                        
+                        // 查看更多按钮
+                        if achievements.count > 3 {
+                            Button(action: {
+                                showingAchievementDetail = true
+                            }) {
+                                VStack(spacing: 10) {
+                                    Image(systemName: "ellipsis.circle.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(Color(UIColor.systemYellow))
+                                    
+                                    Text("查看更多")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Color(UIColor.systemYellow))
+                                }
+                                .frame(width: 100, height: 80)
+                                .padding(16)
+                                .background(Color(UIColor.systemYellow).opacity(0.05))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                     .padding(.horizontal, 2)
                     .padding(.vertical, 4)
                 }
-                .frame(height: 80) // 增加高度以适应标签
+                .frame(height: 140) // 增加高度以适应卡片
+                
+                // 底部提示文本
+                HStack {
+                    Spacer()
+                    Text("点击查看全部成就")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                    Spacer()
+                }
+                .padding(.top, 4)
             }
             .padding(16)
             .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -689,7 +792,11 @@ struct HomeView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingAchievementDetail) {
-            AchievementDetailView()
+            NavigationStack {
+                AchievementDetailView()
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -756,61 +863,91 @@ struct HomeView: View {
         Button(action: {
             showingImprovementDetail = true
         }) {
-            improvementCardContent
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "pencil.and.outline")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(Color(UIColor.systemOrange))
+                    Text("待改进")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    
+                    // 详情按钮
+                    HStack(spacing: 4) {
+                        Text("查看全部")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                
+                // 待改进图标 - 横向滚动
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(0..<improvements.count, id: \.self) { index in
+                            VStack(spacing: 6) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemOrange).opacity(0.1))
+                                        .frame(width: 56, height: 56)
+                                    
+                                    Text(improvements[index])
+                                        .font(.system(size: 24))
+                                        .foregroundColor(Color(UIColor.systemOrange))
+                                }
+                                
+                                // 添加简短标签
+                                Text(improvementLabels[index])
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                    .lineLimit(1)
+                                    .frame(width: 70)
+                                    .multilineTextAlignment(.center)
+                                
+                                // 进度指示
+                                if index % 2 == 0 { // 假设部分项目需要优先处理
+                                    Text("优先")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(Color(UIColor.systemOrange))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color(UIColor.systemOrange).opacity(0.1))
+                                        .cornerRadius(6)
+                                } else {
+                                    Text("一般")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(Color(UIColor.secondaryLabel))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color(UIColor.systemGray5))
+                                        .cornerRadius(6)
+                                }
+                            }
+                            .frame(width: 70)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 8)
+                }
+                .frame(height: 100) // 增加高度以适应标签
+            }
+            .padding(16)
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(16)
+            .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingImprovementDetail) {
-            ImprovementDetailView()
-        }
-    }
-    
-    private var improvementCardContent: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "pencil.and.outline")
-                    .font(.title3)
-                    .foregroundColor(Color(UIColor.systemOrange))
-                Text("待改进")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(UIColor.label))
-                Spacer()
-                
-                // 详情按钮
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+            NavigationStack {
+                ImprovementDetailView()
             }
-            
-            // 待改进图标 - 横向滚动
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(improvements, id: \.self) { improvement in
-                        VStack(spacing: 4) {
-                            Text(improvement)
-                                .font(.title2)
-                                .frame(width: 42, height: 42)
-                                .background(Color(UIColor.systemBackground))
-                                .cornerRadius(8)
-                            
-                            // 添加简短标签
-                            Text(improvementLabels[improvements.firstIndex(of: improvement) ?? 0])
-                                .font(.caption2)
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                                .lineLimit(1)
-                        }
-                        .frame(width: 60)
-                    }
-                }
-                .padding(.horizontal, 2)
-                .padding(.vertical, 4)
-            }
-            .frame(height: 80) // 增加高度以适应标签
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
-        .padding(16)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 焦虑区域 - 扁平化设计

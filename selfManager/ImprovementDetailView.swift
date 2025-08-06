@@ -25,43 +25,54 @@ struct ImprovementDetailView: View {
     @State private var showingAddSheet = false
     @State private var newImprovement = Improvement(emoji: "📝", name: "", description: "", priority: .medium)
     
+    // 选中的优先级筛选
+    @State private var selectedPriority: Priority? = nil
+    
+    // 改进项统计
+    private var highPriorityCount: Int {
+        improvements.filter { $0.priority == .high }.count
+    }
+    
+    private var mediumPriorityCount: Int {
+        improvements.filter { $0.priority == .medium }.count
+    }
+    
+    private var lowPriorityCount: Int {
+        improvements.filter { $0.priority == .low }.count
+    }
+    
     var body: some View {
         NavigationStack {
-            List {
-                // 待改进项列表
-                ForEach(improvements.indices, id: \.self) { index in
-                    improvementRow(improvement: improvements[index])
-                }
-                .onDelete(perform: deleteImprovement)
-                .onMove(perform: moveImprovement)
-                
-                if isEditing {
-                    Button(action: {
-                        showingAddSheet = true
-                    }) {
-                        Label("添加待改进项", systemImage: "plus.circle")
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 待改进项统计卡片
+                        improvementStatsCard
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                        
+                        // 优先级筛选器
+                        prioritySelector
+                            .padding(.horizontal)
+                        
+                        // 待改进项列表
+                        improvementList
                     }
                 }
+                .background(Color(UIColor.systemGroupedBackground))
             }
-            .listStyle(InsetGroupedListStyle())
             .navigationTitle("待改进项")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "完成" : "编辑") {
-                        isEditing.toggle()
-                    }
-                }
-                
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("关闭") {
                         dismiss()
                     }
                 }
                 
-                if isEditing {
-                    ToolbarItem(placement: .bottomBar) {
-                        EditButton()
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(isEditing ? "完成" : "编辑") {
+                        isEditing.toggle()
                     }
                 }
             }
@@ -69,6 +80,165 @@ struct ImprovementDetailView: View {
                 addImprovementView
             }
         }
+    }
+    
+    // 待改进项统计卡片
+    private var improvementStatsCard: some View {
+        VStack(spacing: 16) {
+            // 待改进项总数
+            VStack(spacing: 8) {
+                Text("待改进项总数")
+                    .font(.headline)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                
+                Text("\(improvements.count)")
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .foregroundColor(Color(UIColor.systemOrange))
+            }
+            
+            // 优先级分布
+            HStack(spacing: 0) {
+                // 高优先级
+                VStack(spacing: 6) {
+                    Text("高优先级")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    
+                    Text("\(highPriorityCount)")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.systemRed))
+                }
+                .frame(maxWidth: .infinity)
+                
+                // 分隔线
+                Rectangle()
+                    .fill(Color(UIColor.systemGray5))
+                    .frame(width: 1, height: 36)
+                
+                // 中优先级
+                VStack(spacing: 6) {
+                    Text("中优先级")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    
+                    Text("\(mediumPriorityCount)")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.systemOrange))
+                }
+                .frame(maxWidth: .infinity)
+                
+                // 分隔线
+                Rectangle()
+                    .fill(Color(UIColor.systemGray5))
+                    .frame(width: 1, height: 36)
+                
+                // 低优先级
+                VStack(spacing: 6) {
+                    Text("低优先级")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    
+                    Text("\(lowPriorityCount)")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.systemBlue))
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 4)
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(12)
+        }
+        .padding(16)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
+    }
+    
+    // 优先级选择器
+    private var prioritySelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                // 全部优先级按钮
+                priorityButton(nil)
+                
+                // 各个优先级按钮
+                priorityButton(.high)
+                priorityButton(.medium)
+                priorityButton(.low)
+            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 8)
+        }
+    }
+    
+    // 优先级按钮
+    private func priorityButton(_ priority: Priority?) -> some View {
+        Button(action: {
+            withAnimation {
+                selectedPriority = priority
+            }
+        }) {
+            HStack(spacing: 6) {
+                if let priority = priority {
+                    Circle()
+                        .fill(priorityColor(priority))
+                        .frame(width: 8, height: 8)
+                }
+                
+                Text(priority?.rawValue ?? "全部")
+                    .font(.subheadline)
+                    .fontWeight(selectedPriority == priority ? .semibold : .regular)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(selectedPriority == priority ? (priority != nil ? priorityColor(priority!) : Color.gray).opacity(0.2) : Color(UIColor.systemGray6))
+            .foregroundColor(selectedPriority == priority ? (priority != nil ? priorityColor(priority!) : Color.gray) : Color(UIColor.label))
+            .cornerRadius(16)
+        }
+    }
+    
+    // 待改进项列表
+    private var improvementList: some View {
+        let filteredImprovements = improvements
+            .filter { improvement in
+                // 根据优先级筛选
+                selectedPriority == nil || improvement.priority == selectedPriority
+            }
+        
+        return VStack(spacing: 0) {
+            ForEach(filteredImprovements.indices, id: \.self) { index in
+                improvementRow(improvement: filteredImprovements[index])
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    .padding(.bottom, 12)
+            }
+            
+            if isEditing {
+                Button(action: {
+                    showingAddSheet = true
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(Color(UIColor.systemOrange))
+                        Text("添加待改进项")
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(Color(UIColor.systemOrange))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color(UIColor.systemOrange).opacity(0.1))
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
+            }
+        }
+        .padding(.top, 8)
     }
     
     // 待改进项行视图
@@ -97,8 +267,25 @@ struct ImprovementDetailView: View {
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .lineLimit(2)
             }
+            
+            if isEditing {
+                Menu {
+                    Button(role: .destructive, action: {
+                        if let index = improvements.firstIndex(where: { $0.id == improvement.id }) {
+                            improvements.remove(at: index)
+                        }
+                    }) {
+                        Label("删除", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .frame(width: 24, height: 24)
+                }
+            }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
     }
     
     // 优先级标签
