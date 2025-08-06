@@ -147,7 +147,7 @@ struct GoalDetailView: View {
     private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
     private let backgroundImages = ["GoalBackground", "GoalBackground2", nil]
     private var availableUpperGoals: [String] {
-        // 过滤掉当前目标、已经是子目标的目标、以及会造成循环引用的目标
+        // 过滤掉当前目标、已经是子目标的目标、回收站中的目标、以及会造成循环引用的目标
         allGoals.filter { otherGoal in
             let otherGoalId = otherGoal.id.uuidString
             let currentGoalId = goal.id.uuidString
@@ -161,13 +161,16 @@ struct GoalDetailView: View {
             // 排除已经将当前目标作为上级目标的目标（防止重复关系）
             if otherGoal.upperProject.contains(currentGoalId) { return false }
             
+            // 排除回收站中的目标
+            if otherGoal.isDeleted { return false }
+            
             // 递归检查是否会造成循环引用
             return !wouldCreateCycle(adding: otherGoalId, as: "upper", to: currentGoalId)
         }.map { $0.id.uuidString }
     }
     
     private var availableSubGoals: [String] { 
-        // 过滤掉当前目标、已经是上级目标的目标、以及会造成循环引用的目标
+        // 过滤掉当前目标、已经是上级目标的目标、回收站中的目标、以及会造成循环引用的目标
         allGoals.filter { otherGoal in
             let otherGoalId = otherGoal.id.uuidString
             let currentGoalId = goal.id.uuidString
@@ -180,6 +183,9 @@ struct GoalDetailView: View {
             
             // 排除已经将当前目标作为子目标的目标（防止重复关系）
             if otherGoal.subProject.contains(currentGoalId) { return false }
+            
+            // 排除回收站中的目标
+            if otherGoal.isDeleted { return false }
             
             // 递归检查是否会造成循环引用
             return !wouldCreateCycle(adding: otherGoalId, as: "sub", to: currentGoalId)
@@ -1870,7 +1876,7 @@ struct GoalSelectorView: View {
     var selectorType: String // 用于区分上级目标和子目标
     let goal: Goal
     @Environment(\.modelContext) private var modelContext
-    @Query private var allGoals: [Goal] // 添加查询所有目标
+    @Query(filter: #Predicate<Goal> { $0.isDeleted == false }) private var allGoals: [Goal] // 添加查询未删除的目标
     
     // 根据ID获取目标名称的方法
     private func getGoalName(id: String) -> String {
