@@ -13,8 +13,6 @@ struct WelcomeView: View {
     @State private var logoScale: CGFloat = 0.8
     @State private var logoOpacity: Double = 0
     @State private var textOpacity: Double = 0
-    @State private var indicatorOpacity: Double = 0
-    @State private var loadingProgress: Double = 0
     
     // 加载状态和错误处理
     let loadingError: Error?
@@ -30,10 +28,8 @@ struct WelcomeView: View {
     
     var body: some View {
         ZStack {
-            // 背景
-            Image("WelcomeBackground")
-                .resizable()
-                .scaledToFill()
+            // 纯色背景
+            Color(.systemBackground)
                 .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 30) {
@@ -47,12 +43,6 @@ struct WelcomeView: View {
                     .scaleEffect(logoScale)
                     .opacity(logoOpacity)
                 
-                // 应用名称
-                Text("自我管理")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                    .opacity(textOpacity)
-                
                 // 应用标语
                 Text("成为更好的自己")
                     .font(.system(size: 18, weight: .medium, design: .rounded))
@@ -61,26 +51,11 @@ struct WelcomeView: View {
                 
                 Spacer()
                 
-                // 加载指示器或错误信息
+                // 仅显示错误信息，移除进度条和加载文字
                 Group {
                     if loadingError == nil {
-                        VStack(spacing: 15) {
-                            // 自定义进度条
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .frame(width: 200, height: 4)
-                                    .foregroundColor(Color(.systemGray5))
-                                
-                                RoundedRectangle(cornerRadius: 10)
-                                    .frame(width: 200 * loadingProgress, height: 4)
-                                    .foregroundColor(Color("AccentColor"))
-                            }
-                            
-                            Text("正在加载数据...")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .opacity(indicatorOpacity)
+                        // 空视图，移除了进度条和加载文字
+                        EmptyView()
                     } else {
                         // 错误信息
                         VStack(spacing: 15) {
@@ -112,7 +87,6 @@ struct WelcomeView: View {
                         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
                     }
                 }
-                .opacity(indicatorOpacity)
                 
                 Spacer()
             }
@@ -127,17 +101,6 @@ struct WelcomeView: View {
             
             withAnimation(.easeOut(duration: 0.8).delay(0.8)) {
                 textOpacity = 1
-            }
-            
-            withAnimation(.easeOut(duration: 0.8).delay(1.4)) {
-                indicatorOpacity = 1
-            }
-            
-            // 模拟加载进度
-            if isLoading && loadingError == nil {
-                withAnimation(.easeInOut(duration: 2.5)) {
-                    loadingProgress = 1.0
-                }
             }
         }
     }
