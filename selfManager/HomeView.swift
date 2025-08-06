@@ -52,8 +52,7 @@ struct HomeView: View {
     private let moods = ["😊", "😢", "😡", "😴", "🤔", "😎"]
     
     // 成就数据
-    private let achievements = ["🏆", "🥇", "🥈", "🥉", "🎖️"]
-    private let achievementLabels = ["早起达人", "阅读先锋", "运动健将", "社交达人", "工作能手"]
+    @Query(sort: \Achievement.completionDate, order: .reverse) private var achievements: [Achievement]
     
     // 弱点数据
     private let weakPoints = ["🍔", "🛌", "📱"]
@@ -515,16 +514,12 @@ struct HomeView: View {
                                         .foregroundColor(Color(UIColor.label))
                                 }
                                 
-                                // 进度条
+                                // 完成状态
                                 VStack(alignment: .leading, spacing: 6) {
-                                    ProgressView(value: goal.progress, total: 1.0)
-                                        .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemBlue)))
-                                        .scaleEffect(y: 1.2)
-                                    
                                     HStack {
-                                        Text("\(Int(goal.progress * 100))%")
+                                        Text(goal.progress >= 1.0 ? "已完成" : "进行中")
                                             .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(Color(UIColor.systemBlue))
+                                            .foregroundColor(goal.progress >= 1.0 ? Color(UIColor.systemGreen) : Color(UIColor.systemBlue))
                                         
                                         Spacer()
                                         
@@ -687,7 +682,7 @@ struct HomeView: View {
                 // 成就图标 - 横向滚动
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(0..<achievements.count, id: \.self) { index in
+                        ForEach(achievements.prefix(5)) { achievement in
                             VStack(alignment: .leading, spacing: 10) {
                                 // 成就名称和图标
                                 HStack {
@@ -695,39 +690,30 @@ struct HomeView: View {
                                         Circle()
                                             .fill(Color(UIColor.systemYellow).opacity(0.1))
                                             .frame(width: 32, height: 32)
-                                        
-                                        Image(systemName: getAchievementIcon(for: index))
+                                        Text(achievement.emoji)
                                             .font(.system(size: 16))
                                             .foregroundColor(Color(UIColor.systemYellow))
                                     }
-                                    
-                                    Text(achievementLabels[index])
+                                    Text(achievement.name)
                                         .font(.system(size: 15, weight: .medium))
                                         .lineLimit(1)
                                         .foregroundColor(Color(UIColor.label))
                                 }
-                                
-                                // 进度条
+                                // 完成状态
                                 VStack(alignment: .leading, spacing: 6) {
-                                    ProgressView(value: index % 2 == 0 ? 1.0 : Double(30 + index * 15) / 100.0, total: 1.0)
-                                        .progressViewStyle(LinearProgressViewStyle(tint: Color(UIColor.systemYellow)))
-                                        .scaleEffect(y: 1.2)
-                                    
                                     HStack {
-                                        if index % 2 == 0 { // 假设部分成就已完成
+                                        if achievement.isCompleted {
                                             Text("已完成")
                                                 .font(.system(size: 12, weight: .semibold))
                                                 .foregroundColor(Color(UIColor.systemGreen))
                                         } else {
-                                            Text("\(30 + index * 15)%")
+                                            Text("未完成")
                                                 .font(.system(size: 12, weight: .semibold))
                                                 .foregroundColor(Color(UIColor.systemYellow))
                                         }
-                                        
                                         Spacer()
-                                        
                                         // 成就类型标签
-                                        Text(index % 2 == 0 ? "个人成长" : "健康生活")
+                                        Text(achievement.category)
                                             .font(.system(size: 10))
                                             .foregroundColor(Color(UIColor.systemGray))
                                             .padding(.horizontal, 6)
@@ -795,7 +781,7 @@ struct HomeView: View {
             NavigationStack {
                 AchievementDetailView()
             }
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.height(400), .large])
             .presentationDragIndicator(.visible)
         }
     }
@@ -830,16 +816,16 @@ struct HomeView: View {
             // 成就图标 - 横向滚动
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(achievements, id: \.self) { achievement in
+                    ForEach(achievements.prefix(5)) { achievement in
                         VStack(spacing: 4) {
-                            Text(achievement)
+                            Text(achievement.emoji)
                                 .font(.title2)
                                 .frame(width: 42, height: 42)
                                 .background(Color(UIColor.systemBackground))
                                 .cornerRadius(8)
                             
                             // 添加简短标签
-                            Text(achievementLabels[achievements.firstIndex(of: achievement) ?? 0])
+                            Text(achievement.name)
                                 .font(.caption2)
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                                 .lineLimit(1)
@@ -1003,11 +989,7 @@ struct HomeView: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    // 获取成就图标的辅助函数
-    func getAchievementIcon(for index: Int) -> String {
-        let achievementIcons = ["sunrise.fill", "book.fill", "figure.run", "person.2.fill", "briefcase.fill"]
-        return index < achievementIcons.count ? achievementIcons[index] : "star.fill"
-    }
+    // 成就图标现在直接使用 Achievement 模型中的 emoji 属性
     
     // 获取心情图标的辅助函数
     func getMoodIcon(for index: Int) -> String {

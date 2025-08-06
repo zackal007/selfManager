@@ -15,16 +15,8 @@ struct AchievementDetailView: View {
     private let categories = ["个人成长", "健康生活", "学习进步", "工作成就", "社交关系"]
     
     // 成就列表
-    @State private var achievements = [
-        Achievement(emoji: "🏆", name: "早起达人", description: "连续7天早上6点起床", category: "健康生活", isCompleted: true, completionDate: Date().addingTimeInterval(-86400 * 15), progress: 1.0),
-        Achievement(emoji: "🥇", name: "阅读先锋", description: "累计阅读时间超过100小时", category: "学习进步", isCompleted: false, progress: 0.75),
-        Achievement(emoji: "🥈", name: "运动健将", description: "单周运动时间超过10小时", category: "健康生活", isCompleted: true, completionDate: Date().addingTimeInterval(-86400 * 5), progress: 1.0),
-        Achievement(emoji: "🥉", name: "社交达人", description: "建立10个有效社交关系", category: "社交关系", isCompleted: false, progress: 0.6),
-        Achievement(emoji: "🎖️", name: "工作能手", description: "连续完成30天工作计划", category: "工作成就", isCompleted: false, progress: 0.3),
-        Achievement(emoji: "🌟", name: "自律王者", description: "连续打卡90天", category: "个人成长", isCompleted: false, progress: 0.2),
-        Achievement(emoji: "📚", name: "知识探索者", description: "完成5本书的阅读", category: "学习进步", isCompleted: true, completionDate: Date().addingTimeInterval(-86400 * 30), progress: 1.0),
-        Achievement(emoji: "💪", name: "健身达人", description: "完成100次俯卧撑挑战", category: "健康生活", isCompleted: false, progress: 0.45)
-    ]
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Achievement.completionDate, order: .reverse) private var achievements: [Achievement]
     
     // 选中的分类
     @State private var selectedCategory: String? = nil
@@ -35,7 +27,12 @@ struct AchievementDetailView: View {
     // 编辑状态
     @State private var isEditing = false
     @State private var showingAddSheet = false
-    @State private var newAchievement = Achievement(emoji: "🏆", name: "", description: "", category: "个人成长", isCompleted: false, progress: 0.0)
+    @State private var newAchievement = Achievement(emoji: "🏆", name: "", achievementDescription: "", category: "个人成长", isCompleted: false)
+    
+    // Toast提示
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @State private var isSuccess = false
     
     // 成就统计
     private var completedCount: Int {
@@ -57,24 +54,49 @@ struct AchievementDetailView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // 成就统计卡片
-                achievementStatsCard
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
+            ZStack {
+                VStack(spacing: 0) {
+                    // 内容区域
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // 成就统计卡片
+                            achievementStatsCard
+                                .padding(.horizontal)
+                            
+                            // 分类选择器
+                            categorySelector
+                                .padding(.horizontal)
+                            
+                            // 成就列表
+                            achievementList
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 16)
+                    }
+                }
+                .background(Color(UIColor.systemGroupedBackground))
                 
-                // 分类选择器
-                categorySelector
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
-                
-                // 成就列表
-                achievementList
+                // Toast提示
+                if showToast {
+                    VStack {
+                        Spacer()
+                        ToastView(message: toastMessage, isSuccess: isSuccess)
+                            .onAppear {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation {
+                                        showToast = false
+                                    }
+                                }
+                            }
+                    }
+                    .transition(.move(edge: .bottom))
+                    .animation(.easeInOut, value: showToast)
+                    .zIndex(1)
+                }
             }
-            .background(Color(UIColor.systemGroupedBackground))
             .navigationTitle("成就中心")
             .navigationBarTitleDisplayMode(.inline)
+            .padding(.top, 8)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("关闭") {
@@ -97,36 +119,17 @@ struct AchievementDetailView: View {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                    // 编辑按钮
-                    Button(action: {
-                        isEditing.toggle()
-                    }) {
-                        Text(isEditing ? "完成" : "编辑")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(isEditing ? Color(UIColor.systemBlue) : Color(UIColor.systemGray))
-                    }
-                    
-                    // 添加按钮
-                    Button(action: {
-                        newAchievement = Achievement(emoji: "🏆", name: "", description: "", category: "个人成长", isCompleted: false, progress: 0.0)
-                        showingAddSheet = true
-                    }) {
-                        Image(systemName: "plus")
-                            .foregroundColor(Color(UIColor.systemBlue))
-                    }
-                }
-                }
             }
             .sheet(isPresented: $showingAddSheet) {
                 NavigationStack {
                     Form {
                         Section(header: Text("基本信息")) {
                             TextField("成就名称", text: $newAchievement.name)
-                            TextField("成就描述", text: $newAchievement.description)
+                                .padding(.vertical, 4)
+                            TextField("成就描述", text: $newAchievement.achievementDescription)
+                                .padding(.vertical, 4)
                             TextField("表情图标", text: $newAchievement.emoji)
+                                .padding(.vertical, 4)
                         }
                         
                         Section(header: Text("分类")) {
@@ -137,10 +140,7 @@ struct AchievementDetailView: View {
                             }
                         }
                         
-                        Section(header: Text("进度")) {
-                            Slider(value: $newAchievement.progress, in: 0...1, step: 0.05)
-                            Text("当前进度: \(Int(newAchievement.progress * 100))%")
-                        }
+                        // 移除进度相关字段，避免添加失败
                     }
                     .navigationTitle("添加成就")
                     .navigationBarTitleDisplayMode(.inline)
@@ -153,8 +153,45 @@ struct AchievementDetailView: View {
                         
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button("保存") {
-                                achievements.append(newAchievement)
-                                showingAddSheet = false
+                                do {
+                                    if let editingAchievement = achievements.first(where: { $0.id == newAchievement.id }) {
+                                        // 编辑模式
+                                        editingAchievement.emoji = newAchievement.emoji
+                                        editingAchievement.name = newAchievement.name
+                                        editingAchievement.achievementDescription = newAchievement.achievementDescription
+                                        editingAchievement.category = newAchievement.category
+                                        editingAchievement.isCompleted = newAchievement.isCompleted
+                                        editingAchievement.completionDate = newAchievement.completionDate
+                                        toastMessage = "成就更新成功"
+                                    } else {
+                                        // 新增
+                                        if newAchievement.name.isEmpty {
+                                            toastMessage = "成就名称不能为空"
+                                            isSuccess = false
+                                            showToast = true
+                                            return
+                                        }
+                                        
+                                        let achievement = Achievement(
+                                            emoji: newAchievement.emoji,
+                                            name: newAchievement.name,
+                                            achievementDescription: newAchievement.achievementDescription,
+                                            category: newAchievement.category,
+                                            isCompleted: newAchievement.isCompleted,
+                                            completionDate: newAchievement.completionDate
+                                        )
+                                        modelContext.insert(achievement)
+                                        toastMessage = "成就添加成功"
+                                    }
+                                    try modelContext.save()
+                                    isSuccess = true
+                                    showingAddSheet = false
+                                    showToast = true
+                                } catch {
+                                    toastMessage = "保存失败：\(error.localizedDescription)"
+                                    isSuccess = false
+                                    showToast = true
+                                }
                             }
                         }
                     }
@@ -285,11 +322,11 @@ struct AchievementDetailView: View {
                 Spacer()
                 
                 Button(action: {
-                    newAchievement = Achievement(emoji: "🏆", name: "", description: "", category: "个人成长", isCompleted: false, progress: 0.0)
+                    newAchievement = Achievement(emoji: "🏆", name: "", achievementDescription: "", category: "个人成长", isCompleted: false)
                     showingAddSheet = true
                 }) {
                     Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 20))
+                        .font(.headline)
                         .foregroundColor(Color(UIColor.systemBlue))
                 }
             }
@@ -304,20 +341,6 @@ struct AchievementDetailView: View {
                     Text("暂无成就")
                         .font(.headline)
                         .foregroundColor(Color(UIColor.secondaryLabel))
-                    
-                    Button(action: {
-                        newAchievement = Achievement(emoji: "🏆", name: "", description: "", category: "个人成长", isCompleted: false, progress: 0.0)
-                        showingAddSheet = true
-                    }) {
-                        Text("添加成就")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(Color(UIColor.systemBlue))
-                            .cornerRadius(8)
-                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 48)
@@ -338,9 +361,8 @@ struct AchievementDetailView: View {
                                     Button(role: .destructive, action: {
                                         withAnimation {
                                             let achievementToRemove = filteredAchievements[index]
-                                            if let originalIndex = achievements.firstIndex(where: { $0.name == achievementToRemove.name }) {
-                                                achievements.remove(at: originalIndex)
-                                            }
+                                            modelContext.delete(achievementToRemove)
+                                            try? modelContext.save()
                                         }
                                     }) {
                                         Label("删除", systemImage: "trash")
@@ -379,7 +401,7 @@ struct AchievementDetailView: View {
                     }
                 }
                 
-                Text(achievement.description)
+                Text(achievement.achievementDescription)
                     .font(.subheadline)
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .lineLimit(1)
@@ -397,29 +419,14 @@ struct AchievementDetailView: View {
                         }
                     }
                 } else {
-                    // 进度条
-                    HStack {
-                        ProgressView(value: achievement.progress)
-                            .progressViewStyle(LinearProgressViewStyle())
-                        
-                        Text("\(Int(achievement.progress * 100))%")
-                            .font(.caption)
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                            .frame(width: 40, alignment: .trailing)
-                    }
+                    // 未完成状态显示，移除进度条
+                    Text("未完成")
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.systemOrange))
                 }
             }
             
-            if isEditing {
-                Button(action: {
-                    if let index = achievements.firstIndex(where: { $0.id == achievement.id }) {
-                        achievements.remove(at: index)
-                    }
-                }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                }
-            }
+            // 编辑模式下可加其他操作
         }
         .padding(.vertical, 8)
         .contentShape(Rectangle())
@@ -438,15 +445,24 @@ struct AchievementDetailView: View {
 }
 
 // 成就模型
-struct Achievement: Identifiable {
-    var id = UUID()
-    var emoji: String
-    var name: String
-    var description: String
-    var category: String
-    var isCompleted: Bool
-    var completionDate: Date?
-    var progress: Double // 0.0 - 1.0
+@Model
+final class Achievement: Identifiable, ObservableObject {
+    @Attribute(.unique) var id: UUID = UUID()
+    @Attribute var emoji: String = ""
+    @Attribute var name: String = ""
+    @Attribute var achievementDescription: String = ""
+    @Attribute var category: String = "个人成长"
+    @Attribute var isCompleted: Bool = false
+    @Attribute var completionDate: Date? = nil
+    
+    init(emoji: String = "", name: String = "", achievementDescription: String = "", category: String = "个人成长", isCompleted: Bool = false, completionDate: Date? = nil) {
+        self.emoji = emoji
+        self.name = name
+        self.achievementDescription = achievementDescription
+        self.category = category
+        self.isCompleted = isCompleted
+        self.completionDate = completionDate
+    }
 }
 
 // 显示模式枚举
