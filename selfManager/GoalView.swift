@@ -460,22 +460,9 @@ struct GoalView: View {
                 GeometryReader { geometry in
                     ScrollView {
                         VStack(spacing: 16) {
-                            // 类别标题
-                            HStack {
-                                Text(getCategoryTitle(for: selectedSegment, category: 1))
-                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.primary)
-                                    .padding(.vertical, 6)
-                                    .padding(.horizontal, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color(.systemGray6))
-                                    )
-                                Spacer()
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 16)
-                            .padding(.bottom, 12)
+                            // 移除了分类标题
+                            Spacer().frame(height: 8)
+                            .padding(.top, 8)
                         
                         // 根据视图模式显示不同的布局
                         if viewMode == .gallery {
@@ -485,7 +472,7 @@ struct GoalView: View {
                                 GridItem(.flexible(), spacing: 12)
                             ], spacing: 16) { // 减小垂直间距，使布局更紧凑
                                 ForEach(goalsForSelectedSegment(category: 1)) { goal in
-                                    GoalCard(goal: goal)
+                                    GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
                                         .frame(height: 280) // 确保网格中的卡片高度一致
                                 }
                             }
@@ -494,46 +481,6 @@ struct GoalView: View {
                             // 列表视图
                             LazyVStack(spacing: 12) {
                                 ForEach(goalsForSelectedSegment(category: 1)) { goal in
-                                    GoalListItem(goal: goal)
-                                }
-                            }
-                            .padding(.horizontal, 12) // 统一边距
-                        }
-                        
-                        // 类别标题
-                        HStack {
-                            Text(getCategoryTitle(for: selectedSegment, category: 2))
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.primary)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color(.systemGray6))
-                                )
-                            Spacer()
-                        }
-                        .padding(.horizontal, 16) // 统一边距
-                        .padding(.top, 16)
-                        .padding(.bottom, 12)
-                        
-                        // 根据视图模式显示不同的布局
-                        if viewMode == .gallery {
-                            // 画廊视图 - 网格布局，每行两个
-                            LazyVGrid(columns: [
-                                GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12)
-                            ], spacing: 16) {
-                                ForEach(goalsForSelectedSegment(category: 2)) { goal in
-                                    GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                                        .frame(height: 280)
-                                }
-                            }
-                            .padding(.horizontal, 12) // 统一边距
-                        } else {
-                            // 列表视图
-                            LazyVStack(spacing: 12) {
-                                ForEach(goalsForSelectedSegment(category: 2)) { goal in
                                     GoalListItem(goal: goal)
                                 }
                             }
@@ -624,26 +571,18 @@ struct GoalView: View {
     }
     
     private func goalsForSelectedSegment(category: Int) -> [Goal] {
-        let goals: [Goal]
+        // 不再按分类分割目标列表，直接返回完整列表
         switch selectedSegment {
         case 0:
-            goals = processedLifeGoals
+            return processedLifeGoals
         case 1:
-            goals = processedYearGoals
+            return processedYearGoals
         case 2:
-            goals = processedPeriodGoals
+            return processedPeriodGoals
         case 3:
-            goals = processedHabitGoals
+            return processedHabitGoals
         default:
-            goals = []
-        }
-        
-        // 假设每个类别有两个分区
-        let half = goals.count / 2
-        if category == 1 {
-            return Array(goals.prefix(half))
-        } else {
-            return Array(goals.suffix(goals.count - half))
+            return []
         }
     }
     
