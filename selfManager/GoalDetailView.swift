@@ -1032,6 +1032,8 @@ struct GoalDetailView: View {
         }) {
             HStack {
                 Text(goal.goalDescription)
+                    .lineLimit(3) // 设置为3行高度
+                    .fixedSize(horizontal: false, vertical: true) // 确保显示完整的3行
                     .font(.system(size: 16))
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .multilineTextAlignment(.leading)

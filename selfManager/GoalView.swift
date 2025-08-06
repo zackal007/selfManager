@@ -806,7 +806,7 @@ struct GoalCard: View {
                     VStack(alignment: .leading, spacing: 6) {
                         // 子任务标题
                         HStack {
-                            Text("子目标")
+                            Text("子任务")
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                             
