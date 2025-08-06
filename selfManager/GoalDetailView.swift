@@ -341,10 +341,13 @@ struct GoalDetailView: View {
                         .cornerRadius(8)
                     }
                     .onDelete(perform: deleteTask)
+                    .onMove(perform: moveTask)
                 }
-                .listStyle(.plain)
-                .frame(height: CGFloat(goal.tasks.count) * 60) // 动态调整高度
+                .listStyle(.insetGrouped)
+                .environment(\.editMode, .constant(.active))
+                // 使用insetGrouped样式使拖动指示器更加明显
                 .padding(.horizontal, 16)
+                // 移除固定高度限制，允许列表自然扩展
             }
         }
     }
@@ -834,6 +837,19 @@ struct GoalDetailView: View {
             try modelContext.save()
         } catch {
             print("Failed to delete task: \(error)")
+        }
+    }
+    
+    // 移动任务（拖动排序）
+    private func moveTask(from source: IndexSet, to destination: Int) {
+        // 使用SwiftUI内置的数组移动方法
+        goal.tasks.move(fromOffsets: source, toOffset: destination)
+        goal.modifyTime = Date()
+        
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to move task: \(error)")
         }
     }
     
