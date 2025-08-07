@@ -120,6 +120,7 @@ struct selfManagerApp: App {
                                 .tag(3)
                         }
                         .modelContainer(container)
+                        .enableSwipeBackGesture()
                         .onAppear {
                             // 启动回收站清理服务
                             TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)

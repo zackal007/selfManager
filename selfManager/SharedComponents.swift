@@ -6,6 +6,70 @@
 //
 
 import SwiftUI
+import UIKit
+
+// 添加支持从屏幕左边缘向右滑动返回上一页的功能
+extension UINavigationController {
+    open override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // 确保导航控制器的交互式弹出手势可用
+        interactivePopGestureRecognizer?.delegate = nil
+        interactivePopGestureRecognizer?.isEnabled = true
+    }
+}
+
+// SwiftUI修饰符，用于启用滑动返回手势
+struct EnableSwipeBackGesture: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                // 查找并配置所有UINavigationController实例
+                // 使用兼容iOS 15+的方式获取窗口
+                if #available(iOS 15.0, *) {
+                    let scenes = UIApplication.shared.connectedScenes
+                    let windowScenes = scenes.compactMap { $0 as? UIWindowScene }
+                    windowScenes.forEach { scene in
+                        scene.windows.forEach { window in
+                            window.rootViewController?.enableSwipeBackGesture()
+                        }
+                    }
+                } else {
+                    // 兼容iOS 14及以下版本
+                    UIApplication.shared.windows.forEach { window in
+                        window.rootViewController?.enableSwipeBackGesture()
+                    }
+                }
+            }
+    }
+}
+
+// 为View添加启用滑动返回手势的修饰符
+extension View {
+    func enableSwipeBackGesture() -> some View {
+        self.modifier(EnableSwipeBackGesture())
+    }
+}
+
+// 为UIViewController添加递归启用滑动返回手势的方法
+extension UIViewController {
+    func enableSwipeBackGesture() {
+        if let navigationController = self as? UINavigationController {
+            navigationController.interactivePopGestureRecognizer?.delegate = nil
+            navigationController.interactivePopGestureRecognizer?.isEnabled = true
+        }
+        
+        // 递归处理子视图控制器
+        for child in children {
+            child.enableSwipeBackGesture()
+        }
+        
+        // 处理presented视图控制器
+        if let presented = presentedViewController {
+            presented.enableSwipeBackGesture()
+        }
+    }
+}
 
 // 自定义按钮样式，添加缩放效果
 struct ScaleButtonStyle: ButtonStyle {
