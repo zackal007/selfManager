@@ -712,104 +712,95 @@ struct GoalCard: View {
                     .fill(Color.clear)
                     .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
                 
-                // 优先级指示器 - 固定在左上角
-                ZStack {
-                    Circle()
-                        .fill(goal.goalImportance.color.opacity(0.2))
+                // 内容容器 - 所有元素放在同一图层
+                VStack(alignment: .leading, spacing: 12) {
+                    // 顶部区域：优先级指示器和进度环
+                    HStack(alignment: .center) {
+                        // 优先级指示器
+                        ZStack {
+                            Circle()
+                                .fill(goal.goalImportance.color.opacity(0.2))
+                                .frame(width: 32, height: 32)
+                            
+                            Image(systemName: goal.goalImportance.iconName)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(goal.goalImportance.color)
+                        }
                         .frame(width: 32, height: 32)
-                    
-                    Image(systemName: goal.goalImportance.iconName)
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(goal.goalImportance.color)
-                }
-                .frame(width: 32, height: 32)
-                .padding(12)
-                .position(x: 32, y: 32) // 固定在左上角
-                
-                // 进度环形指示器 - 固定在右上角
-                ZStack {
-                    Circle()
-                        .fill(Color(UIColor.systemBackground))
-                        .frame(width: 44, height: 44)
-                        .shadow(color: Color(UIColor.label).opacity(0.15), radius: 3, x: 0, y: 2)
-                    
-                    Circle()
-                        .stroke(Color(UIColor.systemGray5), lineWidth: 3.5)
-                        .frame(width: 36, height: 36)
-                    
-                    Circle()
-                        .trim(from: 0, to: CGFloat(goal.progress))
-                        .stroke(progressColor, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
-                        .frame(width: 36, height: 36)
-                        .rotationEffect(.degrees(-90))
-                    
-                    Text("\(Int(goal.progress * 100))%")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(UIColor.label))
-                }
-                .frame(width: 44, height: 44)
-                .padding(12)
-                .position(x: cardWidth - 34, y: 34) // 固定在右上角
-                
-                // 内容容器
-                VStack(alignment: .leading, spacing: 0) {
-                    // 设置VStack宽度为卡片宽度
-                    ZStack(alignment: .topTrailing) {
                         
-                        // 这里之前有重复的代码，已移除
+                        Spacer()
+                        
+                        // 进度环形指示器
+                        ZStack {
+                            Circle()
+                                .fill(Color(UIColor.systemBackground))
+                                .frame(width: 44, height: 44)
+                                .shadow(color: Color(UIColor.label).opacity(0.15), radius: 3, x: 0, y: 2)
+                            
+                            Circle()
+                                .stroke(Color(UIColor.systemGray5), lineWidth: 3.5)
+                                .frame(width: 36, height: 36)
+                            
+                            Circle()
+                                .trim(from: 0, to: CGFloat(goal.progress))
+                                .stroke(progressColor, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                                .frame(width: 36, height: 36)
+                                .rotationEffect(.degrees(-90))
+                            
+                            Text("\(Int(goal.progress * 100))%")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(UIColor.label))
+                        }
+                        .frame(width: 44, height: 44)
                     }
-                    // 确保ZStack占满整个卡片宽度
-                    .frame(width: cardWidth, alignment: .center)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
                     
                     // 中间区域：目标标题和描述
                     VStack(alignment: .leading, spacing: 6) {
-                        // 为目标名称添加左侧padding，避免与左上角的优先级指示器重叠
                         Text(goal.name)
                             .font(.system(size: 17, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
                             .lineLimit(1)
-                            .padding(.top, 8) // 增加顶部间距
-                            .padding(.trailing, 50) // 右侧留出进度环的空间
                         
                         Text(goal.goalDescription)
                             .font(.system(size: 13, design: .rounded))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
-                            .padding(.trailing, 10) // 右侧留出空间
-                        // 标签
-                        if !goal.tags.isEmpty {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 6) {
-                                    ForEach(goal.tags.prefix(2), id: \.self) { tag in
-                                        Text(tag)
-                                            .font(.system(size: 11, weight: .medium))
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 3)
-                                            .background(Color.blue.opacity(0.1))
-                                            .foregroundColor(Color.blue)
-                                            .cornerRadius(10)
-                                    }
-                                    if goal.tags.count > 2 {
-                                        Text("+\(goal.tags.count - 2)")
-                                            .font(.system(size: 11, weight: .medium))
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 3)
-                                            .background(Color.gray.opacity(0.1))
-                                            .foregroundColor(Color.gray)
-                                            .cornerRadius(10)
-                                    }
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 标签区域
+                    if !goal.tags.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(goal.tags.prefix(3), id: \.self) { tag in
+                                    Text(tag)
+                                        .font(.system(size: 11, weight: .medium))
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Color.blue.opacity(0.1))
+                                        .foregroundColor(Color.blue)
+                                        .cornerRadius(10)
+                                }
+                                if goal.tags.count > 3 {
+                                    Text("+\(goal.tags.count - 3)")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Color.gray.opacity(0.1))
+                                        .foregroundColor(Color.gray)
+                                        .cornerRadius(10)
                                 }
                             }
-                            .frame(height: 24)
                         }
+                        .padding(.horizontal, 16)
+                        .frame(height: 24)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.top, 12)
-                    .padding(.bottom, 8)
                     
-                    // 底部区域：子任务列表
-                    VStack(alignment: .leading, spacing: 8) { // 增加间距
+                    // 子任务区域
+                    VStack(alignment: .leading, spacing: 6) {
                         // 子任务标题
                         HStack {
                             Text("子任务")
@@ -823,10 +814,9 @@ struct GoalCard: View {
                                 .font(.system(size: 11, design: .rounded))
                                 .foregroundColor(Color(UIColor.tertiaryLabel))
                         }
-                        .padding(.top, 4) // 增加顶部间距
                         
-                        // 子任务列表 - 使用ScrollView确保不会挤压其他元素
-                        VStack(spacing: 6) { // 使用VStack包装子任务
+                        // 子任务列表 - 最多显示2个，高度固定
+                        VStack(spacing: 4) {
                             ForEach(goal.tasks.prefix(2)) { task in
                                 Button(action: {
                                     // 这里需要修改task的isCompleted状态
@@ -860,35 +850,19 @@ struct GoalCard: View {
                                             .truncationMode(.tail) // 确保文本过长时正确截断
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.vertical, 2) // 增加垂直间距
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                         }
-                        .padding(.vertical, 2) // 为整个任务列表添加垂直间距
-                        
-                        // 如果有更多任务，显示"更多"提示
-                        if goal.tasks.count > 2 {
-                            HStack {
-                                Spacer()
-                                Text("还有\(goal.tasks.count - 2)个任务...")
-                                    .font(.system(size: 11, design: .rounded))
-                                    .foregroundColor(Color(UIColor.tertiaryLabel))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color(UIColor.systemGray6))
-                                    .cornerRadius(8)
-                            }
-                            .padding(.top, 4)
-                            .padding(.bottom, 2)
-                        }
+                        .frame(height: goal.tasks.isEmpty ? 0 : (goal.tasks.count == 1 ? 24 : 52))
                     }
-                    .padding(14)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(16)
-                    .padding(.horizontal, 10)
-                    .padding(.bottom, 12)
-                    .padding(.top, 6) // 增加顶部间距
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+                    .padding(.bottom, 16)
+                    .background(Color(UIColor.secondarySystemBackground).opacity(0.7))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 16)
                 }
                 .frame(width: cardWidth) // 确保内容容器占满整个卡片宽度
             }
