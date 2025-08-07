@@ -100,8 +100,17 @@ final class Contact {
     var contactType: ContactType
     var importance: ContactImportance
     var frequency: ContactFrequency
-    @Attribute(.externalStorage)
-    var tags: [String]
+    var tagsString: String = ""
+    
+    // 计算属性，用于获取和设置标签数组
+    var tags: [String] {
+        get {
+            return tagsString.isEmpty ? [] : tagsString.components(separatedBy: ",")
+        }
+        set {
+            tagsString = newValue.joined(separator: ",")
+        }
+    }
     var lastContactDate: Date?
     var nextContactDate: Date?
     var createTime: Date
@@ -120,7 +129,7 @@ final class Contact {
         self.contactType = contactType
         self.importance = importance
         self.frequency = frequency
-        self.tags = tags
+        self.tagsString = tags.joined(separator: ",")
         self.lastContactDate = lastContactDate
         self.nextContactDate = nextContactDate
         self.createTime = Date()

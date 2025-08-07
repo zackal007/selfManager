@@ -37,7 +37,7 @@ struct TrashView: View {
                             .fontWeight(.medium)
                             .foregroundColor(.primary)
                         
-                        Text("删除的目标会在这里保留30天")
+                        Text("删除的目标会在这里保留\(getTrashExpirationDays())天")
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -139,9 +139,15 @@ struct TrashView: View {
             print("清空回收站失败: \(error)")
         }
     }
+    
+    // 获取用户设置的回收站过期天数
+    private func getTrashExpirationDays() -> Int {
+        return TrashCleanupService.shared.getUserTrashExpirationDays(modelContext: modelContext)
+    }
 }
 
 struct TrashGoalRow: View {
+    @Environment(\.modelContext) private var modelContext
     let goal: Goal
     let onRestore: () -> Void
     let onPermanentDelete: () -> Void
@@ -157,9 +163,12 @@ struct TrashGoalRow: View {
     private var daysUntilPermanentDeletion: Int {
         guard let deletedDate = goal.deletedDate else { return 0 }
         
+        // 获取用户设置的过期天数
+        let expirationDays = TrashCleanupService.shared.getUserTrashExpirationDays(modelContext: modelContext)
+        
         let calendar = Calendar.current
         let daysSinceDeletion = calendar.dateComponents([.day], from: deletedDate, to: Date()).day ?? 0
-        let daysRemaining = 30 - daysSinceDeletion
+        let daysRemaining = expirationDays - daysSinceDeletion
         return max(0, daysRemaining)
     }
     

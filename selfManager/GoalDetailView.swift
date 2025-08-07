@@ -785,6 +785,11 @@ struct GoalDetailView: View {
         return (hasUpperGoals: !upperGoalNames.isEmpty, hasSubGoals: !subGoalNames.isEmpty, upperGoalNames: upperGoalNames, subGoalNames: subGoalNames)
     }
     
+    // 获取用户设置的回收站过期天数
+    private func getTrashExpirationDays() -> Int {
+        return TrashCleanupService.shared.getUserTrashExpirationDays(modelContext: modelContext)
+    }
+    
     // 删除目标（移到回收站）
     private func deleteGoal() {
         // 检查目标依赖关系
@@ -1626,7 +1631,7 @@ struct GoalDetailView: View {
         .alert(isPresented: $showDeleteAlert) {
             Alert(
                 title: Text("移到回收站"),
-                message: Text("确定要将目标 \"\(goal.name)\" 移到回收站吗？目标将在回收站保留30天，期间可以恢复。"),
+                message: Text("确定要将目标 \"\(goal.name)\" 移到回收站吗？目标将在回收站保留\(getTrashExpirationDays())天，期间可以恢复。"),
                 primaryButton: .destructive(Text("移到回收站")) {
                     deleteGoal()
                 },

@@ -233,12 +233,9 @@ enum ModelSchemaV4: VersionedSchema {
         var goalDescription: String
         var progress: Double
         var backgroundImage: String?
-        @Attribute(.externalStorage)
-        var tags: [String]
-        @Attribute(.externalStorage)
-        var upperProject: [String]
-        @Attribute(.externalStorage)
-        var subProject: [String]
+        var tagsString: String = ""
+        var upperProjectString: String = ""
+        var subProjectString: String = ""
         var recordNum: Int
         var category: String
         var goalTypes: String
@@ -246,13 +243,52 @@ enum ModelSchemaV4: VersionedSchema {
         var modifyTime: Date
         var visitTime: Date
         var dueDate: Date?
-        @Attribute(.externalStorage)
-        var relatedContactIds: [UUID] = []
+        var relatedContactIdsString: String = ""
         var importance: Int = 1
         
         // 回收站相关字段
         var isDeleted: Bool = false
         var deletedDate: Date?
+        
+        // 计算属性，用于获取和设置标签数组
+        var tags: [String] {
+            get {
+                return tagsString.isEmpty ? [] : tagsString.components(separatedBy: ",")
+            }
+            set {
+                tagsString = newValue.joined(separator: ",")
+            }
+        }
+        
+        // 计算属性，用于获取和设置上级项目数组
+        var upperProject: [String] {
+            get {
+                return upperProjectString.isEmpty ? [] : upperProjectString.components(separatedBy: ",")
+            }
+            set {
+                upperProjectString = newValue.joined(separator: ",")
+            }
+        }
+        
+        // 计算属性，用于获取和设置子项目数组
+        var subProject: [String] {
+            get {
+                return subProjectString.isEmpty ? [] : subProjectString.components(separatedBy: ",")
+            }
+            set {
+                subProjectString = newValue.joined(separator: ",")
+            }
+        }
+        
+        // 计算属性，用于获取和设置相关联系人ID数组
+        var relatedContactIds: [UUID] {
+            get {
+                return relatedContactIdsString.isEmpty ? [] : relatedContactIdsString.components(separatedBy: ",").compactMap { UUID(uuidString: $0) }
+            }
+            set {
+                relatedContactIdsString = newValue.map { $0.uuidString }.joined(separator: ",")
+            }
+        }
         
         var goalType: GoalType {
             get { GoalType.from(string: goalTypes) }
@@ -268,9 +304,9 @@ enum ModelSchemaV4: VersionedSchema {
             self.goalDescription = description
             self.progress = progress
             self.backgroundImage = backgroundImage
-            self.tags = tags
-            self.upperProject = upperProject
-            self.subProject = subProject
+            self.tagsString = tags.joined(separator: ",")
+            self.upperProjectString = upperProject.joined(separator: ",")
+            self.subProjectString = subProject.joined(separator: ",")
             self.recordNum = recordNum
             self.category = category
             self.goalTypes = goalType.rawValue
@@ -278,7 +314,7 @@ enum ModelSchemaV4: VersionedSchema {
             self.modifyTime = Date()
             self.visitTime = Date()
             self.dueDate = dueDate
-            self.relatedContactIds = relatedContactIds
+            self.relatedContactIdsString = relatedContactIds.map { $0.uuidString }.joined(separator: ",")
             self.importance = importance
             self.isDeleted = false
             self.deletedDate = nil
