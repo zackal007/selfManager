@@ -193,16 +193,39 @@ struct ContactView: View {
         .padding(.bottom, 12)
     }
     
-    // 分段控制器
+    // 联系人类型筛选器
     private var segmentedControl: some View {
-        Picker("联系人类型", selection: $selectedSegment) {
-            Text("全部").tag(0)
-            Text("家人").tag(1)
-            Text("朋友").tag(2)
-            Text("工作").tag(3)
-            Text("提醒").tag(4)
+        VStack(alignment: .leading, spacing: 8) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    // 全部选项
+                    FilterChip(title: "全部", isSelected: selectedSegment == 0) {
+                        selectedSegment = 0
+                    }
+                    
+                    // 家人选项
+                    FilterChip(title: "家人", isSelected: selectedSegment == 1) {
+                        selectedSegment = 1
+                    }
+                    
+                    // 朋友选项
+                    FilterChip(title: "朋友", isSelected: selectedSegment == 2) {
+                        selectedSegment = 2
+                    }
+                    
+                    // 工作选项
+                    FilterChip(title: "工作", isSelected: selectedSegment == 3) {
+                        selectedSegment = 3
+                    }
+                    
+                    // 提醒选项
+                    FilterChip(title: "提醒", isSelected: selectedSegment == 4) {
+                        selectedSegment = 4
+                    }
+                }
+                .padding(.horizontal)
+            }
         }
-        .pickerStyle(SegmentedPickerStyle())
         .padding(.horizontal, 16)
         .padding(.bottom, 12)
     }

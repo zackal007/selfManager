@@ -274,16 +274,24 @@ struct RecordView: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
                 
-                // 记录类型选择器
-                Picker("记录类型", selection: $selectedRecordType) {
-                    Text("日记").tag(RecordType.daily)
-                    Text("周记").tag(RecordType.weekly)
-                    Text("月记").tag(RecordType.monthly)
-                    Text("季记").tag(RecordType.quarterly)
-                    Text("年记").tag(RecordType.yearly)
+                // 记录类型筛选器
+                VStack(alignment: .leading, spacing: 8) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            // 各种记录类型
+                            ForEach(RecordType.allCases, id: \.self) { type in
+                                FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
+                                    // 如果内容已修改，先保存当前记录
+                                    if contentModified {
+                                        autoSaveRecord(recordType: selectedRecordType)
+                                    }
+                                    selectedRecordType = type
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
                 .padding(.top, 8)
                 .padding(.bottom, 12)
                 .onChange(of: selectedRecordType) { oldValue, newValue in
