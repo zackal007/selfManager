@@ -51,6 +51,30 @@ extension View {
     }
 }
 
+// 筛选器芯片组件 - 用于各种筛选器UI
+struct FilterChip: View {
+    let title: String
+    let isSelected: Bool
+    var color: Color? = nil
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                .foregroundColor(isSelected ? (color ?? Color(UIColor.systemBlue)) : Color(UIColor.label))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isSelected 
+                              ? (color ?? Color(UIColor.systemBlue)).opacity(0.15)
+                              : Color(UIColor.systemGray6))
+                )
+        }
+    }
+}
+
 // 为UIViewController添加递归启用滑动返回手势的方法
 extension UIViewController {
     func enableSwipeBackGesture() {

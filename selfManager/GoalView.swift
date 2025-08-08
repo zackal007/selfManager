@@ -9,6 +9,7 @@ import SwiftUI
 import UIKit
 import Foundation
 import SwiftData
+// 导入共享组件，包含FilterChip
 
 // 目标优先级枚举
 enum GoalImportance: Int, CaseIterable {
@@ -61,6 +62,7 @@ struct GoalView: View {
     
     // 分段控制器选择
     @State private var selectedSegment = 0
+    @State private var selectedGoalType: GoalType? = nil
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
@@ -354,15 +356,37 @@ struct GoalView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
                     
-                    // 分段控制器
-                    Picker("目标类型", selection: $selectedSegment) {
-                        Text("人生").tag(0)
-                        Text("年度").tag(1)
-                        Text("短期").tag(2)
-                        Text("习惯").tag(3)
+                    // 目标类型筛选器
+                    VStack(alignment: .leading, spacing: 8) {
+                       ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                // 全部选项
+                                FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
+                                    selectedGoalType = nil
+                                    selectedSegment = 0
+                                }
+                                
+                                // 各种目标类型
+                                ForEach(GoalType.allCases, id: \.self) { type in
+                                    FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
+                                        selectedGoalType = type
+                                        // 根据选择的目标类型设置selectedSegment
+                                        switch type {
+                                        case .life:
+                                            selectedSegment = 0
+                                        case .yearly:
+                                            selectedSegment = 1
+                                        case .shortTerm:
+                                            selectedSegment = 2
+                                        case .habit:
+                                            selectedSegment = 3
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
                     .padding(.top, 8)
                     .padding(.bottom, 12)
                     
@@ -572,7 +596,14 @@ struct GoalView: View {
     }
     
     private func goalsForSelectedSegment(category: Int) -> [Goal] {
-        // 不再按分类分割目标列表，直接返回完整列表
+        // 当selectedGoalType为nil时，返回所有目标
+        if selectedGoalType == nil {
+            // 返回所有类型的目标
+            let goals = isSearching ? filteredGoals : allGoals
+            return sortGoals(goals)
+        }
+        
+        // 否则按分段控制器选择返回特定类型的目标
         switch selectedSegment {
         case 0:
             return processedLifeGoals
@@ -635,6 +666,7 @@ struct GoalView: View {
 }
 
 // 目标卡片视图
+
 struct GoalCard: View {
     let goal: Goal
     var cardWidth: CGFloat

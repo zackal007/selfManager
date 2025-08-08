@@ -7,6 +7,8 @@
 
 import SwiftUI
 import SwiftData
+// 导入共享组件
+import Foundation
 
 struct GoalPopupView: View {
     @Environment(\.modelContext) private var modelContext
@@ -232,29 +234,7 @@ struct GoalPopupView: View {
     }
 }
 
-// 筛选器芯片组件
-struct FilterChip: View {
-    let title: String
-    let isSelected: Bool
-    var color: Color? = nil
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
-                .foregroundColor(isSelected ? (color ?? Color(UIColor.systemBlue)) : Color(UIColor.label))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(isSelected 
-                              ? (color ?? Color(UIColor.systemBlue)).opacity(0.15)
-                              : Color(UIColor.systemGray6))
-                )
-        }
-    }
-}
+// FilterChip组件已移至SharedComponents.swift
 
 // 目标行视图组件
 struct GoalRowView: View {
