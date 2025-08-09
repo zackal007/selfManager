@@ -33,7 +33,7 @@ enum ContactType: Int, Codable, Hashable, CaseIterable {
         case .family: return "house.fill"
         case .friend: return "person.2.fill"
         case .colleague: return "briefcase.fill"
-        case .business: return "handshake.fill"
+        case .business: return "building.2.fill"
         case .mentor: return "graduationcap.fill"
         case .other: return "person.fill"
         }
@@ -79,10 +79,10 @@ enum ContactImportance: Int, Codable, Hashable, CaseIterable {
     
     var color: String {
         switch self {
-        case .low: return "gray"
-        case .medium: return "blue"
-        case .high: return "orange"
-        case .critical: return "red"
+        case .low: return "Colors/Gray"
+        case .medium: return "Colors/Blue"
+        case .high: return "Colors/Orange"
+        case .critical: return "Colors/Red"
         }
     }
 }
