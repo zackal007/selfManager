@@ -15,6 +15,10 @@ struct ContactDetailView: View {
     
     @Bindable var contact: Contact
     
+    // 查询所有未删除的目标
+    @Query(filter: #Predicate<Goal> { $0.isDeleted == false },
+           sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
+    
     // 编辑状态
     @State private var showEditSheet = false
     @State private var editingField: EditingField = .name
@@ -25,6 +29,9 @@ struct ContactDetailView: View {
     
     // 删除确认
     @State private var showDeleteAlert = false
+    
+    // 目标选择器
+    @State private var showGoalSelector = false
     
     enum EditingField {
         case name, company, position, phone, email, address, notes, tag
@@ -50,6 +57,9 @@ struct ContactDetailView: View {
                 
                 // 备注
                 notesView
+                
+                // 关联目标
+                relatedGoalsView
                 
                 // 操作按钮
                 actionButtonsView
@@ -78,6 +88,9 @@ struct ContactDetailView: View {
         .sheet(isPresented: $showContactLogSheet) {
             ContactLogView(contact: contact)
         }
+        .sheet(isPresented: $showGoalSelector) {
+            GoalMultiSelectorView(contact: contact, allGoals: allGoals)
+        }
         .alert("删除联系人", isPresented: $showDeleteAlert) {
             Button("取消", role: .cancel) { }
             Button("删除", role: .destructive) {
@@ -86,6 +99,93 @@ struct ContactDetailView: View {
         } message: {
             Text("确定要删除联系人「\(contact.name)」吗？此操作无法撤销。")
         }
+    }
+    
+    // 关联目标视图 - 现代卡片设计
+    private var relatedGoalsView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // 标题栏
+            HStack {
+                Text("关联目标")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                // 添加关联目标按钮
+                Button(action: {
+                    showGoalSelector = true
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 16))
+                        Text("添加")
+                            .font(.system(size: 14, weight: .medium))
+                    }
+                    .foregroundColor(Color("Colors/Blue"))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            
+            // 关联目标内容
+            if contact.relatedGoals.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        Image(systemName: "target")
+                            .font(.system(size: 24))
+                            .foregroundColor(.secondary.opacity(0.5))
+                        Text("暂无关联目标")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 16)
+                    Spacer()
+                }
+                .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
+                .cornerRadius(8)
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(contact.relatedGoals) { goal in
+                        NavigationLink(destination: GoalDetailView(goal: goal)) {
+                            HStack(spacing: 12) {
+                                // 目标状态指示器
+                                Circle()
+                                    .fill(goal.progress >= 1.0 ? Color("Colors/Green") : Color("Colors/Blue"))
+                                    .frame(width: 10, height: 10)
+                                
+                                // 目标名称
+                                Text(goal.name)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.primary)
+                                    .lineLimit(1)
+                                
+                                Spacer()
+                                
+                                // 目标截止日期
+                                if let dueDate = goal.dueDate {
+                                    Text(dueDate, style: .date)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(12)
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
     }
     
     // 头部信息 - 现代化设计

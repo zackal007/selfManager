@@ -111,13 +111,33 @@ final class Contact {
             tagsString = newValue.joined(separator: ",")
         }
     }
+    
+    // 计算属性，用于获取关联目标对象
+    var relatedGoals: [Goal] {
+        let goalIds = relatedGoalIds
+        let goals = try? modelContext?.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { goal in
+            goalIds.contains(goal.id) && !goal.isDeleted
+        }))
+        return goals ?? []
+    }
     var lastContactDate: Date?
     var nextContactDate: Date?
     var createTime: Date
     var modifyTime: Date
     var avatar: String? // 头像图片名称或路径
+    var relatedGoalIdsString: String = ""  // 关联目标ID字符串
     
-    init(name: String, company: String? = nil, position: String? = nil, phone: String? = nil, email: String? = nil, address: String? = nil, notes: String? = nil, contactType: ContactType = .other, importance: ContactImportance = .medium, frequency: ContactFrequency = .monthly, tags: [String] = [], lastContactDate: Date? = nil, nextContactDate: Date? = nil, avatar: String? = nil) {
+    // 计算属性，用于获取和设置关联目标ID数组
+    var relatedGoalIds: [UUID] {
+        get {
+            return relatedGoalIdsString.isEmpty ? [] : relatedGoalIdsString.components(separatedBy: ",").compactMap { UUID(uuidString: $0) }
+        }
+        set {
+            relatedGoalIdsString = newValue.map { $0.uuidString }.joined(separator: ",")
+        }
+    }
+    
+    init(name: String, company: String? = nil, position: String? = nil, phone: String? = nil, email: String? = nil, address: String? = nil, notes: String? = nil, contactType: ContactType = .other, importance: ContactImportance = .medium, frequency: ContactFrequency = .monthly, tags: [String] = [], lastContactDate: Date? = nil, nextContactDate: Date? = nil, avatar: String? = nil, relatedGoalIds: [UUID] = []) {
         self.id = UUID()
         self.name = name
         self.company = company
@@ -135,6 +155,7 @@ final class Contact {
         self.createTime = Date()
         self.modifyTime = Date()
         self.avatar = avatar
+        self.relatedGoalIdsString = relatedGoalIds.map { $0.uuidString }.joined(separator: ",")
     }
     
     // 计算下次联系提醒时间

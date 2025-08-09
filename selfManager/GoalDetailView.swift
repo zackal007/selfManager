@@ -1433,6 +1433,16 @@ struct GoalDetailView: View {
                                                     if let idx = goal.relatedContactIds.firstIndex(of: id) {
                                                         goal.relatedContactIds.remove(at: idx)
                                                         goal.modifyTime = Date()
+                                                        
+                                                        // 双向关联：从联系人的关联目标列表中移除当前目标
+                                                        if let contact = allContacts.first(where: { $0.id == id }) {
+                                                            var contactGoalIds = contact.relatedGoalIds
+                                                            if let goalIdx = contactGoalIds.firstIndex(of: goal.id) {
+                                                                contactGoalIds.remove(at: goalIdx)
+                                                                contact.relatedGoalIds = contactGoalIds
+                                                            }
+                                                        }
+                                                        
                                                         do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
                                                     }
                                                 }) {
@@ -1608,8 +1618,41 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showContactSelector) {
             ContactSelectorView(allContacts: allContacts, selectedIds: goal.relatedContactIds, onSelect: { selectedIds in
+                // 获取之前的关联联系人列表，用于后续比较
+                let previousContactIds = goal.relatedContactIds
+                
+                // 更新目标的关联联系人列表
                 goal.relatedContactIds = selectedIds
                 goal.modifyTime = Date()
+                
+                // 找出被移除的联系人
+                let removedContactIds = previousContactIds.filter { !selectedIds.contains($0) }
+                
+                // 找出新增的联系人
+                let addedContactIds = selectedIds.filter { !previousContactIds.contains($0) }
+                
+                // 处理被移除的联系人：从它们的关联目标列表中移除当前目标
+                for contactId in removedContactIds {
+                    if let contact = allContacts.first(where: { $0.id == contactId }) {
+                        var contactGoalIds = contact.relatedGoalIds
+                        if let idx = contactGoalIds.firstIndex(of: goal.id) {
+                            contactGoalIds.remove(at: idx)
+                            contact.relatedGoalIds = contactGoalIds
+                        }
+                    }
+                }
+                
+                // 处理新增的联系人：向它们的关联目标列表中添加当前目标
+                for contactId in addedContactIds {
+                    if let contact = allContacts.first(where: { $0.id == contactId }) {
+                        var contactGoalIds = contact.relatedGoalIds
+                        if !contactGoalIds.contains(goal.id) {
+                            contactGoalIds.append(goal.id)
+                            contact.relatedGoalIds = contactGoalIds
+                        }
+                    }
+                }
+                
                 do {
                     try modelContext.save()
                 } catch {
