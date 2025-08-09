@@ -794,8 +794,9 @@ struct GoalCard: View {
                     .fill(Color.clear)
                     .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
                 
-                // 内容容器 - 所有元素放在同一图层
+                // 内容容器 - 所有元素放在同一图层，向左上角对齐
                 VStack(alignment: .leading, spacing: 12) {
+                    Spacer().frame(height: 0) // 强制内容向顶部对齐
                     // 顶部区域：优先级指示器和进度环
                     HStack(alignment: .center) {
                         // 优先级指示器
@@ -845,11 +846,13 @@ struct GoalCard: View {
                             .foregroundColor(Color(UIColor.label))
                             .lineLimit(1)
                         
-                        Text(goal.goalDescription)
-                            .font(.system(size: 13, design: .rounded))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if !goal.goalDescription.isEmpty {
+                            Text(goal.goalDescription)
+                                .font(.system(size: 13, design: .rounded))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     .padding(.horizontal, 16)
                     
@@ -882,71 +885,75 @@ struct GoalCard: View {
                     }
                     
                     // 子任务区域
-                    VStack(alignment: .leading, spacing: 6) {
-                        // 子任务标题
-                        HStack {
-                            Text("子任务")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
+                    if !goal.tasks.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            // 子任务标题
+                            HStack {
+                                Text("子任务")
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                
+                                Spacer()
+                                
+                                // 完成数量
+                                Text("\(goal.tasks.filter { $0.isCompleted }.count)/\(goal.tasks.count)")
+                                    .font(.system(size: 11, design: .rounded))
+                                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                            }
                             
-                            Spacer()
-                            
-                            // 完成数量
-                            Text("\(goal.tasks.filter { $0.isCompleted }.count)/\(goal.tasks.count)")
-                                .font(.system(size: 11, design: .rounded))
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                        }
-                        
-                        // 子任务列表 - 最多显示2个，高度固定
-                        VStack(spacing: 4) {
-                            ForEach(goal.tasks.prefix(2)) { task in
-                                Button(action: {
-                                    // 这里需要修改task的isCompleted状态
-                                    // 由于Goal和Task是结构体且属性是let，这里只是UI演示
-                                    // 实际应用中需要通过ViewModel或状态管理来更新
-                                }) {
-                                    HStack(spacing: 10) {
-                                        // 圆形复选框 - 现代风格
-                                        ZStack {
-                                            Circle()
-                                                .stroke(task.isCompleted ? progressColor : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                                .frame(width: 18, height: 18)
-                                            
-                                            if task.isCompleted {
+                            // 子任务列表 - 最多显示2个，高度固定
+                            VStack(spacing: 4) {
+                                ForEach(goal.tasks.prefix(2)) { task in
+                                    Button(action: {
+                                        // 这里需要修改task的isCompleted状态
+                                        // 由于Goal和Task是结构体且属性是let，这里只是UI演示
+                                        // 实际应用中需要通过ViewModel或状态管理来更新
+                                    }) {
+                                        HStack(spacing: 10) {
+                                            // 圆形复选框 - 现代风格
+                                            ZStack {
                                                 Circle()
-                                                    .fill(progressColor)
+                                                    .stroke(task.isCompleted ? progressColor : Color(UIColor.systemGray3), lineWidth: 1.5)
                                                     .frame(width: 18, height: 18)
                                                 
-                                                Image(systemName: "checkmark")
-                                                    .font(.system(size: 9, weight: .bold))
-                                                    .foregroundColor(.white)
+                                                if task.isCompleted {
+                                                    Circle()
+                                                        .fill(progressColor)
+                                                        .frame(width: 18, height: 18)
+                                                    
+                                                    Image(systemName: "checkmark")
+                                                        .font(.system(size: 9, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                }
                                             }
+                                            
+                                            // 任务标题
+                                            Text(task.title)
+                                                .font(.system(size: 13, design: .rounded))
+                                                .foregroundColor(task.isCompleted ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
+                                                .strikethrough(task.isCompleted)
+                                                .lineLimit(1)
+                                                .truncationMode(.tail) // 确保文本过长时正确截断
                                         }
-                                        
-                                        // 任务标题
-                                        Text(task.title)
-                                            .font(.system(size: 13, design: .rounded))
-                                            .foregroundColor(task.isCompleted ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
-                                            .strikethrough(task.isCompleted)
-                                            .lineLimit(1)
-                                            .truncationMode(.tail) // 确保文本过长时正确截断
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                .buttonStyle(PlainButtonStyle())
                             }
+                            .frame(height: goal.tasks.count == 1 ? 24 : 52)
                         }
-                        .frame(height: goal.tasks.isEmpty ? 0 : (goal.tasks.count == 1 ? 24 : 52))
+                        .padding(.horizontal, 16)
+                        .padding(.top, 4)
+                        .padding(.bottom, 16)
+                        .background(Color(UIColor.secondarySystemBackground).opacity(0.7))
+                        .cornerRadius(12)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 16)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 4)
-                    .padding(.bottom, 16)
-                    .background(Color(UIColor.secondarySystemBackground).opacity(0.7))
-                    .cornerRadius(12)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 16)
+                    // 添加底部空白，推动内容向上
+                    Spacer()
                 }
-                .frame(width: cardWidth) // 确保内容容器占满整个卡片宽度
+                .frame(width: cardWidth, height: 280, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
             }
             .frame(width: cardWidth, height: 280) // 固定卡片高度
         }
