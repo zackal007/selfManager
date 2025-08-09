@@ -119,6 +119,9 @@ struct ContactView: View {
                 let date2 = contact2.lastContactDate ?? Date.distantPast
                 return date1 > date2
             }
+        case .importance:
+            // 按重要性排序，从高到低
+            return contacts.sorted { $0.importance.rawValue > $1.importance.rawValue }
         }
     }
     

@@ -78,6 +78,7 @@ struct GoalView: View {
     // 分类和排序选项
     @State private var categoryOption: CategoryOption = .time
     @State private var sortOption: SortOption = .name
+    @State private var sortAscending: Bool = true // 排序方向：true为升序，false为降序
     
     // 显示菜单
     @State private var showMenu = false
@@ -148,40 +149,77 @@ struct GoalView: View {
     // 排序菜单内容
     private var sortMenuContent: some View {
         Menu {
-            Button(action: {
-                sortOption = .name
-            }) {
-                Text("名称")
-                if sortOption == .name {
-                    Image(systemName: "checkmark")
+            // 排序选项子菜单
+            Menu {
+                Button(action: {
+                    sortOption = .name
+                }) {
+                    Text("名称")
+                    if sortOption == .name {
+                        Image(systemName: "checkmark")
+                    }
                 }
+                
+                Button(action: {
+                    sortOption = .createTime
+                }) {
+                    Text("创建时间")
+                    if sortOption == .createTime {
+                        Image(systemName: "checkmark")
+                    }
+                }
+                
+                Button(action: {
+                    sortOption = .modifyTime
+                }) {
+                    Text("修改时间")
+                    if sortOption == .modifyTime {
+                        Image(systemName: "checkmark")
+                    }
+                }
+                
+                Button(action: {
+                    sortOption = .visitTime
+                }) {
+                    Text("访问时间")
+                    if sortOption == .visitTime {
+                        Image(systemName: "checkmark")
+                    }
+                }
+                
+                Button(action: {
+                    sortOption = .importance
+                }) {
+                    Text("优先级")
+                    if sortOption == .importance {
+                        Image(systemName: "checkmark")
+                    }
+                }
+            } label: {
+                Text("排序字段")
             }
             
-            Button(action: {
-                sortOption = .createTime
-            }) {
-                Text("创建时间")
-                if sortOption == .createTime {
-                    Image(systemName: "checkmark")
+            // 排序方向子菜单
+            Menu {
+                Button(action: {
+                    sortAscending = true
+                }) {
+                    Text("升序")
+                    if sortAscending {
+                        Image(systemName: "checkmark")
+                    }
                 }
-            }
-            
-            Button(action: {
-                sortOption = .modifyTime
-            }) {
-                Text("修改时间")
-                if sortOption == .modifyTime {
-                    Image(systemName: "checkmark")
+                
+                Button(action: {
+                    sortAscending = false
+                }) {
+                    Text("降序")
+                    if !sortAscending {
+                        Image(systemName: "checkmark")
+                    }
                 }
-            }
-            
-            Button(action: {
-                sortOption = .visitTime
-            }) {
-                Text("访问时间")
-                if sortOption == .visitTime {
-                    Image(systemName: "checkmark")
-                }
+            } label: {
+                Text("排序方向")
             }
         } label: {
             Label("排序", systemImage: "arrow.up.arrow.down")
@@ -267,13 +305,25 @@ struct GoalView: View {
     private func sortGoals(_ goals: [Goal]) -> [Goal] {
         switch sortOption {
         case .name:
-            return goals.sorted { $0.name < $1.name }
+            return sortAscending ? 
+                goals.sorted { $0.name < $1.name } : 
+                goals.sorted { $0.name > $1.name }
         case .createTime:
-            return goals.sorted { $0.createTime < $1.createTime }
+            return sortAscending ? 
+                goals.sorted { $0.createTime < $1.createTime } : 
+                goals.sorted { $0.createTime > $1.createTime }
         case .modifyTime:
-            return goals.sorted { $0.modifyTime < $1.modifyTime }
+            return sortAscending ? 
+                goals.sorted { $0.modifyTime < $1.modifyTime } : 
+                goals.sorted { $0.modifyTime > $1.modifyTime }
         case .visitTime:
-            return goals.sorted { $0.visitTime < $1.visitTime }
+            return sortAscending ? 
+                goals.sorted { $0.visitTime < $1.visitTime } : 
+                goals.sorted { $0.visitTime > $1.visitTime }
+        case .importance:
+            return sortAscending ? 
+                goals.sorted { $0.importance < $1.importance } : 
+                goals.sorted { $0.importance > $1.importance }
         }
     }
     
