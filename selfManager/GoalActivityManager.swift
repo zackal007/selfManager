@@ -44,6 +44,13 @@ class GoalActivityManager {
         return allLogs.filter { $0.goalId == goalId }.sorted(by: { $0.date > $1.date })
     }
     
+    // 删除指定的活动日志
+    func deleteActivityLog(logId: UUID) {
+        var allLogs = getAllActivityLogs()
+        allLogs.removeAll { $0.id == logId }
+        saveActivityLogs(allLogs)
+    }
+    
     // 获取所有活动日志
     private func getAllActivityLogs() -> [ActivityLogEntry] {
         guard let data = UserDefaults.standard.data(forKey: activityLogsKey) else { return [] }
@@ -247,6 +254,17 @@ class GoalActivityManager {
             type: "task_remove",
             oldValue: taskTitle,
             message: "删除了任务: \(taskTitle)"
+        )
+    }
+    
+    // 记录任务修改
+    func logTaskModify(goal: Goal, oldTitle: String, newTitle: String) {
+        addActivityLog(
+            goalId: goal.id,
+            type: "task_modify",
+            oldValue: oldTitle,
+            newValue: newTitle,
+            message: "修改了任务: \(oldTitle) → \(newTitle)"
         )
     }
     

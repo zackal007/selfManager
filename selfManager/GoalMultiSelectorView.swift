@@ -143,6 +143,9 @@ struct GoalMultiSelectorView: View {
                 if !goalRelatedContactIds.contains(contact.id) {
                     goalRelatedContactIds.append(contact.id)
                     goal.relatedContactIds = goalRelatedContactIds
+                    
+                    // 记录关联联系人添加
+                    GoalActivityManager.shared.logContactAdd(goal: goal, contactId: contact.id, contactName: contact.name)
                 }
             }
         }
@@ -161,6 +164,9 @@ struct GoalMultiSelectorView: View {
                 if let contactIndex = goalRelatedContactIds.firstIndex(of: contact.id) {
                     goalRelatedContactIds.remove(at: contactIndex)
                     goal.relatedContactIds = goalRelatedContactIds
+                    
+                    // 记录关联联系人删除
+                    GoalActivityManager.shared.logContactRemove(goal: goal, contactId: contact.id, contactName: contact.name)
                 }
             }
         }

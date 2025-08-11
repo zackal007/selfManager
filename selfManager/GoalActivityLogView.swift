@@ -11,6 +11,9 @@ import SwiftData
 struct GoalActivityLogView: View {
     @Environment(\.dismiss) private var dismiss
     var goal: Goal
+    @State private var showingDeleteAlert = false
+    @State private var logToDelete: UUID? = nil
+    @State private var refreshID = UUID() // 用于强制视图刷新
     
     // 使用 GoalActivityManager 中定义的 ActivityLogEntry 结构
     typealias ActivityLogEntry = GoalActivityManager.ActivityLogEntry
@@ -59,6 +62,9 @@ struct GoalActivityLogView: View {
     }
     
     var body: some View {
+        // 使用refreshID强制视图刷新
+        let _ = refreshID
+        
         VStack(spacing: 0) {
             // 顶部标题栏
             HStack {
@@ -153,7 +159,6 @@ struct GoalActivityLogView: View {
                                                 .foregroundColor(Color(UIColor.systemRed))
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
-                                                .background(Color(UIColor.systemRed).opacity(0.1))
                                                 .cornerRadius(4)
                                             
                                             Image(systemName: "arrow.right")
@@ -165,7 +170,6 @@ struct GoalActivityLogView: View {
                                                 .foregroundColor(Color(UIColor.systemGreen))
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
-                                                .background(Color(UIColor.systemGreen).opacity(0.1))
                                                 .cornerRadius(4)
                                         }
                                     }
@@ -176,6 +180,14 @@ struct GoalActivityLogView: View {
                                 Spacer()
                             }
                             .padding(.horizontal, 20)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    logToDelete = log.id
+                                    showingDeleteAlert = true
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
+                            }
                             
                             Divider()
                                 .padding(.leading, 65)
@@ -191,6 +203,18 @@ struct GoalActivityLogView: View {
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .alert("确认删除", isPresented: $showingDeleteAlert) {
+                Button("取消", role: .cancel) {}
+                Button("删除", role: .destructive) {
+                    if let logId = logToDelete {
+                        GoalActivityManager.shared.deleteActivityLog(logId: logId)
+                        // 强制视图刷新
+                        refreshID = UUID()
+                    }
+                }
+            } message: {
+                Text("确定要删除这条日志记录吗？此操作无法撤销。")
+            }
     }
     
     // 根据活动类型获取颜色
