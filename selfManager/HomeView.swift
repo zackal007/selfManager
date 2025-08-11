@@ -196,6 +196,19 @@ struct HomeView: View {
         .sheet(isPresented: $showingSettings) {
             SettingsView()
         }
+        .onAppear {
+            // 在视图加载时应用保存的筛选条件
+            loadSavedGoalFilters()
+        }
+        .onChange(of: selectedGoalType) { _ in
+            updateFilteredGoals()
+        }
+        .onChange(of: selectedImportance) { _ in
+            updateFilteredGoals()
+        }
+        .onChange(of: searchText) { _ in
+            updateFilteredGoals()
+        }
     }
     
     // 模糊背景视图
@@ -404,10 +417,64 @@ struct HomeView: View {
     
     // 目标区域
     @State private var showingGoalPopup = false
-    @State private var goalFilterExpanded = true
+    @State private var goalFilterExpanded: Bool = UserDefaults.standard.bool(forKey: "goalFilterExpanded")
     @State private var selectedGoalType: GoalType? = nil
     @State private var selectedImportance: GoalImportance? = nil
     @State private var savedFilteredGoals: [Goal] = []
+    @State private var searchText: String = UserDefaults.standard.string(forKey: "goalSearchText") ?? ""
+    
+    // 监听筛选条件变化
+    private var goalFiltersChanged: Bool {
+        // 这个计算属性用于触发 onChange 修饰符
+        return true
+    }
+    
+    // 加载保存的筛选条件
+    private func loadSavedGoalFilters() {
+        let defaults = UserDefaults.standard
+        
+        // 加载筛选条件
+        goalFilterExpanded = defaults.bool(forKey: "goalFilterExpanded")
+        searchText = defaults.string(forKey: "goalSearchText") ?? ""
+        
+        // 加载目标类型
+        if let typeString = defaults.string(forKey: "selectedGoalType"),
+           let type = GoalType(rawValue: typeString) {
+            selectedGoalType = type
+        } else {
+            selectedGoalType = nil
+        }
+        
+        // 加载优先级
+        if let importanceInt = defaults.object(forKey: "selectedImportance") as? Int,
+           let importance = GoalImportance(rawValue: importanceInt) {
+            selectedImportance = importance
+        } else {
+            selectedImportance = nil
+        }
+        
+        // 应用筛选条件到目标列表
+        updateFilteredGoals()
+    }
+    
+    // 更新筛选后的目标列表
+    private func updateFilteredGoals() {
+        savedFilteredGoals = goals.filter { goal in
+            // 应用类型筛选
+            let typeMatches = selectedGoalType == nil || goal.goalType == selectedGoalType
+            
+            // 应用优先级筛选
+            let importanceMatches = selectedImportance == nil || goal.goalImportance == selectedImportance
+            
+            // 应用搜索文本筛选
+            let searchMatches = searchText.isEmpty ||
+                goal.name.localizedCaseInsensitiveContains(searchText) ||
+                goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
+                goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            
+            return typeMatches && importanceMatches && searchMatches
+        }
+    }
     
     private var goalSection: some View {
         Button(action: {
@@ -422,8 +489,12 @@ struct HomeView: View {
                 goalFilterExpanded: $goalFilterExpanded,
                 selectedGoalType: $selectedGoalType,
                 selectedImportance: $selectedImportance,
-                savedFilteredGoals: $savedFilteredGoals
+                savedFilteredGoals: $savedFilteredGoals,
+                searchText: $searchText
             )
+        }
+        .onAppear {
+            loadSavedGoalFilters()
         }
     }
     

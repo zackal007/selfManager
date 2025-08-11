@@ -23,13 +23,18 @@ struct GoalPopupView: View {
     @Binding var selectedGoalType: GoalType?
     @Binding var selectedImportance: GoalImportance?
     @Binding var savedFilteredGoals: [Goal]
-    
-    // 搜索文本
-    @State private var searchText = ""
+    @Binding var searchText: String
     
     // 保存筛选设置
     func saveFilterSettings() {
         savedFilteredGoals = filteredGoals
+        
+        // 保存筛选条件到 UserDefaults
+        let defaults = UserDefaults.standard
+        defaults.set(goalFilterExpanded, forKey: "goalFilterExpanded")
+        defaults.set(selectedGoalType?.rawValue, forKey: "selectedGoalType")
+        defaults.set(selectedImportance?.rawValue as Int?, forKey: "selectedImportance")
+        defaults.set(searchText, forKey: "goalSearchText")
     }
     
     // 计算筛选后的目标
@@ -183,6 +188,8 @@ struct GoalPopupView: View {
                             selectedGoalType = nil
                             selectedImportance = nil
                             searchText = ""
+                            // 保存重置后的筛选条件
+                            saveFilterSettings()
                         }) {
                             Text("清除筛选条件")
                                 .font(.system(size: 16, weight: .medium))
@@ -229,6 +236,10 @@ struct GoalPopupView: View {
                             .foregroundColor(Color(UIColor.systemGray))
                     }
                 }
+            }
+            .onDisappear {
+                // 在视图消失时保存筛选设置
+                saveFilterSettings()
             }
         }
     }
@@ -302,7 +313,8 @@ struct GoalRowView: View {
         goalFilterExpanded: .constant(true),
         selectedGoalType: .constant(nil),
         selectedImportance: .constant(nil),
-        savedFilteredGoals: .constant([])
+        savedFilteredGoals: .constant([]),
+        searchText: .constant("")
     )
     .modelContainer(for: Goal.self, inMemory: true)
 }
