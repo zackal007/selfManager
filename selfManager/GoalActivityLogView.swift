@@ -102,15 +102,14 @@ struct GoalActivityLogView: View {
                 .background(Color(UIColor.systemGroupedBackground))
             } else {
                 // 时间线视图
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(activityLogs.enumerated()), id: \.element.id) { index, log in
+                List {
+                    ForEach(Array(activityLogs.enumerated()), id: \.element.id) { index, log in
+                        VStack(alignment: .leading, spacing: 0) {
                             // 日期分隔线（如果是新的一天或第一条记录）
                             if index == 0 || !isSameDay(date1: activityLogs[index-1].date, date2: log.date) {
                                 Text(formatDateHeader(log.date))
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(Color(UIColor.secondaryLabel))
-                                    .padding(.horizontal, 20)
                                     .padding(.top, 16)
                                     .padding(.bottom, 8)
                             }
@@ -156,7 +155,7 @@ struct GoalActivityLogView: View {
                                         HStack(spacing: 8) {
                                             Text(oldValue)
                                                 .font(.system(size: 13))
-                                                .foregroundColor(Color(UIColor.systemRed))
+                                                .foregroundColor(Color(UIColor.label))
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
                                                 .cornerRadius(4)
@@ -167,7 +166,7 @@ struct GoalActivityLogView: View {
                                             
                                             Text(newValue)
                                                 .font(.system(size: 13))
-                                                .foregroundColor(Color(UIColor.systemGreen))
+                                                .foregroundColor(Color(UIColor.label))
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
                                                 .cornerRadius(4)
@@ -179,22 +178,25 @@ struct GoalActivityLogView: View {
                                 
                                 Spacer()
                             }
-                            .padding(.horizontal, 20)
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    logToDelete = log.id
-                                    showingDeleteAlert = true
-                                } label: {
-                                    Label("删除", systemImage: "trash")
-                                }
-                            }
                             
-                            Divider()
-                                .padding(.leading, 65)
+                            if index < activityLogs.count - 1 {
+                                Divider()
+                                    .padding(.leading, 65)
+                            }
+                        }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                        .listRowBackground(Color.clear)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                logToDelete = log.id
+                                showingDeleteAlert = true
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
                         }
                     }
-                    .padding(.bottom, 20)
                 }
+                .listStyle(PlainListStyle())
                 .background(Color(UIColor.systemGroupedBackground))
             }
         }
