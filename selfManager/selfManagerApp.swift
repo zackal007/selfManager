@@ -63,15 +63,15 @@ struct selfManagerApp: App {
             // 不使用迁移计划，避免未知模型版本的问题
             self.sharedModelContainer = try ModelContainer(for: schema)
             
-            // 延迟一段时间后隐藏欢迎页面，确保动画流畅
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                withAnimation(.easeInOut(duration: 0.5)) {
+            // 优化动画效果，使其更丝滑
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // 保持ModelContainer初始化后的延迟
+                withAnimation(.easeInOut(duration: 0.3)) { // isLoading动画时长增加到0.3s
                     isLoading = false
                 }
                 
-                // 再延迟一段时间后完全隐藏欢迎页面
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    withAnimation {
+                // 缩短二次延迟，让isShowingWelcome动画紧随其后
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.easeOut(duration: 0.4)) { // isShowingWelcome动画时长增加到0.4s，使用easeOut
                         isShowingWelcome = false
                     }
                 }

@@ -197,8 +197,10 @@ struct HomeView: View {
             SettingsView()
         }
         .onAppear {
-            // 在视图加载时应用保存的筛选条件
-            loadSavedGoalFilters()
+            // 在视图加载时应用保存的筛选条件，但避免重复加载
+            if savedFilteredGoals.isEmpty {
+                loadSavedGoalFilters()
+            }
         }
         .onChange(of: selectedGoalType) { _ in
             updateFilteredGoals()
@@ -429,16 +431,20 @@ struct HomeView: View {
         return true
     }
     
-    // 加载保存的筛选条件
+    // 加载保存的筛选条件 - 优化版本
     private func loadSavedGoalFilters() {
         let defaults = UserDefaults.standard
         
+        // 批量获取所有需要的值，减少UserDefaults访问次数
+        let keys = ["goalFilterExpanded", "goalSearchText", "selectedGoalType", "selectedImportance"]
+        let values = defaults.dictionaryRepresentation().filter { keys.contains($0.key) }
+        
         // 加载筛选条件
-        goalFilterExpanded = defaults.bool(forKey: "goalFilterExpanded")
-        searchText = defaults.string(forKey: "goalSearchText") ?? ""
+        goalFilterExpanded = values["goalFilterExpanded"] as? Bool ?? false
+        searchText = values["goalSearchText"] as? String ?? ""
         
         // 加载目标类型
-        if let typeString = defaults.string(forKey: "selectedGoalType"),
+        if let typeString = values["selectedGoalType"] as? String,
            let type = GoalType(rawValue: typeString) {
             selectedGoalType = type
         } else {
@@ -446,7 +452,7 @@ struct HomeView: View {
         }
         
         // 加载优先级
-        if let importanceInt = defaults.object(forKey: "selectedImportance") as? Int,
+        if let importanceInt = values["selectedImportance"] as? Int,
            let importance = GoalImportance(rawValue: importanceInt) {
             selectedImportance = importance
         } else {
@@ -457,22 +463,33 @@ struct HomeView: View {
         updateFilteredGoals()
     }
     
-    // 更新筛选后的目标列表
+    // 更新筛选后的目标列表 - 优化版本
     private func updateFilteredGoals() {
+        // 如果没有任何筛选条件，直接使用所有目标
+        if selectedGoalType == nil && selectedImportance == nil && searchText.isEmpty {
+            savedFilteredGoals = goals
+            return
+        }
+        
+        // 优化筛选逻辑，避免不必要的计算
         savedFilteredGoals = goals.filter { goal in
-            // 应用类型筛选
-            let typeMatches = selectedGoalType == nil || goal.goalType == selectedGoalType
+            // 先检查类型和优先级（计算成本较低）
+            if let type = selectedGoalType, goal.goalType != type {
+                return false
+            }
             
-            // 应用优先级筛选
-            let importanceMatches = selectedImportance == nil || goal.goalImportance == selectedImportance
+            if let importance = selectedImportance, goal.goalImportance != importance {
+                return false
+            }
             
-            // 应用搜索文本筛选
-            let searchMatches = searchText.isEmpty ||
-                goal.name.localizedCaseInsensitiveContains(searchText) ||
-                goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
-                goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            // 最后检查搜索文本（计算成本较高）
+            if !searchText.isEmpty {
+                return goal.name.localizedCaseInsensitiveContains(searchText) ||
+                       goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
+                       goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            }
             
-            return typeMatches && importanceMatches && searchMatches
+            return true
         }
     }
     
@@ -492,9 +509,6 @@ struct HomeView: View {
                 savedFilteredGoals: $savedFilteredGoals,
                 searchText: $searchText
             )
-        }
-        .onAppear {
-            loadSavedGoalFilters()
         }
     }
     
