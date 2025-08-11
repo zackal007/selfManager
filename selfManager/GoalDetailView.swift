@@ -202,6 +202,7 @@ struct GoalDetailView: View {
     @State private var editingValue: String = ""
     @State private var editingProgress: Double = 0
     @State private var editingTask: GoalTask? = nil
+    @State private var showActivityLog = false
     @Environment(\.presentationMode) var presentationMode
     
     // 可编辑字段枚举
@@ -302,8 +303,12 @@ struct GoalDetailView: View {
                             // 复选框（参考备忘录样式）
                             Button(action: {
                                 // 切换任务完成状态
+                                let oldStatus = task.isCompleted
                                 task.isCompleted.toggle()
                                 goal.modifyTime = Date()
+                                
+                                // 记录任务完成状态变更
+                                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
                                 
                                 do {
                                     try modelContext.save()
@@ -691,22 +696,36 @@ struct GoalDetailView: View {
         
         switch field {
         case .name:
+            let oldName = goal.name
             goal.name = value
+            // 记录名称修改
+            GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName)
         case .goalDescription:
+            let oldDescription = goal.goalDescription
             goal.goalDescription = value
+            // 记录描述修改
+            GoalActivityManager.shared.logDescriptionChange(goal: goal, oldDescription: oldDescription)
         case .progress:
+            let oldProgress = goal.progress
             goal.progress = progress
+            // 记录进度修改
+            GoalActivityManager.shared.logProgressChange(goal: goal, oldProgress: oldProgress)
         case .tag:
             if !value.isEmpty {
                 // 添加新标签
                 if !goal.tags.contains(value) {
                     goal.tags.append(value)
+                    // 记录标签添加
+                    GoalActivityManager.shared.logTagAdd(goal: goal, tag: value)
                 }
             }
         case .task:
             if let task = editingTask {
+                let oldTitle = task.title
                 task.title = value
-            }        case .upperProject, .subProject, .dueDate, .none:
+                // 记录任务修改（目前 GoalActivityManager 没有专门的任务修改方法，可以考虑添加）
+            }
+        case .upperProject, .subProject, .dueDate, .none:
             // 这些字段在其他地方处理
             break
         @unknown default:
@@ -727,18 +746,28 @@ struct GoalDetailView: View {
     
     // 保存目标的所有修改
     private func saveGoal() -> Void {
+        // 记录目标类型修改
+        let oldGoalType = goal.goalType
+        
         // 根据selectedGoalType更新goal.goalType
+        var newGoalType: GoalType = .shortTerm
         switch selectedGoalType {
         case 0:
-            goal.goalType = .life
+            newGoalType = .life
         case 1:
-            goal.goalType = .yearly
+            newGoalType = .yearly
         case 2:
-            goal.goalType = .shortTerm
+            newGoalType = .shortTerm
         case 3:
-            goal.goalType = .habit
+            newGoalType = .habit
         default:
             break
+        }
+        
+        // 如果类型有变化，记录日志
+        if oldGoalType != newGoalType {
+            goal.goalType = newGoalType
+            GoalActivityManager.shared.logTypeChange(goal: goal, oldType: oldGoalType)
         }
         
         // 更新修改时间
@@ -880,8 +909,13 @@ struct GoalDetailView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .frame(width: 160)
                 .onChange(of: editingImportance) { newValue in
+                    let oldImportance = goal.importance
                     goal.importance = newValue
                     goal.modifyTime = Date()
+                    
+                    // 记录重要性修改
+                    GoalActivityManager.shared.logImportanceChange(goal: goal, oldImportance: oldImportance)
+                    
                     do {
                         try modelContext.save()
                     } catch {
@@ -1315,8 +1349,12 @@ struct GoalDetailView: View {
                                     HStack(spacing: 12) {
                                         // 复选框
                                         Button(action: {
+                                            let oldStatus = task.isCompleted
                                             task.isCompleted.toggle()
                                             goal.modifyTime = Date()
+                                            
+                                            // 记录任务完成状态变更
+                                            GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
                                             
                                             do {
                                                 try modelContext.save()
@@ -1559,21 +1597,41 @@ struct GoalDetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
                 
-                // 底部删除按钮
-                Button(action: {
-                    showDeleteAlert = true
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 16))
-                        Text("删除目标")
-                            .font(.system(size: 17, weight: .semibold))
+                // 底部按钮区域
+                HStack(spacing: 12) {
+                    // 查看动态按钮
+                    Button(action: {
+                        showActivityLog = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.system(size: 16))
+                            Text("查看动态")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.blue)
+                        .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.red)
-                    .cornerRadius(12)
+                    
+                    // 删除按钮
+                    Button(action: {
+                        showDeleteAlert = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 16))
+                            Text("删除目标")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.red)
+                        .cornerRadius(12)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
@@ -1670,6 +1728,9 @@ struct GoalDetailView: View {
                     print("Failed to save background image: \(error)")
                 }
             })
+        }
+        .sheet(isPresented: $showActivityLog) {
+            GoalActivityLogView(goal: goal)
         }
         .alert(isPresented: $showDeleteAlert) {
             Alert(
@@ -1865,6 +1926,9 @@ struct AddTaskView: View {
         goal.tasks.append(newTask)
         goal.modifyTime = Date()
         
+        // 记录任务添加
+        GoalActivityManager.shared.logTaskAdd(goal: goal, task: newTask)
+        
         do {
             try modelContext.save()
         } catch {
@@ -1905,8 +1969,12 @@ struct DatePickerView: View {
     }
     
     private func saveDueDate() {
+        let oldDueDate = goal.dueDate
         goal.dueDate = selectedDate
         goal.modifyTime = Date()
+        
+        // 记录截止日期修改
+        GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate)
         
         do {
             try modelContext.save()
