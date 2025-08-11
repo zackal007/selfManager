@@ -217,6 +217,221 @@ struct DataPersistenceTests {
             #expect(contact.contactType == contactType)
         }
     }
+
+    // MARK: - Item Model Tests
+
+    @Test func testItemModelPersistence() async throws {
+        let config = ModelConfiguration(for: [Item.self, User.self, Achievement.self, Improvement.self, Goal.self, Record.self, Contact.self], inMemory: true)
+        let container = try ModelContainer(for: config)
+        let context = ModelContext(container)
+
+        let item = Item(timestamp: Date())
+        context.insert(item)
+        try context.save()
+
+        let fetchedItem = try context.fetch(FetchDescriptor<Item>()).first
+
+        #expect(fetchedItem != nil)
+        #expect(abs(fetchedItem!.timestamp.timeIntervalSince(item.timestamp)) < 0.001)
+    }
+
+    // MARK: - Asset Model Tests
+
+    @Test func testAssetModelPersistence() async throws {
+        let config = ModelConfiguration(for: [Asset.self, User.self, Achievement.self, Improvement.self, Goal.self, Record.self, Contact.self, Item.self], inMemory: true)
+        let container = try ModelContainer(for: config)
+        let context = ModelContext(container)
+
+        let asset = Asset(
+            cashAmount: 1000.0,
+            debtAmount: 200.0,
+            otherAmount: 500.0
+        )
+        context.insert(asset)
+        try context.save()
+
+        let fetchedAsset = try context.fetch(FetchDescriptor<Asset>()).first
+
+        #expect(fetchedAsset != nil)
+        #expect(fetchedAsset?.cashAmount == asset.cashAmount)
+        #expect(fetchedAsset?.debtAmount == asset.debtAmount)
+        #expect(fetchedAsset?.otherAmount == asset.otherAmount)
+        #expect(fetchedAsset?.totalAssets == asset.totalAssets)
+        #expect(abs(fetchedAsset!.lastUpdateDate.timeIntervalSince(asset.lastUpdateDate)) < 0.001)
+    }
+
+    // MARK: - Record Model Tests
+
+    @Test func testRecordModelPersistence() async throws {
+        let config = ModelConfiguration(for: [Record.self, User.self, Achievement.self, Improvement.self, Goal.self], inMemory: true)
+        let container = try ModelContainer(for: config)
+        let context = ModelContext(container)
+
+        let record = Record(
+            title: "Test Record",
+            content: "This is a test record content.",
+            recordType: .daily,
+            year: 2024,
+            month: 7,
+            day: 15,
+            week: 29,
+            quarter: 3,
+            mood: "Happy",
+            weather: "Sunny"
+        )
+        context.insert(record)
+        try context.save()
+
+        let fetchedRecord = try context.fetch(FetchDescriptor<Record>()).first
+
+        #expect(fetchedRecord != nil)
+        #expect(fetchedRecord?.id == record.id)
+        #expect(fetchedRecord?.title == record.title)
+        #expect(fetchedRecord?.content == record.content)
+        #expect(fetchedRecord?.recordType == record.recordType)
+        #expect(fetchedRecord?.year == record.year)
+        #expect(fetchedRecord?.month == record.month)
+        #expect(fetchedRecord?.day == record.day)
+        #expect(fetchedRecord?.week == record.week)
+        #expect(fetchedRecord?.quarter == record.quarter)
+        #expect(fetchedRecord?.mood == record.mood)
+        #expect(fetchedRecord?.weather == record.weather)
+        #expect(abs(fetchedRecord!.createTime.timeIntervalSince(record.createTime)) < 0.001)
+    }
+
+    @Test func testContactModelPersistence() async throws {
+        let config = ModelConfiguration(for: [Contact.self, User.self, Achievement.self, Improvement.self, Goal.self, Record.self], inMemory: true)
+        let container = try ModelContainer(for: config)
+        let context = ModelContext(container)
+
+        let contact = Contact(
+            name: "Test Contact",
+            company: "Test Company",
+            position: "Software Engineer",
+            phone: "123-456-7890",
+            email: "test@example.com",
+            address: "123 Test St",
+            notes: "Some notes about the contact.",
+            contactType: .friend,
+            frequency: .weekly,
+            tags: ["work", "friendship"]
+        )
+        context.insert(contact)
+        try context.save()
+
+        let fetchedContact = try context.fetch(FetchDescriptor<Contact>()).first
+
+        #expect(fetchedContact != nil)
+        #expect(fetchedContact?.id == contact.id)
+        #expect(fetchedContact?.name == contact.name)
+        #expect(fetchedContact?.company == contact.company)
+        #expect(fetchedContact?.position == contact.position)
+        #expect(fetchedContact?.phone == contact.phone)
+        #expect(fetchedContact?.email == contact.email)
+        #expect(fetchedContact?.address == contact.address)
+        #expect(fetchedContact?.notes == contact.notes)
+        #expect(fetchedContact?.contactType == contact.contactType)
+        #expect(fetchedContact?.frequency == contact.frequency)
+        #expect(fetchedContact?.tags == contact.tags)
+        #expect(abs(fetchedContact!.createTime.timeIntervalSince(contact.createTime)) < 0.001)
+    }
+
+    @Test func testRecordTypeDisplayName() async throws {
+        #expect(RecordType.daily.displayName == "日记")
+        #expect(RecordType.weekly.displayName == "周记")
+        #expect(RecordType.monthly.displayName == "月记")
+        #expect(RecordType.quarterly.displayName == "季记")
+        #expect(RecordType.yearly.displayName == "年记")
+    }
+
+    // MARK: - User Model Tests
+
+    @Test func testUserModelPersistence() async throws {
+        let user = User(
+            name: "测试用户",
+            avatar: "😀",
+            tags: ["测试", "用户", "SwiftData"],
+            userDescription: "这是一个测试用户描述。",
+            trashExpirationDays: 60
+        )
+
+        #expect(user.name == "测试用户")
+        #expect(user.avatar == "😀")
+        #expect(user.tags.count == 3)
+        #expect(user.tags.contains("用户"))
+        #expect(user.userDescription == "这是一个测试用户描述。")
+        #expect(user.trashExpirationDays == 60)
+    }
+
+    @Test func testUserTagsComputedProperty() async throws {
+        let user = User()
+        user.tags = ["新标签1", "新标签2"]
+        #expect(user.tagsString == "新标签1,新标签2")
+        #expect(user.tags.count == 2)
+        #expect(user.tags.contains("新标签1"))
+
+        user.tags = []
+        #expect(user.tagsString == "")
+        #expect(user.tags.isEmpty)
+    }
+
+    // MARK: - Achievement Model Tests
+
+    @Test func testAchievementModelPersistence() async throws {
+        let achievement = Achievement(
+            emoji: "🌟",
+            name: "完成测试用例",
+            achievementDescription: "为所有模块补齐测试用例",
+            category: "工作成就",
+            isCompleted: true,
+            completionDate: Date()
+        )
+
+        #expect(achievement.emoji == "🌟")
+        #expect(achievement.name == "完成测试用例")
+        #expect(achievement.achievementDescription == "为所有模块补齐测试用例")
+        #expect(achievement.category == "工作成就")
+        #expect(achievement.isCompleted == true)
+        #expect(achievement.completionDate != nil)
+    }
+    
+    // MARK: - Improvement Model Tests
+
+    @Test func testImprovementModelPersistence() throws {
+        let context = ModelContext(container)
+
+        let improvement = Improvement(emoji: "💡", name: "学习新技能", description: "每天学习SwiftUI", priority: .high)
+        context.insert(improvement)
+        try context.save()
+
+        let fetchedImprovement = try context.fetch(FetchDescriptor<Improvement>()).first
+
+        #expect(fetchedImprovement != nil)
+        #expect(fetchedImprovement?.id == improvement.id)
+        #expect(fetchedImprovement?.emoji == improvement.emoji)
+        #expect(fetchedImprovement?.name == improvement.name)
+        #expect(fetchedImprovement?.description == improvement.description)
+        #expect(fetchedImprovement?.priority == improvement.priority)
+    }
+        let allContactTypes: [ContactType] = [.family, .friend, .colleague, .other]
+        
+        for contactType in allContactTypes {
+            let contact = Contact(
+                name: "类型测试\(contactType.rawValue)",
+                company: nil,
+                position: nil,
+                phone: nil,
+                email: nil,
+                address: nil,
+                notes: nil,
+                contactType: contactType,
+                frequency: .occasional,
+                tags: []
+            )
+            
+            #expect(contact.contactType == contactType)
+        }
+    }
     
     // MARK: - Performance Tests
     

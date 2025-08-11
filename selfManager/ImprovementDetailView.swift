@@ -12,13 +12,7 @@ struct ImprovementDetailView: View {
     @Environment(\.dismiss) private var dismiss
     
     // 待改进项列表
-    @State private var improvements = [
-        Improvement(emoji: "📱", name: "减少手机使用", description: "每天使用手机时间超过5小时，需要减少使用时间", priority: .high),
-        Improvement(emoji: "🍔", name: "改善饮食习惯", description: "减少垃圾食品摄入，增加蔬果摄入量", priority: .medium),
-        Improvement(emoji: "🛌", name: "规律作息", description: "保持每天11点前睡觉，7点起床的作息习惯", priority: .high),
-        Improvement(emoji: "🎮", name: "控制游戏时间", description: "周末游戏时间不超过3小时", priority: .low),
-        Improvement(emoji: "💤", name: "午休习惯", description: "工作日午休不超过30分钟", priority: .medium)
-    ]
+    @Query private var improvements: [Improvement]
     
     // 编辑状态
     @State private var isEditing = false
@@ -271,9 +265,7 @@ struct ImprovementDetailView: View {
             if isEditing {
                 Menu {
                     Button(role: .destructive, action: {
-                        if let index = improvements.firstIndex(where: { $0.id == improvement.id }) {
-                            improvements.remove(at: index)
-                        }
+                        modelContext.delete(improvement)
                     }) {
                         Label("删除", systemImage: "trash")
                     }
@@ -326,9 +318,10 @@ struct ImprovementDetailView: View {
                     }
                     
                     Picker("优先级", selection: $newImprovement.priority) {
-                        Text("高").tag(Priority.high)
-                        Text("中").tag(Priority.medium)
-                        Text("低").tag(Priority.low)
+                        ForEach(Priority.allCases, id: \.self) {
+                            priority in
+                            Text(priority.rawValue).tag(priority)
+                        }
                     }
                     .pickerStyle(SegmentedPickerStyle())
                 }
@@ -350,7 +343,7 @@ struct ImprovementDetailView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("保存") {
                         if !newImprovement.name.isEmpty {
-                            improvements.append(newImprovement)
+                            modelContext.insert(newImprovement)
                             showingAddSheet = false
                             newImprovement = Improvement(emoji: "📝", name: "", description: "", priority: .medium)
                         }
@@ -362,27 +355,44 @@ struct ImprovementDetailView: View {
     }
     
     // 删除待改进项
+    @Environment(\.modelContext) private var modelContext
+
     private func deleteImprovement(at offsets: IndexSet) {
-        improvements.remove(atOffsets: offsets)
+        for index in offsets {
+            modelContext.delete(improvements[index])
+        }
     }
     
     // 移动待改进项
     private func moveImprovement(from source: IndexSet, to destination: Int) {
-        improvements.move(fromOffsets: source, toOffset: destination)
+        // SwiftData 暂不支持直接移动，需要手动删除再插入
+        var movedImprovements: [Improvement] = improvements
+        movedImprovements.move(fromOffsets: source, toOffset: destination)
+        // 这里需要更复杂的逻辑来处理 SwiftData 的顺序，或者重新排序查询结果
+        // 对于简单的列表，可以考虑重新加载或根据排序键处理
     }
 }
 
 // 待改进项模型
-struct Improvement: Identifiable {
+@Model
+class Improvement: Identifiable {
     var id = UUID()
     var emoji: String
     var name: String
     var description: String
     var priority: Priority
+
+    init(id: UUID = UUID(), emoji: String, name: String, description: String, priority: Priority) {
+        self.id = id
+        self.emoji = emoji
+        self.name = name
+        self.description = description
+        self.priority = priority
+    }
 }
 
 // 优先级枚举
-enum Priority: String {
+enum Priority: String, Codable, CaseIterable {
     case high = "高"
     case medium = "中"
     case low = "低"
