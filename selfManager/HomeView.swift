@@ -198,6 +198,7 @@ struct HomeView: View {
         }
         .onAppear {
             // 在视图加载时应用保存的筛选条件，但避免重复加载
+
             if savedFilteredGoals.isEmpty {
                 loadSavedGoalFilters()
             }
@@ -211,51 +212,66 @@ struct HomeView: View {
         .onChange(of: searchText) { _ in
             updateFilteredGoals()
         }
+}
+
+// 模糊背景视图
+// BlurView结构体 - 用于创建模糊效果背景
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        return view
     }
     
-    // 模糊背景视图
-    // BlurView结构体 - 用于创建模糊效果背景
-    struct BlurView: UIViewRepresentable {
-        var style: UIBlurEffect.Style
-        
-        func makeUIView(context: Context) -> UIVisualEffectView {
-            let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
-            return view
-        }
-        
-        func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-            uiView.effect = UIBlurEffect(style: style)
-        }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: style)
     }
+}
     
     // 用户信息卡片
     private var userProfileSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 // 头像
-                Text(user.avatar)
-                    .font(.system(size: 52))
-                    .frame(width: 68, height: 68)
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.1), Color(UIColor.systemBlue).opacity(0.05)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                if !user.avatar.isEmpty, let uiImage = ImageUtility.loadImageFromAppDirectory(fileName: user.avatar) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 68, height: 68)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 2
+                                )
                         )
-                    )
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2
-                            )
-                    )
-                    .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
+                } else {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 68, height: 68)
+                        .clipShape(Circle())
+                        .foregroundColor(.gray)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 2
+                                )
+                        )
+                        .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
+                }
                 
                 VStack(alignment: .leading, spacing: 6) {
                     // 用户名
@@ -1035,6 +1051,7 @@ struct HomeView: View {
         ]
         return index < moodColors.count ? moodColors[index] : Color(UIColor.systemGray)
     }
+
 }
 
 struct HomeView_Previews: PreviewProvider {

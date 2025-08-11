@@ -17,7 +17,7 @@ struct ImprovementDetailView: View {
     // 编辑状态
     @State private var isEditing = false
     @State private var showingAddSheet = false
-    @State private var newImprovement = Improvement(emoji: "📝", name: "", description: "", priority: .medium)
+    @State private var newImprovement = Improvement(emoji: "📝", name: "", improvementDescription: "", priority: .medium)
     
     // 选中的优先级筛选
     @State private var selectedPriority: Priority? = nil
@@ -256,7 +256,7 @@ struct ImprovementDetailView: View {
                     priorityLabel(improvement.priority)
                 }
                 
-                Text(improvement.description)
+                Text(improvement.improvementDescription)
                     .font(.subheadline)
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .lineLimit(2)
@@ -327,7 +327,7 @@ struct ImprovementDetailView: View {
                 }
                 
                 Section(header: Text("详细描述")) {
-                    TextEditor(text: $newImprovement.description)
+                    TextEditor(text: $newImprovement.improvementDescription)
                         .frame(minHeight: 100)
                 }
             }
@@ -345,7 +345,7 @@ struct ImprovementDetailView: View {
                         if !newImprovement.name.isEmpty {
                             modelContext.insert(newImprovement)
                             showingAddSheet = false
-                            newImprovement = Improvement(emoji: "📝", name: "", description: "", priority: .medium)
+                            newImprovement = Improvement(emoji: "📝", name: "", improvementDescription: "", priority: .medium)
                         }
                     }
                     .disabled(newImprovement.name.isEmpty)
@@ -379,14 +379,14 @@ class Improvement: Identifiable {
     var id = UUID()
     var emoji: String
     var name: String
-    var description: String
+    var improvementDescription: String
     var priority: Priority
 
-    init(id: UUID = UUID(), emoji: String, name: String, description: String, priority: Priority) {
+    init(id: UUID = UUID(), emoji: String, name: String, improvementDescription: String, priority: Priority) {
         self.id = id
         self.emoji = emoji
         self.name = name
-        self.description = description
+        self.improvementDescription = improvementDescription
         self.priority = priority
     }
 }

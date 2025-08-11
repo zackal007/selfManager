@@ -104,6 +104,35 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
+struct ImageUtility {
+    static func saveImageToAppDirectory(image: UIImage, fileName: String) -> URL? {
+        guard let data = image.pngData() else { return nil }
+        let fileManager = FileManager.default
+        guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        do {
+            try data.write(to: fileURL)
+            return fileURL
+        } catch {
+            print("Error saving image: \(error)")
+            return nil
+        }
+    }
+
+    static func loadImageFromAppDirectory(fileName: String) -> UIImage? {
+        let fileManager = FileManager.default
+        guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        
+        if fileManager.fileExists(atPath: fileURL.path) {
+            return UIImage(contentsOfFile: fileURL.path)
+        } else {
+            print("File not found at path: \(fileURL.path)")
+            return nil
+        }
+    }
+}
+
 // 菜单按钮组件
 struct MenuButton<Content: View>: View {
     let content: () -> Content
