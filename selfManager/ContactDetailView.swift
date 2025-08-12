@@ -447,6 +447,7 @@ struct ContactDetailView: View {
     }
     
     // 标签 - 现代设计
+    // 标签视图 - 支持直接编辑
     private var tagsView: some View {
         VStack(alignment: .leading, spacing: 16) {
             // 标题栏
@@ -457,15 +458,15 @@ struct ContactDetailView: View {
                 
                 Spacer()
                 
-                // 编辑标签按钮
+                // 添加标签按钮 - 直接在视图中添加
                 Button(action: {
                     editingField = .tag
-                    editingValue = contact.tags.joined(separator: ", ")
+                    editingValue = ""
                     showEditSheet = true
                 }) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(Color("Colors/Blue"))
+                        .foregroundColor(Color(UIColor.systemBlue))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -486,18 +487,87 @@ struct ContactDetailView: View {
                     Spacer()
                 }
             } else {
-                // 使用流式布局展示标签
-                FlowLayout(spacing: 8) {
-                    ForEach(contact.tags, id: \.self) { tag in
-                        Text(tag)
-                            .font(.system(size: 13, weight: .medium))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                // 使用流式布局展示标签 - 参考目标详情页的实现
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(contact.tags, id: \.self) { tag in
+                            HStack(spacing: 4) {
+                                Text(tag)
+                                    .foregroundColor(tagColor(for: tag))
+                                
+                                // 删除标签按钮
+                                Button(action: {
+                                    // 删除标签
+                                    if let index = contact.tags.firstIndex(of: tag) {
+                                        contact.tags.remove(at: index)
+                                        // 更新修改时间
+                                        contact.modifyTime = Date()
+                                        // 保存更改
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save tag deletion: \(error)")
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray3))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            .font(.system(size: 14, weight: .medium))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
                             .background(tagColor(for: tag).opacity(0.1))
-                            .foregroundColor(tagColor(for: tag))
                             .cornerRadius(12)
+                        }
+                        
+                        // 添加标签按钮 - 直接在视图中添加
+                        Button(action: {
+                            editingField = .tag
+                            editingValue = ""
+                            showEditSheet = true
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 12))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .clipShape(Circle())
+                        }
+                        
+                        // 直接添加标签的文本框
+                        TextField("添加标签...", text: $editingValue)
+                            .font(.system(size: 14))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(12)
+                            .frame(width: 120)
+                            .onSubmit {
+                                if !editingValue.isEmpty {
+                                    // 添加新标签
+                                    if !contact.tags.contains(editingValue) {
+                                        contact.tags.append(editingValue)
+                                        // 更新修改时间
+                                        contact.modifyTime = Date()
+                                        // 保存更改
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save new tag: \(error)")
+                                        }
+                                    }
+                                    // 清空输入
+                                    editingValue = ""
+                                }
+                            }
                     }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
                 }
+                .frame(height: 40)
             }
         }
         .padding(16)
@@ -506,11 +576,9 @@ struct ContactDetailView: View {
         .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
     }
     
-    // 为标签生成一致的颜色
+    // 为标签生成一致的颜色 - 与目标详情页保持一致
     private func tagColor(for tag: String) -> Color {
-        let colors: [Color] = [Color("Colors/Blue"), Color("Colors/Green"), Color("Colors/Orange"), Color("Colors/Purple"), Color("Colors/Pink"), Color("Colors/Teal")]
-        let index = abs(tag.hashValue) % colors.count
-        return colors[index]
+        return Color(UIColor.systemBlue)
     }
     
     // 联系记录 - 现代卡片设计
@@ -823,6 +891,7 @@ struct EditContactView: View {
     @State private var selectedImportance: ContactImportance
     @State private var selectedFrequency: ContactFrequency
     @State private var tags: String
+    @State private var newTag: String = ""
     
     init(contact: Contact) {
         self.contact = contact

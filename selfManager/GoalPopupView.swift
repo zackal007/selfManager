@@ -216,7 +216,7 @@ struct GoalPopupView: View {
             .navigationTitle("近期目标")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         // 保存筛选结果
                         saveFilterSettings()
@@ -225,15 +225,6 @@ struct GoalPopupView: View {
                         Text("保存筛选")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(Color(UIColor.systemBlue))
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(Color(UIColor.systemGray))
                     }
                 }
             }

@@ -21,9 +21,13 @@ struct HomeView: View {
     @State private var showingImprovementDetail = false
     @State private var showingAchievementDetail = false
     @State private var showingSettings = false
+    @State private var showingTagsView = false
     
     // 用户信息
     @Query private var users: [User]
+    
+    // 联系人信息
+    @Query private var contacts: [Contact]
     
     private var user: User {
         if let firstUser = users.first {
@@ -71,6 +75,34 @@ struct HomeView: View {
         self._selectedTab = selectedTab
     }
     
+    // 获取所有标签
+    private func getAllTags() -> [String] {
+        var tags = Set<String>()
+        
+        // 收集目标标签
+        for goal in goals where !goal.isDeleted {
+            for tag in goal.tags {
+                tags.insert(tag)
+            }
+        }
+        
+        // 收集联系人标签
+        for contact in contacts {
+            for tag in contact.tags {
+                tags.insert(tag)
+            }
+        }
+        
+        // 收集用户标签
+        for user in users {
+            for tag in user.tags {
+                tags.insert(tag)
+            }
+        }
+        
+        return Array(tags).sorted()
+    }
+    
     var body: some View {
         NavigationView {
             ZStack(alignment: .top) {
@@ -104,6 +136,12 @@ struct HomeView: View {
                         
                         // 目标区域
                         goalSection
+                        
+                        // 标签管理卡片
+                        tagManagementSection
+                            .sheet(isPresented: $showingTagsView) {
+                                TagsView()
+                            }
                         
                         // 心情和成就区域
                         HStack(spacing: 16) {
@@ -212,6 +250,130 @@ struct HomeView: View {
         .onChange(of: searchText) { _ in
             updateFilteredGoals()
         }
+}
+
+// MARK: - 标签管理卡片
+private var tagManagementSection: some View {
+    Button(action: {
+        showingTagsView = true
+    }) {
+        VStack(alignment: .leading, spacing: 8) {
+            // 标题栏
+            HStack {
+                // 左侧标题
+                HStack(spacing: 6) {
+                    Image(systemName: "tag.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                    
+                    Text("标签管理")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                }
+                
+                Spacer()
+                
+                // 详情按钮
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.systemGray))
+                }
+            }
+            
+            // 标签内容 - 显示最近创建的标签
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    // 获取所有标签并显示最近的5个
+                    let recentTags = getAllTags().prefix(5)
+                    ForEach(recentTags, id: \.self) { tag in
+                        HStack(spacing: 6) {
+                            Text(tag)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                            
+                            // 计算使用此标签的项目数量
+                            let count = countItemsWithTag(tag)
+                            if count > 0 {
+                                Text("\(count)")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color(UIColor.systemBlue))
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(16)
+                    }
+                    
+                    // 添加标签按钮
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12))
+                        Text("添加")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(16)
+                }
+                .padding(.vertical, 5)
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity) // 确保宽度与资产卡片一致
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(UIColor.systemGray5).opacity(0.5), lineWidth: 0.5)
+                )
+        )
+        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+    }
+    .buttonStyle(PlainButtonStyle())
+    .sheet(isPresented: $showingTagsView) {
+        NavigationStack {
+            TagsView()
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+// 计算使用特定标签的项目数量
+private func countItemsWithTag(_ tag: String) -> Int {
+    var count = 0
+    
+    // 计算带有此标签的目标数量
+    count += goals.filter { $0.tags.contains(tag) }.count
+    
+    // 计算带有此标签的联系人数量
+    count += contacts.filter { $0.tags.contains(tag) }.count
+    
+    // 计算带有此标签的用户数量
+    count += users.filter { $0.tags.contains(tag) }.count
+    
+    return count
+}
+
+// 为标签生成一致的颜色
+private func tagColor(for tag: String) -> Color {
+    let colors: [Color] = [
+        Color.blue, Color.green, Color.orange, Color.purple, Color.pink,
+        Color.teal, Color.indigo, Color.mint, Color.cyan
+    ]
+    
+    // 使用标签的哈希值来选择颜色，确保同一标签始终使用相同颜色
+    let index = abs(tag.hashValue) % colors.count
+    return colors[index]
 }
 
 // 模糊背景视图

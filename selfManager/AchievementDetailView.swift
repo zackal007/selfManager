@@ -98,11 +98,7 @@ struct AchievementDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .padding(.top, 8)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("关闭") {
-                        dismiss()
-                    }
-                }
+
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
