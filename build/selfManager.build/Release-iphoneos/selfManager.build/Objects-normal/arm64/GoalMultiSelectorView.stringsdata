@@ -1,0 +1,48 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/GoalMultiSelectorView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "选择关联目标",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "完成",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 116
+        }
+      },
+      {
+        "comment": "",
+        "key": "搜索目标",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "已选目标",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 63
+        }
+      }
+    ]
+  },
+  "version": 1
+}

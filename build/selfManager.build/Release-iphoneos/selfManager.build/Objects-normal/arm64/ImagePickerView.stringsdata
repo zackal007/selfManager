@@ -1,0 +1,112 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/ImagePickerView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "选择背景图片",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 258
+        }
+      },
+      {
+        "comment": "",
+        "key": "确认删除",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 262
+        }
+      },
+      {
+        "comment": "",
+        "key": "预设背景",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "默认渐变",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 59
+        }
+      },
+      {
+        "comment": "",
+        "key": "最近上传",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无上传图片",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "您可以在下方上传自定义背景图",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "自定义背景",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 169
+        }
+      },
+      {
+        "comment": "",
+        "key": "从相册选择",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 182
+        }
+      },
+      {
+        "comment": "",
+        "key": "使用此图片",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 241
+        }
+      },
+      {
+        "comment": "",
+        "key": "删除",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 263
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 268
+        }
+      },
+      {
+        "comment": "",
+        "key": "确定要删除这张图片吗？此操作无法撤销。",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 270
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,180 @@
+{
+  "" : {
+    "const-values" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.swiftconstvalues",
+    "dependencies" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.d",
+    "diagnostics" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.dia",
+    "emit-module-dependencies" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master-emit-module.dia",
+    "swift-dependencies" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.swiftdeps"
+  },
+  "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/AchievementDetailView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AchievementDetailView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AchievementDetailView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AchievementDetailView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/AddContactView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AddContactView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AddContactView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AddContactView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/AppEnums.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AppEnums.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AppEnums.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AppEnums.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/Asset.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Asset.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Asset.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Asset.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/AssetDetailView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AssetDetailView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AssetDetailView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/AssetDetailView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/Contact.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Contact.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Contact.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Contact.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ContactDetailView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactDetailView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactDetailView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactDetailView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ContactSelectorView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactSelectorView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactSelectorView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactSelectorView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ContactView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ContactView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalActivityLogView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalActivityLogView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalActivityLogView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalActivityLogView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalActivityManager.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalActivityManager.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalActivityManager.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalActivityManager.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalDetailView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalDetailView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalDetailView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalDetailView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalMultiSelectorView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalMultiSelectorView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalMultiSelectorView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalMultiSelectorView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalPopupView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalPopupView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalPopupView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalPopupView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalType.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalType.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalType.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalType.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/GoalView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/GoalView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/HomeView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/HomeView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/HomeView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/HomeView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ImagePickerView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ImagePickerView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ImagePickerView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ImagePickerView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ImprovementDetailView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ImprovementDetailView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ImprovementDetailView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ImprovementDetailView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/Item.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Item.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Item.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Item.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/MarkdownTextEditor.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/MarkdownTextEditor.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/MarkdownTextEditor.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/MarkdownTextEditor.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ModelMigrations.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ModelMigrations.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ModelMigrations.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ModelMigrations.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/Record.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Record.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Record.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/Record.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/RecordView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/RecordView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/RecordView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/RecordView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/SettingsView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/SharedComponents.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/SharedComponents.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/SharedComponents.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/SharedComponents.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/ToastView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ToastView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ToastView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/ToastView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/TrashCleanupService.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/TrashCleanupService.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/TrashCleanupService.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/TrashCleanupService.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/TrashView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/TrashView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/TrashView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/TrashView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/User.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/User.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/User.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/User.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/UserEditView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/UserEditView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/UserEditView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/UserEditView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/WelcomeView.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/WelcomeView.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/WelcomeView.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/WelcomeView.o"
+  },
+  "/Users/yack/Desktop/selfManager/selfManager/selfManagerApp.swift" : {
+    "index-unit-output-path" : "/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManagerApp.o",
+    "llvm-bc" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManagerApp.bc",
+    "object" : "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManagerApp.o"
+  }
+}

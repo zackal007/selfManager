@@ -10,10 +10,22 @@ import UIKit
 import Foundation
 import SwiftData
 
+
 struct GoalDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
     @Query private var allContacts: [Contact]
+    
+    // 从文档目录加载图片
+    private func loadImageFromDocuments(_ imageName: String) -> UIImage? {
+        let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
+        return UIImage(contentsOfFile: fileURL.path)
+    }
+    
+    // 获取应用文档目录
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
     
     // 状态变量
     @State private var selectedDate = Date()
@@ -1571,7 +1583,42 @@ struct GoalDetailView: View {
                         // 显示当前背景图片预览
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
-                                ForEach(backgroundImages, id: \.self) { imageName in
+                                // 默认选项
+                                Button(action: {
+                                    goal.backgroundImage = nil
+                                    goal.modifyTime = Date()
+                                    do {
+                                        try modelContext.save()
+                                    } catch {
+                                        print("Failed to save background image: \(error)")
+                                    }
+                                }) {
+                                    ZStack {
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                        .frame(width: 80, height: 60)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
+                                        )
+                                        
+                                        Text("默认")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                
+                                // 获取用户上传的图片
+                                let userUploadedImages = UserDefaults.standard.stringArray(forKey: "UserUploadedImages") ?? []
+                                let hiddenImages = UserDefaults.standard.stringArray(forKey: "UserHiddenImages") ?? []
+                                let visibleUserImages = userUploadedImages.filter { !hiddenImages.contains($0) }
+                                
+                                // 显示用户上传的图片
+                                ForEach(visibleUserImages, id: \.self) { imageName in
                                     Button(action: {
                                         goal.backgroundImage = imageName
                                         goal.modifyTime = Date()
@@ -1581,7 +1628,7 @@ struct GoalDetailView: View {
                                             print("Failed to save background image: \(error)")
                                         }
                                     }) {
-                                        if let imageName = imageName, let uiImage = UIImage(named: imageName) {
+                                        if let uiImage = loadImageFromDocuments(imageName) {
                                             Image(uiImage: uiImage)
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
@@ -1591,24 +1638,31 @@ struct GoalDetailView: View {
                                                     RoundedRectangle(cornerRadius: 8)
                                                         .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
                                                 )
-                                        } else {
-                                            ZStack {
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
+                                        }
+                                    }
+                                }
+                                
+                                // 显示系统预设图片
+                                ForEach(backgroundImages.compactMap { $0 }, id: \.self) { imageName in
+                                    Button(action: {
+                                        goal.backgroundImage = imageName
+                                        goal.modifyTime = Date()
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save background image: \(error)")
+                                        }
+                                    }) {
+                                        if let uiImage = UIImage(named: imageName) {
+                                            Image(uiImage: uiImage)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
                                                 .frame(width: 80, height: 60)
                                                 .cornerRadius(8)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
+                                                        .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
                                                 )
-                                                
-                                                Text("默认")
-                                                    .font(.system(size: 12, weight: .medium))
-                                                    .foregroundColor(.white)
-                                            }
                                         }
                                     }
                                 }
