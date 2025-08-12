@@ -1150,11 +1150,7 @@ struct AddGoalView: View {
             return
         }
         
-        if goalDescription.isEmpty {
-            errorMessage = "请添加目标描述"
-            showAlert = true
-            return
-        }
+        // 目标描述为可选项，不再进行空值检查
         
         // 验证通过，保存目标
         saveGoal()

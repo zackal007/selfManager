@@ -88,7 +88,7 @@ struct DataPersistenceTests {
         
         // 验证必需字段
         #expect(!goal.name.isEmpty)
-        #expect(!goal.goalDescription.isEmpty)
+        // 目标描述为可选项，不再验证是否为空
         #expect(goal.progress >= 0.0 && goal.progress <= 1.0)
         #expect(goal.recordNum >= 0)
         #expect(!goal.category.isEmpty)
