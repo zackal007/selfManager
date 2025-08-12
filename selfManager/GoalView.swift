@@ -547,8 +547,15 @@ struct GoalView: View {
                                 GridItem(.flexible(), spacing: 12)
                             ], spacing: 16) { // 减小垂直间距，使布局更紧凑
                                 ForEach(goalsForSelectedSegment(category: 1)) { goal in
-                                    GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                                        .frame(height: 280) // 确保网格中的卡片高度一致
+                                    if selectedGoalType == nil {
+                                        // 在"全部"页签中使用简化版卡片
+                                        SimplifiedGoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
+                                            .frame(height: 120) // 缩小卡片高度
+                                    } else {
+                                        // 在其他页签中使用完整版卡片
+                                        GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
+                                            .frame(height: 280) // 确保网格中的卡片高度一致
+                                    }
                                 }
                             }
                             .padding(.horizontal, 12) // 统一边距
@@ -556,7 +563,13 @@ struct GoalView: View {
                             // 列表视图
                             LazyVStack(spacing: 12) {
                                 ForEach(goalsForSelectedSegment(category: 1)) { goal in
-                                    GoalListItem(goal: goal)
+                                    if selectedGoalType == nil {
+                                        // 在"全部"页签中使用简化版列表项
+                                        SimplifiedGoalListItem(goal: goal)
+                                    } else {
+                                        // 在其他页签中使用完整版列表项
+                                        GoalListItem(goal: goal)
+                                    }
                                 }
                             }
                             .padding(.horizontal, 12) // 统一边距
@@ -1206,12 +1219,149 @@ struct AddGoalView: View {
     }
 }
 
+// 简化版目标卡片视图 - 只显示目标名称和类型
+struct SimplifiedGoalCard: View {
+    let goal: Goal
+    var cardWidth: CGFloat
+    
+    // 初始化方法，提供默认值
+    init(goal: Goal, cardWidth: CGFloat? = nil) {
+        self.goal = goal
+        self.cardWidth = cardWidth ?? 160 // 使用固定宽度代替屏幕宽度计算
+    }
+    
+    // 获取应用文档目录
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
+    var body: some View {
+        NavigationLink(destination: GoalDetailView(goal: goal)) {
+            ZStack {
+                // 背景图片或默认渐变背景 - 置于底层
+                if let imageName = goal.backgroundImage {
+                    // 首先尝试从应用资源中加载预设图片
+                    if let uiImage = UIImage(named: imageName) {
+                        // 预设背景图片 - 占满整个卡片
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .opacity(0.7) // 降低不透明度，使内容更易读
+                    } else {
+                        // 尝试从文档目录加载用户自定义图片
+                        let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
+                        if let uiImage = UIImage(contentsOfFile: fileURL.path) {
+                            // 用户自定义背景图片 - 占满整个卡片
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .opacity(0.7) // 降低不透明度，使内容更易读
+                                // 添加模糊效果，提高可读性
+                                .blur(radius: 1.5)
+                        }
+                    }
+                } else {
+                    // 默认渐变背景 - 占满整个卡片
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
+                
+                // 添加半透明覆盖层，使内容更易读
+                Rectangle()
+                    .fill(Color(UIColor.systemBackground).opacity(0.5))
+                    .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                
+                // 卡片阴影
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.clear)
+                    .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
+                
+                // 内容容器 - 只显示目标名称和类型
+                VStack(alignment: .leading, spacing: 8) {
+                    Spacer().frame(height: 0) // 强制内容向顶部对齐
+                    
+                    // 目标名称
+                    Text(goal.name)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.label))
+                        .lineLimit(2)
+                        .padding(.top, 16)
+                    
+                    // 目标类型
+                    Text(goal.goalType.rawValue)
+                        .font(.system(size: 14, design: .rounded))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .lineLimit(1)
+                        .padding(.bottom, 16)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .frame(width: cardWidth, height: 120, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
+            }
+            .frame(width: cardWidth, height: 120) // 固定卡片高度
+        }
+        .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
+    }
+}
+
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: Goal.self, GoalTask.self, configurations: config)
     
     GoalView(selectedTab: .constant(0))
         .modelContainer(container)
+}
+
+// 简化版列表视图中的目标项 - 只显示目标名称和类型
+struct SimplifiedGoalListItem: View {
+    let goal: Goal
+    
+    var body: some View {
+        NavigationLink(destination: GoalDetailView(goal: goal)) {
+            HStack(alignment: .center, spacing: 16) {
+                // 左侧背景色块，用于视觉区分
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(goal.goalType.color.opacity(0.2))
+                    .frame(width: 8, height: 50)
+                
+                // 右侧内容
+                VStack(alignment: .leading, spacing: 4) {
+                    // 目标名称
+                    Text(goal.name)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .lineLimit(1)
+                    
+                    // 目标类型
+                    Text(goal.goalType.rawValue)
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                }
+                
+                Spacer()
+                
+                // 右侧箭头
+                Image(systemName: "chevron.right")
+                    .foregroundColor(Color(UIColor.tertiaryLabel))
+            }
+            .padding(12)
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(12)
+            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
+        }
+        .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
+    }
 }
 
 // MARK: - 扩展RoundedRectangle以支持指定角的圆角

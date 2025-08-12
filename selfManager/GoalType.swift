@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// 目标类型枚举
 @frozen
@@ -39,6 +40,20 @@ enum GoalType: String, Codable, CaseIterable {
             return .habit
         } else {
             return .shortTerm
+        }
+    }
+    
+    /// 获取与目标类型关联的颜色
+    var color: Color {
+        switch self {
+        case .life:
+            return Color.purple
+        case .yearly:
+            return Color.blue
+        case .shortTerm:
+            return Color.orange
+        case .habit:
+            return Color.green
         }
     }
 }
