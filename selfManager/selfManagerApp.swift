@@ -112,6 +112,8 @@ struct selfManagerApp: App {
                                 }
                                 .tag(2)
                             
+
+                            
                             ContactView(selectedTab: $selectedTab)
                                 .tabItem {
                                     Image(systemName: "person.3.fill")

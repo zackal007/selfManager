@@ -15,6 +15,7 @@ enum RecordType: Int, Codable, Hashable, CaseIterable {
     case monthly = 2 // 月记
     case quarterly = 3 // 季记
     case yearly = 4  // 年记
+    case recent = 5   // 近期
     
     var displayName: String {
         switch self {
@@ -23,6 +24,7 @@ enum RecordType: Int, Codable, Hashable, CaseIterable {
         case .monthly: return "月记"
         case .quarterly: return "季记"
         case .yearly: return "年记"
+        case .recent: return "近期"
         }
     }
 }
