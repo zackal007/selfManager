@@ -49,11 +49,10 @@ struct UserEditView: View {
                 Section(header: Text("标签")) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            ForEach(user.tags, id: \.self) {
-                                tag in
+                            ForEach(user.tags, id: \.self) { tag in
                                 HStack(spacing: 4) {
                                     Text(tag)
-                                        .foregroundColor(Color(UIColor.systemBlue))
+                                        .foregroundColor(TagColorManager.shared.getColor(for: tag))
                                     Button(action: {
                                         if let index = user.tags.firstIndex(of: tag) {
                                             user.tags.remove(at: index)
@@ -68,7 +67,7 @@ struct UserEditView: View {
                                 .font(.system(size: 14, weight: .medium))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .background(TagColorManager.shared.getColor(for: tag).opacity(0.1))
                                 .cornerRadius(12)
                             }
                             Button(action: {

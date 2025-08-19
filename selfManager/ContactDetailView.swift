@@ -576,9 +576,9 @@ struct ContactDetailView: View {
         .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
     }
     
-    // 为标签生成一致的颜色 - 与目标详情页保持一致
+    // 为标签生成一致的颜色 - 使用TagColorManager
     private func tagColor(for tag: String) -> Color {
-        return Color(UIColor.systemBlue)
+        return TagColorManager.shared.getColor(for: tag)
     }
     
     // 联系记录 - 现代卡片设计

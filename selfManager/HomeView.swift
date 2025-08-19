@@ -366,14 +366,8 @@ private func countItemsWithTag(_ tag: String) -> Int {
 
 // 为标签生成一致的颜色
 private func tagColor(for tag: String) -> Color {
-    let colors: [Color] = [
-        Color.blue, Color.green, Color.orange, Color.purple, Color.pink,
-        Color.teal, Color.indigo, Color.mint, Color.cyan
-    ]
-    
-    // 使用标签的哈希值来选择颜色，确保同一标签始终使用相同颜色
-    let index = abs(tag.hashValue) % colors.count
-    return colors[index]
+    // 使用TagColorManager获取标签颜色，确保整个应用中标签颜色一致
+    return TagColorManager.shared.getColor(for: tag)
 }
 
 // 模糊背景视图

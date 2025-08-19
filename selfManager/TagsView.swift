@@ -96,9 +96,9 @@ struct TagsView: View {
         return count
     }
     
-    // 为标签生成颜色 - 统一使用系统蓝色
+    // 为标签生成颜色 - 使用TagColorManager
     private func tagColor(for tag: String) -> Color {
-        return Color(UIColor.systemBlue)
+        return TagColorManager.shared.getColor(for: tag)
     }
     
     var body: some View {
@@ -289,6 +289,7 @@ struct TagDetailView: View {
     let tagType: TagsView.TagType
     
     @State private var showingDeleteAlert = false
+    @State private var showingEditSheet = false
     
     // 获取带有此标签的目标
     private var taggedGoals: [Goal] {
@@ -305,15 +306,20 @@ struct TagDetailView: View {
         users.first?.tags.contains(tag) ?? false
     }
     
-    // 为标签生成颜色 - 统一使用系统蓝色
+    // 为标签生成颜色 - 使用TagColorManager
     private func tagColor(for tag: String) -> Color {
-        return Color(UIColor.systemBlue)
+        return TagColorManager.shared.getColor(for: tag)
     }
     
     // 将body拆分为更小的组件，避免复杂表达式
     private var tagInfoSection: some View {
         Section {
-            let tagHeader = TagInfoHeader(tag: tag, tagColor: tagColor(for: tag), onDelete: { showingDeleteAlert = true })
+            let tagHeader = TagInfoHeader(
+                tag: tag, 
+                tagColor: tagColor(for: tag), 
+                onDelete: { showingDeleteAlert = true },
+                onEdit: { showingEditSheet = true }
+            )
             let statisticsRow = StatisticsRow(tagType: tagType, taggedGoals: taggedGoals, taggedContacts: taggedContacts, userHasTag: userHasTag).padding(.vertical, 6)
             tagHeader
             statisticsRow
@@ -429,6 +435,9 @@ struct TagDetailView: View {
                 secondaryButton: .cancel()
             )
         }
+        .sheet(isPresented: $showingEditSheet) {
+            TagEditView(tag: tag, tagType: tagType)
+        }
     }
     
     // 删除标签方法
@@ -452,6 +461,9 @@ struct TagDetailView: View {
             user.tags.remove(at: index)
         }
         
+        // 删除标签颜色
+        TagColorManager.shared.removeColor(for: tag)
+        
         // 保存更改
         do {
             try modelContext.save()
@@ -468,6 +480,7 @@ struct TagInfoHeader: View {
     let tag: String
     let tagColor: Color
     let onDelete: () -> Void
+    let onEdit: () -> Void
     
     var body: some View {
         HStack {
@@ -476,6 +489,22 @@ struct TagInfoHeader: View {
                 .foregroundColor(tagColor)
                 .padding(.vertical, 6)
             Spacer()
+            
+            // 编辑按钮
+            Button(action: onEdit) {
+                HStack {
+                    Image(systemName: "pencil")
+                    Text("编辑")
+                }
+                .foregroundColor(Color(UIColor.systemBlue))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color(UIColor.systemBlue).opacity(0.1))
+                .cornerRadius(8)
+            }
+            .padding(.trailing, 8)
+            
+            // 删除按钮
             Button(action: onDelete) {
                 HStack {
                     Image(systemName: "trash")

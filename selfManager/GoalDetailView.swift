@@ -972,38 +972,38 @@ struct GoalDetailView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(goal.tags, id: \.self) { tag in
-                    HStack(spacing: 4) {
-                        Text(tag)
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        
-                        // 删除标签按钮
-                        Button(action: {
-                            // 删除标签
-                            if let index = goal.tags.firstIndex(of: tag) {
-                                goal.tags.remove(at: index)
-                                // 更新修改时间
-                                goal.modifyTime = Date()
-                                // 记录标签删除
-                                GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
-                                // 保存更改
-                                do {
-                                    try modelContext.save()
-                                } catch {
-                                    print("Failed to save tag deletion: \(error)")
+                            HStack(spacing: 4) {
+                                Text(tag)
+                                    .foregroundColor(TagColorManager.shared.getColor(for: tag))
+                                
+                                // 删除标签按钮
+                                Button(action: {
+                                    // 删除标签
+                                    if let index = goal.tags.firstIndex(of: tag) {
+                                        goal.tags.remove(at: index)
+                                        // 更新修改时间
+                                        goal.modifyTime = Date()
+                                        // 记录标签删除
+                                        GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
+                                        // 保存更改
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save tag deletion: \(error)")
+                                        }
+                                    }
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemGray3))
                                 }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(Color(UIColor.systemGray3))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .font(.system(size: 14, weight: .medium))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(12)
+                            .font(.system(size: 14, weight: .medium))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(TagColorManager.shared.getColor(for: tag).opacity(0.1))
+                            .cornerRadius(12)
                 }
                 
                 // 添加标签按钮
