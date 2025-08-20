@@ -56,6 +56,12 @@ struct TagEditView: View {
                 Section(header: Text("标签名称")) {
                     TextField("标签名称", text: $editedTag)
                         .padding(.vertical, 8)
+                        .onChange(of: editedTag) { oldValue, newValue in
+                            // 实时更新标签颜色，确保预览能立即反映变化
+                            if !newValue.isEmpty {
+                                TagColorManager.shared.setColor(selectedColor, for: newValue)
+                            }
+                        }
                 }
                 
                 // 标签描述
@@ -74,6 +80,10 @@ struct TagEditView: View {
                     }
                     .pickerStyle(MenuPickerStyle())
                     .padding(.vertical, 8)
+                    .onChange(of: selectedCategoryID) { oldValue, newValue in
+                        // 分类变更时触发UI更新
+                        // 这里不需要额外操作，SwiftUI会自动刷新预览
+                    }
                     
                     NavigationLink(destination: TagCategoryListView()) {
                         HStack {
@@ -97,6 +107,10 @@ struct TagEditView: View {
                                     )
                                     .onTapGesture {
                                         selectedColor = color
+                                        // 实时更新标签颜色，确保预览能立即反映变化
+                                        if !editedTag.isEmpty {
+                                            TagColorManager.shared.setColor(color, for: editedTag)
+                                        }
                                     }
                             }
                         }
@@ -104,17 +118,24 @@ struct TagEditView: View {
                     }
                 }
                 
-                // 预览
-                Section(header: Text("预览")) {
+                // 实时预览
+                Section(header: Text("实时预览")) {
                     VStack(alignment: .leading, spacing: 8) {
+                        Text("标签外观：")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        // 标签外观预览
                         HStack {
-                            Text(editedTag)
+                            Text(editedTag.isEmpty ? "标签名称" : editedTag)
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(selectedColor)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(selectedColor.opacity(0.1))
                                 .cornerRadius(16)
+                                .animation(.easeInOut(duration: 0.2), value: editedTag)
+                                .animation(.easeInOut(duration: 0.2), value: selectedColor)
                             
                             if let categoryID = selectedCategoryID,
                                let category = tagCategories.first(where: { $0.id == categoryID }) {
@@ -125,16 +146,67 @@ struct TagEditView: View {
                                     .padding(.vertical, 4)
                                     .background(Color.secondary.opacity(0.1))
                                     .cornerRadius(8)
+                                    .animation(.easeInOut(duration: 0.2), value: selectedCategoryID)
                             }
                             
                             Spacer()
                         }
                         
+                        // 描述预览
                         if !tagDescription.isEmpty {
                             Text(tagDescription)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .padding(.top, 4)
+                                .animation(.easeInOut(duration: 0.2), value: tagDescription)
+                        }
+                        
+                        // 使用场景预览
+                        Text("在列表中的显示：")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 8)
+                        
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text(editedTag.isEmpty ? "标签名称" : editedTag)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(selectedColor)
+                                    
+                                    if let categoryID = selectedCategoryID,
+                                       let category = tagCategories.first(where: { $0.id == categoryID }) {
+                                        Text(category.name)
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.secondary)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color(UIColor.systemGray6))
+                                            .cornerRadius(8)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Text("3")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color(UIColor.systemBlue))
+                                        .cornerRadius(8)
+                                }
+                                
+                                if !tagDescription.isEmpty {
+                                    Text(tagDescription)
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(Color(UIColor.systemGray6).opacity(0.5))
+                            .cornerRadius(8)
                         }
                     }
                     .padding(.vertical, 8)
@@ -206,6 +278,9 @@ struct TagEditView: View {
             TagColorManager.shared.updateTagName(from: originalTag, to: trimmedTag)
             // 更新所有使用此标签的项目
             updateTagInEntities()
+        } else {
+            // 即使名称没变，也刷新颜色以确保视觉一致性
+            TagColorManager.shared.refreshColor(for: trimmedTag)
         }
         
         // 保存更改

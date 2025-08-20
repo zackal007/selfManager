@@ -74,6 +74,21 @@ class TagColorManager {
         saveTagColors()
     }
     
+    // 强制刷新标签颜色
+    func refreshColor(for tag: String) {
+        // 如果标签已有颜色，先获取当前颜色
+        if let colorString = tagColors[tag], let color = Color(hex: colorString) {
+            // 重新设置相同的颜色，触发通知机制
+            setColor(color, for: tag)
+        } else {
+            // 如果没有颜色，使用默认颜色并保存
+            let color = defaultColor(for: tag)
+            setColor(color, for: tag)
+        }
+        // 强制保存以确保更新
+        saveTagColors()
+    }
+    
     // 默认颜色生成
     private func defaultColor(for tag: String) -> Color {
         let index = abs(tag.hashValue) % availableColors.count

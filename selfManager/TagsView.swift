@@ -503,8 +503,20 @@ struct TagDetailView: View {
             )
         }
         .sheet(isPresented: $showingEditSheet) {
-            TagEditView(tag: tag, tagType: tagType)
-        }
+                TagEditView(tag: tag, tagType: tagType)
+                    .environment(\.colorScheme, .light) // 确保预览在编辑器中使用一致的配色方案
+                    .onDisappear {
+                        // 标签编辑弹窗关闭后，强制刷新标签相关数据
+                        // 通过重置@State变量触发视图刷新
+                        if let tagObj = tagObject {
+                            // 强制刷新标签颜色
+                            TagColorManager.shared.refreshColor(for: tag)
+                            
+                            // 触发UI刷新
+                            showingEditSheet = false
+                        }
+                    }
+            }
     }
     
     // 删除标签方法
