@@ -14,12 +14,15 @@ struct TagEditView: View {
     @Query private var goals: [Goal]
     @Query private var contacts: [Contact]
     @Query private var users: [User]
+    @Query private var tagCategories: [TagCategory]
     
     let originalTag: String
     let tagType: TagsView.TagType
     
     @State private var editedTag: String
+    @State private var tagDescription: String = ""
     @State private var selectedColor: Color
+    @State private var selectedCategoryID: UUID?
     @State private var showingSaveAlert = false
     @State private var alertMessage = ""
     
@@ -37,6 +40,13 @@ struct TagEditView: View {
         // 初始化状态变量
         _editedTag = State(initialValue: tag)
         _selectedColor = State(initialValue: TagColorManager.shared.getColor(for: tag))
+        
+        // 尝试获取Tag对象
+        let descriptor = FetchDescriptor<Tag>(predicate: #Predicate<Tag> { $0.name == tag })
+        if let existingTag = try? modelContext.fetch(descriptor).first {
+            _tagDescription = State(initialValue: existingTag.tagDescription)
+            _selectedCategoryID = State(initialValue: existingTag.categoryID)
+        }
     }
     
     var body: some View {
@@ -46,6 +56,31 @@ struct TagEditView: View {
                 Section(header: Text("标签名称")) {
                     TextField("标签名称", text: $editedTag)
                         .padding(.vertical, 8)
+                }
+                
+                // 标签描述
+                Section(header: Text("标签描述")) {
+                    TextField("描述（可选）", text: $tagDescription)
+                        .padding(.vertical, 8)
+                }
+                
+                // 标签分类
+                Section(header: Text("标签分类")) {
+                    Picker("选择分类", selection: $selectedCategoryID) {
+                        Text("无分类").tag(nil as UUID?)
+                        ForEach(tagCategories) { category in
+                            Text(category.name).tag(category.id as UUID?)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .padding(.vertical, 8)
+                    
+                    NavigationLink(destination: TagCategoryListView()) {
+                        HStack {
+                            Image(systemName: "folder.badge.plus")
+                            Text("管理分类")
+                        }
+                    }
                 }
                 
                 // 标签颜色选择
@@ -71,16 +106,36 @@ struct TagEditView: View {
                 
                 // 预览
                 Section(header: Text("预览")) {
-                    HStack {
-                        Text(editedTag)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(selectedColor)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(selectedColor.opacity(0.1))
-                            .cornerRadius(16)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(editedTag)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(selectedColor)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(selectedColor.opacity(0.1))
+                                .cornerRadius(16)
+                            
+                            if let categoryID = selectedCategoryID,
+                               let category = tagCategories.first(where: { $0.id == categoryID }) {
+                                Text(category.name)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.secondary.opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+                            
+                            Spacer()
+                        }
                         
-                        Spacer()
+                        if !tagDescription.isEmpty {
+                            Text(tagDescription)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                        }
                     }
                     .padding(.vertical, 8)
                 }
@@ -123,6 +178,28 @@ struct TagEditView: View {
         
         // 保存标签颜色
         TagColorManager.shared.setColor(selectedColor, for: trimmedTag)
+        
+        // 查找或创建Tag对象
+        let descriptor = FetchDescriptor<Tag>(predicate: #Predicate<Tag> { $0.name == originalTag })
+        let existingTag = try? modelContext.fetch(descriptor).first
+        
+        if let tag = existingTag {
+            // 更新现有标签
+            tag.name = trimmedTag
+            tag.tagDescription = tagDescription
+            tag.color = selectedColor.toHex() ?? "#0000FF"
+            tag.categoryID = selectedCategoryID
+            tag.modifyTime = Date()
+        } else {
+            // 创建新标签
+            let newTag = Tag(
+                name: trimmedTag,
+                tagDescription: tagDescription,
+                color: selectedColor.toHex() ?? "#0000FF",
+                categoryID: selectedCategoryID
+            )
+            modelContext.insert(newTag)
+        }
         
         if trimmedTag != originalTag {
             // 更新标签名称

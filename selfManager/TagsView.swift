@@ -13,6 +13,7 @@ struct TagsView: View {
     @Query private var goals: [Goal]
     @Query private var contacts: [Contact]
     @Query private var users: [User]
+    @Query private var tagCategories: [TagCategory]
     @Environment(\.dismiss) private var dismiss
     
     @State private var searchText = ""
@@ -30,35 +31,51 @@ struct TagsView: View {
         var id: String { self.rawValue }
     }
     
+    // 查询所有Tag对象
+    @Query private var tags: [Tag]
+    
     // 获取所有标签
     private var allTags: [String] {
-        var tags = Set<String>()
+        var tagNames = Set<String>()
         
         // 根据选择的标签类型筛选
         switch selectedTagType {
         case .all:
             // 合并所有标签
-            goals.forEach { tags.formUnion($0.tags) }
-            contacts.forEach { tags.formUnion($0.tags) }
+            goals.forEach { tagNames.formUnion($0.tags) }
+            contacts.forEach { tagNames.formUnion($0.tags) }
             if let user = users.first {
-                tags.formUnion(user.tags)
+                tagNames.formUnion(user.tags)
             }
         case .goal:
-            goals.forEach { tags.formUnion($0.tags) }
+            goals.forEach { tagNames.formUnion($0.tags) }
         case .contact:
-            contacts.forEach { tags.formUnion($0.tags) }
+            contacts.forEach { tagNames.formUnion($0.tags) }
         case .user:
             if let user = users.first {
-                tags.formUnion(user.tags)
+                tagNames.formUnion(user.tags)
             }
         }
         
         // 搜索过滤
         if !searchText.isEmpty {
-            return Array(tags).filter { $0.localizedCaseInsensitiveContains(searchText) }.sorted()
+            return Array(tagNames).filter { $0.localizedCaseInsensitiveContains(searchText) }.sorted()
         }
         
-        return Array(tags).sorted()
+        return Array(tagNames).sorted()
+    }
+    
+    // 获取标签对象
+    private func getTagObject(for tagName: String) -> Tag? {
+        return tags.first { $0.name == tagName }
+    }
+    
+    // 获取标签分类名称
+    private func getCategoryName(for tagName: String) -> String? {
+        guard let tag = getTagObject(for: tagName),
+              let categoryID = tag.categoryID else { return nil }
+        
+        return tagCategories.first { $0.id == categoryID }?.name
     }
     
     // 获取每个标签关联的项目数量
@@ -138,20 +155,39 @@ struct TagsView: View {
             List {
                 ForEach(allTags, id: \.self) { tag in
                     NavigationLink(destination: TagDetailView(tag: tag, tagType: selectedTagType)) {
-                        HStack {
-                            Text(tag)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(tagColor(for: tag))
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(tag)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(tagColor(for: tag))
+                                
+                                if let categoryName = getCategoryName(for: tag) {
+                                    Text(categoryName)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color(UIColor.systemGray6))
+                                        .cornerRadius(8)
+                                }
+                                
+                                Spacer()
+                                
+                                Text("\(getTagItemCount(tag: tag))")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color(UIColor.systemBlue))
+                                    .cornerRadius(10)
+                            }
                             
-                            Spacer()
-                            
-                            Text("\(getTagItemCount(tag: tag))")
-                                .font(.system(size: 14))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color(UIColor.systemBlue))
-                                .cornerRadius(10)
+                            if let tagObj = getTagObject(for: tag), !tagObj.tagDescription.isEmpty {
+                                Text(tagObj.tagDescription)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
                         }
                         .padding(.vertical, 8)
                     }
@@ -163,6 +199,13 @@ struct TagsView: View {
 
         .navigationTitle("标签管理")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink(destination: TagCategoryListView()) {
+                    Text("管理分类")
+                }
+            }
+        }
         .sheet(isPresented: $showingAddTag) {
             addTagView
         }
@@ -239,6 +282,15 @@ struct TagsView: View {
         let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if !trimmedTag.isEmpty {
+            // 创建新的Tag对象
+            let newTagObject = Tag(
+                name: trimmedTag,
+                tagDescription: "",
+                color: TagColorManager.shared.getColor(for: trimmedTag).toHex() ?? "#0000FF",
+                categoryID: nil
+            )
+            modelContext.insert(newTagObject)
+            
             switch selectedTagType {
             case .goal:
                 // 添加到所有目标
@@ -283,6 +335,8 @@ struct TagDetailView: View {
     @Query private var goals: [Goal]
     @Query private var contacts: [Contact]
     @Query private var users: [User]
+    @Query private var tagCategories: [TagCategory]
+    @Query private var tagObjects: [Tag]
     @Environment(\.dismiss) private var dismiss
     
     let tag: String
@@ -290,6 +344,17 @@ struct TagDetailView: View {
     
     @State private var showingDeleteAlert = false
     @State private var showingEditSheet = false
+    
+    // 获取标签对象
+    private var tagObject: Tag? {
+        return tagObjects.first { $0.name == tag }
+    }
+    
+    // 获取标签分类
+    private var tagCategory: TagCategory? {
+        guard let categoryID = tagObject?.categoryID else { return nil }
+        return tagCategories.first { $0.id == categoryID }
+    }
     
     // 获取带有此标签的目标
     private var taggedGoals: [Goal] {
@@ -318,7 +383,9 @@ struct TagDetailView: View {
                 tag: tag, 
                 tagColor: tagColor(for: tag), 
                 onDelete: { showingDeleteAlert = true },
-                onEdit: { showingEditSheet = true }
+                onEdit: { showingEditSheet = true },
+                tagCategory: tagCategory,
+                tagDescription: tagObject?.tagDescription
             )
             let statisticsRow = StatisticsRow(tagType: tagType, taggedGoals: taggedGoals, taggedContacts: taggedContacts, userHasTag: userHasTag).padding(.vertical, 6)
             tagHeader
@@ -461,12 +528,19 @@ struct TagDetailView: View {
             user.tags.remove(at: index)
         }
         
+        // 删除Tag对象
+        let descriptor = FetchDescriptor<Tag>(predicate: #Predicate<Tag> { $0.name == tag })
+        if let tagObj = try? modelContext.fetch(descriptor).first {
+            modelContext.delete(tagObj)
+        }
+        
         // 删除标签颜色
         TagColorManager.shared.removeColor(for: tag)
         
         // 保存更改
         do {
             try modelContext.save()
+            dismiss()
         } catch {
             print("Failed to delete tag: \(error)")
         }
@@ -481,42 +555,68 @@ struct TagInfoHeader: View {
     let tagColor: Color
     let onDelete: () -> Void
     let onEdit: () -> Void
+    var tagCategory: TagCategory?
+    var tagDescription: String?
     
     var body: some View {
-        HStack {
-            Text(tag)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(tagColor)
-                .padding(.vertical, 6)
-            Spacer()
-            
-            // 编辑按钮
-            Button(action: onEdit) {
-                HStack {
-                    Image(systemName: "pencil")
-                    Text("编辑")
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(tag)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(tagColor)
+                        
+                        if let category = tagCategory {
+                            Text(category.name)
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
+                        }
+                    }
+                    
+                    if let description = tagDescription, !description.isEmpty {
+                        Text(description)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                    }
                 }
-                .foregroundColor(Color(UIColor.systemBlue))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color(UIColor.systemBlue).opacity(0.1))
-                .cornerRadius(8)
-            }
-            .padding(.trailing, 8)
-            
-            // 删除按钮
-            Button(action: onDelete) {
-                HStack {
-                    Image(systemName: "trash")
-                    Text("删除标签")
+                
+                Spacer()
+                
+                // 编辑按钮
+                Button(action: onEdit) {
+                    HStack {
+                        Image(systemName: "pencil")
+                        Text("编辑")
+                    }
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(8)
                 }
-                .foregroundColor(.red)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(8)
+                .padding(.trailing, 8)
+                
+                // 删除按钮
+                Button(action: onDelete) {
+                    HStack {
+                        Image(systemName: "trash")
+                        Text("删除")
+                    }
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(8)
+                }
             }
         }
+        .padding(.vertical, 6)
     }
 }
 
