@@ -89,6 +89,22 @@ struct RecordView: View {
     @State private var showContactDetail = false
     @State private var showRecordDetail = false
     
+    // 近期页签相关状态
+    @State private var displayedRecordsCount = 20 // 初始显示的记录数量
+    private let recordsPerPage = 20 // 每次加载的记录数量
+    
+    // 过滤后的非空记录（按创建时间降序排列）
+    private var filteredRecords: [Record] {
+        allRecords.filter { record in
+            !record.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
+    
+    // 当前显示的记录（支持分页）
+    private var displayedRecords: [Record] {
+        Array(filteredRecords.prefix(displayedRecordsCount))
+    }
+    
     // 日期格式化器 - 用于显示年月
     private let yearMonthFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -925,12 +941,55 @@ struct RecordView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         // 根据记录类型显示不同内容
                         if selectedRecordType == .recent {
-                            // 近期页签显示空白内容
-                            VStack {
-                                Spacer()
-                                // 隐藏"近期"文本，保持完全空白
-                                Spacer()
+                            // 近期页签显示记录列表
+                            LazyVStack(spacing: 12) {
+                                ForEach(displayedRecords, id: \.id) { record in
+                                    RecordCardView(record: record) {
+                                        // 点击记录卡片的处理逻辑
+                                        navigateToRecord(record)
+                                    }
+                                }
+                                
+                                // 加载更多按钮
+                                if displayedRecordsCount < filteredRecords.count {
+                                    Button(action: loadMoreRecords) {
+                                        HStack {
+                                            Text("加载更多")
+                                                .font(.body)
+                                                .foregroundColor(.blue)
+                                            Image(systemName: "chevron.down")
+                                                .font(.caption)
+                                                .foregroundColor(.blue)
+                                        }
+                                        .padding(.vertical, 12)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color(UIColor.secondarySystemBackground))
+                                        .cornerRadius(8)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                                
+                                // 如果没有记录，显示空状态
+                                if filteredRecords.isEmpty {
+                                    VStack(spacing: 16) {
+                                        Image(systemName: "doc.text")
+                                            .font(.system(size: 48))
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text("暂无记录")
+                                            .font(.headline)
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text("开始写下你的第一篇记录吧")
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 60)
+                                }
                             }
+                            .padding(.horizontal)
                             .frame(minHeight: UIScreen.main.bounds.height * 0.5)
                         } else {
                             // 其他页签显示正常记录内容
@@ -1632,6 +1691,35 @@ struct RecordView: View {
                 recordContent = lowerLevelContent
             }
         }
+    }
+    
+    // 加载更多记录
+    private func loadMoreRecords() {
+        displayedRecordsCount += recordsPerPage
+    }
+    
+    // 导航到记录详情
+    private func navigateToRecord(_ record: Record) {
+        // 设置选中的记录类型和日期
+        selectedRecordType = record.recordType
+        currentYear = record.year
+        currentMonth = record.month ?? 1
+        currentDay = record.day ?? 1
+        currentWeek = record.week ?? 1
+        currentQuarter = record.quarter ?? 1
+        
+        // 根据记录的日期创建对应的Date对象
+        var dateComponents = DateComponents()
+        dateComponents.year = record.year
+        dateComponents.month = record.month
+        dateComponents.day = record.day
+        
+        if let date = calendar.date(from: dateComponents) {
+            currentDate = date
+        }
+        
+        // 加载对应的记录
+        loadCurrentRecord()
     }
 }
 
