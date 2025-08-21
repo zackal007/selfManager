@@ -10,14 +10,16 @@ import SwiftData
 
 // 记录类型枚举
 enum RecordType: Int, Codable, Hashable, CaseIterable {
-    case daily = 0   // 日记
-    case weekly = 1  // 周记
-    case monthly = 2 // 月记
-    case quarterly = 3 // 季记
-    case yearly = 4  // 年记
+    case recent = 0  // 近期
+    case daily = 1   // 日记
+    case weekly = 2  // 周记
+    case monthly = 3 // 月记
+    case quarterly = 4 // 季记
+    case yearly = 5  // 年记
     
     var displayName: String {
         switch self {
+        case .recent: return "近期"
         case .daily: return "日记"
         case .weekly: return "周记"
         case .monthly: return "月记"

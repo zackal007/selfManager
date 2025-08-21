@@ -278,8 +278,9 @@ struct RecordView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
-                            // 各种记录类型
-                            ForEach(RecordType.allCases, id: \.self) { type in
+                            // 自定义页签顺序：近期、日记、周记、月记、季记、年记
+                            let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
+                            ForEach(orderedTypes, id: \.self) { type in
                                 FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
                                     // 如果内容已修改，先保存当前记录
                                     if contentModified {
@@ -318,6 +319,9 @@ struct RecordView: View {
                     VStack {
                         // 根据选择的记录类型显示不同的日期选择器
                         switch selectedRecordType {
+                    case .recent: // 近期 - 不显示日期选择器
+                        EmptyView()
+                        
                     case .daily: // 日记
                         VStack(spacing: 8) {
                             // 年月选择器
@@ -916,73 +920,84 @@ struct RecordView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
                     VStack(alignment: .leading, spacing: 16) {
-                        // 显示记录内容
-                        VStack(alignment: .leading, spacing: 12) {
-                            // 移除记录标题
-                            
-                            MarkdownTextEditor(text: $recordContent, minHeight: UIScreen.main.bounds.height * 0.5) { linkType, linkId in
-                // 处理链接点击
-                switch linkType {
-                case .goal:
-                    selectedGoalId = linkId
-                    showGoalDetail = true
-                case .contact:
-                    selectedContactId = linkId
-                    showContactDetail = true
-                case .record:
-                    selectedRecordId = linkId
-                    showRecordDetail = true
-                }
-            }
-            .padding(.horizontal)
-            .onChange(of: recordContent) { _, _ in
-                // 标记内容已修改
-                contentModified = true
-            }
-            .onAppear {
-                // 加载当前选择日期的记录
-                loadCurrentRecord()
-                // 重置修改状态
-                contentModified = false
-            }
-                        }
-                        
-                        // 心情选择（只在日记页签中显示）
-                        if selectedRecordType == .daily {
+                        // 根据记录类型显示不同内容
+                        if selectedRecordType == .recent {
+                            // 近期页签显示空白内容
+                            VStack {
+                                Spacer()
+                                // 隐藏"近期"文本，保持完全空白
+                                Spacer()
+                            }
+                            .frame(minHeight: UIScreen.main.bounds.height * 0.5)
+                        } else {
+                            // 其他页签显示正常记录内容
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("心情")
-                                    .font(.headline)
-                                    .padding(.horizontal)
+                                // 移除记录标题
                                 
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 16) {
-                                        ForEach(["😊", "😢", "😡", "😴", "🤔", "😎"], id: \.self) { mood in
-                                            Button(action: {
-                                                selectedMood = mood
-                                                // 标记内容已修改
-                                                contentModified = true
-                                            }) {
-                                                Text(mood)
-                                                    .font(.system(size: 30))
-                                                    .padding(8)
-                                                    .background(
-                                                        Circle()
-                                                            .fill(selectedMood == mood ? Color.blue.opacity(0.2) : Color.clear)
-                                                    )
-                                                    .overlay(
-                                                        Circle()
-                                                            .stroke(selectedMood == mood ? Color.blue : Color.clear, lineWidth: 2)
-                                                    )
+                                MarkdownTextEditor(text: $recordContent, minHeight: UIScreen.main.bounds.height * 0.5) { linkType, linkId in
+                    // 处理链接点击
+                    switch linkType {
+                    case .goal:
+                        selectedGoalId = linkId
+                        showGoalDetail = true
+                    case .contact:
+                        selectedContactId = linkId
+                        showContactDetail = true
+                    case .record:
+                        selectedRecordId = linkId
+                        showRecordDetail = true
+                    }
+                }
+                .padding(.horizontal)
+                .onChange(of: recordContent) { _, _ in
+                    // 标记内容已修改
+                    contentModified = true
+                }
+                .onAppear {
+                    // 加载当前选择日期的记录
+                    loadCurrentRecord()
+                    // 重置修改状态
+                    contentModified = false
+                }
+                            }
+                            
+                            // 心情选择（只在日记页签中显示）
+                            if selectedRecordType == .daily {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("心情")
+                                        .font(.headline)
+                                        .padding(.horizontal)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 16) {
+                                            ForEach(["😊", "😢", "😡", "😴", "🤔", "😎"], id: \.self) { mood in
+                                                Button(action: {
+                                                    selectedMood = mood
+                                                    // 标记内容已修改
+                                                    contentModified = true
+                                                }) {
+                                                    Text(mood)
+                                                        .font(.system(size: 30))
+                                                        .padding(8)
+                                                        .background(
+                                                            Circle()
+                                                                .fill(selectedMood == mood ? Color.blue.opacity(0.2) : Color.clear)
+                                                        )
+                                                        .overlay(
+                                                            Circle()
+                                                                .stroke(selectedMood == mood ? Color.blue : Color.clear, lineWidth: 2)
+                                                        )
+                                                }
+                                                .buttonStyle(ScaleButtonStyle())
                                             }
-                                            .buttonStyle(ScaleButtonStyle())
                                         }
+                                        .padding(.horizontal)
                                     }
-                                    .padding(.horizontal)
                                 }
                             }
+                            
+                            // 自动保存已启用，不再需要保存按钮
                         }
-                        
-                        // 自动保存已启用，不再需要保存按钮
                     }
                     .padding(.bottom, 20)
                     
@@ -1115,6 +1130,8 @@ struct RecordView: View {
     // 记录标题
     var recordTitle: String {
         switch selectedRecordType {
+        case .recent:
+            return "近期"
         case .daily:
             return "\(formattedDate) 日记"
         case .weekly:
@@ -1280,6 +1297,11 @@ struct RecordView: View {
     
     // 自动保存记录，不显示保存成功提示
     private func autoSaveRecord(recordType: RecordType) {
+        // 近期类型不执行任何保存操作
+        guard recordType != .recent else {
+            return
+        }
+        
         // 提取用户输入的内容（排除归拢内容）
         let userContent = extractUserContent(from: recordContent, recordType: recordType)
         
@@ -1512,6 +1534,9 @@ struct RecordView: View {
         let quarter = (month - 1) / 3 + 1
         
         switch selectedRecordType {
+        case .recent: // 近期 - 不执行任何数据加载操作
+            return
+            
         case .daily: // 日记
             // 查找当前日期的日记
             filteredRecords = allRecords.filter { record in
