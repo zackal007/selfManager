@@ -894,31 +894,34 @@ struct RecordView: View {
                 // 记录内容区域
                 ScrollView {
                     // 下拉区域 - 用于显示/隐藏日期选择器
-                    HStack {
-                        Spacer()
-                        
-                        VStack(spacing: 4) {
-                            Text(recordTitle)
-                                .font(.headline)
-                                .foregroundColor(.primary)
+                    // 仅在非"近期"页签时显示标题区域
+                    if selectedRecordType != .recent {
+                        HStack {
+                            Spacer()
                             
-                            Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 8)
-                        .onTapGesture {
-                            withAnimation {
-                                showDatePicker.toggle()
+                            VStack(spacing: 4) {
+                                Text(recordTitle)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
                             }
+                            .padding(.vertical, 8)
+                            .onTapGesture {
+                                withAnimation {
+                                    showDatePicker.toggle()
+                                }
+                            }
+                            
+                            Spacer()
                         }
-                        
-                        Spacer()
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                        .padding(.top, 8)
                     }
-                    .background(Color(UIColor.systemBackground))
-                    .cornerRadius(8)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
                     VStack(alignment: .leading, spacing: 16) {
                         // 根据记录类型显示不同内容
                         if selectedRecordType == .recent {
