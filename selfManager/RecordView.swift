@@ -26,6 +26,9 @@ struct RecordView: View {
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
     
+    // 清理重复记录的标志
+    @State private var hasCleanedDuplicates = false
+    
     // 记录类型选择器
     @State private var selectedRecordType: RecordType = .daily
     
@@ -123,17 +126,79 @@ struct RecordView: View {
         return Array(uniqueRecords.values).sorted { $0.createTime > $1.createTime }
     }
     
+    // 清理重复记录
+    private func cleanDuplicateRecords() {
+        let allowedTypes: Set<RecordType> = [.daily, .weekly, .monthly, .quarterly, .yearly]
+        
+        // 获取所有有效记录
+        let validRecords = allRecords.filter { record in
+            !record.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            allowedTypes.contains(record.recordType)
+        }
+        
+        // 按唯一key分组
+        var uniqueRecords: [String: Record] = [:]
+        var recordsToDelete: [Record] = []
+        
+        for record in validRecords {
+            let key = generateUniqueKey(for: record)
+            
+            if let existingRecord = uniqueRecords[key] {
+                // 如果已存在相同key的记录，保留创建时间较新的
+                if record.createTime > existingRecord.createTime {
+                    recordsToDelete.append(existingRecord)
+                    uniqueRecords[key] = record
+                } else {
+                    recordsToDelete.append(record)
+                }
+            } else {
+                uniqueRecords[key] = record
+            }
+        }
+        
+        // 删除重复记录
+        for record in recordsToDelete {
+            modelContext.delete(record)
+        }
+        
+        // 保存更改
+        if !recordsToDelete.isEmpty {
+            do {
+                try modelContext.save()
+                print("已清理 \(recordsToDelete.count) 条重复记录")
+            } catch {
+                print("清理重复记录失败: \(error)")
+            }
+        }
+    }
+    
     // 生成记录的唯一标识key
     private func generateUniqueKey(for record: Record) -> String {
         switch record.recordType {
         case .daily:
-            return "daily_\(record.year)_\(record.month ?? 0)_\(record.day ?? 0)"
+            // 日记必须有年月日信息才能去重
+            guard let month = record.month, let day = record.day else {
+                return "daily_invalid_\(record.id.uuidString)"
+            }
+            return "daily_\(record.year)_\(month)_\(day)"
         case .weekly:
-            return "weekly_\(record.year)_\(record.week ?? 0)"
+            // 周记必须有年和周信息才能去重
+            guard let week = record.week else {
+                return "weekly_invalid_\(record.id.uuidString)"
+            }
+            return "weekly_\(record.year)_\(week)"
         case .monthly:
-            return "monthly_\(record.year)_\(record.month ?? 0)"
+            // 月记必须有年月信息才能去重
+            guard let month = record.month else {
+                return "monthly_invalid_\(record.id.uuidString)"
+            }
+            return "monthly_\(record.year)_\(month)"
         case .quarterly:
-            return "quarterly_\(record.year)_\(record.quarter ?? 0)"
+            // 季记必须有年和季度信息才能去重
+            guard let quarter = record.quarter else {
+                return "quarterly_invalid_\(record.id.uuidString)"
+            }
+            return "quarterly_\(record.year)_\(quarter)"
         case .yearly:
             return "yearly_\(record.year)"
         default:
@@ -1187,6 +1252,11 @@ struct RecordView: View {
                 loadCurrentRecord()
                 // 重置修改状态
                 contentModified = false
+                // 只在第一次加载时清理重复记录
+                if !hasCleanedDuplicates {
+                    cleanDuplicateRecords()
+                    hasCleanedDuplicates = true
+                }
             }
             .onDisappear {
                 // 离开页面时自动保存记录

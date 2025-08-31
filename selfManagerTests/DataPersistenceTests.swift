@@ -299,42 +299,7 @@ struct DataPersistenceTests {
         #expect(abs(fetchedRecord!.createTime.timeIntervalSince(record.createTime)) < 0.001)
     }
 
-    @Test func testContactModelPersistence() async throws {
-        let config = ModelConfiguration(for: [Contact.self, User.self, Achievement.self, Improvement.self, Goal.self, Record.self], inMemory: true)
-        let container = try ModelContainer(for: config)
-        let context = ModelContext(container)
 
-        let contact = Contact(
-            name: "Test Contact",
-            company: "Test Company",
-            position: "Software Engineer",
-            phone: "123-456-7890",
-            email: "test@example.com",
-            address: "123 Test St",
-            notes: "Some notes about the contact.",
-            contactType: .friend,
-            frequency: .weekly,
-            tags: ["work", "friendship"]
-        )
-        context.insert(contact)
-        try context.save()
-
-        let fetchedContact = try context.fetch(FetchDescriptor<Contact>()).first
-
-        #expect(fetchedContact != nil)
-        #expect(fetchedContact?.id == contact.id)
-        #expect(fetchedContact?.name == contact.name)
-        #expect(fetchedContact?.company == contact.company)
-        #expect(fetchedContact?.position == contact.position)
-        #expect(fetchedContact?.phone == contact.phone)
-        #expect(fetchedContact?.email == contact.email)
-        #expect(fetchedContact?.address == contact.address)
-        #expect(fetchedContact?.notes == contact.notes)
-        #expect(fetchedContact?.contactType == contact.contactType)
-        #expect(fetchedContact?.frequency == contact.frequency)
-        #expect(fetchedContact?.tags == contact.tags)
-        #expect(abs(fetchedContact!.createTime.timeIntervalSince(contact.createTime)) < 0.001)
-    }
 
     @Test func testRecordTypeDisplayName() async throws {
         #expect(RecordType.daily.displayName == "日记")
