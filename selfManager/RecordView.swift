@@ -95,8 +95,49 @@ struct RecordView: View {
     
     // 过滤后的非空记录（按创建时间降序排列）
     private var filteredRecords: [Record] {
-        allRecords.filter { record in
-            !record.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        // 只显示特定类型的记录：日记、周记、月记、季记、年记
+        let allowedTypes: Set<RecordType> = [.daily, .weekly, .monthly, .quarterly, .yearly]
+        
+        let filtered = allRecords.filter { record in
+            // 过滤空内容和不允许的记录类型
+            !record.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            allowedTypes.contains(record.recordType)
+        }
+        
+        // 按记录类型和时间进行去重，每种类型的每个时间段只保留最新的一条记录
+        var uniqueRecords: [String: Record] = [:]
+        
+        for record in filtered {
+            let key = generateUniqueKey(for: record)
+            
+            // 如果该key不存在，或者当前记录更新，则保留当前记录
+            if let existingRecord = uniqueRecords[key] {
+                if record.createTime > existingRecord.createTime {
+                    uniqueRecords[key] = record
+                }
+            } else {
+                uniqueRecords[key] = record
+            }
+        }
+        
+        return Array(uniqueRecords.values).sorted { $0.createTime > $1.createTime }
+    }
+    
+    // 生成记录的唯一标识key
+    private func generateUniqueKey(for record: Record) -> String {
+        switch record.recordType {
+        case .daily:
+            return "daily_\(record.year)_\(record.month ?? 0)_\(record.day ?? 0)"
+        case .weekly:
+            return "weekly_\(record.year)_\(record.week ?? 0)"
+        case .monthly:
+            return "monthly_\(record.year)_\(record.month ?? 0)"
+        case .quarterly:
+            return "quarterly_\(record.year)_\(record.quarter ?? 0)"
+        case .yearly:
+            return "yearly_\(record.year)"
+        default:
+            return "other_\(record.id.uuidString)"
         }
     }
     
@@ -1229,6 +1270,83 @@ struct RecordView: View {
             return
         }
         
+        // 检查是否已存在同一日期的记录，如果存在则更新，否则创建新记录
+        if let existingRecord = findExistingRecord(for: selectedRecordType, date: currentDate) {
+            // 更新现有记录
+            existingRecord.title = recordTitle
+            existingRecord.content = userContent
+            existingRecord.createTime = Date() // 更新创建时间为当前时间
+            if selectedRecordType == .daily {
+                existingRecord.mood = selectedMood
+            }
+            currentRecord = existingRecord
+        } else {
+            // 创建新记录
+            createNewRecord(userContent: userContent)
+        }
+        
+        // 不再清空输入，保留当前内容
+        // 只清空心情选择（如果是日记）
+        if selectedRecordType == .daily {
+            selectedMood = nil
+        }
+        
+        // 显示保存成功提示
+        withAnimation {
+            showSaveSuccessToast = true
+        }
+        
+        // 重新加载记录，以显示归拢内容
+        loadCurrentRecord()
+    }
+    
+    // 查找已存在的同日期记录
+    private func findExistingRecord(for recordType: RecordType, date: Date) -> Record? {
+        let calendar = self.calendar
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        
+        switch recordType {
+        case .daily:
+            return allRecords.first { record in
+                record.recordType == .daily &&
+                record.year == year &&
+                record.month == month &&
+                record.day == day
+            }
+        case .weekly:
+            let weekOfYear = calendar.component(.weekOfYear, from: date)
+            return allRecords.first { record in
+                record.recordType == .weekly &&
+                record.year == year &&
+                record.week == weekOfYear
+            }
+        case .monthly:
+            return allRecords.first { record in
+                record.recordType == .monthly &&
+                record.year == year &&
+                record.month == month
+            }
+        case .quarterly:
+            let quarter = (month - 1) / 3 + 1
+            return allRecords.first { record in
+                record.recordType == .quarterly &&
+                record.year == year &&
+                record.quarter == quarter
+            }
+        case .yearly:
+            return allRecords.first { record in
+                record.recordType == .yearly &&
+                record.year == year
+            }
+        default:
+            return nil
+        }
+    }
+    
+    // 创建新记录的辅助方法
+    private func createNewRecord(userContent: String) {
         // 根据记录类型获取对应的日期
         var recordDate = currentDate
         var recordTypeString = "日记"
@@ -1309,22 +1427,8 @@ struct RecordView: View {
         // 保存到数据库
         modelContext.insert(newRecord)
         
-        // 不再清空输入，保留当前内容
-        // 只清空心情选择（如果是日记）
-        if selectedRecordType == .daily {
-            selectedMood = nil
-        }
-        
-        // 显示保存成功提示
-        withAnimation {
-            showSaveSuccessToast = true
-        }
-        
         // 更新当前记录
         currentRecord = newRecord
-        
-        // 重新加载记录，以显示归拢内容
-        loadCurrentRecord()
     }
     
     // 从记录内容中提取用户输入的部分（排除归拢内容）
@@ -1372,69 +1476,24 @@ struct RecordView: View {
             return
         }
         
-        // 根据记录类型获取对应的日期
-        var recordDate = currentDate
-        var recordTypeString = "日记"
-        
-        switch recordType {
-        case .daily: // 日记
-            recordTypeString = "日记"
-            // 使用当前选择的日期
-        case .weekly: // 周记
-            recordTypeString = "周记"
-            // 使用当前选择的日期，但获取该日期所在周的第一天（周日）
-            let calendar = self.calendar
-            let weekday = calendar.component(.weekday, from: currentDate)
-            // 计算到本周第一天（周日）的偏移量
-            let daysToSubtract = weekday - 1
-            if let weekStartDate = calendar.date(byAdding: .day, value: -daysToSubtract, to: currentDate) {
-                recordDate = weekStartDate
+        // 检查是否已存在同一日期的记录，如果存在则更新，否则创建新记录
+        if let existingRecord = findExistingRecord(for: recordType, date: currentDate) {
+            // 更新现有记录
+            existingRecord.title = recordTitle
+            existingRecord.content = userContent
+            existingRecord.createTime = Date() // 更新创建时间为当前时间
+            if recordType == .daily {
+                existingRecord.mood = selectedMood
             }
-        case .monthly: // 月记
-            recordTypeString = "月记"
-            // 使用当前选择的日期，但获取该日期所在月的第一天
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            let month = calendar.component(.month, from: currentDate)
-            var components = DateComponents()
-            components.year = year
-            components.month = month
-            components.day = 1
-            if let date = calendar.date(from: components) {
-                recordDate = date
-            }
-        case .quarterly: // 季记
-            recordTypeString = "季记"
-            // 获取当前日期所在季度的第一天
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            let month = calendar.component(.month, from: currentDate)
-            let quarter = (month - 1) / 3 + 1
-            let firstMonthOfQuarter = (quarter - 1) * 3 + 1
-            
-            var components = DateComponents()
-            components.year = year
-            components.month = firstMonthOfQuarter
-            components.day = 1
-            if let date = calendar.date(from: components) {
-                recordDate = date
-            }
-        case .yearly: // 年记
-            recordTypeString = "年记"
-            // 获取当前日期所在年份的第一天
-            let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
-            var components = DateComponents()
-            components.year = year
-            components.month = 1
-            components.day = 1
-            if let date = calendar.date(from: components) {
-                recordDate = date
-            }
-        default:
-            break
+            currentRecord = existingRecord
+        } else {
+            // 创建新记录
+            createNewRecordForAutoSave(userContent: userContent, recordType: recordType)
         }
-        
+    }
+    
+    // 为自动保存创建新记录的辅助方法
+    private func createNewRecordForAutoSave(userContent: String, recordType: RecordType) {
         // 创建新记录
         let newRecord = Record(
             title: recordTitle,
