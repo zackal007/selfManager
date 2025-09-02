@@ -729,7 +729,6 @@ struct LifeGoalGalleryView: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
             ForEach(goals) { goal in
                 GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                    .frame(height: 280)
             }
         }
         .padding(.horizontal, 12)
@@ -742,7 +741,6 @@ struct YearGoalGalleryView: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
             ForEach(goals) { goal in
                 GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                    .frame(height: 280)
             }
         }
         .padding(.horizontal, 12)
@@ -755,7 +753,6 @@ struct ShortTermGoalGalleryView: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
             ForEach(goals) { goal in
                 GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                    .frame(height: 280)
             }
         }
         .padding(.horizontal, 12)
@@ -768,7 +765,6 @@ struct HabitGoalGalleryView: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
             ForEach(goals) { goal in
                 GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                    .frame(height: 280)
             }
         }
         .padding(.horizontal, 12)
@@ -891,7 +887,7 @@ struct GoalCard: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                            .frame(width: cardWidth)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .opacity(0.7) // 降低不透明度，使内容更易读
                     } else {
@@ -902,7 +898,7 @@ struct GoalCard: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                                .frame(width: cardWidth)
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .opacity(0.7) // 降低不透明度，使内容更易读
                                 // 添加模糊效果，提高可读性
@@ -916,14 +912,14 @@ struct GoalCard: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
-                    .frame(width: cardWidth, height: 280) // 占满整个卡片高度
+                    .frame(width: cardWidth)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 
                 // 添加半透明覆盖层，使内容更易读
                 Rectangle()
                     .fill(Color(UIColor.systemBackground).opacity(0.5))
-                    .frame(width: cardWidth, height: 280)
+                    .frame(width: cardWidth)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 
                 // 卡片阴影
@@ -1076,9 +1072,9 @@ struct GoalCard: View {
                     // 添加底部空白，推动内容向上
                     Spacer()
                 }
-                .frame(width: cardWidth, height: 280, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
+                .frame(width: cardWidth, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
             }
-            .frame(width: cardWidth, height: 280) // 固定卡片高度
+            .frame(width: cardWidth) // 卡片宽度固定，高度自适应
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
