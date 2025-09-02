@@ -53,6 +53,44 @@ extension Goal {
     }
 }
 
+// 瀑布流布局组件
+struct WaterfallLayout<Content: View>: View {
+    let items: [Goal]
+    let columns: Int
+    let spacing: CGFloat
+    let geometry: GeometryProxy
+    let content: (Goal, CGFloat) -> Content
+    
+    init(items: [Goal], columns: Int = 2, spacing: CGFloat = 16, geometry: GeometryProxy, @ViewBuilder content: @escaping (Goal, CGFloat) -> Content) {
+        self.items = items
+        self.columns = columns
+        self.spacing = spacing
+        self.geometry = geometry
+        self.content = content
+    }
+    
+    var body: some View {
+        let cardWidth = (geometry.size.width - CGFloat(columns + 1) * spacing) / CGFloat(columns)
+        
+        HStack(alignment: .top, spacing: spacing) {
+            ForEach(0..<columns, id: \.self) { columnIndex in
+                LazyVStack(spacing: spacing) {
+                    ForEach(itemsForColumn(columnIndex), id: \.id) { item in
+                        content(item, cardWidth)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, spacing)
+    }
+    
+    private func itemsForColumn(_ columnIndex: Int) -> [Goal] {
+        return items.enumerated().compactMap { index, item in
+            index % columns == columnIndex ? item : nil
+        }
+    }
+}
+
 // 使用SharedComponents.swift中的ScaleButtonStyle
 
 struct GoalView: View {
@@ -726,61 +764,45 @@ struct LifeGoalGalleryView: View {
     let goals: [Goal]
     let geometry: GeometryProxy
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
-            ForEach(goals) { goal in
-                GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-            }
+        WaterfallLayout(items: goals, columns: 2, spacing: 16, geometry: geometry) { goal, cardWidth in
+            GoalCard(goal: goal, cardWidth: cardWidth)
         }
-        .padding(.horizontal, 12)
     }
 }
 struct YearGoalGalleryView: View {
     let goals: [Goal]
     let geometry: GeometryProxy
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
-            ForEach(goals) { goal in
-                GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-            }
+        WaterfallLayout(items: goals, columns: 2, spacing: 16, geometry: geometry) { goal, cardWidth in
+            GoalCard(goal: goal, cardWidth: cardWidth)
         }
-        .padding(.horizontal, 12)
     }
 }
 struct ShortTermGoalGalleryView: View {
     let goals: [Goal]
     let geometry: GeometryProxy
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
-            ForEach(goals) { goal in
-                GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-            }
+        WaterfallLayout(items: goals, columns: 2, spacing: 16, geometry: geometry) { goal, cardWidth in
+            GoalCard(goal: goal, cardWidth: cardWidth)
         }
-        .padding(.horizontal, 12)
     }
 }
 struct HabitGoalGalleryView: View {
     let goals: [Goal]
     let geometry: GeometryProxy
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
-            ForEach(goals) { goal in
-                GoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-            }
+        WaterfallLayout(items: goals, columns: 2, spacing: 16, geometry: geometry) { goal, cardWidth in
+            GoalCard(goal: goal, cardWidth: cardWidth)
         }
-        .padding(.horizontal, 12)
     }
 }
 struct AllGoalGalleryView: View {
     let goals: [Goal]
     let geometry: GeometryProxy
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 16) {
-            ForEach(goals) { goal in
-                SimplifiedGoalCard(goal: goal, cardWidth: (geometry.size.width - 40) / 2)
-                    .frame(height: 120)
-            }
+        WaterfallLayout(items: goals, columns: 2, spacing: 16, geometry: geometry) { goal, cardWidth in
+            SimplifiedGoalCard(goal: goal, cardWidth: cardWidth)
         }
-        .padding(.horizontal, 12)
     }
 }
 // 列表视图拆分组件
@@ -1352,7 +1374,7 @@ struct SimplifiedGoalCard: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                            .frame(width: cardWidth)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .opacity(0.7) // 降低不透明度，使内容更易读
                     } else {
@@ -1363,7 +1385,7 @@ struct SimplifiedGoalCard: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                                .frame(width: cardWidth)
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .opacity(0.7) // 降低不透明度，使内容更易读
                             // 添加模糊效果，提高可读性
@@ -1377,14 +1399,14 @@ struct SimplifiedGoalCard: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
-                    .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                    .frame(width: cardWidth)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 
                 // 添加半透明覆盖层，使内容更易读
                 Rectangle()
                     .fill(Color(UIColor.systemBackground).opacity(0.5))
-                    .frame(width: cardWidth, height: 120) // 缩小卡片高度
+                    .frame(width: cardWidth)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 
                 // 卡片阴影
@@ -1414,9 +1436,9 @@ struct SimplifiedGoalCard: View {
                     Spacer()
                 }
                 .padding(.horizontal, 16)
-                .frame(width: cardWidth, height: 120, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
+                .frame(width: cardWidth, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
             }
-            .frame(width: cardWidth, height: 120) // 固定卡片高度
+            .frame(width: cardWidth) // 移除固定卡片高度
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
