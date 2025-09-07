@@ -724,33 +724,33 @@ struct GoalDetailView: View {
         case .name:
             let oldName = goal.name
             goal.name = value
-            // 记录名称修改
-            GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName)
+            // 记录名称修改到活动日志和当天日记
+            GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName, modelContext: modelContext)
         case .goalDescription:
             let oldDescription = goal.goalDescription
             goal.goalDescription = value
-            // 记录描述修改
-            GoalActivityManager.shared.logDescriptionChange(goal: goal, oldDescription: oldDescription)
+            // 记录描述修改到活动日志和当天日记
+            GoalActivityManager.shared.logDescriptionChange(goal: goal, oldDescription: oldDescription, modelContext: modelContext)
         case .progress:
             let oldProgress = goal.progress
             goal.progress = progress
-            // 记录进度修改
-            GoalActivityManager.shared.logProgressChange(goal: goal, oldProgress: oldProgress)
+            // 记录进度修改到活动日志和当天日记
+            GoalActivityManager.shared.logProgressChange(goal: goal, oldProgress: oldProgress, modelContext: modelContext)
         case .tag:
             if !value.isEmpty {
                 // 添加新标签
                 if !goal.tags.contains(value) {
                     goal.tags.append(value)
-                    // 记录标签添加
-                    GoalActivityManager.shared.logTagAdd(goal: goal, tag: value)
+                    // 记录标签添加到活动日志和当天日记
+                    GoalActivityManager.shared.logTagAdd(goal: goal, tag: value, modelContext: modelContext)
                 }
             }
         case .task:
             if let task = editingTask {
                 let oldTitle = task.title
                 task.title = value
-                // 记录任务修改
-                GoalActivityManager.shared.logTaskModify(goal: goal, oldTitle: oldTitle, newTitle: value)
+                // 记录任务修改到活动日志和当天日记
+                GoalActivityManager.shared.logTaskModify(goal: goal, oldTitle: oldTitle, newTitle: value, modelContext: modelContext)
             }
         case .upperProject, .subProject, .dueDate, .none:
             // 这些字段在其他地方处理
@@ -763,6 +763,13 @@ struct GoalDetailView: View {
         
         // 更新修改时间
         goal.modifyTime = Date()
+        
+        // 保存修改
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save goal edit: \(error)")
+        }
     }
     
     // 此方法已被移除，因为 DatePickerView 直接使用 modelContext 保存数据
@@ -794,7 +801,7 @@ struct GoalDetailView: View {
         // 如果类型有变化，记录日志
         if oldGoalType != newGoalType {
             goal.goalType = newGoalType
-            GoalActivityManager.shared.logTypeChange(goal: goal, oldType: oldGoalType)
+            GoalActivityManager.shared.logTypeChange(goal: goal, oldType: oldGoalType, modelContext: modelContext)
         }
         
         // 更新修改时间

@@ -81,61 +81,130 @@ class GoalActivityManager {
         saveActivityLogs(allLogs)
     }
     
+    // 添加活动日志并记录到日记
+    func addActivityLogWithDiary(goalId: UUID, goalName: String, type: String, oldValue: String? = nil, newValue: String? = nil, message: String, modelContext: ModelContext) {
+        // 添加活动日志
+        addActivityLog(goalId: goalId, type: type, oldValue: oldValue, newValue: newValue, message: message)
+        
+        // TODO: 将来可以在这里添加日记记录功能
+        // 目前先只记录活动日志
+        print("目标变更: \(goalName) - \(type)")
+    }
+    
     // 记录目标创建
-    func logGoalCreation(goal: Goal) {
-        addActivityLog(
-            goalId: goal.id,
-            type: "create",
-            newValue: goal.name,
-            message: "创建了目标"
-        )
+    func logGoalCreation(goal: Goal, modelContext: ModelContext? = nil) {
+        if let context = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "create",
+                newValue: goal.name,
+                message: "创建了目标",
+                modelContext: context
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "create",
+                newValue: goal.name,
+                message: "创建了目标"
+            )
+        }
     }
     
     // 记录目标名称修改
-    func logNameChange(goal: Goal, oldName: String) {
-        addActivityLog(
-            goalId: goal.id,
-            type: "name_change",
-            oldValue: oldName,
-            newValue: goal.name,
-            message: "修改了目标名称"
-        )
+    func logNameChange(goal: Goal, oldName: String, modelContext: ModelContext? = nil) {
+        if let context = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "name_change",
+                oldValue: oldName,
+                newValue: goal.name,
+                message: "修改了目标名称",
+                modelContext: context
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "name_change",
+                oldValue: oldName,
+                newValue: goal.name,
+                message: "修改了目标名称"
+            )
+        }
     }
     
     // 记录目标描述修改
-    func logDescriptionChange(goal: Goal, oldDescription: String) {
-        addActivityLog(
-            goalId: goal.id,
-            type: "description_change",
-            oldValue: oldDescription,
-            newValue: goal.goalDescription,
-            message: "修改了目标描述"
-        )
+    func logDescriptionChange(goal: Goal, oldDescription: String, modelContext: ModelContext? = nil) {
+        if let context = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "description_change",
+                oldValue: oldDescription,
+                newValue: goal.goalDescription,
+                message: "修改了目标描述",
+                modelContext: context
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "description_change",
+                oldValue: oldDescription,
+                newValue: goal.goalDescription,
+                message: "修改了目标描述"
+            )
+        }
     }
     
     // 记录目标进度修改
-    func logProgressChange(goal: Goal, oldProgress: Double) {
-        addActivityLog(
-            goalId: goal.id,
-            type: "progress_change",
-            oldValue: String(format: "%.0f%%", oldProgress * 100),
-            newValue: String(format: "%.0f%%", goal.progress * 100),
-            message: "修改了目标进度"
-        )
+    func logProgressChange(goal: Goal, oldProgress: Double, modelContext: ModelContext? = nil) {
+        if let context = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "progress_change",
+                oldValue: String(format: "%.0f%%", oldProgress * 100),
+                newValue: String(format: "%.0f%%", goal.progress * 100),
+                message: "修改了目标进度",
+                modelContext: context
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "progress_change",
+                oldValue: String(format: "%.0f%%", oldProgress * 100),
+                newValue: String(format: "%.0f%%", goal.progress * 100),
+                message: "修改了目标进度"
+            )
+        }
     }
     
     // 记录目标类型修改
-    func logTypeChange(goal: Goal, oldType: GoalType) {
+    func logTypeChange(goal: Goal, oldType: GoalType, modelContext: ModelContext? = nil) {
         let oldTypeString = getGoalTypeDisplayName(oldType)
         let newTypeString = getGoalTypeDisplayName(goal.goalType)
         
-        addActivityLog(
-            goalId: goal.id,
-            type: "type_change",
-            oldValue: oldTypeString,
-            newValue: newTypeString,
-            message: "修改了目标类型"
-        )
+        if let modelContext = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "type_change",
+                oldValue: oldTypeString,
+                newValue: newTypeString,
+                message: "修改了目标类型",
+                modelContext: modelContext
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "type_change",
+                oldValue: oldTypeString,
+                newValue: newTypeString,
+                message: "修改了目标类型"
+            )
+        }
     }
     
     // 记录目标重要性修改
@@ -167,13 +236,24 @@ class GoalActivityManager {
     }
     
     // 记录标签添加
-    func logTagAdd(goal: Goal, tag: String) {
-        addActivityLog(
-            goalId: goal.id,
-            type: "tag_add",
-            newValue: tag,
-            message: "添加了标签: \(tag)"
-        )
+    func logTagAdd(goal: Goal, tag: String, modelContext: ModelContext? = nil) {
+        if let modelContext = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "tag_add",
+                newValue: tag,
+                message: "添加了标签: \(tag)",
+                modelContext: modelContext
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "tag_add",
+                newValue: tag,
+                message: "添加了标签: \(tag)"
+            )
+        }
     }
     
     // 记录标签删除
@@ -258,14 +338,26 @@ class GoalActivityManager {
     }
     
     // 记录任务修改
-    func logTaskModify(goal: Goal, oldTitle: String, newTitle: String) {
-        addActivityLog(
-            goalId: goal.id,
-            type: "task_modify",
-            oldValue: oldTitle,
-            newValue: newTitle,
-            message: "修改了任务: \(oldTitle) → \(newTitle)"
-        )
+    func logTaskModify(goal: Goal, oldTitle: String, newTitle: String, modelContext: ModelContext? = nil) {
+        if let modelContext = modelContext {
+            addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "task_modify",
+                oldValue: oldTitle,
+                newValue: newTitle,
+                message: "修改了任务: \(oldTitle) → \(newTitle)",
+                modelContext: modelContext
+            )
+        } else {
+            addActivityLog(
+                goalId: goal.id,
+                type: "task_modify",
+                oldValue: oldTitle,
+                newValue: newTitle,
+                message: "修改了任务: \(oldTitle) → \(newTitle)"
+            )
+        }
     }
     
     // 记录关联联系人添加
