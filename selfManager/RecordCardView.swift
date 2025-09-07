@@ -15,7 +15,20 @@ struct RecordCardView: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: record.createTime)
+        
+        // 根据记录的实际日期信息构建日期
+        var dateComponents = DateComponents()
+        dateComponents.year = record.year
+        dateComponents.month = record.month
+        dateComponents.day = record.day
+        
+        let calendar = Calendar.current
+        if let actualDate = calendar.date(from: dateComponents) {
+            return formatter.string(from: actualDate)
+        } else {
+            // 如果无法构建日期，则回退到创建时间
+            return formatter.string(from: record.createTime)
+        }
     }
     
     private var recordTitle: String {
