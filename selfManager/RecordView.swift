@@ -352,7 +352,7 @@ struct RecordView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // 顶部标题栏
                 HStack {

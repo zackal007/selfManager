@@ -104,7 +104,7 @@ struct HomeView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack(alignment: .top) {
                 ScrollView {
                     VStack(spacing: 20) {

@@ -370,7 +370,7 @@ struct GoalView: View {
     var body: some View { 
         ZStack {
             // 主视图
-            NavigationView {
+            NavigationStack {
                 VStack(spacing: 0) {
                     
                     // 顶部标题栏
