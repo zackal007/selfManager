@@ -30,7 +30,7 @@ struct RecordView: View {
     @State private var hasCleanedDuplicates = false
     
     // 记录类型选择器
-    @State private var selectedRecordType: RecordType = .daily
+    @State private var selectedRecordType: RecordType = .recent
     
     // 当前日期
     @State private var currentDate = Date()
@@ -56,11 +56,11 @@ struct RecordView: View {
     // 初始化日期组件
     private func initDateComponents() {
         let cal = self.calendar
-        currentYear = cal.component(.year, from: Date())
-        currentMonth = cal.component(.month, from: Date())
-        currentDay = cal.component(.day, from: Date())
-        currentQuarter = (cal.component(.month, from: Date()) - 1) / 3 + 1
-        currentWeek = cal.component(.weekOfYear, from: Date())
+        currentYear = cal.component(.year, from: currentDate)
+        currentMonth = cal.component(.month, from: currentDate)
+        currentDay = cal.component(.day, from: currentDate)
+        currentQuarter = (cal.component(.month, from: currentDate) - 1) / 3 + 1
+        currentWeek = cal.component(.weekOfYear, from: currentDate)
         // 设置年份列表的基准年份，使当前年份位于年份列表的中间位置（第2行中间）
         yearListBaseYear = max(1, currentYear - 7) // 确保年份不小于1
     }
@@ -1477,15 +1477,21 @@ struct RecordView: View {
         }
         
         // 创建新记录
+        let calendar = self.calendar
+        let recordYear = calendar.component(.year, from: currentDate)
+        let recordMonth = calendar.component(.month, from: currentDate)
+        let recordWeek = calendar.component(.weekOfYear, from: currentDate)
+        let recordQuarter = getCurrentQuarter(currentDate)
+        
         let newRecord = Record(
             title: recordTitle,
             content: userContent, // 只保存用户输入的内容
             recordType: selectedRecordType,
-            year: currentYear,
-            month: selectedRecordType == .daily || selectedRecordType == .monthly ? currentMonth : nil,
-            day: selectedRecordType == .daily ? self.calendar.component(.day, from: currentDate) : nil,
-            week: selectedRecordType == .weekly ? currentWeek : nil,
-            quarter: selectedRecordType == .quarterly ? currentQuarter : nil,
+            year: recordYear,
+            month: selectedRecordType == .daily || selectedRecordType == .monthly ? recordMonth : nil,
+            day: selectedRecordType == .daily ? calendar.component(.day, from: currentDate) : nil,
+            week: selectedRecordType == .weekly ? recordWeek : nil,
+            quarter: selectedRecordType == .quarterly ? recordQuarter : nil,
             mood: selectedRecordType == .daily ? selectedMood : nil,
             weather: nil, // 不再保存天气信息
             images: selectedImages.isEmpty ? nil : selectedImages
@@ -1566,15 +1572,21 @@ struct RecordView: View {
     // 为自动保存创建新记录的辅助方法
     private func createNewRecordForAutoSave(userContent: String, recordType: RecordType) {
         // 创建新记录
+        let calendar = self.calendar
+        let recordYear = calendar.component(.year, from: currentDate)
+        let recordMonth = calendar.component(.month, from: currentDate)
+        let recordWeek = calendar.component(.weekOfYear, from: currentDate)
+        let recordQuarter = getCurrentQuarter(currentDate)
+        
         let newRecord = Record(
             title: recordTitle,
             content: userContent, // 只保存用户输入的内容
             recordType: recordType,
-            year: currentYear,
-            month: recordType == .daily || recordType == .monthly ? currentMonth : nil,
-            day: recordType == .daily ? self.calendar.component(.day, from: currentDate) : nil,
-            week: recordType == .weekly ? currentWeek : nil,
-            quarter: recordType == .quarterly ? currentQuarter : nil,
+            year: recordYear,
+            month: recordType == .daily || recordType == .monthly ? recordMonth : nil,
+            day: recordType == .daily ? calendar.component(.day, from: currentDate) : nil,
+            week: recordType == .weekly ? recordWeek : nil,
+            quarter: recordType == .quarterly ? recordQuarter : nil,
             mood: recordType == .daily ? selectedMood : nil,
             weather: nil, // 不再保存天气信息
             images: selectedImages.isEmpty ? nil : selectedImages

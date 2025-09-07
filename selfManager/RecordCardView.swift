@@ -13,21 +13,53 @@ struct RecordCardView: View {
     let onTap: () -> Void
     
     private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        // 根据记录的实际日期信息构建日期
-        var dateComponents = DateComponents()
-        dateComponents.year = record.year
-        dateComponents.month = record.month
-        dateComponents.day = record.day
-        
-        let calendar = Calendar.current
-        if let actualDate = calendar.date(from: dateComponents) {
-            return formatter.string(from: actualDate)
-        } else {
-            // 如果无法构建日期，则回退到创建时间
-            return formatter.string(from: record.createTime)
+        // 根据记录类型决定日期显示格式
+        switch record.recordType {
+        case .weekly:
+            // 周记显示为周模式
+            let calendar = Calendar.current
+            var dateComponents = DateComponents()
+            dateComponents.year = record.year
+            dateComponents.month = record.month
+            dateComponents.day = record.day
+            
+            if let actualDate = calendar.date(from: dateComponents) {
+                let weekOfYear = calendar.component(.weekOfYear, from: actualDate)
+                return "\(record.year)年第\(weekOfYear)周"
+            } else {
+                // 如果无法构建日期，则回退到创建时间
+                let weekOfYear = calendar.component(.weekOfYear, from: record.createTime)
+                let year = calendar.component(.year, from: record.createTime)
+                return "\(year)年第\(weekOfYear)周"
+            }
+        case .monthly:
+            // 月记显示为月模式
+            return "\(record.year)年\(record.month ?? 1)月"
+        case .quarterly:
+            // 季记显示为季模式
+            let quarter = ((record.month ?? 1) - 1) / 3 + 1
+            return "\(record.year)年第\(quarter)季度"
+        case .yearly:
+            // 年记显示为年模式
+            return "\(record.year)年"
+        default:
+            // 其他类型显示为日模式
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            
+            // 根据记录的实际日期信息构建日期
+            var dateComponents = DateComponents()
+            dateComponents.year = record.year
+            dateComponents.month = record.month
+            dateComponents.day = record.day
+            
+            let calendar = Calendar.current
+            if let actualDate = calendar.date(from: dateComponents) {
+                return formatter.string(from: actualDate)
+            } else {
+                // 如果无法构建日期，则回退到创建时间
+                return formatter.string(from: record.createTime)
+            }
         }
     }
     
