@@ -75,6 +75,7 @@ struct RecordView: View {
     
     // 记录内容
     @State private var recordContent = ""
+    @State private var selectedImages: [Data] = []
     @State private var selectedMood: String? = nil
     @State private var selectedWeather: String? = nil
     
@@ -1102,31 +1103,25 @@ struct RecordView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 // 移除记录标题
                                 
-                                MarkdownTextEditor(text: $recordContent, minHeight: UIScreen.main.bounds.height * 0.5) { linkType, linkId in
-                    // 处理链接点击
-                    switch linkType {
-                    case .goal:
-                        selectedGoalId = linkId
-                        showGoalDetail = true
-                    case .contact:
-                        selectedContactId = linkId
-                        showContactDetail = true
-                    case .record:
-                        selectedRecordId = linkId
-                        showRecordDetail = true
-                    }
-                }
-                .padding(.horizontal)
-                .onChange(of: recordContent) { _, _ in
-                    // 标记内容已修改
-                    contentModified = true
-                }
-                .onAppear {
-                    // 加载当前选择日期的记录
-                    loadCurrentRecord()
-                    // 重置修改状态
-                    contentModified = false
-                }
+                                NotesStyleRecordEditor(
+                                    text: $recordContent,
+                                    images: $selectedImages,
+                                    minHeight: UIScreen.main.bounds.height * 0.4
+                                ) { images in
+                                    selectedImages = images
+                                    contentModified = true
+                                }
+                                .padding(.horizontal)
+                                .onChange(of: recordContent) { _, _ in
+                                    // 标记内容已修改
+                                    contentModified = true
+                                }
+                                .onAppear {
+                                    // 加载当前选择日期的记录
+                                    loadCurrentRecord()
+                                    // 重置修改状态
+                                    contentModified = false
+                                }
                             }
                             
                             // 心情选择（只在日记页签中显示）
@@ -1346,6 +1341,7 @@ struct RecordView: View {
             existingRecord.title = recordTitle
             existingRecord.content = userContent
             existingRecord.createTime = Date() // 更新创建时间为当前时间
+            existingRecord.images = selectedImages.isEmpty ? nil : selectedImages
             if selectedRecordType == .daily {
                 existingRecord.mood = selectedMood
             }
@@ -1491,7 +1487,8 @@ struct RecordView: View {
             week: selectedRecordType == .weekly ? currentWeek : nil,
             quarter: selectedRecordType == .quarterly ? currentQuarter : nil,
             mood: selectedRecordType == .daily ? selectedMood : nil,
-            weather: nil // 不再保存天气信息
+            weather: nil, // 不再保存天气信息
+            images: selectedImages.isEmpty ? nil : selectedImages
         )
         
         // 保存到数据库
@@ -1552,6 +1549,7 @@ struct RecordView: View {
             existingRecord.title = recordTitle
             existingRecord.content = userContent
             existingRecord.createTime = Date() // 更新创建时间为当前时间
+            existingRecord.images = selectedImages.isEmpty ? nil : selectedImages
             if recordType == .daily {
                 existingRecord.mood = selectedMood
             }
@@ -1575,7 +1573,8 @@ struct RecordView: View {
             week: recordType == .weekly ? currentWeek : nil,
             quarter: recordType == .quarterly ? currentQuarter : nil,
             mood: recordType == .daily ? selectedMood : nil,
-            weather: nil // 不再保存天气信息
+            weather: nil, // 不再保存天气信息
+            images: selectedImages.isEmpty ? nil : selectedImages
         )
         
         // 保存到数据库
@@ -1774,6 +1773,7 @@ struct RecordView: View {
             currentRecord = latestRecord
             recordContent = latestRecord.content
             selectedMood = latestRecord.mood
+            selectedImages = latestRecord.images ?? []
             
             // 根据记录类型，添加下一级记录内容
             var lowerLevelContent = ""
@@ -1799,6 +1799,7 @@ struct RecordView: View {
             currentRecord = nil
             recordContent = ""
             selectedMood = nil
+            selectedImages = []
             
             // 根据记录类型，添加下一级记录内容作为参考
             var lowerLevelContent = ""

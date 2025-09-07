@@ -42,9 +42,10 @@ final class Record {
     var quarter: Int?
     var mood: String?
     var weather: String?
+    var images: [Data]?
     var createTime: Date
     
-    init(title: String, content: String, recordType: RecordType, year: Int, month: Int? = nil, day: Int? = nil, week: Int? = nil, quarter: Int? = nil, mood: String? = nil, weather: String? = nil) {
+    init(title: String, content: String, recordType: RecordType, year: Int, month: Int? = nil, day: Int? = nil, week: Int? = nil, quarter: Int? = nil, mood: String? = nil, weather: String? = nil, images: [Data]? = nil) {
         self.id = UUID()
         self.title = title
         self.content = content
@@ -56,6 +57,7 @@ final class Record {
         self.quarter = quarter
         self.mood = mood
         self.weather = weather
+        self.images = images
         self.createTime = Date()
     }
 }
