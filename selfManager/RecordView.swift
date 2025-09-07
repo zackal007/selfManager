@@ -514,10 +514,9 @@ struct RecordView: View {
                                 ForEach(daysInMonth(for: currentDate), id: \.id) { day in
                                     Button(action: {
                                         if day.date != nil {
-                                            // 如果内容已修改，先保存当前记录
-                                            if contentModified {
-                                                autoSaveRecord(recordType: selectedRecordType)
-                                            }
+                                            // 强制保存当前记录（防止内容丢失）
+                                            autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                            
                                             currentDate = day.date!
                                             updateDateComponents()
                                             loadCurrentRecord()
@@ -564,10 +563,9 @@ struct RecordView: View {
                             HStack {
                                 Button(action: {
                                     withAnimation {
-                                        // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
+                                        // 强制保存当前记录（防止内容丢失）
+                                        autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                        
                                         if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
@@ -593,10 +591,9 @@ struct RecordView: View {
                                 
                                 Button(action: {
                                     withAnimation {
-                                        // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
+                                        // 强制保存当前记录（防止内容丢失）
+                                        autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                        
                                         if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) {
                                             currentDate = newDate
                                             updateDateComponents()
@@ -632,10 +629,9 @@ struct RecordView: View {
                                     Button(action: {
                                         if day.date != nil {
                                             withAnimation {
-                                                // 如果内容已修改，先保存当前记录
-                                                if contentModified {
-                                                    autoSaveRecord(recordType: selectedRecordType)
-                                                }
+                                                // 强制保存当前记录（防止内容丢失）
+                                                autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                                
                                                 currentDate = day.date!
                                                 updateDateComponents()
                                                 loadCurrentRecord()
@@ -1106,11 +1102,15 @@ struct RecordView: View {
                                 NotesStyleRecordEditor(
                                     text: $recordContent,
                                     images: $selectedImages,
-                                    minHeight: UIScreen.main.bounds.height * 0.4
-                                ) { images in
-                                    selectedImages = images
-                                    contentModified = true
-                                }
+                                    minHeight: UIScreen.main.bounds.height * 0.4,
+                                    onImagesChanged: { images in
+                                        selectedImages = images
+                                        contentModified = true
+                                    },
+                                    onTextChanged: {
+                                        contentModified = true
+                                    }
+                                )
                                 .padding(.horizontal)
                                 .onChange(of: recordContent) { _, _ in
                                     // 标记内容已修改
@@ -1529,7 +1529,7 @@ struct RecordView: View {
     }
     
     // 自动保存记录，不显示保存成功提示
-    private func autoSaveRecord(recordType: RecordType) {
+    private func autoSaveRecord(recordType: RecordType, forceCheck: Bool = false) {
         // 近期类型不执行任何保存操作
         guard recordType != .recent else {
             return
@@ -1538,9 +1538,12 @@ struct RecordView: View {
         // 提取用户输入的内容（排除归拢内容）
         let userContent = extractUserContent(from: recordContent, recordType: recordType)
         
-        // 检查内容是否为空
-        guard !userContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return
+        // 如果是强制检查模式，即使内容为空也要检查是否需要保存（防止内容丢失）
+        // 正常模式下，检查内容是否为空
+        if !forceCheck {
+            guard !userContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                return
+            }
         }
         
         // 检查是否已存在同一日期的记录，如果存在则更新，否则创建新记录

@@ -20,17 +20,20 @@ struct NotesStyleRecordEditor: View {
     
     let minHeight: CGFloat
     let onImagesChanged: (([Data]) -> Void)?
+    let onTextChanged: (() -> Void)?
     
     init(
         text: Binding<String>,
         images: Binding<[Data]> = .constant([]),
         minHeight: CGFloat = 200,
-        onImagesChanged: (([Data]) -> Void)? = nil
+        onImagesChanged: (([Data]) -> Void)? = nil,
+        onTextChanged: (() -> Void)? = nil
     ) {
         self._text = text
         self._images = images
         self.minHeight = minHeight
         self.onImagesChanged = onImagesChanged
+        self.onTextChanged = onTextChanged
     }
     
     var body: some View {
@@ -57,6 +60,9 @@ struct NotesStyleRecordEditor: View {
         )
         .onChange(of: selectedPhotos) { _, newPhotos in
             loadSelectedPhotos(newPhotos)
+        }
+        .onChange(of: text) { _, _ in
+            onTextChanged?()
         }
     }
     
