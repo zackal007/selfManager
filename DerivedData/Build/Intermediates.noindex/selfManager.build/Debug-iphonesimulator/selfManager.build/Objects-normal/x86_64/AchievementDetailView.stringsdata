@@ -7,15 +7,7 @@
         "key": "成就中心",
         "location": {
           "startingColumn": 30,
-          "startingLine": 66
-        }
-      },
-      {
-        "comment": "",
-        "key": "关闭",
-        "location": {
-          "startingColumn": 28,
-          "startingLine": 70
+          "startingLine": 97
         }
       },
       {
@@ -23,7 +15,7 @@
         "key": "全部",
         "location": {
           "startingColumn": 35,
-          "startingLine": 78
+          "startingLine": 106
         }
       },
       {
@@ -31,7 +23,7 @@
         "key": "已完成",
         "location": {
           "startingColumn": 35,
-          "startingLine": 81
+          "startingLine": 109
         }
       },
       {
@@ -39,63 +31,175 @@
         "key": "进行中",
         "location": {
           "startingColumn": 35,
-          "startingLine": 84
+          "startingLine": 112
         }
       },
       {
         "comment": "",
-        "key": "成就完成率",
+        "key": "添加成就",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "基本信息",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "分类",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 131
+        }
+      },
+      {
+        "comment": "",
+        "key": "成就名称",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 123
+        }
+      },
+      {
+        "comment": "",
+        "key": "成就描述",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "表情图标",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择分类",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 132
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
         "location": {
           "startingColumn": 22,
-          "startingLine": 99
-        }
-      },
-      {
-        "comment": "",
-        "key": "%",
-        "location": {
-          "startingColumn": 26,
-          "startingLine": 108
+          "startingLine": 205
         }
       },
       {
         "comment": "",
         "key": "已完成",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 132
+          "startingColumn": 22,
+          "startingLine": 209
         }
       },
       {
         "comment": "",
         "key": "%lld",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 136
+          "startingColumn": 22,
+          "startingLine": 220
+        }
+      },
+      {
+        "comment": "",
+        "key": "进行中",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 224
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 235
         }
       },
       {
         "comment": "",
         "key": "总成就",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 150
+          "startingColumn": 22,
+          "startingLine": 239
         }
       },
       {
         "comment": "",
-        "key": "%lld",
+        "key": "成就列表",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 314
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无成就",
         "location": {
           "startingColumn": 26,
-          "startingLine": 154
+          "startingLine": 337
         }
       },
       {
         "comment": "",
-        "key": "%lld%%",
+        "key": "编辑",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 354
+        }
+      },
+      {
+        "comment": "",
+        "key": "删除",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 364
+        }
+      },
+      {
+        "comment": "",
+        "key": "未完成",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 419
+        }
+      },
+      {
+        "comment": "",
+        "key": "已完成",
         "location": {
           "startingColumn": 30,
-          "startingLine": 256
+          "startingLine": 407
         }
       }
     ]

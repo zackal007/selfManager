@@ -1,18 +1,24 @@
-"/Users/yack/Desktop/selfManager/selfManager/AppEnums.swift":
-  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AppEnums.d"
-  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AppEnums.swiftconstvalues"
-  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AppEnums.swiftdeps"
-  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AppEnums.dia"
-  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AppEnums.o"
-"/Users/yack/Desktop/selfManager/selfManager/Item.swift":
-  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Item.o"
-  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Item.swiftconstvalues"
-  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Item.dia"
-  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Item.swiftdeps"
-  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Item.d"
-"/Users/yack/Desktop/selfManager/selfManager/MarkdownTextEditor.swift":
-  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/MarkdownTextEditor.swiftdeps"
-  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/MarkdownTextEditor.swiftconstvalues"
-  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/MarkdownTextEditor.d"
-  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/MarkdownTextEditor.o"
-  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/MarkdownTextEditor.dia"
+"/Users/yack/Desktop/selfManager/selfManager/Asset.swift":
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Asset.o"
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Asset.swiftdeps"
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Asset.dia"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Asset.swiftconstvalues"
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/Asset.d"
+"/Users/yack/Desktop/selfManager/selfManager/GoalActivityManager.swift":
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/GoalActivityManager.dia"
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/GoalActivityManager.o"
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/GoalActivityManager.d"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/GoalActivityManager.swiftconstvalues"
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/GoalActivityManager.swiftdeps"
+"/Users/yack/Desktop/selfManager/selfManager/ToastView.swift":
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ToastView.swiftdeps"
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ToastView.d"
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ToastView.dia"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ToastView.swiftconstvalues"
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ToastView.o"
+"/Users/yack/Desktop/selfManager/selfManager/ImprovementDetailView.swift":
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ImprovementDetailView.d"
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ImprovementDetailView.swiftdeps"
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ImprovementDetailView.o"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ImprovementDetailView.swiftconstvalues"
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/ImprovementDetailView.dia"

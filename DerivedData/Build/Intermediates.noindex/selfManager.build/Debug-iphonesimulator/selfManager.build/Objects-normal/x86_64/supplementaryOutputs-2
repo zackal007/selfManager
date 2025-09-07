@@ -1,18 +1,24 @@
-"/Users/yack/Desktop/selfManager/selfManager/SharedComponents.swift":
-  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/SharedComponents.swiftconstvalues"
-  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/SharedComponents.d"
-  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/SharedComponents.dia"
-  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/SharedComponents.o"
-  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/SharedComponents.swiftdeps"
-"/Users/yack/Desktop/selfManager/selfManager/AchievementDetailView.swift":
-  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AchievementDetailView.o"
-  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AchievementDetailView.d"
-  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AchievementDetailView.swiftconstvalues"
-  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AchievementDetailView.swiftdeps"
-  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AchievementDetailView.dia"
+"/Users/yack/Desktop/selfManager/selfManager/NotesStyleRecordEditor.swift":
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/NotesStyleRecordEditor.d"
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/NotesStyleRecordEditor.o"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/NotesStyleRecordEditor.swiftconstvalues"
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/NotesStyleRecordEditor.swiftdeps"
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/NotesStyleRecordEditor.dia"
+"/Users/yack/Desktop/selfManager/selfManager/TrashCleanupService.swift":
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/TrashCleanupService.dia"
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/TrashCleanupService.o"
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/TrashCleanupService.swiftdeps"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/TrashCleanupService.swiftconstvalues"
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/TrashCleanupService.d"
+"/Users/yack/Desktop/selfManager/selfManager/AssetDetailView.swift":
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AssetDetailView.swiftdeps"
+  const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AssetDetailView.swiftconstvalues"
+  dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AssetDetailView.d"
+  object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AssetDetailView.o"
+  diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AssetDetailView.dia"
 "/Users/yack/Desktop/selfManager/selfManager/AddContactView.swift":
-  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AddContactView.swiftdeps"
   dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AddContactView.d"
+  swift-dependencies: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AddContactView.swiftdeps"
   diagnostics: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AddContactView.dia"
   object: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AddContactView.o"
   const-values: "/Users/yack/Desktop/selfManager/DerivedData/Build/Intermediates.noindex/selfManager.build/Debug-iphonesimulator/selfManager.build/Objects-normal/x86_64/AddContactView.swiftconstvalues"

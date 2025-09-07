@@ -7,7 +7,7 @@
         "key": "删除联系人",
         "location": {
           "startingColumn": 16,
-          "startingLine": 81
+          "startingLine": 94
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "编辑联系人",
         "location": {
           "startingColumn": 24,
-          "startingLine": 63
+          "startingLine": 73
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "删除联系人",
         "location": {
           "startingColumn": 24,
-          "startingLine": 67
+          "startingLine": 77
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 20,
-          "startingLine": 82
+          "startingLine": 95
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "删除",
         "location": {
           "startingColumn": 20,
-          "startingLine": 83
+          "startingLine": 96
         }
       },
       {
@@ -47,23 +47,55 @@
         "key": "确定要删除联系人「%@」吗？此操作无法撤销。",
         "location": {
           "startingColumn": 18,
-          "startingLine": 87
+          "startingLine": 100
+        }
+      },
+      {
+        "comment": "",
+        "key": "关联目标",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无关联目标",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 138
         }
       },
       {
         "comment": "",
         "key": "%@ @ %@",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 120
+          "startingColumn": 34,
+          "startingLine": 242
         }
       },
       {
         "comment": "",
         "key": "联系方式",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 154
+          "startingColumn": 22,
+          "startingLine": 309
+        }
+      },
+      {
+        "comment": "",
+        "key": "暂无联系方式",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 378
         }
       },
       {
@@ -71,39 +103,47 @@
         "key": "分类信息",
         "location": {
           "startingColumn": 18,
-          "startingLine": 189
+          "startingLine": 396
         }
       },
       {
         "comment": "",
         "key": "联系频率",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 195
+          "startingColumn": 30,
+          "startingLine": 408
         }
       },
       {
         "comment": "",
         "key": "重要程度",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 206
+          "startingColumn": 30,
+          "startingLine": 428
         }
       },
       {
         "comment": "",
         "key": "标签",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 225
+          "startingColumn": 22,
+          "startingLine": 455
         }
       },
       {
         "comment": "",
         "key": "暂无标签",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 229
+          "startingColumn": 30,
+          "startingLine": 482
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加标签...",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 541
         }
       },
       {
@@ -111,55 +151,63 @@
         "key": "联系记录",
         "location": {
           "startingColumn": 22,
-          "startingLine": 256
+          "startingLine": 589
         }
       },
       {
         "comment": "",
         "key": "查看全部",
         "location": {
-          "startingColumn": 24,
-          "startingLine": 261
+          "startingColumn": 30,
+          "startingLine": 599
         }
       },
       {
         "comment": "",
         "key": "尚未联系",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 280
+          "startingColumn": 30,
+          "startingLine": 627
         }
       },
       {
         "comment": "",
-        "key": "最后联系:",
+        "key": "最后联系",
         "location": {
           "startingColumn": 30,
-          "startingLine": 271
+          "startingLine": 617
         }
       },
       {
         "comment": "",
-        "key": "下次联系:",
+        "key": "未设置",
         "location": {
           "startingColumn": 30,
-          "startingLine": 287
+          "startingLine": 661
+        }
+      },
+      {
+        "comment": "",
+        "key": "下次联系",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 643
         }
       },
       {
         "comment": "",
         "key": "备注",
         "location": {
-          "startingColumn": 18,
-          "startingLine": 314
+          "startingColumn": 22,
+          "startingLine": 683
         }
       },
       {
         "comment": "",
         "key": "暂无备注",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 322
+          "startingColumn": 30,
+          "startingLine": 718
         }
       },
       {
@@ -167,7 +215,7 @@
         "key": "标记为已联系",
         "location": {
           "startingColumn": 26,
-          "startingLine": 342
+          "startingLine": 746
         }
       },
       {
@@ -175,7 +223,7 @@
         "key": "拨打电话",
         "location": {
           "startingColumn": 34,
-          "startingLine": 360
+          "startingLine": 768
         }
       },
       {
@@ -183,7 +231,15 @@
         "key": "发送邮件",
         "location": {
           "startingColumn": 34,
-          "startingLine": 378
+          "startingLine": 789
+        }
+      },
+      {
+        "comment": "",
+        "key": "导航地址",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 810
         }
       },
       {
@@ -191,7 +247,7 @@
         "key": "编辑联系人",
         "location": {
           "startingColumn": 33,
-          "startingLine": 522
+          "startingLine": 959
         }
       },
       {
@@ -199,7 +255,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 33,
-          "startingLine": 524
+          "startingLine": 961
         }
       },
       {
@@ -207,7 +263,7 @@
         "key": "保存",
         "location": {
           "startingColumn": 34,
-          "startingLine": 527
+          "startingLine": 964
         }
       },
       {
@@ -215,7 +271,7 @@
         "key": "基本信息",
         "location": {
           "startingColumn": 38,
-          "startingLine": 477
+          "startingLine": 914
         }
       },
       {
@@ -223,7 +279,7 @@
         "key": "联系方式",
         "location": {
           "startingColumn": 38,
-          "startingLine": 483
+          "startingLine": 920
         }
       },
       {
@@ -231,7 +287,7 @@
         "key": "分类信息",
         "location": {
           "startingColumn": 38,
-          "startingLine": 492
+          "startingLine": 929
         }
       },
       {
@@ -239,7 +295,7 @@
         "key": "其他信息",
         "location": {
           "startingColumn": 38,
-          "startingLine": 516
+          "startingLine": 953
         }
       },
       {
@@ -247,7 +303,7 @@
         "key": "姓名",
         "location": {
           "startingColumn": 31,
-          "startingLine": 478
+          "startingLine": 915
         }
       },
       {
@@ -255,7 +311,7 @@
         "key": "公司",
         "location": {
           "startingColumn": 31,
-          "startingLine": 479
+          "startingLine": 916
         }
       },
       {
@@ -263,7 +319,7 @@
         "key": "职位",
         "location": {
           "startingColumn": 31,
-          "startingLine": 480
+          "startingLine": 917
         }
       },
       {
@@ -271,7 +327,7 @@
         "key": "电话",
         "location": {
           "startingColumn": 31,
-          "startingLine": 484
+          "startingLine": 921
         }
       },
       {
@@ -279,7 +335,7 @@
         "key": "邮箱",
         "location": {
           "startingColumn": 31,
-          "startingLine": 486
+          "startingLine": 923
         }
       },
       {
@@ -287,7 +343,7 @@
         "key": "地址",
         "location": {
           "startingColumn": 31,
-          "startingLine": 489
+          "startingLine": 926
         }
       },
       {
@@ -295,7 +351,7 @@
         "key": "联系人类型",
         "location": {
           "startingColumn": 28,
-          "startingLine": 493
+          "startingLine": 930
         }
       },
       {
@@ -303,7 +359,7 @@
         "key": "重要程度",
         "location": {
           "startingColumn": 28,
-          "startingLine": 503
+          "startingLine": 940
         }
       },
       {
@@ -311,7 +367,7 @@
         "key": "联系频率",
         "location": {
           "startingColumn": 28,
-          "startingLine": 509
+          "startingLine": 946
         }
       },
       {
@@ -319,7 +375,7 @@
         "key": "标签 (用逗号分隔)",
         "location": {
           "startingColumn": 31,
-          "startingLine": 517
+          "startingLine": 954
         }
       },
       {
@@ -327,7 +383,7 @@
         "key": "备注",
         "location": {
           "startingColumn": 31,
-          "startingLine": 518
+          "startingLine": 955
         }
       },
       {
@@ -335,7 +391,7 @@
         "key": "联系记录",
         "location": {
           "startingColumn": 33,
-          "startingLine": 579
+          "startingLine": 1016
         }
       },
       {
@@ -343,7 +399,7 @@
         "key": "完成",
         "location": {
           "startingColumn": 34,
-          "startingLine": 581
+          "startingLine": 1018
         }
       },
       {
@@ -351,7 +407,7 @@
         "key": "联系记录功能",
         "location": {
           "startingColumn": 22,
-          "startingLine": 567
+          "startingLine": 1004
         }
       },
       {
@@ -359,7 +415,7 @@
         "key": "此功能可以记录与%@的联系历史",
         "location": {
           "startingColumn": 22,
-          "startingLine": 571
+          "startingLine": 1008
         }
       }
     ]

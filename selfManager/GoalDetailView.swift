@@ -320,7 +320,7 @@ struct GoalDetailView: View {
                                 goal.modifyTime = Date()
                                 
                                 // 记录任务完成状态变更
-                                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
+                                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus, modelContext: modelContext)
                                 
                                 do {
                                     try modelContext.save()
@@ -461,7 +461,7 @@ struct GoalDetailView: View {
                                                 upperGoal.modifyTime = Date()
                                                 
                                                 // 记录上级目标删除
-                                                GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name)
+                                                GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name, modelContext: modelContext)
                                             }
                                         }
                                         
@@ -506,7 +506,7 @@ struct GoalDetailView: View {
                                 upperGoal.subProject.append(currentGoalId)
                                 upperGoal.modifyTime = Date()
                                 // 记录上级目标添加
-                                GoalActivityManager.shared.logUpperProjectAdd(goal: goal, upperProject: upperGoal.name)
+                                GoalActivityManager.shared.logUpperProjectAdd(goal: goal, upperProject: upperGoal.name, modelContext: modelContext)
                             }
                         }
                     }
@@ -518,7 +518,7 @@ struct GoalDetailView: View {
                                 upperGoal.subProject.remove(at: idx)
                                 upperGoal.modifyTime = Date()
                                 // 记录上级目标删除
-                                GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name)
+                                GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name, modelContext: modelContext)
                             }
                         }
                     }
@@ -571,7 +571,7 @@ struct GoalDetailView: View {
                                 subGoal.upperProject.append(currentGoalId)
                                 subGoal.modifyTime = Date()
                                 // 记录子目标添加
-                                GoalActivityManager.shared.logSubProjectAdd(goal: goal, subProject: subGoal.name)
+                                GoalActivityManager.shared.logSubProjectAdd(goal: goal, subProject: subGoal.name, modelContext: modelContext)
                             }
                         }
                     }
@@ -583,7 +583,7 @@ struct GoalDetailView: View {
                                 subGoal.upperProject.remove(at: idx)
                                 subGoal.modifyTime = Date()
                                 // 记录子目标删除
-                                GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name)
+                                GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name, modelContext: modelContext)
                             }
                         }
                     }
@@ -649,7 +649,7 @@ struct GoalDetailView: View {
                                                 subGoal.modifyTime = Date()
                                                 
                                                 // 记录子目标删除
-                                                GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name)
+                                                GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name, modelContext: modelContext)
                                             }
                                         }
                                         
@@ -2023,7 +2023,7 @@ struct AddTaskView: View {
         goal.modifyTime = Date()
         
         // 记录任务添加
-        GoalActivityManager.shared.logTaskAdd(goal: goal, task: newTask)
+        GoalActivityManager.shared.logTaskAdd(goal: goal, task: newTask, modelContext: modelContext)
         
         do {
             try modelContext.save()
@@ -2070,7 +2070,7 @@ struct DatePickerView: View {
         goal.modifyTime = Date()
         
         // 记录截止日期修改
-        GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate)
+        GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate, modelContext: modelContext)
         
         do {
             try modelContext.save()
@@ -2212,7 +2212,7 @@ struct GoalSelectorView: View {
                 
                 for upperGoal in removedUpperGoals ?? [] {
                     // 记录上级目标删除
-                    GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name)
+                    GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name, modelContext: modelContext)
                     upperGoal.subProject.removeAll(where: { $0 == currentGoalId })
                     upperGoal.modifyTime = Date()
                 }
@@ -2226,7 +2226,7 @@ struct GoalSelectorView: View {
                 
                 for upperGoal in addedUpperGoals ?? [] {
                     // 记录上级目标添加
-                    GoalActivityManager.shared.logUpperProjectAdd(goal: goal, upperProject: upperGoal.name)
+                    GoalActivityManager.shared.logUpperProjectAdd(goal: goal, upperProject: upperGoal.name, modelContext: modelContext)
                     if !upperGoal.subProject.contains(currentGoalId) {
                         upperGoal.subProject.append(currentGoalId)
                         upperGoal.modifyTime = Date()
@@ -2260,7 +2260,7 @@ struct GoalSelectorView: View {
                 
                 for subGoal in removedSubGoals ?? [] {
                     // 记录子目标删除
-                    GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name)
+                    GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name, modelContext: modelContext)
                     subGoal.upperProject.removeAll(where: { $0 == currentGoalId })
                     subGoal.modifyTime = Date()
                 }
@@ -2274,7 +2274,7 @@ struct GoalSelectorView: View {
                 
                 for subGoal in addedSubGoals ?? [] {
                     // 记录子目标添加
-                    GoalActivityManager.shared.logSubProjectAdd(goal: goal, subProject: subGoal.name)
+                    GoalActivityManager.shared.logSubProjectAdd(goal: goal, subProject: subGoal.name, modelContext: modelContext)
                     if !subGoal.upperProject.contains(currentGoalId) {
                         subGoal.upperProject.append(currentGoalId)
                         subGoal.modifyTime = Date()

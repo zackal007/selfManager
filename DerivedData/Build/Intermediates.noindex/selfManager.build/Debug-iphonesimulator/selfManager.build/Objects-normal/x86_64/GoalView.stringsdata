@@ -7,7 +7,7 @@
         "key": "卡片视图",
         "location": {
           "startingColumn": 23,
-          "startingLine": 59
+          "startingLine": 145
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "列表视图",
         "location": {
           "startingColumn": 23,
-          "startingLine": 68
+          "startingLine": 154
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "时间",
         "location": {
           "startingColumn": 22,
-          "startingLine": 82
+          "startingLine": 168
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "类型",
         "location": {
           "startingColumn": 22,
-          "startingLine": 91
+          "startingLine": 177
         }
       },
       {
@@ -39,39 +39,79 @@
         "key": "分类",
         "location": {
           "startingColumn": 19,
-          "startingLine": 97
+          "startingLine": 183
         }
       },
       {
         "comment": "",
         "key": "名称",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 107
+          "startingColumn": 26,
+          "startingLine": 195
         }
       },
       {
         "comment": "",
         "key": "创建时间",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 116
+          "startingColumn": 26,
+          "startingLine": 204
         }
       },
       {
         "comment": "",
         "key": "修改时间",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 125
+          "startingColumn": 26,
+          "startingLine": 213
         }
       },
       {
         "comment": "",
         "key": "访问时间",
         "location": {
+          "startingColumn": 26,
+          "startingLine": 222
+        }
+      },
+      {
+        "comment": "",
+        "key": "优先级",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 231
+        }
+      },
+      {
+        "comment": "",
+        "key": "排序字段",
+        "location": {
           "startingColumn": 22,
-          "startingLine": 134
+          "startingLine": 237
+        }
+      },
+      {
+        "comment": "",
+        "key": "升序",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 245
+        }
+      },
+      {
+        "comment": "",
+        "key": "降序",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 254
+        }
+      },
+      {
+        "comment": "",
+        "key": "排序方向",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 260
         }
       },
       {
@@ -79,15 +119,7 @@
         "key": "排序",
         "location": {
           "startingColumn": 19,
-          "startingLine": 140
-        }
-      },
-      {
-        "comment": "",
-        "key": "目标类型",
-        "location": {
-          "startingColumn": 28,
-          "startingLine": 311
+          "startingLine": 263
         }
       },
       {
@@ -95,39 +127,23 @@
         "key": "目标",
         "location": {
           "startingColumn": 30,
-          "startingLine": 243
+          "startingLine": 378
         }
       },
       {
         "comment": "",
-        "key": "人生",
+        "key": "刷新目标",
         "location": {
-          "startingColumn": 30,
-          "startingLine": 312
+          "startingColumn": 39,
+          "startingLine": 419
         }
       },
       {
         "comment": "",
-        "key": "年度",
+        "key": "回收站",
         "location": {
-          "startingColumn": 30,
-          "startingLine": 313
-        }
-      },
-      {
-        "comment": "",
-        "key": "短期",
-        "location": {
-          "startingColumn": 30,
-          "startingLine": 314
-        }
-      },
-      {
-        "comment": "",
-        "key": "习惯",
-        "location": {
-          "startingColumn": 30,
-          "startingLine": 315
+          "startingColumn": 39,
+          "startingLine": 426
         }
       },
       {
@@ -135,7 +151,7 @@
         "key": "%lld年",
         "location": {
           "startingColumn": 30,
-          "startingLine": 355
+          "startingLine": 515
         }
       },
       {
@@ -143,7 +159,7 @@
         "key": "已%@到%lld年",
         "location": {
           "startingColumn": 30,
-          "startingLine": 512
+          "startingLine": 625
         }
       },
       {
@@ -151,7 +167,7 @@
         "key": "搜索: \"%@\"",
         "location": {
           "startingColumn": 34,
-          "startingLine": 548
+          "startingLine": 661
         }
       },
       {
@@ -159,7 +175,7 @@
         "key": "清除",
         "location": {
           "startingColumn": 36,
-          "startingLine": 556
+          "startingLine": 669
         }
       },
       {
@@ -167,47 +183,31 @@
         "key": "搜索目标...",
         "location": {
           "startingColumn": 23,
-          "startingLine": 626
-        }
-      },
-      {
-        "comment": "",
-        "key": "%lld%%",
-        "location": {
-          "startingColumn": 26,
-          "startingLine": 745
+          "startingLine": 738
         }
       },
       {
         "comment": "",
         "key": "+%lld",
         "location": {
-          "startingColumn": 46,
-          "startingLine": 788
+          "startingColumn": 42,
+          "startingLine": 1014
         }
       },
       {
         "comment": "",
-        "key": "还有%lld个任务...",
+        "key": "子任务",
         "location": {
-          "startingColumn": 34,
-          "startingLine": 860
-        }
-      },
-      {
-        "comment": "",
-        "key": "子目标",
-        "location": {
-          "startingColumn": 34,
-          "startingLine": 809
+          "startingColumn": 38,
+          "startingLine": 1033
         }
       },
       {
         "comment": "",
         "key": "%lld/%lld",
         "location": {
-          "startingColumn": 34,
-          "startingLine": 816
+          "startingColumn": 38,
+          "startingLine": 1040
         }
       },
       {
@@ -215,7 +215,7 @@
         "key": "%lld%%",
         "location": {
           "startingColumn": 26,
-          "startingLine": 900
+          "startingLine": 1136
         }
       },
       {
@@ -223,7 +223,7 @@
         "key": "添加目标",
         "location": {
           "startingColumn": 37,
-          "startingLine": 1011
+          "startingLine": 1247
         }
       },
       {
@@ -231,7 +231,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 37,
-          "startingLine": 1013
+          "startingLine": 1249
         }
       },
       {
@@ -239,7 +239,7 @@
         "key": "保存",
         "location": {
           "startingColumn": 38,
-          "startingLine": 1016
+          "startingLine": 1252
         }
       },
       {
@@ -247,7 +247,7 @@
         "key": "目标信息",
         "location": {
           "startingColumn": 42,
-          "startingLine": 985
+          "startingLine": 1221
         }
       },
       {
@@ -255,7 +255,7 @@
         "key": "目标名称不能为空",
         "location": {
           "startingColumn": 38,
-          "startingLine": 989
+          "startingLine": 1225
         }
       },
       {
@@ -263,7 +263,7 @@
         "key": "目标名称",
         "location": {
           "startingColumn": 35,
-          "startingLine": 986
+          "startingLine": 1222
         }
       },
       {
@@ -271,7 +271,7 @@
         "key": "目标描述",
         "location": {
           "startingColumn": 35,
-          "startingLine": 993
+          "startingLine": 1229
         }
       },
       {
@@ -279,7 +279,7 @@
         "key": "类别",
         "location": {
           "startingColumn": 32,
-          "startingLine": 996
+          "startingLine": 1232
         }
       },
       {
@@ -287,7 +287,7 @@
         "key": "标签 (用逗号分隔)",
         "location": {
           "startingColumn": 35,
-          "startingLine": 1002
+          "startingLine": 1238
         }
       },
       {
@@ -295,7 +295,7 @@
         "key": "设置截止日期",
         "location": {
           "startingColumn": 32,
-          "startingLine": 1004
+          "startingLine": 1240
         }
       },
       {
@@ -303,7 +303,7 @@
         "key": "截止日期",
         "location": {
           "startingColumn": 40,
-          "startingLine": 1007
+          "startingLine": 1243
         }
       },
       {
@@ -311,7 +311,7 @@
         "key": "提示",
         "location": {
           "startingColumn": 37,
-          "startingLine": 1023
+          "startingLine": 1259
         }
       },
       {
@@ -319,7 +319,7 @@
         "key": "确定",
         "location": {
           "startingColumn": 54,
-          "startingLine": 1025
+          "startingLine": 1261
         }
       }
     ]

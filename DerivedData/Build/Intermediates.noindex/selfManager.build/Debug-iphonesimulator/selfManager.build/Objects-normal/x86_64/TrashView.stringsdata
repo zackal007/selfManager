@@ -44,7 +44,7 @@
       },
       {
         "comment": "",
-        "key": "删除的目标会在这里保留30天",
+        "key": "删除的目标会在这里保留%lld天",
         "location": {
           "startingColumn": 30,
           "startingLine": 40
@@ -143,7 +143,7 @@
         "key": "%lld天后永久删除",
         "location": {
           "startingColumn": 30,
-          "startingLine": 186
+          "startingLine": 195
         }
       },
       {
@@ -151,7 +151,7 @@
         "key": "即将永久删除",
         "location": {
           "startingColumn": 30,
-          "startingLine": 190
+          "startingLine": 199
         }
       },
       {
@@ -159,7 +159,7 @@
         "key": "恢复",
         "location": {
           "startingColumn": 30,
-          "startingLine": 202
+          "startingLine": 211
         }
       },
       {
@@ -167,7 +167,7 @@
         "key": "永久删除",
         "location": {
           "startingColumn": 30,
-          "startingLine": 215
+          "startingLine": 224
         }
       }
     ]

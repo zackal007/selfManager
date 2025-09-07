@@ -279,6 +279,7 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
+@import UIKit;
 #endif
 
 #endif
@@ -300,6 +301,10 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #endif
 
 #if defined(__OBJC__)
+
+@interface UINavigationController (SWIFT_EXTENSION(selfManager))
+- (void)viewDidLoad;
+@end
 
 #endif
 #if __has_attribute(external_source_symbol)

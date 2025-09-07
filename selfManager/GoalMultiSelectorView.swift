@@ -145,7 +145,7 @@ struct GoalMultiSelectorView: View {
                     goal.relatedContactIds = goalRelatedContactIds
                     
                     // 记录关联联系人添加
-                    GoalActivityManager.shared.logContactAdd(goal: goal, contactId: contact.id, contactName: contact.name)
+                    GoalActivityManager.shared.logContactAdd(goal: goal, contactId: contact.id, contactName: contact.name, modelContext: modelContext)
                 }
             }
         }
@@ -166,7 +166,7 @@ struct GoalMultiSelectorView: View {
                     goal.relatedContactIds = goalRelatedContactIds
                     
                     // 记录关联联系人删除
-                    GoalActivityManager.shared.logContactRemove(goal: goal, contactId: contact.id, contactName: contact.name)
+                    GoalActivityManager.shared.logContactRemove(goal: goal, contactId: contact.id, contactName: contact.name, modelContext: modelContext)
                 }
             }
         }

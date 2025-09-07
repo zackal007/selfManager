@@ -3,9 +3,80 @@
 <plist version="1.0">
 <dict>
 	<key>colors</key>
-	<array/>
+	<array>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAccentColor</string>
+			<key>relativePath</key>
+			<string>./AccentColor.colorset</string>
+			<key>swiftSymbol</key>
+			<string>accent</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppBlue</string>
+			<key>relativePath</key>
+			<string>./Colors/AppBlue.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appBlue</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppGray</string>
+			<key>relativePath</key>
+			<string>./Colors/AppGray.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appGray</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppOrange</string>
+			<key>relativePath</key>
+			<string>./Colors/AppOrange.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appOrange</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppRed</string>
+			<key>relativePath</key>
+			<string>./Colors/AppRed.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appRed</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameRed</string>
+			<key>relativePath</key>
+			<string>./Colors/Red.colorset</string>
+			<key>swiftSymbol</key>
+			<string>red</string>
+		</dict>
+	</array>
 	<key>images</key>
 	<array>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAppLogo</string>
+			<key>relativePath</key>
+			<string>./AppLogo.imageset</string>
+			<key>swiftSymbol</key>
+			<string>appLogo</string>
+		</dict>
 		<dict>
 			<key>catalogPath</key>
 			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
@@ -25,6 +96,56 @@
 			<string>./GoalBackground2.imageset</string>
 			<key>swiftSymbol</key>
 			<string>goalBackground2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameGoalBackground3</string>
+			<key>relativePath</key>
+			<string>./GoalBackground3.imageset</string>
+			<key>swiftSymbol</key>
+			<string>goalBackground3</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameGoalBackground4</string>
+			<key>relativePath</key>
+			<string>./GoalBackground4.imageset</string>
+			<key>swiftSymbol</key>
+			<string>goalBackground4</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameGoalBackground5</string>
+			<key>relativePath</key>
+			<string>./GoalBackground5.imageset</string>
+			<key>swiftSymbol</key>
+			<string>goalBackground5</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameGoalBackground6</string>
+			<key>relativePath</key>
+			<string>./GoalBackground6.imageset</string>
+			<key>swiftSymbol</key>
+			<string>goalBackground6</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameWelcomeBackground</string>
+			<key>relativePath</key>
+			<string>./WelcomeBackground.imageset</string>
+			<key>swiftSymbol</key>
+			<string>welcomeBackground</string>
 		</dict>
 	</array>
 	<key>symbols</key>

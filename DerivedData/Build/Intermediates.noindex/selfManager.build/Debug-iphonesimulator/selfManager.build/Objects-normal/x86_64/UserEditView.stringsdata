@@ -4,10 +4,10 @@
     "Localizable": [
       {
         "comment": "",
-        "key": "编辑用户信息",
+        "key": "我的信息",
         "location": {
           "startingColumn": 30,
-          "startingLine": 32
+          "startingLine": 105
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "取消",
         "location": {
           "startingColumn": 49,
-          "startingLine": 33
+          "startingLine": 107
         }
       },
       {
@@ -23,15 +23,15 @@
         "key": "保存",
         "location": {
           "startingColumn": 91,
-          "startingLine": 33
+          "startingLine": 107
         }
       },
       {
         "comment": "",
-        "key": "基本信息",
+        "key": "我的信息",
         "location": {
           "startingColumn": 38,
-          "startingLine": 11
+          "startingLine": 16
         }
       },
       {
@@ -39,47 +39,63 @@
         "key": "标签",
         "location": {
           "startingColumn": 38,
-          "startingLine": 17
+          "startingLine": 49
         }
       },
       {
         "comment": "",
-        "key": "用户名",
+        "key": "用户名:",
         "location": {
-          "startingColumn": 31,
-          "startingLine": 12
+          "startingColumn": 30,
+          "startingLine": 18
         }
       },
       {
         "comment": "",
-        "key": "头像 (Emoji 或图像名)",
+        "key": "请输入用户名",
         "location": {
-          "startingColumn": 31,
-          "startingLine": 13
+          "startingColumn": 35,
+          "startingLine": 21
         }
       },
       {
         "comment": "",
-        "key": "描述",
+        "key": "头像:",
         "location": {
-          "startingColumn": 31,
-          "startingLine": 14
+          "startingColumn": 30,
+          "startingLine": 26
         }
       },
       {
         "comment": "",
-        "key": "添加标签",
+        "key": "个人描述:",
         "location": {
-          "startingColumn": 28,
-          "startingLine": 27
+          "startingColumn": 30,
+          "startingLine": 41
         }
       },
       {
         "comment": "",
-        "key": "标签",
+        "key": "请输入个人描述",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "新标签",
         "location": {
           "startingColumn": 39,
-          "startingLine": 20
+          "startingLine": 89
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 91
         }
       }
     ]
