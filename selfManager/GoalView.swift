@@ -138,6 +138,10 @@ struct GoalView: View {
     // 刷新目标数据的状态变量
     @State private var refreshGoals = false
     
+    // 目标类型相关状态变量
+    @State private var goalTypes: [GoalType] = GoalType.allCases
+    @State private var currentGoalTypeIndex = 0
+    
     // MARK: - 菜单组件
     // 视图模式菜单内容
     private var viewModeMenuContent: some View {
@@ -368,6 +372,63 @@ struct GoalView: View {
         }
     }
     
+    // MARK: - 滑动手势处理
+    
+    // 获取所有可用的目标类型（包括"全部"选项）
+    private var allGoalTypes: [GoalType?] {
+        return [nil] + GoalType.allCases
+    }
+    
+    // 获取当前选中类型的索引
+    private var currentTypeIndex: Int {
+        return allGoalTypes.firstIndex(where: { $0 == selectedGoalType }) ?? 0
+    }
+    
+    // 切换到下一个目标类型
+    private func switchToNextType() {
+        let nextIndex = (currentTypeIndex + 1) % allGoalTypes.count
+        switchToType(at: nextIndex)
+    }
+    
+    // 切换到上一个目标类型
+    private func switchToPreviousType() {
+        let previousIndex = currentTypeIndex == 0 ? allGoalTypes.count - 1 : currentTypeIndex - 1
+        switchToType(at: previousIndex)
+    }
+    
+    // 切换到指定索引的目标类型
+    private func switchToType(at index: Int) {
+        guard index >= 0 && index < allGoalTypes.count else { return }
+        
+        withAnimation(.easeInOut(duration: 0.3)) {
+            selectedGoalType = allGoalTypes[index]
+            
+            // 更新selectedSegment以保持一致性
+            if let type = selectedGoalType {
+                switch type {
+                case .life:
+                    selectedSegment = 0
+                case .yearly:
+                    selectedSegment = 1
+                case .shortTerm:
+                    selectedSegment = 2
+                case .habit:
+                    selectedSegment = 3
+                }
+            } else {
+                selectedSegment = 0
+            }
+        }
+    }
+    
+    // 同步selectedGoalType变化到currentGoalTypeIndex
+    private func syncGoalTypeIndex() {
+        if let selectedType = selectedGoalType,
+           let index = goalTypes.firstIndex(of: selectedType) {
+            currentGoalTypeIndex = index
+        }
+    }
+    
 
     
     var body: some View { 
@@ -455,12 +516,14 @@ struct GoalView: View {
                                 FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
                                     selectedGoalType = nil
                                     selectedSegment = 0
+                                    syncGoalTypeIndex()
                                 }
                                 
                                 // 各种目标类型
                                 ForEach(GoalType.allCases, id: \.self) { type in
                                     FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
                                         selectedGoalType = type
+                                        syncGoalTypeIndex()
                                         // 根据选择的目标类型设置selectedSegment
                                         switch type {
                                         case .life:
@@ -572,45 +635,50 @@ struct GoalView: View {
                     .background(Color(.systemBackground).opacity(0.5))
                 }
                 
-                // 目标列表
+                // 目标列表 - 使用TabView实现丝滑滑动
                 GeometryReader { geometry in
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            // 移除了分类标题
-                            Spacer().frame(height: 8)
-                            .padding(.top, 8)
-                        
-                        // 根据视图模式显示不同的布局
-if viewMode == .gallery {
-    switch selectedGoalType {
-    case .life:
-        LifeGoalGalleryView(goals: processedLifeGoals, geometry: geometry)
-    case .yearly:
-        YearGoalGalleryView(goals: processedYearGoals, geometry: geometry)
-    case .shortTerm:
-        ShortTermGoalGalleryView(goals: processedPeriodGoals, geometry: geometry)
-    case .habit:
-        HabitGoalGalleryView(goals: processedHabitGoals, geometry: geometry)
-    case nil:
-        AllGoalGalleryView(goals: sortGoals(isSearching ? filteredGoals : allGoals), geometry: geometry)
-    }
-} else {
-    switch selectedGoalType {
-    case .life:
-        LifeGoalListView(goals: processedLifeGoals)
-    case .yearly:
-        YearGoalListView(goals: processedYearGoals)
-    case .shortTerm:
-        ShortTermGoalListView(goals: processedPeriodGoals)
-    case .habit:
-        HabitGoalListView(goals: processedHabitGoals)
-    case nil:
-        AllGoalListView(goals: sortGoals(isSearching ? filteredGoals : allGoals))
-    }
-}
-                    }
-                    .padding(.bottom, 16)
+                    TabView(selection: $currentGoalTypeIndex) {
+                        ForEach(goalTypes.indices, id: \.self) { index in
+                            ScrollView {
+                                VStack(spacing: 16) {
+                                    // 移除了分类标题
+                                    Spacer().frame(height: 8)
+                                    .padding(.top, 8)
+                                
+                                    // 根据视图模式显示不同的布局
+                                    if viewMode == .gallery {
+                                        switch goalTypes[index] {
+                                        case .life:
+                                            LifeGoalGalleryView(goals: processedLifeGoals, geometry: geometry)
+                                        case .yearly:
+                                            YearGoalGalleryView(goals: processedYearGoals, geometry: geometry)
+                                        case .shortTerm:
+                                            ShortTermGoalGalleryView(goals: processedPeriodGoals, geometry: geometry)
+                                        case .habit:
+                                            HabitGoalGalleryView(goals: processedHabitGoals, geometry: geometry)
+                                        }
+                                    } else {
+                                        switch goalTypes[index] {
+                                        case .life:
+                                            LifeGoalListView(goals: processedLifeGoals)
+                                        case .yearly:
+                                            YearGoalListView(goals: processedYearGoals)
+                                        case .shortTerm:
+                                            ShortTermGoalListView(goals: processedPeriodGoals)
+                                        case .habit:
+                                            HabitGoalListView(goals: processedHabitGoals)
+                                        }
+                                    }
+                                }
+                                .padding(.bottom, 16)
+                            }
+                            .tag(index)
                         }
+                    }
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                    .onChange(of: currentGoalTypeIndex) { newIndex in
+                        // 同步更新selectedGoalType
+                        selectedGoalType = goalTypes[newIndex]
                     }
                 }
             }
@@ -691,29 +759,9 @@ if viewMode == .gallery {
             }
         )
     }
-    
-    private func goalsForSelectedSegment(category: Int) -> [Goal] {
-        // 当selectedGoalType为nil时，返回所有目标
-        if selectedGoalType == nil {
-            // 返回所有类型的目标
-            let goals = isSearching ? filteredGoals : allGoals
-            return sortGoals(goals)
-        }
-        
-        // 否则按分段控制器选择返回特定类型的目标
-        switch selectedSegment {
-        case 0:
-            return processedLifeGoals
-        case 1:
-            return processedYearGoals
-        case 2:
-            return processedPeriodGoals
-        case 3:
-            return processedHabitGoals
-        default:
-            return []
-        }
     }
+    
+    // MARK: - Private Methods
     
     // 获取类别标题
     private func getCategoryTitle(for segment: Int, category: Int) -> String {
@@ -760,9 +808,31 @@ if viewMode == .gallery {
         .cornerRadius(10)
         .padding(.horizontal)
     }
+    
+    private func goalsForSelectedSegment(category: Int) -> [Goal] {
+        // 当selectedGoalType为nil时，返回所有目标
+        if selectedGoalType == nil {
+            // 返回所有类型的目标
+            let goals = isSearching ? filteredGoals : allGoals
+            return sortGoals(goals)
+        }
+        
+        // 否则按分段控制器选择返回特定类型的目标
+        switch selectedSegment {
+        case 0:
+            return processedLifeGoals
+        case 1:
+            return processedYearGoals
+        case 2:
+            return processedPeriodGoals
+        case 3:
+            return processedHabitGoals
+        default:
+            return []
+        }
+    }
 }
 
-// 画廊视图拆分组件
 struct LifeGoalGalleryView: View {
     let goals: [Goal]
     let geometry: GeometryProxy
