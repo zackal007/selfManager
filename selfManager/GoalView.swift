@@ -139,7 +139,7 @@ struct GoalView: View {
     @State private var refreshGoals = false
     
     // 目标类型相关状态变量
-    @State private var goalTypes: [GoalType] = GoalType.allCases
+    @State private var goalTypes: [GoalType?] = [nil] + GoalType.allCases.map { $0 as GoalType? }
     @State private var currentGoalTypeIndex = 0
     
     // MARK: - 菜单组件
@@ -423,8 +423,7 @@ struct GoalView: View {
     
     // 同步selectedGoalType变化到currentGoalTypeIndex
     private func syncGoalTypeIndex() {
-        if let selectedType = selectedGoalType,
-           let index = goalTypes.firstIndex(of: selectedType) {
+        if let index = goalTypes.firstIndex(of: selectedGoalType) {
             currentGoalTypeIndex = index
         }
     }
@@ -656,6 +655,8 @@ struct GoalView: View {
                                             ShortTermGoalGalleryView(goals: processedPeriodGoals, geometry: geometry)
                                         case .habit:
                                             HabitGoalGalleryView(goals: processedHabitGoals, geometry: geometry)
+                                        case nil:
+                                            AllGoalGalleryView(goals: sortGoals(isSearching ? filteredGoals : allGoals), geometry: geometry)
                                         }
                                     } else {
                                         switch goalTypes[index] {
@@ -667,6 +668,8 @@ struct GoalView: View {
                                             ShortTermGoalListView(goals: processedPeriodGoals)
                                         case .habit:
                                             HabitGoalListView(goals: processedHabitGoals)
+                                        case nil:
+                                            AllGoalListView(goals: sortGoals(isSearching ? filteredGoals : allGoals))
                                         }
                                     }
                                 }
