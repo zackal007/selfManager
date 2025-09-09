@@ -105,6 +105,9 @@ struct GoalView: View {
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
     
+    // 导航管理器
+    @StateObject private var navigationManager = NavigationManager.shared
+    
     // 初始化方法，接收selectedTab绑定
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
@@ -370,7 +373,7 @@ struct GoalView: View {
     var body: some View { 
         ZStack {
             // 主视图
-            NavigationStack {
+            NavigationStack(path: navigationManager.getNavigationPath(for: 1)) {
                 VStack(spacing: 0) {
                     
                     // 顶部标题栏

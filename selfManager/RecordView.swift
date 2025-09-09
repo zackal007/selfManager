@@ -26,6 +26,9 @@ struct RecordView: View {
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
     
+    // 导航管理器
+    @StateObject private var navigationManager = NavigationManager.shared
+    
     // 清理重复记录的标志
     @State private var hasCleanedDuplicates = false
     
@@ -352,7 +355,7 @@ struct RecordView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: navigationManager.getNavigationPath(for: 2)) {
             VStack(spacing: 0) {
                 // 顶部标题栏
                 HStack {

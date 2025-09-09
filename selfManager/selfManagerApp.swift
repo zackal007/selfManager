@@ -28,6 +28,7 @@ struct selfManagerApp: App {
     @State private var sharedModelContainer: ModelContainer?
     // 添加状态变量来跟踪当前选中的标签页
     @State private var selectedTab = 0
+    @StateObject private var navigationManager = NavigationManager.shared
     @State private var loadingError: Error? = nil
     // 添加状态变量来控制欢迎页面的显示
     @State private var isShowingWelcome = true
@@ -97,6 +98,12 @@ struct selfManagerApp: App {
                                     Text("首页")
                                 }
                                 .tag(0)
+                                .onTapGesture {
+                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
+                                    if !shouldPopToRoot {
+                                        selectedTab = 0
+                                    }
+                                }
                             
                             GoalView(selectedTab: $selectedTab)
                                 .tabItem {
@@ -104,6 +111,12 @@ struct selfManagerApp: App {
                                     Text("目标")
                                 }
                                 .tag(1)
+                                .onTapGesture {
+                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
+                                    if !shouldPopToRoot {
+                                        selectedTab = 1
+                                    }
+                                }
                             
                             RecordView(selectedTab: $selectedTab)
                                 .tabItem {
@@ -111,6 +124,12 @@ struct selfManagerApp: App {
                                     Text("记录")
                                 }
                                 .tag(2)
+                                .onTapGesture {
+                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
+                                    if !shouldPopToRoot {
+                                        selectedTab = 2
+                                    }
+                                }
                             
                             ContactView(selectedTab: $selectedTab)
                                 .tabItem {
@@ -118,6 +137,12 @@ struct selfManagerApp: App {
                                     Text("人脉")
                                 }
                                 .tag(3)
+                                .onTapGesture {
+                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
+                                    if !shouldPopToRoot {
+                                        selectedTab = 3
+                                    }
+                                }
                         }
                         .modelContainer(container)
                         .enableSwipeBackGesture()

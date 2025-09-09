@@ -13,6 +13,7 @@ import SwiftData
 struct ContactView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Contact.modifyTime, order: .reverse) private var allContacts: [Contact]
+    @StateObject private var navigationManager = NavigationManager.shared
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
@@ -126,7 +127,7 @@ struct ContactView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: navigationManager.getNavigationPath(for: 3)) {
             VStack(spacing: 0) {
                 // 顶部标题栏
                 headerView

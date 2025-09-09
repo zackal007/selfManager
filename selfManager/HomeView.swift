@@ -16,6 +16,7 @@ struct HomeView: View {
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
+    @StateObject private var navigationManager = NavigationManager.shared
     @State private var showingEdit = false
     @State private var showingAssetDetail = false
     @State private var showingImprovementDetail = false
@@ -104,7 +105,7 @@ struct HomeView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: navigationManager.getNavigationPath(for: 0)) {
             ZStack(alignment: .top) {
                 ScrollView {
                     VStack(spacing: 20) {
