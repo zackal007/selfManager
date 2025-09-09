@@ -35,6 +35,42 @@ struct RecordView: View {
     // 记录类型选择器
     @State private var selectedRecordType: RecordType = .recent
     
+    // 记录类型数组和当前索引（用于TabView滑动）
+    private let recordTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
+    @State private var currentRecordTypeIndex: Int = 0
+    
+    // 同步记录类型索引
+    private func syncRecordTypeIndex() {
+        if let index = recordTypes.firstIndex(of: selectedRecordType) {
+            currentRecordTypeIndex = index
+        }
+    }
+    
+    // 获取记录类型对应的标题
+    private func getRecordTitle(for recordType: RecordType) -> String {
+        let calendar = self.calendar
+        let year = calendar.component(.year, from: currentDate)
+        let month = calendar.component(.month, from: currentDate)
+        let day = calendar.component(.day, from: currentDate)
+        let week = calendar.component(.weekOfYear, from: currentDate)
+        let quarter = (month - 1) / 3 + 1
+        
+        switch recordType {
+        case .recent:
+            return "近期"
+        case .daily:
+            return "\(year)年\(month)月\(day)日"
+        case .weekly:
+            return "\(year)年第\(week)周"
+        case .monthly:
+            return "\(year)年\(month)月"
+        case .quarterly:
+            return "\(year)年第\(quarter)季度"
+        case .yearly:
+            return "\(year)年"
+        }
+    }
+    
     // 当前日期
     @State private var currentDate = Date()
     
@@ -225,7 +261,6 @@ struct RecordView: View {
     // 初始化方法，接收selectedTab绑定
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
-        initDateComponents()
     }
     
     // 日历日期结构体
@@ -413,6 +448,7 @@ struct RecordView: View {
                                         autoSaveRecord(recordType: selectedRecordType)
                                     }
                                     selectedRecordType = type
+                                    syncRecordTypeIndex()
                                 }
                             }
                         }
@@ -1013,159 +1049,179 @@ struct RecordView: View {
                     .padding(.bottom, 8)
                 }
                 
-                // 记录内容区域
-                ScrollView {
-                    // 下拉区域 - 用于显示/隐藏日期选择器
-                    // 仅在非"近期"页签时显示标题区域
-                    if selectedRecordType != .recent {
-                        HStack {
-                            Spacer()
-                            
-                            VStack(spacing: 4) {
-                                Text(recordTitle)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                
-                                Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.vertical, 8)
-                            .onTapGesture {
-                                withAnimation {
-                                    showDatePicker.toggle()
-                                }
-                            }
-                            
-                            Spacer()
-                        }
-                        .background(Color(UIColor.systemBackground))
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    }
-                    VStack(alignment: .leading, spacing: 16) {
-                        // 根据记录类型显示不同内容
-                        if selectedRecordType == .recent {
-                            // 近期页签显示记录列表
-                            LazyVStack(spacing: 12) {
-                                ForEach(displayedRecords, id: \.id) { record in
-                                    RecordCardView(record: record) {
-                                        // 点击记录卡片的处理逻辑
-                                        navigateToRecord(record)
-                                    }
-                                }
-                                
-                                // 加载更多按钮
-                                if displayedRecordsCount < filteredRecords.count {
-                                    Button(action: loadMoreRecords) {
-                                        HStack {
-                                            Text("加载更多")
-                                                .font(.body)
-                                                .foregroundColor(.blue)
-                                            Image(systemName: "chevron.down")
-                                                .font(.caption)
-                                                .foregroundColor(.blue)
+                // 记录内容区域 - 使用TabView实现左右滑动
+                TabView(selection: $currentRecordTypeIndex) {
+                    ForEach(recordTypes.indices, id: \.self) { index in
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                // 下拉区域 - 用于显示/隐藏日期选择器
+                                // 仅在非"近期"页签时显示标题区域
+                                if recordTypes[index] != .recent {
+                                    HStack {
+                                        Spacer()
+                                        
+                                        VStack(spacing: 4) {
+                                            Text(getRecordTitle(for: recordTypes[index]))
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            
+                                            Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.secondary)
                                         }
-                                        .padding(.vertical, 12)
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color(UIColor.secondarySystemBackground))
-                                        .cornerRadius(8)
+                                        .padding(.vertical, 8)
+                                        .onTapGesture {
+                                            withAnimation {
+                                                showDatePicker.toggle()
+                                            }
+                                        }
+                                        
+                                        Spacer()
                                     }
-                                    .buttonStyle(PlainButtonStyle())
+                                    .background(Color(UIColor.systemBackground))
+                                    .cornerRadius(8)
+                                    .padding(.horizontal)
+                                    .padding(.top, 8)
                                 }
                                 
-                                // 如果没有记录，显示空状态
-                                if filteredRecords.isEmpty {
-                                    VStack(spacing: 16) {
-                                        Image(systemName: "doc.text")
-                                            .font(.system(size: 48))
-                                            .foregroundColor(.secondary)
-                                        
-                                        Text("暂无记录")
-                                            .font(.headline)
-                                            .foregroundColor(.secondary)
-                                        
-                                        Text("开始写下你的第一篇记录吧")
-                                            .font(.body)
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 60)
-                                }
-                            }
-                            .padding(.horizontal)
-                            .frame(minHeight: UIScreen.main.bounds.height * 0.5)
-                        } else {
-                            // 其他页签显示正常记录内容
-                            VStack(alignment: .leading, spacing: 12) {
-                                // 移除记录标题
-                                
-                                NotesStyleRecordEditor(
-                                    text: $recordContent,
-                                    images: $selectedImages,
-                                    minHeight: UIScreen.main.bounds.height * 0.4,
-                                    onImagesChanged: { images in
-                                        selectedImages = images
-                                        contentModified = true
-                                    },
-                                    onTextChanged: {
-                                        contentModified = true
-                                    }
-                                )
-                                .padding(.horizontal)
-                                .onChange(of: recordContent) { _, _ in
-                                    // 标记内容已修改
-                                    contentModified = true
-                                }
-                                .onAppear {
-                                    // 加载当前选择日期的记录
-                                    loadCurrentRecord()
-                                    // 重置修改状态
-                                    contentModified = false
-                                }
-                            }
-                            
-                            // 心情选择（只在日记页签中显示）
-                            if selectedRecordType == .daily {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("心情")
-                                        .font(.headline)
-                                        .padding(.horizontal)
-                                    
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 16) {
-                                            ForEach(["😊", "😢", "😡", "😴", "🤔", "😎"], id: \.self) { mood in
-                                                Button(action: {
-                                                    selectedMood = mood
-                                                    // 标记内容已修改
-                                                    contentModified = true
-                                                }) {
-                                                    Text(mood)
-                                                        .font(.system(size: 30))
-                                                        .padding(8)
-                                                        .background(
-                                                            Circle()
-                                                                .fill(selectedMood == mood ? Color.blue.opacity(0.2) : Color.clear)
-                                                        )
-                                                        .overlay(
-                                                            Circle()
-                                                                .stroke(selectedMood == mood ? Color.blue : Color.clear, lineWidth: 2)
-                                                        )
+                                VStack(alignment: .leading, spacing: 16) {
+                                    // 根据记录类型显示不同内容
+                                    if recordTypes[index] == .recent {
+                                        // 近期页签显示记录列表
+                                        LazyVStack(spacing: 12) {
+                                            ForEach(displayedRecords, id: \.id) { record in
+                                                RecordCardView(record: record) {
+                                                    // 点击记录卡片的处理逻辑
+                                                    navigateToRecord(record)
                                                 }
-                                                .buttonStyle(ScaleButtonStyle())
+                                            }
+                                            
+                                            // 加载更多按钮
+                                            if displayedRecordsCount < filteredRecords.count {
+                                                Button(action: loadMoreRecords) {
+                                                    HStack {
+                                                        Text("加载更多")
+                                                            .font(.body)
+                                                            .foregroundColor(.blue)
+                                                        Image(systemName: "chevron.down")
+                                                            .font(.caption)
+                                                            .foregroundColor(.blue)
+                                                    }
+                                                    .padding(.vertical, 12)
+                                                    .frame(maxWidth: .infinity)
+                                                    .background(Color(UIColor.secondarySystemBackground))
+                                                    .cornerRadius(8)
+                                                }
+                                                .buttonStyle(PlainButtonStyle())
+                                            }
+                                            
+                                            // 如果没有记录，显示空状态
+                                            if filteredRecords.isEmpty {
+                                                VStack(spacing: 16) {
+                                                    Image(systemName: "doc.text")
+                                                        .font(.system(size: 48))
+                                                        .foregroundColor(.secondary)
+                                                    
+                                                    Text("暂无记录")
+                                                        .font(.headline)
+                                                        .foregroundColor(.secondary)
+                                                    
+                                                    Text("开始写下你的第一篇记录吧")
+                                                        .font(.body)
+                                                        .foregroundColor(.secondary)
+                                                        .multilineTextAlignment(.center)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 60)
                                             }
                                         }
                                         .padding(.horizontal)
+                                        .frame(minHeight: UIScreen.main.bounds.height * 0.5)
+                                    } else {
+                                        // 其他页签显示正常记录内容
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            // 移除记录标题
+                                            
+                                            NotesStyleRecordEditor(
+                                                text: $recordContent,
+                                                images: $selectedImages,
+                                                minHeight: UIScreen.main.bounds.height * 0.4,
+                                                onImagesChanged: { images in
+                                                    selectedImages = images
+                                                    contentModified = true
+                                                },
+                                                onTextChanged: {
+                                                    contentModified = true
+                                                }
+                                            )
+                                            .padding(.horizontal)
+                                            .onChange(of: recordContent) { _, _ in
+                                                // 标记内容已修改
+                                                contentModified = true
+                                            }
+                                            .onAppear {
+                                                // 加载当前选择日期的记录
+                                                loadCurrentRecord()
+                                                // 重置修改状态
+                                                contentModified = false
+                                            }
+                                        }
+                                        
+                                        // 心情选择（只在日记页签中显示）
+                                        if recordTypes[index] == .daily {
+                                            VStack(alignment: .leading, spacing: 12) {
+                                                Text("心情")
+                                                    .font(.headline)
+                                                    .padding(.horizontal)
+                                                
+                                                ScrollView(.horizontal, showsIndicators: false) {
+                                                    HStack(spacing: 16) {
+                                                        ForEach(["😊", "😢", "😡", "😴", "🤔", "😎"], id: \.self) { mood in
+                                                            Button(action: {
+                                                                selectedMood = mood
+                                                                // 标记内容已修改
+                                                                contentModified = true
+                                                            }) {
+                                                                Text(mood)
+                                                                    .font(.system(size: 30))
+                                                                    .padding(8)
+                                                                    .background(
+                                                                        Circle()
+                                                                            .fill(selectedMood == mood ? Color.blue.opacity(0.2) : Color.clear)
+                                                                    )
+                                                                    .overlay(
+                                                                        Circle()
+                                                                            .stroke(selectedMood == mood ? Color.blue : Color.clear, lineWidth: 2)
+                                                                    )
+                                                            }
+                                                            .buttonStyle(ScaleButtonStyle())
+                                                        }
+                                                    }
+                                                    .padding(.horizontal)
+                                                }
+                                            }
+                                        }
+                                        
+                                        // 自动保存已启用，不再需要保存按钮
                                     }
                                 }
+                                .padding(.bottom, 20)
                             }
-                            
-                            // 自动保存已启用，不再需要保存按钮
                         }
+                        .tag(index)
                     }
-                    .padding(.bottom, 20)
+                }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                .onChange(of: currentRecordTypeIndex) { newIndex in
+                    // 如果内容已修改，先保存当前记录
+                    if contentModified {
+                        autoSaveRecord(recordType: selectedRecordType)
+                    }
+                    // 同步更新selectedRecordType
+                    selectedRecordType = recordTypes[newIndex]
+                    // 重置修改状态
+                    contentModified = false
+                }
                     
                     // 保存成功提示
                     if showSaveSuccessToast {
@@ -1246,6 +1302,8 @@ struct RecordView: View {
                 }
             )
             .onAppear {
+                // 同步记录类型索引
+                syncRecordTypeIndex()
                 // 视图首次加载时加载当前记录
                 loadCurrentRecord()
                 // 重置修改状态
@@ -1271,7 +1329,6 @@ struct RecordView: View {
                 }
             }
         }
-    }
     
     // 格式化日期
     var formattedDate: String {
@@ -1869,6 +1926,7 @@ struct RecordView: View {
         // 加载对应的记录
         loadCurrentRecord()
     }
+
 }
 
 // 预览
