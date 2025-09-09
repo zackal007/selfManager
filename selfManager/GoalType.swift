@@ -9,8 +9,7 @@ import Foundation
 import SwiftUI
 
 /// 目标类型枚举
-@frozen
-enum GoalType: String, Codable, CaseIterable {
+public enum GoalType: String, Codable, CaseIterable {
     /// 人生目标
     case life = "人生目标"
     /// 年度目标
@@ -21,7 +20,7 @@ enum GoalType: String, Codable, CaseIterable {
     case habit = "习惯"
     
     /// 获取所有目标类型的数组
-    static var allCases: [GoalType] {
+    public static var allCases: [GoalType] {
         return [.life, .yearly, .shortTerm, .habit]
     }
     

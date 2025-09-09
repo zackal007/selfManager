@@ -120,161 +120,328 @@ struct TagsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // 搜索栏
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                
-                TextField("搜索标签", text: $searchText)
-                    .padding(10)
-                    .background(Color(UIColor.systemGray6))
-                    .cornerRadius(10)
-                
-                if !searchText.isEmpty {
-                    Button(action: {
-                        searchText = ""
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
+            // 搜索栏 - 优化设计
+            VStack(spacing: 16) {
+                HStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
+                            .font(.system(size: 16, weight: .medium))
+                        
+                        TextField("搜索标签", text: $searchText)
+                            .font(.system(size: 16))
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    searchText = ""
+                                }
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                                    .font(.system(size: 16))
+                            }
+                        }
                     }
-                    .padding(.leading, 6)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(UIColor.systemGray6))
+                    )
                 }
-            }
-            .padding()
-            
-            // 标签类型选择器
-            Picker("标签类型", selection: $selectedTagType) {
-                ForEach(TagType.allCases) { type in
-                    Text(type.rawValue).tag(type)
+                
+                // 标签类型选择器 - 改进样式
+                Picker("标签类型", selection: $selectedTagType) {
+                    ForEach(TagType.allCases) { type in
+                        Text(type.rawValue)
+                            .font(.system(size: 15, weight: .medium))
+                            .tag(type)
+                    }
                 }
+                .pickerStyle(SegmentedPickerStyle())
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(UIColor.systemBackground))
+                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                )
             }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [Color(UIColor.systemBackground), Color(UIColor.systemGray6).opacity(0.3)]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             
-            // 标签列表
+            // 标签列表 - 优化设计
             List {
                 ForEach(allTags, id: \.self) { tag in
                     NavigationLink(destination: TagDetailView(tag: tag, tagType: selectedTagType)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(tag)
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(tagColor(for: tag))
-                                
-                                if let categoryName = getCategoryName(for: tag) {
-                                    Text(categoryName)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.secondary)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color(UIColor.systemGray6))
-                                        .cornerRadius(8)
+                        HStack(spacing: 16) {
+                            // 标签颜色指示器 - 更细更优雅
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(tagColor(for: tag))
+                                .frame(width: 3, height: 36)
+                                .opacity(0.8)
+                                .scaleEffect(1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: tagColor(for: tag))
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(alignment: .center, spacing: 12) {
+                                    // 标签名称
+                                    Text(tag)
+                                        .font(.system(size: 17, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                        .lineLimit(1)
+                                        .transition(.opacity.combined(with: .scale))
+                                    
+                                    // 分类标签
+                                    if let categoryName = getCategoryName(for: tag) {
+                                        Text(categoryName)
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(tagColor(for: tag))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(
+                                                Capsule()
+                                                    .fill(tagColor(for: tag).opacity(0.1))
+                                                    .overlay(
+                                                        Capsule()
+                                                            .stroke(tagColor(for: tag).opacity(0.3), lineWidth: 0.5)
+                                                    )
+                                            )
+                                            .transition(.scale.combined(with: .opacity))
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    // 计数徽章 - 使用标签颜色
+                                    Text("\(getTagItemCount(tag: tag))")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(
+                                            Capsule()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [tagColor(for: tag), tagColor(for: tag).opacity(0.7)]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                        )
+                                        .shadow(color: tagColor(for: tag).opacity(0.3), radius: 2, x: 0, y: 1)
+                                        .scaleEffect(1.0)
+                                        .animation(.bouncy(duration: 0.4), value: getTagItemCount(tag: tag))
                                 }
                                 
-                                Spacer()
-                                
-                                Text("\(getTagItemCount(tag: tag))")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 2)
-                                    .background(Color(UIColor.systemBlue))
-                                    .cornerRadius(10)
-                            }
-                            
-                            if let tagObj = getTagObject(for: tag), !tagObj.tagDescription.isEmpty {
-                                Text(tagObj.tagDescription)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
+                                // 标签描述
+                                if let tagObj = getTagObject(for: tag), !tagObj.tagDescription.isEmpty {
+                                    Text(tagObj.tagDescription)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+                                        .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
                             }
                         }
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(UIColor.systemBackground))
+                                .shadow(color: Color.black.opacity(0.02), radius: 1, x: 0, y: 0.5)
+                        )
+                        .scaleEffect(1.0)
+                        .animation(.easeInOut(duration: 0.2), value: allTags)
                     }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .scale.combined(with: .opacity)
+                    ))
                 }
             }
-            .listStyle(InsetGroupedListStyle())
+            .listStyle(PlainListStyle())
+            .background(Color(UIColor.systemGroupedBackground))
+            .scrollContentBackground(.hidden)
         }
 
 
         .navigationTitle("标签管理")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: TagCategoryListView()) {
-                    Text("管理分类")
+                HStack(spacing: 12) {
+                    // 添加标签按钮
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            showingAddTag = true
+                        }
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .scaleEffect(showingAddTag ? 0.9 : 1.0)
+                            .animation(.easeInOut(duration: 0.1), value: showingAddTag)
+                    }
+                    
+                    // 管理分类按钮
+                    NavigationLink(destination: TagCategoryListView()) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "folder.fill")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("分类")
+                                .font(.system(size: 15, weight: .medium))
+                        }
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(Color(UIColor.systemBlue).opacity(0.1))
+                        )
+                    }
                 }
             }
         }
         .sheet(isPresented: $showingAddTag) {
             addTagView
         }
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
     }
     
-    // 添加标签视图
+    // 添加标签视图 - 优化设计
     private var addTagView: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // 标题
-                Text("添加新标签")
-                    .font(.headline)
-                    .padding(.top, 20)
-                
-                // 输入框
-                TextField("标签名称", text: $newTag)
-                    .padding()
-                    .background(Color(UIColor.systemGray6))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                
-                // 选择器
-                VStack(alignment: .leading) {
-                    Text("添加到:")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.leading)
+            VStack(spacing: 0) {
+                // 头部区域
+                VStack(spacing: 24) {
+                    // 图标和标题
+                    VStack(spacing: 12) {
+                        Image(systemName: "tag.circle.fill")
+                            .font(.system(size: 48, weight: .light))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        
+                        Text("添加新标签")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.top, 32)
                     
-                    Picker("添加到", selection: $selectedTagType) {
-                        ForEach(TagType.allCases.filter { $0 != .all }, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+                    // 输入框区域
+                    VStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("标签名称")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            TextField("请输入标签名称", text: $newTag)
+                                .font(.system(size: 16))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemGray6))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(newTag.isEmpty ? Color.clear : Color(UIColor.systemBlue), lineWidth: 2)
+                                        )
+                                )
+                        }
+                        
+                        // 类型选择器
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("添加到")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            Picker("添加到", selection: $selectedTagType) {
+                                ForEach(TagType.allCases.filter { $0 != .all }, id: \.self) { type in
+                                    Text(type.rawValue)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .tag(type)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(UIColor.systemBackground))
+                                    .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            )
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
                 }
+                .padding(.horizontal, 24)
                 
                 Spacer()
                 
-                // 按钮
-                HStack {
+                // 底部按钮区域
+                VStack(spacing: 12) {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                            addTag()
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("添加标签")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(UIColor.systemBlue),
+                                            Color(UIColor.systemBlue).opacity(0.8)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 8, x: 0, y: 4)
+                        )
+                        .scaleEffect(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.95 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .opacity(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
+                    
                     Button(action: {
                         showingAddTag = false
                         newTag = ""
                     }) {
                         Text("取消")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(UIColor.systemGray5))
-                            .foregroundColor(.primary)
-                            .cornerRadius(10)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color(UIColor.systemGray6))
+                            )
                     }
-                    
-                    Button(action: {
-                        addTag()
-                    }) {
-                        Text("添加")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(UIColor.systemBlue))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 30)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 34)
             }
+            .background(Color(UIColor.systemBackground))
+            .navigationBarHidden(true)
         }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
     
     // 添加标签方法
