@@ -9,6 +9,7 @@ import SwiftUI
 import UIKit
 import Foundation
 import SwiftData
+import EventKit
 
 
 struct GoalDetailView: View {
@@ -1877,6 +1878,11 @@ struct EditFormView: View {
     // 添加回调函数
     var onSave: ((GoalDetailView.EditableField?, String, Double) -> Void)? = nil
     
+    // 提醒事项相关状态
+    @State private var eventStore = EKEventStore()
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+    
     var body: some View {
         NavigationView {
             Form {
@@ -1913,8 +1919,28 @@ struct EditFormView: View {
                         .font(.system(size: 16))
                 
                 case .task:
-                    TextField("任务", text: $editingValue)
-                        .font(.system(size: 16))
+                    VStack(alignment: .leading, spacing: 16) {
+                        TextField("任务", text: $editingValue)
+                            .font(.system(size: 16))
+                        
+                        // 导入到提醒事项按钮
+                        Button(action: {
+                            importToReminders()
+                        }) {
+                            HStack {
+                                Image(systemName: "bell.fill")
+                                    .foregroundColor(.white)
+                                Text("导入到提醒事项")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.orange)
+                            .cornerRadius(10)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 
                 case .dueDate:
                     Text("请使用日期选择器设置截止日期")
@@ -1942,6 +1968,9 @@ struct EditFormView: View {
                 }
             )
         }
+        .alert(isPresented: $showingAlert) {
+            Alert(title: Text("提醒事项"), message: Text(alertMessage), dismissButton: .default(Text("确定")))
+        }
     }
     
     private func getNavigationTitle() -> String {
@@ -1966,6 +1995,40 @@ struct EditFormView: View {
             return "编辑"
         @unknown default:
             return "编辑"
+        }
+    }
+    
+    // 导入到提醒事项的方法
+    private func importToReminders() {
+        // 请求访问提醒事项权限
+        eventStore.requestAccess(to: .reminder) { granted, error in
+            DispatchQueue.main.async {
+                if granted {
+                    self.createReminder()
+                } else {
+                    self.alertMessage = "需要访问提醒事项权限才能导入任务"
+                    self.showingAlert = true
+                }
+            }
+        }
+    }
+    
+    // 创建提醒事项
+    private func createReminder() {
+        let reminder = EKReminder(eventStore: eventStore)
+        reminder.title = editingValue.isEmpty ? "新任务" : editingValue
+        reminder.notes = "从目标管理应用导入"
+        
+        // 获取默认的提醒事项日历
+        reminder.calendar = eventStore.defaultCalendarForNewReminders()
+        
+        do {
+            try eventStore.save(reminder, commit: true)
+            alertMessage = "任务已成功导入到提醒事项"
+            showingAlert = true
+        } catch {
+            alertMessage = "导入失败：\(error.localizedDescription)"
+            showingAlert = true
         }
     }
 }
