@@ -13,6 +13,9 @@ struct ContactDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.presentationMode) var presentationMode
     
+    // 观察TagColorManager的变化以实现即时更新
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
     @Bindable var contact: Contact
     
     // 查询所有未删除的目标
@@ -493,7 +496,7 @@ struct ContactDetailView: View {
                         ForEach(contact.tags, id: \.self) { tag in
                             HStack(spacing: 4) {
                                 Text(tag)
-                                    .foregroundColor(tagColor(for: tag))
+                                    .foregroundColor(.white)
                                 
                                 // 删除标签按钮
                                 Button(action: {
@@ -512,14 +515,14 @@ struct ContactDetailView: View {
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray3))
+                                        .foregroundColor(.white.opacity(0.7))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                             .font(.system(size: 14, weight: .medium))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(tagColor(for: tag).opacity(0.1))
+                            .background(tagColor(for: tag))
                             .cornerRadius(12)
                         }
                         

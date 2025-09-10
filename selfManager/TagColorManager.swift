@@ -7,17 +7,21 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 // 标签颜色管理器
-class TagColorManager {
+class TagColorManager: ObservableObject {
     // 单例模式
     static let shared = TagColorManager()
     
     // 用户默认值键
     private let tagColorsKey = "tagColors"
     
-    // 标签颜色字典
-    private var tagColors: [String: String] = [:]
+    // 标签颜色字典 - 使用@Published实现即时更新
+    @Published private var tagColors: [String: String] = [:]
+    
+    // 颜色更新通知 - 用于触发界面刷新
+    @Published var colorUpdateTrigger: UUID = UUID()
     
     // 可用的颜色选项
     let availableColors: [Color] = [
@@ -57,6 +61,10 @@ class TagColorManager {
     func setColor(_ color: Color, for tag: String) {
         tagColors[tag] = color.toHex()
         saveTagColors()
+        // 触发颜色更新通知
+        DispatchQueue.main.async {
+            self.colorUpdateTrigger = UUID()
+        }
     }
     
     // 更新标签名称
@@ -65,6 +73,10 @@ class TagColorManager {
             tagColors[newTag] = colorString
             tagColors.removeValue(forKey: oldTag)
             saveTagColors()
+            // 触发颜色更新通知
+            DispatchQueue.main.async {
+                self.colorUpdateTrigger = UUID()
+            }
         }
     }
     
@@ -72,6 +84,10 @@ class TagColorManager {
     func removeColor(for tag: String) {
         tagColors.removeValue(forKey: tag)
         saveTagColors()
+        // 触发颜色更新通知
+        DispatchQueue.main.async {
+            self.colorUpdateTrigger = UUID()
+        }
     }
     
     // 强制刷新标签颜色
@@ -87,6 +103,10 @@ class TagColorManager {
         }
         // 强制保存以确保更新
         saveTagColors()
+        // 触发颜色更新通知
+        DispatchQueue.main.async {
+            self.colorUpdateTrigger = UUID()
+        }
     }
     
     // 默认颜色生成

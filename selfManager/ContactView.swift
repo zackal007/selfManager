@@ -449,8 +449,8 @@ struct ContactCard: View {
                                 .font(.caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
+                                .background(TagColorManager.shared.getColor(for: tag))
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
                         }
                     }

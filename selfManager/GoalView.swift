@@ -98,11 +98,14 @@ struct GoalView: View {
     @Query(filter: #Predicate<Goal> { $0.isDeleted == false }, 
            sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
     
-    // 分段控制器选择
+    // 观察标签颜色管理器以实现即时更新
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
+    // 分段控制器状态
     @State private var selectedSegment = 0
     @State private var selectedGoalType: GoalType? = nil
     
-    // 绑定到TabView的选中标签
+    // 选中的标签页
     @Binding var selectedTab: Int
     
     // 导航管理器
@@ -426,6 +429,11 @@ struct GoalView: View {
         if let index = goalTypes.firstIndex(of: selectedGoalType) {
             currentGoalTypeIndex = index
         }
+    }
+    
+    // 获取标签颜色
+    private func tagColor(for tag: String) -> Color {
+        return tagColorManager.getColor(for: tag)
     }
     
 
@@ -1082,8 +1090,8 @@ struct GoalCard: View {
                                         .font(.system(size: 11, weight: .medium))
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 4)
-                                        .background(Color.blue.opacity(0.08))
-                                        .foregroundColor(Color.blue)
+                                        .background(TagColorManager.shared.getColor(for: tag))
+                                        .foregroundColor(.white)
                                         .cornerRadius(12)
                                 }
                                 if goal.tags.count > 3 {
@@ -1181,6 +1189,12 @@ struct GoalCard: View {
 // 列表视图中的目标项
 struct GoalListItem: View {
     let goal: Goal
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
+    // 获取标签颜色的函数
+    private func tagColor(for tag: String) -> Color {
+        return tagColorManager.getColor(for: tag)
+    }
     
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
@@ -1238,8 +1252,8 @@ struct GoalListItem: View {
                                         .fontWeight(.medium)
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 2)
-                                        .background(Color.blue.opacity(0.1))
-                                        .foregroundColor(Color.blue)
+                                        .background(tagColor(for: tag))
+                                        .foregroundColor(.white)
                                         .cornerRadius(4)
                                 }
                             }
@@ -1531,6 +1545,12 @@ struct SimplifiedGoalCard: View {
 // 简化版列表视图中的目标项 - 只显示目标名称和类型
 struct SimplifiedGoalListItem: View {
     let goal: Goal
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
+    // 获取标签颜色的函数
+    private func tagColor(for tag: String) -> Color {
+        return tagColorManager.getColor(for: tag)
+    }
     
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {

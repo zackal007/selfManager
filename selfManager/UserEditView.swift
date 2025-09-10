@@ -52,7 +52,7 @@ struct UserEditView: View {
                             ForEach(user.tags, id: \.self) { tag in
                                 HStack(spacing: 4) {
                                     Text(tag)
-                                        .foregroundColor(TagColorManager.shared.getColor(for: tag))
+                                        .foregroundColor(.white)
                                     Button(action: {
                                         if let index = user.tags.firstIndex(of: tag) {
                                             user.tags.remove(at: index)
@@ -60,14 +60,14 @@ struct UserEditView: View {
                                     }) {
                                         Image(systemName: "xmark.circle.fill")
                                             .font(.system(size: 12))
-                                            .foregroundColor(Color(UIColor.systemGray3))
+                                            .foregroundColor(.white.opacity(0.7))
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
                                 .font(.system(size: 14, weight: .medium))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
-                                .background(TagColorManager.shared.getColor(for: tag).opacity(0.1))
+                                .background(TagColorManager.shared.getColor(for: tag))
                                 .cornerRadius(12)
                             }
                             Button(action: {

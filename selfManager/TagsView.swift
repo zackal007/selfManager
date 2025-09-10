@@ -16,6 +16,9 @@ struct TagsView: View {
     @Query private var tagCategories: [TagCategory]
     @Environment(\.dismiss) private var dismiss
     
+    // 观察TagColorManager的变化以实现即时更新
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
     @State private var searchText = ""
     @State private var showingAddTag = false
     @State private var newTag = ""
@@ -506,6 +509,9 @@ struct TagDetailView: View {
     @Query private var tagObjects: [Tag]
     @Environment(\.dismiss) private var dismiss
     
+    // 观察TagColorManager的变化以实现即时更新
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
     let tag: String
     let tagType: TagsView.TagType
     
@@ -562,103 +568,288 @@ struct TagDetailView: View {
     
     // 创建单个目标项视图
     private func goalItemView(for goal: Goal) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(goal.name)
-                .font(.system(size: 16))
+        HStack(spacing: 12) {
+            // 左侧彩色指示条
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.blue)
+                .frame(width: 3, height: 40)
+                .opacity(0.8)
             
-            if !goal.goalDescription.isEmpty {
-                Text(goal.goalDescription)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(goal.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                
+                if !goal.goalDescription.isEmpty {
+                    Text(goal.goalDescription)
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
             }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.all, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                )
+        )
     }
     
     // 目标列表部分
     private var goalListSection: some View {
         Group {
             if tagType == .all || tagType == .goal, !taggedGoals.isEmpty {
-                Section(header: Text("目标").font(.headline)) {
-                    ForEach(taggedGoals) { goal in
-                        NavigationLink(destination: GoalDetailView(goal: goal)) {
-                            goalItemView(for: goal)
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("目标")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text("\(taggedGoals.count)")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color(UIColor.systemGray5))
+                            )
+                    }
+                    
+                    LazyVStack(spacing: 12) {
+                        ForEach(taggedGoals) { goal in
+                            NavigationLink(destination: GoalDetailView(goal: goal)) {
+                                goalItemView(for: goal)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
+                .padding(.all, 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(UIColor.systemBackground))
+                        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                        )
+                )
             }
         }
     }
     
     // 创建单个联系人项视图
     private func contactItemView(for contact: Contact) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(contact.name)
-                .font(.system(size: 16))
+        HStack(spacing: 12) {
+            // 左侧彩色指示条
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.green)
+                .frame(width: 3, height: 40)
+                .opacity(0.8)
             
-            if let company = contact.company, !company.isEmpty {
-                Text(company)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(contact.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                
+                if let company = contact.company, !company.isEmpty {
+                    Text(company)
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
             }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.all, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                )
+        )
     }
     
     // 联系人列表部分
     private var contactListSection: some View {
         Group {
             if tagType == .all || tagType == .contact, !taggedContacts.isEmpty {
-                Section(header: Text("人脉").font(.headline)) {
-                    ForEach(taggedContacts) { contact in
-                        NavigationLink(destination: ContactDetailView(contact: contact)) {
-                            contactItemView(for: contact)
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("人脉")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text("\(taggedContacts.count)")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color(UIColor.systemGray5))
+                            )
+                    }
+                    
+                    LazyVStack(spacing: 12) {
+                        ForEach(taggedContacts) { contact in
+                            NavigationLink(destination: ContactDetailView(contact: contact)) {
+                                contactItemView(for: contact)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                 }
+                .padding(.all, 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(UIColor.systemBackground))
+                        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                        )
+                )
             }
         }
     }
     
     // 创建用户信息项视图
     private func userItemView(for user: User) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(user.name)
-                .font(.system(size: 16))
+        HStack(spacing: 12) {
+            // 左侧彩色指示条
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.purple)
+                .frame(width: 3, height: 40)
+                .opacity(0.8)
             
-            if !user.userDescription.isEmpty {
-                Text(user.userDescription)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(user.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                
+                if !user.userDescription.isEmpty {
+                    Text(user.userDescription)
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
             }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.all, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                )
+        )
     }
     
     // 用户信息部分
     private var userInfoSection: some View {
         Group {
             if (tagType == .all || tagType == .user) && userHasTag, let user = users.first {
-                Section(header: Text("个人").font(.headline)) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("个人")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text("1")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color(UIColor.systemGray5))
+                            )
+                    }
+                    
                     NavigationLink(destination: UserEditView(user: user)) {
                         userItemView(for: user)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
+                .padding(.all, 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(UIColor.systemBackground))
+                        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                        )
+                )
             }
         }
     }
     
     var body: some View {
-        List {
-            tagInfoSection
-            goalListSection
-            contactListSection
-            userInfoSection
+        ScrollView {
+            VStack(spacing: 24) {
+                // 标签信息头部
+                tagInfoSection
+                    .padding(.horizontal, 20)
+                
+                // 内容区域
+                VStack(spacing: 20) {
+                    goalListSection
+                    contactListSection
+                    userInfoSection
+                }
+                .padding(.horizontal, 20)
+                
+                // 底部间距
+                Spacer(minLength: 40)
+            }
+            .padding(.top, 20)
         }
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(UIColor.systemGroupedBackground),
+                    Color(UIColor.systemGray6).opacity(0.3)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
         .navigationTitle("标签: \(tag)")
+        .navigationBarTitleDisplayMode(.large)
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
                 title: Text("删除标签"),
@@ -738,64 +929,119 @@ struct TagInfoHeader: View {
     var tagDescription: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
+        VStack(alignment: .leading, spacing: 16) {
+            // 标签名称和分类区域
+            HStack(spacing: 12) {
+                // 左侧彩色指示条
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(tagColor)
+                    .frame(width: 3, height: 48)
+                    .opacity(0.8)
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .center, spacing: 8) {
                         Text(tag)
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(tagColor)
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(.primary)
                         
                         if let category = tagCategory {
                             Text(category.name)
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(tagColor)
                                 .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color(UIColor.systemGray6))
-                                .cornerRadius(8)
+                                .padding(.vertical, 3)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(tagColor.opacity(0.1))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(tagColor.opacity(0.3), lineWidth: 1)
+                                        )
+                                )
                         }
                     }
                     
                     if let description = tagDescription, !description.isEmpty {
                         Text(description)
-                            .font(.system(size: 14))
+                            .font(.system(size: 15))
                             .foregroundColor(.secondary)
-                            .lineLimit(2)
+                            .lineLimit(3)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 
                 Spacer()
+            }
+            
+            // 操作按钮区域
+            HStack(spacing: 12) {
+                Spacer()
                 
                 // 编辑按钮
                 Button(action: onEdit) {
-                    HStack {
+                    HStack(spacing: 6) {
                         Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .medium))
                         Text("编辑")
+                            .font(.system(size: 15, weight: .medium))
                     }
-                    .foregroundColor(Color(UIColor.systemBlue))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(8)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(UIColor.systemBlue),
+                                        Color(UIColor.systemBlue).opacity(0.8)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 4, x: 0, y: 2)
+                    )
                 }
-                .padding(.trailing, 8)
                 
                 // 删除按钮
                 Button(action: onDelete) {
-                    HStack {
+                    HStack(spacing: 6) {
                         Image(systemName: "trash")
+                            .font(.system(size: 14, weight: .medium))
                         Text("删除")
+                            .font(.system(size: 15, weight: .medium))
                     }
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(8)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.red,
+                                        Color.red.opacity(0.8)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: Color.red.opacity(0.3), radius: 4, x: 0, y: 2)
+                    )
                 }
             }
         }
-        .padding(.vertical, 6)
+        .padding(.all, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(UIColor.separator).opacity(0.2), lineWidth: 1)
+                )
+        )
     }
 }
 
@@ -808,11 +1054,11 @@ struct StatisticsRow: View {
     
     var body: some View {
         // 使用中间变量来简化条件渲染逻辑
-        let goalStat: some View = createStatItem(count: taggedGoals.count, title: "目标", icon: "target")
-        let contactStat: some View = createStatItem(count: taggedContacts.count, title: "联系人", icon: "person.2")
-        let userStat: some View = createStatItem(count: userHasTag ? 1 : 0, title: "个人", icon: "person")
+        let goalStat: some View = createStatItem(count: taggedGoals.count, title: "目标", icon: "target", color: .blue)
+        let contactStat: some View = createStatItem(count: taggedContacts.count, title: "联系人", icon: "person.2", color: .green)
+        let userStat: some View = createStatItem(count: userHasTag ? 1 : 0, title: "个人", icon: "person", color: .purple)
         
-        return HStack(spacing: 15) {
+        return HStack(spacing: 16) {
             // 目标统计
             if tagType == .all || tagType == .goal {
                 goalStat
@@ -828,33 +1074,74 @@ struct StatisticsRow: View {
                 userStat
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(UIColor.systemBackground),
+                            Color(UIColor.systemGray6).opacity(0.3)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(UIColor.separator).opacity(0.15), lineWidth: 1)
+                )
+        )
     }
     
     // 创建统计项 - 优化类型推断
-    private func createStatItem(count: Int, title: String, icon: String) -> some View {
+    private func createStatItem(count: Int, title: String, icon: String, color: Color) -> some View {
         // 使用明确的类型注解和中间变量来帮助编译器进行类型推断
         let iconView: some View = Image(systemName: icon)
-            .foregroundColor(Color(UIColor.systemBlue))
+            .foregroundColor(color)
+            .font(.system(size: 18, weight: .semibold))
         
         let countText: some View = Text("\(count)")
-            .font(.system(size: 16, weight: .bold))
+            .font(.system(size: 20, weight: .bold))
+            .foregroundColor(.primary)
         
         let titleText: some View = Text(title)
-            .font(.caption)
+            .font(.system(size: 13, weight: .medium))
             .foregroundColor(.secondary)
         
-        return VStack {
-            HStack(spacing: 4) {
+        return VStack(spacing: 8) {
+            HStack(spacing: 6) {
                 iconView
                 countText
             }
             titleText
         }
-        .frame(minWidth: 60)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color(UIColor.systemGray6))
-        .cornerRadius(8)
+        .frame(minWidth: 70)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(UIColor.systemBackground),
+                            color.opacity(0.05)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: color.opacity(0.2), radius: 4, x: 0, y: 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(color.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .scaleEffect(count > 0 ? 1.0 : 0.95)
+        .opacity(count > 0 ? 1.0 : 0.7)
+        .animation(.easeInOut(duration: 0.2), value: count)
     }
 }
 

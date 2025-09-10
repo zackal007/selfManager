@@ -16,6 +16,9 @@ struct GoalDetailView: View {
     @Query private var allGoals: [Goal]
     @Query private var allContacts: [Contact]
     
+    // 观察TagColorManager的变化以实现即时更新
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
     // 从文档目录加载图片
     private func loadImageFromDocuments(_ imageName: String) -> UIImage? {
         let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
@@ -229,6 +232,11 @@ struct GoalDetailView: View {
         case dueDate
         case backgroundImage
         case none
+    }
+    
+    // 为标签生成颜色 - 使用TagColorManager
+    private func tagColor(for tag: String) -> Color {
+        return tagColorManager.getColor(for: tag)
     }
     
     // 计算属性
@@ -981,7 +989,7 @@ struct GoalDetailView: View {
                 ForEach(goal.tags, id: \.self) { tag in
                             HStack(spacing: 4) {
                                 Text(tag)
-                                    .foregroundColor(TagColorManager.shared.getColor(for: tag))
+                                    .foregroundColor(.white)
                                 
                                 // 删除标签按钮
                                 Button(action: {
@@ -1002,14 +1010,14 @@ struct GoalDetailView: View {
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemGray3))
+                                        .foregroundColor(.white.opacity(0.7))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                             .font(.system(size: 14, weight: .medium))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(TagColorManager.shared.getColor(for: tag).opacity(0.1))
+                            .background(tagColor(for: tag))
                             .cornerRadius(12)
                 }
                 

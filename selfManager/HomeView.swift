@@ -14,6 +14,9 @@ struct HomeView: View {
     @Query private var items: [Item]
     @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
     
+    // 观察TagColorManager的变化以实现即时更新
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
     @StateObject private var navigationManager = NavigationManager.shared
@@ -291,7 +294,7 @@ private var tagManagementSection: some View {
                         HStack(spacing: 6) {
                             Text(tag)
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color(UIColor.systemBlue))
+                                .foregroundColor(.white)
                             
                             // 计算使用此标签的项目数量
                             let count = countItemsWithTag(tag)
@@ -301,13 +304,13 @@ private var tagManagementSection: some View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(Color(UIColor.systemBlue))
+                                    .background(.white.opacity(0.3))
                                     .cornerRadius(8)
                             }
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .background(tagColor(for: tag))
                         .cornerRadius(16)
                     }
                     
@@ -468,13 +471,13 @@ struct BlurView: UIViewRepresentable {
                     ForEach(user.tags, id: \.self) { tag in
                         HStack(spacing: 4) {
                             Text(tag)
-                                .foregroundColor(Color(UIColor.systemBlue))
+                                .foregroundColor(.white)
                             // 可以添加图标
                         }
                         .font(.system(size: 14, weight: .medium))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .background(tagColor(for: tag))
                         .cornerRadius(12)
                     }
                 }
