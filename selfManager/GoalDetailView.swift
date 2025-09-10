@@ -1027,12 +1027,17 @@ struct GoalDetailView: View {
                     editingValue = ""
                     showEditSheet = true
                 }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 12))
-                        .foregroundColor(Color(UIColor.systemBlue))
-                        .frame(width: 24, height: 24)
-                        .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .clipShape(Circle())
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12))
+                        Text("添加")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(16)
                 }
             }
             .padding(.horizontal, 16)
@@ -1280,16 +1285,16 @@ struct GoalDetailView: View {
                                 showEditSheet = true
                             }) {
                                 HStack(spacing: 4) {
-                                    Text("添加")
-                                        .font(.system(size: 14))
                                     Image(systemName: "plus")
                                         .font(.system(size: 12))
+                                    Text("添加")
+                                        .font(.system(size: 14))
                                 }
                                 .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
                                 .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(15)
+                                .cornerRadius(16)
                             }
                         }
                         .padding(.horizontal, 16)
@@ -1307,7 +1312,7 @@ struct GoalDetailView: View {
                                     ForEach(goal.tags, id: \.self) { tag in
                                         HStack(spacing: 4) {
                                             Text(tag)
-                                                .foregroundColor(Color(UIColor.systemBlue))
+                                                .foregroundColor(.white)
                                             
                                             // 删除标签按钮
                                             Button(action: {
@@ -1328,14 +1333,14 @@ struct GoalDetailView: View {
                                             }) {
                                                 Image(systemName: "xmark.circle.fill")
                                                     .font(.system(size: 12))
-                                                    .foregroundColor(Color(UIColor.systemGray3))
+                                                    .foregroundColor(.white.opacity(0.7))
                                             }
                                             .buttonStyle(PlainButtonStyle())
                                         }
                                         .font(.system(size: 14, weight: .medium))
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)
-                                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                                        .background(tagColor(for: tag))
                                         .cornerRadius(12)
                                     }
                                 }
