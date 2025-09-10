@@ -143,9 +143,6 @@ struct HomeView: View {
                         
                         // 标签管理卡片
                         tagManagementSection
-                            .sheet(isPresented: $showingTagsView) {
-                                TagsView()
-                            }
                         
                         // 心情和成就区域
                         HStack(spacing: 16) {
