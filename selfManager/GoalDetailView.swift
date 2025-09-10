@@ -1027,17 +1027,12 @@ struct GoalDetailView: View {
                     editingValue = ""
                     showEditSheet = true
                 }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12))
-                        Text("添加")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Color(UIColor.systemBlue))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(16)
+                    Image(systemName: "plus")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .frame(width: 24, height: 24)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .clipShape(Circle())
                 }
             }
             .padding(.horizontal, 16)
@@ -1277,78 +1272,64 @@ struct GoalDetailView: View {
                                 .foregroundColor(Color(UIColor.label))
                             
                             Spacer()
-                            
-                            // 添加标签按钮
-                            Button(action: {
-                                editingField = .tag
-                                editingValue = ""
-                                showEditSheet = true
-                            }) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 12))
-                                    Text("添加")
-                                        .font(.system(size: 14))
-                                }
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(16)
-                            }
                         }
                         .padding(.horizontal, 16)
                         
-                        if goal.tags.isEmpty {
-                            Text("暂无标签")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.vertical, 10)
-                                .padding(.horizontal, 16)
-                        } else {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(goal.tags, id: \.self) { tag in
-                                        HStack(spacing: 4) {
-                                            Text(tag)
-                                                .foregroundColor(.white)
-                                            
-                                            // 删除标签按钮
-                                            Button(action: {
-                                                // 删除标签
-                                                if let index = goal.tags.firstIndex(of: tag) {
-                                                    goal.tags.remove(at: index)
-                                                    // 更新修改时间
-                                                    goal.modifyTime = Date()
-                                                    // 记录标签删除
-                                                    GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
-                                                    // 保存更改
-                                                    do {
-                                                        try modelContext.save()
-                                                    } catch {
-                                                        print("Failed to save tag deletion: \(error)")
-                                                    }
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(goal.tags, id: \.self) { tag in
+                                    HStack(spacing: 4) {
+                                        Text(tag)
+                                            .foregroundColor(.white)
+                                        
+                                        // 删除标签按钮
+                                        Button(action: {
+                                            // 删除标签
+                                            if let index = goal.tags.firstIndex(of: tag) {
+                                                goal.tags.remove(at: index)
+                                                // 更新修改时间
+                                                goal.modifyTime = Date()
+                                                // 记录标签删除
+                                                GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
+                                                // 保存更改
+                                                do {
+                                                    try modelContext.save()
+                                                } catch {
+                                                    print("Failed to save tag deletion: \(error)")
                                                 }
-                                            }) {
-                                                Image(systemName: "xmark.circle.fill")
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(.white.opacity(0.7))
                                             }
-                                            .buttonStyle(PlainButtonStyle())
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.white.opacity(0.7))
                                         }
-                                        .font(.system(size: 14, weight: .medium))
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 5)
-                                        .background(tagColor(for: tag))
-                                        .cornerRadius(12)
+                                        .buttonStyle(PlainButtonStyle())
                                     }
+                                    .font(.system(size: 14, weight: .medium))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(tagColor(for: tag))
+                                    .cornerRadius(12)
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 5)
+                                
+                                // 添加标签按钮
+                                Button(action: {
+                                    editingField = .tag
+                                    editingValue = ""
+                                    showEditSheet = true
+                                }) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                        .frame(width: 24, height: 24)
+                                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                                        .clipShape(Circle())
+                                }
                             }
-                            .frame(height: 40)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 5)
                         }
+                        .frame(height: 40)
                     }
                 }
                 .padding(.vertical, 16)
