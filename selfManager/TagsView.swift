@@ -76,32 +76,16 @@ struct TagsView: View {
     private func getTagItemCount(tag: String) -> Int {
         var count = 0
         
-        // 在"全部"类型下，累加所有类别中的标签出现次数
-        if selectedTagType == .all {
-            // 累加目标中的标签出现次数
-            count += goals.filter { $0.tags.contains(tag) }.count
-            
-            // 累加联系人中的标签出现次数
-            count += contacts.filter { $0.tags.contains(tag) }.count
-            
-            // 累加用户中的标签出现次数
-            if let user = users.first, user.tags.contains(tag) {
-                count += 1
-            }
-        } else {
-            // 在特定类别下，只计算该类别中的标签出现次数
-            switch selectedTagType {
-            case .goal:
-                count += goals.filter { $0.tags.contains(tag) }.count
-            case .contact:
-                count += contacts.filter { $0.tags.contains(tag) }.count
-            case .user:
-                if let user = users.first, user.tags.contains(tag) {
-                    count += 1
-                }
-            default:
-                break
-            }
+        // 始终累加所有类别中的标签出现次数，确保显示最准确的值
+        // 累加目标中的标签出现次数
+        count += goals.filter { $0.tags.contains(tag) }.count
+        
+        // 累加联系人中的标签出现次数
+        count += contacts.filter { $0.tags.contains(tag) }.count
+        
+        // 累加用户中的标签出现次数
+        if let user = users.first, user.tags.contains(tag) {
+            count += 1
         }
         
         return count
@@ -450,11 +434,24 @@ struct TagDetailView: View {
     let tagType: TagsView.TagType
     
     @State private var showingDeleteAlert = false
-    @State private var showingEditSheet = false
     
     // 获取标签对象
     private var tagObject: Tag? {
-        return tagObjects.first { $0.name == tag }
+        // 使用标签名称查找标签对象
+        let foundTag = tagObjects.first { $0.name == tag }
+        print("Debug: 找到标签对象: \(foundTag?.name ?? "无"), 描述: \(foundTag?.tagDescription ?? "无")")
+        
+        // 确保标签对象存在且有描述
+        if let tag = foundTag {
+            print("Debug: 标签对象存在，描述长度: \(tag.tagDescription.count)")
+            if tag.tagDescription.isEmpty {
+                print("Debug: 警告 - 标签描述为空")
+            }
+        } else {
+            print("Debug: 警告 - 未找到标签对象")
+        }
+        
+        return foundTag
     }
     
     // 获取标签分类
@@ -485,18 +482,117 @@ struct TagDetailView: View {
     
     // 将body拆分为更小的组件，避免复杂表达式
     private var tagInfoSection: some View {
-        Section {
-            let tagHeader = TagInfoHeader(
+        // 在视图构建外部获取描述
+        let description = tagObject?.tagDescription
+        // 调试信息
+        print("Debug: 传递给TagInfoHeader的描述: \(description ?? "无")")
+        
+        return Section {
+            TagInfoHeader(
                 tag: tag, 
                 tagColor: tagColor(for: tag), 
                 onDelete: { showingDeleteAlert = true },
-                onEdit: { showingEditSheet = true },
+                onSave: saveTag,
                 tagCategory: tagCategory,
-                tagDescription: tagObject?.tagDescription
+                tagDescription: description
             )
-            let statisticsRow = StatisticsRow(tagType: tagType, taggedGoals: taggedGoals, taggedContacts: taggedContacts, userHasTag: userHasTag).padding(.vertical, 6)
-            tagHeader
-            statisticsRow
+        }
+    }
+    
+    // 保存标签方法
+    private func saveTag(newTagName: String, description: String, color: Color, categoryID: UUID?) {
+        // 保存标签颜色
+        TagColorManager.shared.setColor(color, for: newTagName)
+        
+        // 查找或创建Tag对象
+        let descriptor = FetchDescriptor<Tag>(predicate: #Predicate<Tag> { $0.name == tag })
+        let existingTag = try? modelContext.fetch(descriptor).first
+        
+        if let tagObj = existingTag {
+            // 更新现有标签
+            tagObj.name = newTagName
+            tagObj.tagDescription = description
+            tagObj.color = color.toHex() ?? "#0000FF"
+            tagObj.categoryID = categoryID
+            tagObj.modifyTime = Date()
+        } else {
+            // 创建新标签
+            let newTag = Tag(
+                name: newTagName,
+                tagDescription: description,
+                color: color.toHex() ?? "#0000FF",
+                categoryID: categoryID
+            )
+            modelContext.insert(newTag)
+        }
+        
+        if newTagName != tag {
+            // 更新标签名称
+            TagColorManager.shared.updateTagName(from: tag, to: newTagName)
+            // 更新所有使用此标签的项目
+            updateTagInEntities(newTagName: newTagName)
+        } else {
+            // 即使名称没变，也刷新颜色以确保视觉一致性
+            TagColorManager.shared.refreshColor(for: newTagName)
+        }
+        
+        // 保存更改
+        do {
+            try modelContext.save()
+        } catch {
+            print("保存失败: \(error.localizedDescription)")
+        }
+    }
+    
+    // 更新所有实体中的标签名称
+    private func updateTagInEntities(newTagName: String) {
+        // 更新目标中的标签
+        updateGoalTags(newTagName)
+        
+        // 更新联系人中的标签
+        updateContactTags(newTagName)
+        
+        // 更新用户中的标签
+        updateUserTags(newTagName)
+    }
+    
+    // 更新目标中的标签
+    private func updateGoalTags(_ newTagName: String) {
+        for goal in goals {
+            if goal.tags.contains(tag) {
+                var updatedTags = goal.tags
+                if let index = updatedTags.firstIndex(of: tag) {
+                    updatedTags.remove(at: index)
+                    updatedTags.append(newTagName)
+                    goal.tags = updatedTags
+                }
+            }
+        }
+    }
+    
+    // 更新联系人中的标签
+    private func updateContactTags(_ newTagName: String) {
+        for contact in contacts {
+            if contact.tags.contains(tag) {
+                var updatedTags = contact.tags
+                if let index = updatedTags.firstIndex(of: tag) {
+                    updatedTags.remove(at: index)
+                    updatedTags.append(newTagName)
+                    contact.tags = updatedTags
+                }
+            }
+        }
+    }
+    
+    // 更新用户中的标签
+    private func updateUserTags(_ newTagName: String) {
+        if let user = users.first, user.tags.contains(tag) {
+            var updatedTags = user.tags
+            if let index = updatedTags.firstIndex(of: tag) {
+                updatedTags.remove(at: index)
+                updatedTags.append(newTagName)
+                user.tags = updatedTags
+            }
         }
     }
     
@@ -543,46 +639,42 @@ struct TagDetailView: View {
     
     // 目标列表部分
     private var goalListSection: some View {
-        Group {
-            if tagType == .all || tagType == .goal, !taggedGoals.isEmpty {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("目标")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Text("\(taggedGoals.count)")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color(UIColor.systemGray5))
-                            )
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("目标")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+                Spacer()
+                Text("\(taggedGoals.count)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color(UIColor.systemGray5))
+                    )
+            }
+            
+            LazyVStack(spacing: 12) {
+                ForEach(taggedGoals) { goal in
+                    NavigationLink(destination: GoalDetailView(goal: goal)) {
+                        goalItemView(for: goal)
                     }
-                    
-                    LazyVStack(spacing: 12) {
-                        ForEach(taggedGoals) { goal in
-                            NavigationLink(destination: GoalDetailView(goal: goal)) {
-                                goalItemView(for: goal)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.all, 20)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(UIColor.systemBackground))
-                        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
-                        )
-                )
             }
         }
+        .padding(.all, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                )
+        )
     }
     
     // 创建单个联系人项视图
@@ -628,36 +720,34 @@ struct TagDetailView: View {
     
     // 联系人列表部分
     private var contactListSection: some View {
-        Group {
-            if tagType == .all || tagType == .contact, !taggedContacts.isEmpty {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("人脉")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Text("\(taggedContacts.count)")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color(UIColor.systemGray5))
-                            )
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("人脉")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+                Spacer()
+                Text("\(taggedContacts.count)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color(UIColor.systemGray5))
+                    )
+            }
+            
+            LazyVStack(spacing: 12) {
+                ForEach(taggedContacts) { contact in
+                    NavigationLink(destination: ContactDetailView(contact: contact)) {
+                        contactItemView(for: contact)
                     }
-                    
-                    LazyVStack(spacing: 12) {
-                        ForEach(taggedContacts) { contact in
-                            NavigationLink(destination: ContactDetailView(contact: contact)) {
-                                contactItemView(for: contact)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.all, 20)
-                .background(
+            }
+        }
+        .padding(.all, 20)
+        .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color(UIColor.systemBackground))
                         .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
@@ -666,8 +756,6 @@ struct TagDetailView: View {
                                 .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
                         )
                 )
-            }
-        }
     }
     
     // 创建用户信息项视图
@@ -713,43 +801,40 @@ struct TagDetailView: View {
     
     // 用户信息部分
     private var userInfoSection: some View {
-        Group {
-            if (tagType == .all || tagType == .user) && userHasTag, let user = users.first {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("个人")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Text("1")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color(UIColor.systemGray5))
-                            )
-                    }
-                    
-                    NavigationLink(destination: UserEditView(user: user)) {
-                        userItemView(for: user)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.all, 20)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(UIColor.systemBackground))
-                        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
-                        )
-                )
+        let user = users.first!
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("个人")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+                Spacer()
+                Text("1")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color(UIColor.systemGray5))
+                    )
             }
+            
+            NavigationLink(destination: UserEditView(user: user)) {
+                userItemView(for: user)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
-    }
+        .padding(.all, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(UIColor.systemBackground))
+                         .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                         .overlay(
+                             RoundedRectangle(cornerRadius: 16)
+                                 .stroke(Color(UIColor.separator).opacity(0.1), lineWidth: 1)
+                         )
+                 )
+     }
     
     var body: some View {
         ScrollView {
@@ -760,9 +845,15 @@ struct TagDetailView: View {
                 
                 // 内容区域
                 VStack(spacing: 20) {
-                    goalListSection
-                    contactListSection
-                    userInfoSection
+                    if !taggedGoals.isEmpty {
+                        goalListSection
+                    }
+                    if !taggedContacts.isEmpty {
+                        contactListSection
+                    }
+                    if userHasTag {
+                        userInfoSection
+                    }
                 }
                 .padding(.horizontal, 20)
                 
@@ -782,8 +873,8 @@ struct TagDetailView: View {
             )
             .ignoresSafeArea()
         )
-        .navigationTitle("标签: \(tag)")
-        .navigationBarTitleDisplayMode(.large)
+        // 移除导航标题，让下面的元素上移
+        .navigationBarTitleDisplayMode(.inline)
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
                 title: Text("删除标签"),
@@ -794,21 +885,6 @@ struct TagDetailView: View {
                 secondaryButton: .cancel()
             )
         }
-        .sheet(isPresented: $showingEditSheet) {
-                TagEditView(tag: tag, tagType: tagType)
-                    .environment(\.colorScheme, .light) // 确保预览在编辑器中使用一致的配色方案
-                    .onDisappear {
-                        // 标签编辑弹窗关闭后，强制刷新标签相关数据
-                        // 通过重置@State变量触发视图刷新
-                        if let tagObj = tagObject {
-                            // 强制刷新标签颜色
-                            TagColorManager.shared.refreshColor(for: tag)
-                            
-                            // 触发UI刷新
-                            showingEditSheet = false
-                        }
-                    }
-            }
     }
     
     // 删除标签方法
@@ -855,114 +931,391 @@ struct TagDetailView: View {
 
 // 标签信息头部组件
 struct TagInfoHeader: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var goals: [Goal]
+    @Query private var contacts: [Contact]
+    @Query private var users: [User]
+    @Query private var tagCategories: [TagCategory]
+    
     let tag: String
-    let tagColor: Color
+    var tagColor: Color
     let onDelete: () -> Void
-    let onEdit: () -> Void
+    let onSave: (String, String, Color, UUID?) -> Void
     var tagCategory: TagCategory?
     var tagDescription: String?
     
+    // 编辑状态变量
+    @State private var isEditing: Bool = false
+    @State private var editedTag: String
+    @State private var tagDescriptionText: String
+    @State private var selectedColor: Color
+    @State private var selectedCategoryID: UUID?
+    @State private var showingSaveAlert = false
+    @State private var alertMessage = ""
+    
+    // 可选的标签颜色
+    private let colorOptions: [Color] = [
+        .blue, .green, .orange, .purple, .pink,
+        .teal, .indigo, .mint, .cyan, .red
+    ]
+    
+    // 初始化方法
+    init(tag: String, tagColor: Color, onDelete: @escaping () -> Void, onSave: @escaping (String, String, Color, UUID?) -> Void, tagCategory: TagCategory? = nil, tagDescription: String? = nil) {
+        self.tag = tag
+        self.tagColor = tagColor
+        self.onDelete = onDelete
+        self.onSave = onSave
+        self.tagCategory = tagCategory
+        self.tagDescription = tagDescription
+        
+        // 初始化状态变量
+        _editedTag = State(initialValue: tag)
+        _tagDescriptionText = State(initialValue: tagDescription ?? "")
+        _selectedColor = State(initialValue: tagColor)
+        _selectedCategoryID = State(initialValue: tagCategory?.id)
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // 标签名称和分类区域
-            HStack(spacing: 12) {
-                // 左侧彩色指示条
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(tagColor)
-                    .frame(width: 3, height: 48)
-                    .opacity(0.8)
-                
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .center, spacing: 8) {
+            if !isEditing {
+                // 查看模式 - 标签名称和分类区域
+                HStack(spacing: 12) {
+                    // 左侧彩色指示条
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(tagColor)
+                        .frame(width: 3, height: 48)
+                        .opacity(0.8)
+                    
+                    VStack(alignment: .leading, spacing: 6) {
                         Text(tag)
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        if let category = tagCategory {
-                            Text(category.name)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(tagColor)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(tagColor.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(tagColor.opacity(0.3), lineWidth: 1)
-                                        )
-                                )
+                        HStack(alignment: .center, spacing: 8) {
+                            if let category = tagCategory {
+                                Text(category.name)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(tagColor)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(tagColor.opacity(0.1))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .stroke(tagColor.opacity(0.3), lineWidth: 1)
+                                            )
+                                    )
+                            }
+                        }
+                        
+                        // 始终显示标签描述，即使在非编辑模式下
+                        if let description = tagDescription, !description.isEmpty {
+                            Text(description)
+                                .font(.system(size: 15))
+                                .foregroundColor(.secondary)
+                                .lineLimit(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 4)
+                        } else {
+                            Text("暂无描述")
+                                .font(.system(size: 15))
+                                .foregroundColor(.gray.opacity(0.7))
+                                .lineLimit(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 4)
                         }
                     }
                     
-                    if let description = tagDescription, !description.isEmpty {
-                        Text(description)
-                            .font(.system(size: 15))
-                            .foregroundColor(.secondary)
-                            .lineLimit(3)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    Spacer()
                 }
                 
-                Spacer()
-            }
-            
-            // 操作按钮区域
-            HStack(spacing: 12) {
-                Spacer()
-                
-                // 编辑按钮
-                Button(action: onEdit) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 14, weight: .medium))
-                        Text("编辑")
-                            .font(.system(size: 15, weight: .medium))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color(UIColor.systemBlue),
-                                        Color(UIColor.systemBlue).opacity(0.8)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                // 操作按钮区域
+                HStack(spacing: 12) {
+                    Spacer()
+                    
+                    // 编辑按钮 - 直接切换到编辑模式
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            isEditing = true
+                        }
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 14, weight: .medium))
+                            Text("编辑")
+                                .font(.system(size: 15, weight: .medium))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(UIColor.systemBlue),
+                                            Color(UIColor.systemBlue).opacity(0.8)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                            .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 4, x: 0, y: 2)
-                    )
+                                .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 4, x: 0, y: 2)
+                        )
+                    }
+                    
+                    // 删除按钮
+                    Button(action: onDelete) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 14, weight: .medium))
+                            Text("删除")
+                                .font(.system(size: 15, weight: .medium))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.red,
+                                            Color.red.opacity(0.8)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .shadow(color: Color.red.opacity(0.3), radius: 4, x: 0, y: 2)
+                        )
+                    }
                 }
-                
-                // 删除按钮
-                Button(action: onDelete) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 14, weight: .medium))
-                        Text("删除")
-                            .font(.system(size: 15, weight: .medium))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.red,
-                                        Color.red.opacity(0.8)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+            } else {
+                // 编辑模式 - 表单区域
+                VStack(spacing: 24) {
+                    // 基本信息
+                    VStack(spacing: 16) {
+                        HStack {
+                            Text("基本信息")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.primary)
+                            Spacer()
+                        }
+                        
+                        VStack(spacing: 16) {
+                            // 标签名称
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("标签名称")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                TextField("请输入标签名称", text: $editedTag)
+                                    .font(.system(size: 16))
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color(UIColor.systemBackground))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(editedTag.isEmpty ? Color(UIColor.systemGray4) : selectedColor, lineWidth: editedTag.isEmpty ? 1 : 2)
+                                            )
+                                            .scaleEffect(editedTag.isEmpty ? 1.0 : 1.02)
+                                            .animation(.easeInOut(duration: 0.2), value: editedTag.isEmpty)
+                                    )
+                                    .onChange(of: editedTag) { oldValue, newValue in
+                                        if !newValue.isEmpty {
+                                            TagColorManager.shared.setColor(selectedColor, for: newValue)
+                                        }
+                                    }
+                            }
+                            
+                            // 描述
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("描述（可选）")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                TextField("请输入标签描述", text: $tagDescriptionText)
+                                    .font(.system(size: 16))
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color(UIColor.systemBackground))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(tagDescriptionText.isEmpty ? Color(UIColor.systemGray4) : selectedColor.opacity(0.6), lineWidth: tagDescriptionText.isEmpty ? 1 : 2)
+                                            )
+                                            .scaleEffect(tagDescriptionText.isEmpty ? 1.0 : 1.01)
+                                            .animation(.easeInOut(duration: 0.2), value: tagDescriptionText.isEmpty)
+                                    )
+                            }
+                            
+                            // 分类
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("分类")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Menu {
+                                    Button("无分类") {
+                                        selectedCategoryID = nil
+                                    }
+                                    
+                                    ForEach(tagCategories) { category in
+                                        Button(category.name) {
+                                            selectedCategoryID = category.id
+                                        }
+                                    }
+                                } label: {
+                                    HStack {
+                                        if let categoryID = selectedCategoryID,
+                                           let category = tagCategories.first(where: { $0.id == categoryID }) {
+                                            Text(category.name)
+                                        } else {
+                                            Text("无分类")
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.down")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.primary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color(UIColor.systemBackground))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color(UIColor.systemGray4), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                            }
+                            
+                            // 分类管理链接
+                            NavigationLink(destination: TagCategoryListView()) {
+                                HStack {
+                                    Image(systemName: "folder.badge.plus")
+                                        .foregroundColor(.blue)
+                                    Text("管理分类")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.blue)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemBackground))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color(UIColor.systemGray4), lineWidth: 1)
+                                        )
                                 )
-                            )
-                            .shadow(color: Color.red.opacity(0.3), radius: 4, x: 0, y: 2)
-                    )
+                            }
+                        }
+                    }
+                    
+                    // 颜色选择
+                    VStack(spacing: 16) {
+                        HStack {
+                            Text("颜色")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.primary)
+                            Spacer()
+                        }
+                        
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 16) {
+                            ForEach(colorOptions, id: \.self) { color in
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                                        selectedColor = color
+                                    }
+                                    
+                                    if !editedTag.isEmpty {
+                                        TagColorManager.shared.setColor(color, for: editedTag)
+                                    }
+                                }) {
+                                    Circle()
+                                        .fill(color)
+                                        .frame(width: 44, height: 44)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(selectedColor == color ? Color.primary : Color.clear, lineWidth: 3)
+                                        )
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white, lineWidth: selectedColor == color ? 2 : 0)
+                                        )
+                                        .scaleEffect(selectedColor == color ? 1.15 : 1.0)
+                                        .shadow(color: selectedColor == color ? color.opacity(0.4) : Color.clear, radius: 8, x: 0, y: 4)
+                                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedColor)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // 操作按钮
+                    HStack(spacing: 16) {
+                        // 取消按钮
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                // 重置为原始值
+                                editedTag = tag
+                                tagDescriptionText = tagDescription ?? ""
+                                selectedColor = tagColor
+                                selectedCategoryID = tagCategory?.id
+                                isEditing = false
+                            }
+                        }) {
+                            Text("取消")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.primary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemGray6))
+                                )
+                        }
+                        
+                        // 保存按钮
+                        Button(action: {
+                            saveTag()
+                        }) {
+                            Text("保存")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(UIColor.systemBlue),
+                                                    Color(UIColor.systemBlue).opacity(0.8)
+                                                ]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 4, x: 0, y: 2)
+                                )
+                        }
+                        .disabled(editedTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .opacity(editedTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
+                    }
                 }
             }
         }
@@ -976,6 +1329,32 @@ struct TagInfoHeader: View {
                         .stroke(Color(UIColor.separator).opacity(0.2), lineWidth: 1)
                 )
         )
+        .alert(isPresented: $showingSaveAlert) {
+            Alert(
+                title: Text("提示"),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("确定"))
+            )
+        }
+    }
+    
+    // 保存标签方法
+    private func saveTag() {
+        let trimmedTag = editedTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedTag.isEmpty {
+            alertMessage = "标签名称不能为空"
+            showingSaveAlert = true
+            return
+        }
+        
+        // 调用父视图的保存方法
+        onSave(trimmedTag, tagDescriptionText, selectedColor, selectedCategoryID)
+        
+        // 更新UI状态
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            isEditing = false
+        }
     }
 }
 
@@ -1031,7 +1410,7 @@ struct StatisticsRow: View {
     }
     
     // 创建统计项 - 优化类型推断
-    private func createStatItem(count: Int, title: String, icon: String, color: Color) -> some View {
+    func createStatItem(count: Int, title: String, icon: String, color: Color) -> some View {
         // 使用明确的类型注解和中间变量来帮助编译器进行类型推断
         let iconView: some View = Image(systemName: icon)
             .foregroundColor(color)
