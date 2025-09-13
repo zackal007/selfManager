@@ -5,6 +5,7 @@ import PhotosUI
 struct UserEditView: View {
     @Bindable var user: User
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var showAddTagField = false
     @State private var newTag = ""
     @State private var avatarItem: PhotosPickerItem?
@@ -92,6 +93,10 @@ struct UserEditView: View {
                                 let trimmed = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
                                 if !trimmed.isEmpty && !user.tags.contains(trimmed) {
                                     user.tags.append(trimmed)
+                                    
+                                    // 创建或更新Tag对象
+                                    // 注意：这里需要获取modelContext，但UserEditView没有直接访问
+                                    // 我们需要添加Environment变量
                                 }
                                 showAddTagField = false
                                 newTag = ""

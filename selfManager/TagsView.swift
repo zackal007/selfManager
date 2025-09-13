@@ -22,6 +22,7 @@ struct TagsView: View {
     @State private var searchText = ""
     @State private var showingAddTag = false
     @State private var newTag = ""
+    @State private var newTagDescription = "" // 新标签描述
     @State private var selectedTagType: TagType = .goal // 默认添加到目标类型
     
     // 标签类型枚举
@@ -241,6 +242,15 @@ struct TagsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 12) {
+                    // 同步标签按钮
+                    Button(action: {
+                        syncExistingTags()
+                    }) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemOrange))
+                    }
+                    
                     // 添加标签按钮
                     Button(action: {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -318,7 +328,24 @@ struct TagsView: View {
                                 )
                         }
                         
-                        // 类型选择器已移除，默认添加到目标
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("标签描述（可选）")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            TextField("请输入标签描述", text: $newTagDescription)
+                                .font(.system(size: 16))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemGray6))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(newTagDescription.isEmpty ? Color.clear : Color(UIColor.systemBlue), lineWidth: 2)
+                                        )
+                                )
+                        }
                     }
                 }
                 .padding(.horizontal, 24)
@@ -389,12 +416,13 @@ struct TagsView: View {
     // 添加标签方法
     private func addTag() {
         let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDescription = newTagDescription.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if !trimmedTag.isEmpty {
             // 创建新的Tag对象
             let newTagObject = Tag(
                 name: trimmedTag,
-                tagDescription: "",
+                tagDescription: trimmedDescription,
                 color: "#007AFF", // 默认使用iOS系统蓝色
                 categoryID: nil
             )
@@ -413,7 +441,45 @@ struct TagsView: View {
         
         // 重置状态
         newTag = ""
+        newTagDescription = ""
         showingAddTag = false
+    }
+    
+    // 同步现有标签，为没有Tag对象的标签字符串创建对应的Tag对象
+    private func syncExistingTags() {
+        var allTagNames = Set<String>()
+        
+        // 收集所有现有的标签字符串
+        goals.forEach { allTagNames.formUnion($0.tags) }
+        contacts.forEach { allTagNames.formUnion($0.tags) }
+        if let user = users.first {
+            allTagNames.formUnion(user.tags)
+        }
+        
+        // 获取已存在的Tag对象名称
+        let existingTagNames = Set(tags.map { $0.name })
+        
+        // 找出没有对应Tag对象的标签名称
+        let missingTagNames = allTagNames.subtracting(existingTagNames)
+        
+        // 为缺失的标签创建Tag对象
+        for tagName in missingTagNames {
+            let newTagObject = Tag(
+                name: tagName,
+                tagDescription: "", // 默认空描述
+                color: "#007AFF", // 默认蓝色
+                categoryID: nil
+            )
+            modelContext.insert(newTagObject)
+        }
+        
+        // 保存更改
+        do {
+            try modelContext.save()
+            print("成功同步 \(missingTagNames.count) 个标签对象")
+        } catch {
+            print("同步标签失败: \(error)")
+        }
     }
 }
 
@@ -434,24 +500,11 @@ struct TagDetailView: View {
     let tagType: TagsView.TagType
     
     @State private var showingDeleteAlert = false
+    @State private var tagObject: Tag?
     
-    // 获取标签对象
-    private var tagObject: Tag? {
-        // 使用标签名称查找标签对象
-        let foundTag = tagObjects.first { $0.name == tag }
-        print("Debug: 找到标签对象: \(foundTag?.name ?? "无"), 描述: \(foundTag?.tagDescription ?? "无")")
-        
-        // 确保标签对象存在且有描述
-        if let tag = foundTag {
-            print("Debug: 标签对象存在，描述长度: \(tag.tagDescription.count)")
-            if tag.tagDescription.isEmpty {
-                print("Debug: 警告 - 标签描述为空")
-            }
-        } else {
-            print("Debug: 警告 - 未找到标签对象")
-        }
-        
-        return foundTag
+    // 初始化标签对象
+    private func initializeTagObject() {
+        tagObject = tagObjects.first { $0.name == tag }
     }
     
     // 获取标签分类
@@ -482,19 +535,14 @@ struct TagDetailView: View {
     
     // 将body拆分为更小的组件，避免复杂表达式
     private var tagInfoSection: some View {
-        // 在视图构建外部获取描述
-        let description = tagObject?.tagDescription
-        // 调试信息
-        print("Debug: 传递给TagInfoHeader的描述: \(description ?? "无")")
-        
-        return Section {
+        Section {
             TagInfoHeader(
                 tag: tag, 
                 tagColor: tagColor(for: tag), 
                 onDelete: { showingDeleteAlert = true },
                 onSave: saveTag,
                 tagCategory: tagCategory,
-                tagDescription: description
+                tagObject: tagObject  // 直接传递tagObject而不是预计算的描述
             )
         }
     }
@@ -539,6 +587,15 @@ struct TagDetailView: View {
         // 保存更改
         do {
             try modelContext.save()
+            print("标签保存成功: \(newTagName)")
+            
+            // 如果标签名称发生了变化，需要返回到标签列表页面
+            // 因为当前页面的tag参数已经过时
+            if newTagName != tag {
+                DispatchQueue.main.async {
+                    dismiss()
+                }
+            }
         } catch {
             print("保存失败: \(error.localizedDescription)")
         }
@@ -875,6 +932,9 @@ struct TagDetailView: View {
         )
         // 移除导航标题，让下面的元素上移
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            initializeTagObject()
+        }
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
                 title: Text("删除标签"),
@@ -942,7 +1002,7 @@ struct TagInfoHeader: View {
     let onDelete: () -> Void
     let onSave: (String, String, Color, UUID?) -> Void
     var tagCategory: TagCategory?
-    var tagDescription: String?
+    var tagObject: Tag?
     
     // 编辑状态变量
     @State private var isEditing: Bool = false
@@ -960,17 +1020,17 @@ struct TagInfoHeader: View {
     ]
     
     // 初始化方法
-    init(tag: String, tagColor: Color, onDelete: @escaping () -> Void, onSave: @escaping (String, String, Color, UUID?) -> Void, tagCategory: TagCategory? = nil, tagDescription: String? = nil) {
+    init(tag: String, tagColor: Color, onDelete: @escaping () -> Void, onSave: @escaping (String, String, Color, UUID?) -> Void, tagCategory: TagCategory? = nil, tagObject: Tag? = nil) {
         self.tag = tag
         self.tagColor = tagColor
         self.onDelete = onDelete
         self.onSave = onSave
         self.tagCategory = tagCategory
-        self.tagDescription = tagDescription
+        self.tagObject = tagObject
         
         // 初始化状态变量
         _editedTag = State(initialValue: tag)
-        _tagDescriptionText = State(initialValue: tagDescription ?? "")
+        _tagDescriptionText = State(initialValue: tagObject?.tagDescription ?? "")
         _selectedColor = State(initialValue: tagColor)
         _selectedCategoryID = State(initialValue: tagCategory?.id)
     }
@@ -1010,7 +1070,7 @@ struct TagInfoHeader: View {
                         }
                         
                         // 始终显示标签描述，即使在非编辑模式下
-                        if let description = tagDescription, !description.isEmpty {
+                        if let description = tagObject?.tagDescription, !description.isEmpty {
                             Text(description)
                                 .font(.system(size: 15))
                                 .foregroundColor(.secondary)
@@ -1037,6 +1097,11 @@ struct TagInfoHeader: View {
                     // 编辑按钮 - 直接切换到编辑模式
                     Button(action: {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            // 初始化编辑状态的值
+                            editedTag = tag
+                            tagDescriptionText = tagObject?.tagDescription ?? ""
+                            selectedColor = tagColor
+                            selectedCategoryID = tagCategory?.id
                             isEditing = true
                         }
                     }) {
@@ -1272,7 +1337,7 @@ struct TagInfoHeader: View {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 // 重置为原始值
                                 editedTag = tag
-                                tagDescriptionText = tagDescription ?? ""
+                                tagDescriptionText = tagObject?.tagDescription ?? ""
                                 selectedColor = tagColor
                                 selectedCategoryID = tagCategory?.id
                                 isEditing = false
