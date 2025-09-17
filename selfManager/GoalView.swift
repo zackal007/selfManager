@@ -98,7 +98,6 @@ struct GoalView: View {
     @Query(filter: #Predicate<Goal> { $0.isDeleted == false }, 
            sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
     
-    // 观察标签颜色管理器以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
     
     // 分段控制器状态
@@ -111,7 +110,9 @@ struct GoalView: View {
     // 导航管理器
     @StateObject private var navigationManager = NavigationManager.shared
     
-    // 初始化方法，接收selectedTab绑定
+    // 侧边栏状态
+    @State private var showSidebar = false
+    
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
     }
@@ -446,6 +447,18 @@ struct GoalView: View {
                     
                     // 顶部标题栏
                     HStack {
+                        // 侧边栏按钮
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showSidebar = true
+                            }
+                        }) {
+                            Image(systemName: "line.3.horizontal")
+                                .font(.system(size: 24))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        
                         Text("目标")
                             .font(.largeTitle)
                             .fontWeight(.bold)
@@ -769,6 +782,9 @@ struct GoalView: View {
                 }
             }
         )
+        
+        // 侧边栏组件
+        SidebarView(isPresented: $showSidebar, selectedTab: $selectedTab)
     }
     }
     

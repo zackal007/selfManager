@@ -32,6 +32,9 @@ struct RecordView: View {
     // 清理重复记录的标志
     @State private var hasCleanedDuplicates = false
     
+    // 侧边栏状态
+    @State private var showSidebar = false
+    
     // 记录类型选择器
     @State private var selectedRecordType: RecordType = .recent
     
@@ -394,6 +397,18 @@ struct RecordView: View {
             VStack(spacing: 0) {
                 // 顶部标题栏
                 HStack {
+                    // 侧边栏按钮
+                    Button(action: {
+                        showSidebar = true
+                    }) {
+                        Image(systemName: "line.horizontal.3")
+                            .font(.title2)
+                            .foregroundColor(.primary)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Spacer()
+                    
                     Text("记录")
                         .font(.largeTitle)
                         .fontWeight(.bold)
@@ -1328,6 +1343,12 @@ struct RecordView: View {
                     contentModified = false
                 }
             }
+            .overlay(
+                SidebarView(
+                    isPresented: $showSidebar,
+                    selectedTab: $selectedTab
+                )
+            )
         }
     
     // 格式化日期

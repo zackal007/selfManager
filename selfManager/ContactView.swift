@@ -13,10 +13,15 @@ import SwiftData
 struct ContactView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Contact.modifyTime, order: .reverse) private var allContacts: [Contact]
+    @Query private var allGoals: [Goal]
+    @Query private var allRecords: [Record]
     @StateObject private var navigationManager = NavigationManager.shared
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
+    
+    // 侧边栏状态
+    @State private var showSidebar = false
     
     // 分段控制器选择
     @State private var selectedSegment = 0
@@ -34,6 +39,14 @@ struct ContactView: View {
     // 搜索相关
     @State private var searchText = ""
     @State private var showSearchBar = false
+    
+    // 导航状态
+    @State private var selectedGoalId: UUID? = nil
+    @State private var selectedContactId: UUID? = nil
+    @State private var selectedRecordId: UUID? = nil
+    @State private var showGoalDetail = false
+    @State private var showContactDetail = false
+    @State private var showRecordDetail = false
     
     // 初始化方法，接收selectedTab绑定
     init(selectedTab: Binding<Int>) {
@@ -128,31 +141,77 @@ struct ContactView: View {
     
     var body: some View {
         NavigationStack(path: navigationManager.getNavigationPath(for: 3)) {
-            VStack(spacing: 0) {
-                // 顶部标题栏
-                headerView
-                
-                // 分段控制器
-                segmentedControl
-                
-                // 搜索栏
-                if showSearchBar {
-                    searchBarView
+            ZStack {
+                // 主内容
+                VStack(spacing: 0) {
+                    headerView
+                    
+                    if showSearchBar {
+                        searchBarView
+                    }
+                    
+                    segmentedControlView
+                    
+                    contentView
+                }
+                .background(Color(.systemGroupedBackground))
+                .navigationBarHidden(true)
+                .navigationDestination(isPresented: $showGoalDetail) {
+                    if let goalId = selectedGoalId,
+                       let goal = allGoals.first(where: { $0.id == goalId }) {
+                        GoalDetailView(goal: goal)
+                    }
+                }
+                .navigationDestination(isPresented: $showContactDetail) {
+                    if let contactId = selectedContactId,
+                       let contact = allContacts.first(where: { $0.id == contactId }) {
+                        ContactDetailView(contact: contact)
+                    }
+                }
+                .navigationDestination(isPresented: $showRecordDetail) {
+                    if let recordId = selectedRecordId,
+                       let record = allRecords.first(where: { $0.id == recordId }) {
+                        RecordView(selectedTab: .constant(2))
+                    }
+                }
+                .sheet(isPresented: $showAddContactSheet) {
+                    AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)
                 }
                 
-                // 联系人列表
-                contactListView
+                // 侧边栏
+                SidebarView(
+                    isPresented: $showSidebar,
+                    selectedTab: $selectedTab
+                )
             }
-            .navigationBarHidden(true)
         }
-        .sheet(isPresented: $showAddContactSheet) {
-            AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)
-        }
+    }
+    
+    // 分段控制器视图
+    private var segmentedControlView: some View {
+        segmentedControl
+    }
+    
+    // 内容视图
+    private var contentView: some View {
+        contactListView
     }
     
     // 顶部标题栏
     private var headerView: some View {
         HStack {
+            // 侧边栏按钮
+            Button(action: {
+                showSidebar = true
+            }) {
+                Image(systemName: "line.horizontal.3")
+                    .font(.title2)
+                    .foregroundColor(.primary)
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            Spacer()
+            
             Text("人脉")
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.primary)

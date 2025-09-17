@@ -27,6 +27,9 @@ struct HomeView: View {
     @State private var showingSettings = false
     @State private var showingTagsView = false
     
+    // 侧边栏状态管理
+    @ObservedObject private var sidebarManager = SidebarManager.shared
+    
     // 用户信息
     @Query private var users: [User]
     
@@ -112,12 +115,12 @@ struct HomeView: View {
             ZStack(alignment: .top) {
                 ScrollView {
                     VStack(spacing: 20) {
-                        // 顶部空间占位，与顶部标题栏高度相同
+                        // 顶部间距
                         Rectangle()
                             .fill(Color.clear)
                             .frame(height: 40) // 将高度从 140 减小到 80
                         
-                        // 用户个人信息卡片
+                        // 用户信息卡片
                         userProfileSection
                             .sheet(isPresented: $showingEdit) {
                                 UserEditView(user: user)
@@ -126,12 +129,12 @@ struct HomeView: View {
                         // 资产信息卡片
                         assetSection
                         
-                        // 积极的标签
+                        // 目标标题
                         HStack {
                             HStack(spacing: 8) {                                
-                                // Text("积极的")
+                                // Text("目标")
                                 //     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                //     .foregroundColor(Color(UIColor.systemGreen))
+                                //     .foregroundColor(Color(UIColor.systemBlue))
                             }
                             Spacer()
                         }
