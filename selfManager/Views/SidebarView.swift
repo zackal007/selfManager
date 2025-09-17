@@ -151,19 +151,48 @@ struct SidebarView: View {
                     // 顶部用户信息区域
                     HStack(spacing: 12) {
                         // 用户头像
-                        ZStack {
-                            Circle()
-                                .fill(Color(UIColor.systemBlue).opacity(0.2))
+                        if let user = users.first, !user.avatar.isEmpty, let uiImage = ImageUtility.loadImageFromAppDirectory(fileName: user.avatar) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
                                 .frame(width: 50, height: 50)
-                            
-                            Text("尚未登录")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(Color(UIColor.systemBlue))
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                                .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
+                        } else {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
+                                .foregroundColor(.gray)
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                                .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
                         }
                         
                         // 用户信息
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("尚未登录")
+                            Text(users.first?.name ?? "尚未登录")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(UIColor.label))
                             
@@ -210,9 +239,11 @@ struct SidebarView: View {
                     
                     Spacer()
                 }
+                .frame(maxHeight: .infinity)
                 .frame(width: sidebarWidth)
                 .background(
                     Color(UIColor.systemGroupedBackground)
+                        .ignoresSafeArea(.all)
                         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 2, y: 0)
                 )
                 .offset(x: isPresented ? dragOffset : -sidebarWidth)

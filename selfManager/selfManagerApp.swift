@@ -197,19 +197,6 @@ struct selfManagerApp: App {
                                     selectedTab = 3
                                 }
                             }
-                        
-                        TagsView()
-                            .tabItem {
-                                Image(systemName: "tag.fill")
-                                Text("标签")
-                            }
-                            .tag(4)
-                            .onTapGesture {
-                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 4, currentTab: selectedTab)
-                                if !shouldPopToRoot {
-                                    selectedTab = 4
-                                }
-                            }
                     }
                             .onAppear {
                                 // 启动垃圾清理服务
