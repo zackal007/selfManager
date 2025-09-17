@@ -6,32 +6,105 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // 侧边栏菜单项数据模型
 struct SidebarMenuItem {
     let id = UUID()
     let title: String
     let icon: String
+    let badge: String?
     let action: () -> Void
+    
+    init(title: String, icon: String, badge: String? = nil, action: @escaping () -> Void) {
+        self.title = title
+        self.icon = icon
+        self.badge = badge
+        self.action = action
+    }
 }
 
 // 侧边栏视图
 struct SidebarView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var goals: [Goal]
+    @Query private var contacts: [Contact]
+    @Query private var users: [User]
+    @ObservedObject private var tagColorManager = TagColorManager.shared
+    
     @Binding var isPresented: Bool
     @Binding var selectedTab: Int
     @State private var dragOffset: CGFloat = 0
+    @State private var showingTagsView = false
+    @State private var showingSettingsView = false
     
     // 侧边栏宽度
-    private let sidebarWidth: CGFloat = 280
+    private let sidebarWidth: CGFloat = 320
     
-    // 菜单项
-    private var menuItems: [SidebarMenuItem] {
+    // 获取所有标签
+    private func getAllTags() -> [String] {
+        var tags = Set<String>()
+        
+        // 收集目标标签
+        for goal in goals where !goal.isDeleted {
+            for tag in goal.tags {
+                tags.insert(tag)
+            }
+        }
+        
+        // 收集联系人标签
+        for contact in contacts {
+            for tag in contact.tags {
+                tags.insert(tag)
+            }
+        }
+        
+        // 收集用户标签
+        for user in users {
+            for tag in user.tags {
+                tags.insert(tag)
+            }
+        }
+        
+        return Array(tags).sorted()
+    }
+    
+    // 计算使用标签的项目数量
+    private func countItemsWithTag(_ tag: String) -> Int {
+        var count = 0
+        
+        // 计算目标中的标签使用
+        for goal in goals where !goal.isDeleted {
+            if goal.tags.contains(tag) {
+                count += 1
+            }
+        }
+        
+        // 计算联系人中的标签使用
+        for contact in contacts {
+            if contact.tags.contains(tag) {
+                count += 1
+            }
+        }
+        
+        // 计算用户中的标签使用
+        for user in users {
+            if user.tags.contains(tag) {
+                count += 1
+            }
+        }
+        
+        return count
+    }
+    
+    // 主要导航菜单项
+    private var mainMenuItems: [SidebarMenuItem] {
         [
             SidebarMenuItem(title: "首页", icon: "house.fill") {
                 selectedTab = 0
                 closeSidebar()
             },
-            SidebarMenuItem(title: "目标", icon: "target") {
+            SidebarMenuItem(title: "目标", icon: "target", badge: "\(goals.filter { !$0.isDeleted }.count)") {
                 selectedTab = 1
                 closeSidebar()
             },
@@ -39,15 +112,20 @@ struct SidebarView: View {
                 selectedTab = 2
                 closeSidebar()
             },
-            SidebarMenuItem(title: "人脉", icon: "person.3.fill") {
+            SidebarMenuItem(title: "人脉", icon: "person.3.fill", badge: "\(contacts.count)") {
                 selectedTab = 3
                 closeSidebar()
+            }
+        ]
+    }
+    
+    // 工具菜单项
+    private var toolMenuItems: [SidebarMenuItem] {
+        [
+            SidebarMenuItem(title: "标签管理", icon: "tag.fill", badge: "\(getAllTags().count)") {
+                showingTagsView = true
             },
-            SidebarMenuItem(title: "设置", icon: "gearshape") {
-                // 这里可以添加设置页面的导航逻辑
-                closeSidebar()
-            },
-            SidebarMenuItem(title: "帮助", icon: "questionmark.circle") {
+            SidebarMenuItem(title: "帮助与反馈", icon: "questionmark.circle") {
                 // 这里可以添加帮助页面的导航逻辑
                 closeSidebar()
             }
@@ -71,41 +149,80 @@ struct SidebarView: View {
                 // 侧边栏主体
                 VStack(spacing: 0) {
                     // 顶部用户信息区域
-                    VStack(spacing: 16) {
-                        // 用户头像
-                        Circle()
-                            .fill(Color(UIColor.systemBlue))
-                            .frame(width: 80, height: 80)
-                            .overlay(
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.white)
-                            )
+                    VStack(spacing: 0) {
+                        // 顶部设置按钮区域
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                showingSettingsView = true
+                            }) {
+                                Image(systemName: "gearshape.fill")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                    .frame(width: 40, height: 40)
+                                    .background(Color(UIColor.systemGray6))
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 60)
                         
-                        // 用户名
-                        VStack(spacing: 4) {
-                            Text("用户名")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(Color(UIColor.label))
+                        // 个人信息区域 - 压缩版本
+                        HStack(spacing: 12) {
+                            // 头像 - 缩小尺寸
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color(UIColor.systemBlue), Color(UIColor.systemTeal)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 50, height: 50)
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 22, weight: .medium))
+                                        .foregroundColor(.white)
+                                )
+                                .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 6, x: 0, y: 3)
                             
-                            Text("个人管理助手")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
+                            // 用户信息 - 水平布局
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("尚未登录")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color(UIColor.label))
+                                
+                                HStack(spacing: 4) {
+                                    Text("PRO")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 1)
+                                        .background(Color(UIColor.systemBlue))
+                                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                                    
+                                    Spacer()
+                                }
+                            }
+                            
+                            Spacer()
                         }
+                        .padding(.top, 16)
+                        .padding(.bottom, 16)
                     }
-                    .padding(.top, 60)
-                    .padding(.bottom, 30)
                     
-                    // 菜单项列表
-                    VStack(spacing: 8) {
-                        ForEach(menuItems, id: \.id) { item in
-                            SidebarMenuItemView(
-                                item: item,
-                                isSelected: isMenuItemSelected(item)
-                            )
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // 记录热力图
+                            HeatmapView()
+                            
+                            // 全部标签卡片
+                            AllTagsCardView(showingTagsView: $showingTagsView)
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.horizontal, 20)
                     
                     Spacer()
                     
@@ -115,7 +232,7 @@ struct SidebarView: View {
                             .padding(.horizontal, 20)
                         
                         Text("版本 1.0.0")
-                            .font(.system(size: 12))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundColor(Color(UIColor.tertiaryLabel))
                             .padding(.bottom, 30)
                     }
@@ -154,6 +271,20 @@ struct SidebarView: View {
         .onAppear {
             dragOffset = 0
         }
+        .sheet(isPresented: $showingTagsView) {
+            NavigationStack {
+                TagsView()
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingSettingsView) {
+            NavigationStack {
+                SettingsView()
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
     }
     
     // 关闭侧边栏
@@ -181,40 +312,53 @@ struct SidebarView: View {
     }
 }
 
-// 侧边栏菜单项视图
-struct SidebarMenuItemView: View {
+// 卡片式菜单项视图
+struct SidebarCardMenuItemView: View {
     let item: SidebarMenuItem
     let isSelected: Bool
     @State private var isPressed = false
     
     var body: some View {
         Button(action: item.action) {
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 // 图标
                 Image(systemName: item.icon)
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundColor(isSelected ? .white : Color(UIColor.label))
-                    .frame(width: 24, height: 24)
+                    .frame(width: 20, height: 20)
                 
                 // 标题
                 Text(item.title)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(isSelected ? .white : Color(UIColor.label))
                 
                 Spacer()
+                
+                // 徽章
+                if let badge = item.badge, !badge.isEmpty {
+                    Text(badge)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(isSelected ? Color(UIColor.systemBlue) : .white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(isSelected ? .white : Color(UIColor.systemBlue))
+                        )
+                }
                 
                 // 选中指示器
                 if isSelected {
                     Circle()
                         .fill(Color.white.opacity(0.3))
-                        .frame(width: 6, height: 6)
+                        .frame(width: 4, height: 4)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color(UIColor.systemBlue) : (isPressed ? Color(UIColor.systemGray5) : Color.clear))
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isSelected ? Color(UIColor.systemBlue) : (isPressed ? Color(UIColor.systemGray6) : Color(UIColor.systemBackground)))
             )
             .scaleEffect(isPressed ? 0.98 : 1.0)
         }

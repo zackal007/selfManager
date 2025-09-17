@@ -93,64 +93,69 @@ struct selfManagerApp: App {
                 // 主应用内容
                 Group {
                     if let container = sharedModelContainer {
-                        TabView(selection: $selectedTab) {
-                            HomeView(selectedTab: $selectedTab)
-                                .tabItem {
-                                    Image(systemName: "house.fill")
-                                    Text("首页")
-                                }
-                                .tag(0)
-                                .onTapGesture {
-                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
-                                    if !shouldPopToRoot {
-                                        selectedTab = 0
+                        ZStack {
+                            TabView(selection: $selectedTab) {
+                                HomeView(selectedTab: $selectedTab)
+                                    .tabItem {
+                                        Image(systemName: "house.fill")
+                                        Text("首页")
                                     }
-                                }
+                                    .tag(0)
+                                    .onTapGesture {
+                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
+                                        if !shouldPopToRoot {
+                                            selectedTab = 0
+                                        }
+                                    }
+                                
+                                GoalView(selectedTab: $selectedTab)
+                                    .tabItem {
+                                        Image(systemName: "target")
+                                        Text("目标")
+                                    }
+                                    .tag(1)
+                                    .onTapGesture {
+                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
+                                        if !shouldPopToRoot {
+                                            selectedTab = 1
+                                        }
+                                    }
+                                
+                                RecordView(selectedTab: $selectedTab)
+                                    .tabItem {
+                                        Image(systemName: "newspaper.fill")
+                                        Text("记录")
+                                    }
+                                    .tag(2)
+                                    .onTapGesture {
+                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
+                                        if !shouldPopToRoot {
+                                            selectedTab = 2
+                                        }
+                                    }
+                                
+                                ContactView(selectedTab: $selectedTab)
+                                    .tabItem {
+                                        Image(systemName: "person.3.fill")
+                                        Text("人脉")
+                                    }
+                                    .tag(3)
+                                    .onTapGesture {
+                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
+                                        if !shouldPopToRoot {
+                                            selectedTab = 3
+                                        }
+                                    }
+                            }
+                            .modelContainer(container)
+                            .enableSwipeBackGesture()
+                            .onAppear {
+                                // 启动回收站清理服务
+                                TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
+                            }
                             
-                            GoalView(selectedTab: $selectedTab)
-                                .tabItem {
-                                    Image(systemName: "target")
-                                    Text("目标")
-                                }
-                                .tag(1)
-                                .onTapGesture {
-                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
-                                    if !shouldPopToRoot {
-                                        selectedTab = 1
-                                    }
-                                }
-                            
-                            RecordView(selectedTab: $selectedTab)
-                                .tabItem {
-                                    Image(systemName: "newspaper.fill")
-                                    Text("记录")
-                                }
-                                .tag(2)
-                                .onTapGesture {
-                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
-                                    if !shouldPopToRoot {
-                                        selectedTab = 2
-                                    }
-                                }
-                            
-                            ContactView(selectedTab: $selectedTab)
-                                .tabItem {
-                                    Image(systemName: "person.3.fill")
-                                    Text("人脉")
-                                }
-                                .tag(3)
-                                .onTapGesture {
-                                    let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
-                                    if !shouldPopToRoot {
-                                        selectedTab = 3
-                                    }
-                                }
-                        }
-                        .modelContainer(container)
-                        .enableSwipeBackGesture()
-                        .onAppear {
-                            // 启动回收站清理服务
-                            TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
+                            // 侧边栏覆盖层
+                            SidebarView(isPresented: .constant(SidebarManager.shared.isPresented), selectedTab: $selectedTab)
                         }
                     } else {
                         // 空视图，当欢迎页面显示时作为占位符

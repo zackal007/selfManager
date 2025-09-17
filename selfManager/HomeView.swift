@@ -24,8 +24,7 @@ struct HomeView: View {
     @State private var showingAssetDetail = false
     @State private var showingImprovementDetail = false
     @State private var showingAchievementDetail = false
-    @State private var showingSettings = false
-    @State private var showingTagsView = false
+
     
     // 侧边栏状态管理
     @ObservedObject private var sidebarManager = SidebarManager.shared
@@ -144,9 +143,6 @@ struct HomeView: View {
                         // 目标区域
                         goalSection
                         
-                        // 标签管理卡片
-                        tagManagementSection
-                        
                         // 心情和成就区域
                         HStack(spacing: 16) {
                             // 心情区域
@@ -185,6 +181,22 @@ struct HomeView: View {
                 // 悬浮的顶部标题栏
                 VStack(spacing: 0) {
                     HStack(alignment: .center) {
+                        // 侧边栏按钮
+                        Button(action: {
+                            sidebarManager.toggleSidebar()
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemGray5).opacity(0.8))
+                                    .frame(width: 38, height: 38)
+                                
+                                Image(systemName: "line.3.horizontal")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color(UIColor.label))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
                         VStack(alignment: .leading, spacing: 2) {
                             Text("  我")
                                 .font(.system(size: 26, weight: .bold, design: .rounded))
@@ -192,23 +204,6 @@ struct HomeView: View {
                         }
                         
                         Spacer()
-                        
-                        // 设置按钮
-                        Button(action: {
-                            showingSettings = true
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(UIColor.systemGray5).opacity(0.3))
-                                    .frame(width: 38, height: 38)
-                                
-                                Image(systemName: "gearshape")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(Color(UIColor.systemGray))
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .padding(.trailing, 8)
                         
                         // 通知按钮
                         Button(action: {}) {
@@ -235,9 +230,7 @@ struct HomeView: View {
             }
             .navigationBarHidden(true)
         }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
+
         .onAppear {
             // 在视图加载时应用保存的筛选条件，但避免重复加载
 
@@ -256,101 +249,7 @@ struct HomeView: View {
         }
 }
 
-// MARK: - 标签管理卡片
-private var tagManagementSection: some View {
-    Button(action: {
-        showingTagsView = true
-    }) {
-        VStack(alignment: .leading, spacing: 8) {
-            // 标题栏
-            HStack {
-                // 左侧标题
-                HStack(spacing: 6) {
-                    Image(systemName: "tag.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(Color(UIColor.systemBlue))
-                    
-                    Text("标签管理")
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(Color(UIColor.label))
-                }
-                
-                Spacer()
-                
-                // 详情按钮
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundColor(Color(UIColor.systemGray))
-                }
-            }
-            
-            // 标签内容 - 显示最近创建的标签
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    // 获取所有标签并显示最近的5个
-                    let recentTags = getAllTags().prefix(5)
-                    ForEach(recentTags, id: \.self) { tag in
-                        HStack(spacing: 6) {
-                            Text(tag)
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.white)
-                            
-                            // 计算使用此标签的项目数量
-                            let count = countItemsWithTag(tag)
-                            if count > 0 {
-                                Text("\(count)")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(.white.opacity(0.3))
-                                    .cornerRadius(8)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(tagColor(for: tag))
-                        .cornerRadius(16)
-                    }
-                    
-                    // 添加标签按钮
-                    HStack(spacing: 4) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 12))
-                        Text("添加")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Color(UIColor.systemBlue))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(16)
-                }
-                .padding(.vertical, 5)
-            }
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity) // 确保宽度与资产卡片一致
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color(UIColor.systemGray5).opacity(0.5), lineWidth: 0.5)
-                )
-        )
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
-    }
-    .buttonStyle(PlainButtonStyle())
-    .sheet(isPresented: $showingTagsView) {
-        NavigationStack {
-            TagsView()
-        }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
-    }
-}
+
 
 // 计算使用特定标签的项目数量
 private func countItemsWithTag(_ tag: String) -> Int {
