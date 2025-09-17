@@ -149,97 +149,70 @@ struct SidebarView: View {
                 // 侧边栏主体
                 VStack(spacing: 0) {
                     // 顶部用户信息区域
-                    VStack(spacing: 0) {
-                        // 顶部设置按钮区域
-                        HStack {
-                            Spacer()
-                            Button(action: {
-                                showingSettingsView = true
-                            }) {
-                                Image(systemName: "gearshape.fill")
-                                    .font(.system(size: 20, weight: .medium))
-                                    .foregroundColor(Color(UIColor.secondaryLabel))
-                                    .frame(width: 40, height: 40)
-                                    .background(Color(UIColor.systemGray6))
-                                    .clipShape(Circle())
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 60)
-                        
-                        // 个人信息区域 - 压缩版本
-                        HStack(spacing: 12) {
-                            // 头像 - 缩小尺寸
+                    HStack(spacing: 12) {
+                        // 用户头像
+                        ZStack {
                             Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [Color(UIColor.systemBlue), Color(UIColor.systemTeal)]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(Color(UIColor.systemBlue).opacity(0.2))
                                 .frame(width: 50, height: 50)
-                                .overlay(
-                                    Image(systemName: "person.fill")
-                                        .font(.system(size: 22, weight: .medium))
-                                        .foregroundColor(.white)
-                                )
-                                .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 6, x: 0, y: 3)
                             
-                            // 用户信息 - 水平布局
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("尚未登录")
-                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Color(UIColor.label))
-                                
-                                HStack(spacing: 4) {
-                                    Text("PRO")
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 5)
-                                        .padding(.vertical, 1)
-                                        .background(Color(UIColor.systemBlue))
-                                        .clipShape(RoundedRectangle(cornerRadius: 3))
-                                    
-                                    Spacer()
-                                }
-                            }
-                            
-                            Spacer()
+                            Text("尚未登录")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(Color(UIColor.systemBlue))
                         }
-                        .padding(.top, 16)
-                        .padding(.bottom, 16)
+                        
+                        // 用户信息
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("尚未登录")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            HStack(spacing: 4) {
+                                Text("PRO")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color(UIColor.systemBlue))
+                                    )
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // 设置按钮
+                        Button(action: {
+                            showingSettingsView = true
+                        }) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 60)
+                    .padding(.bottom, 16)
                     
                     ScrollView {
-                        VStack(spacing: 16) {
-                            // 记录热力图
-                            HeatmapView()
-                            
-                            // 全部标签卡片
-                            AllTagsCardView(showingTagsView: $showingTagsView)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
-                    }
+                         VStack(spacing: 16) {
+                             // 记录热力图卡片
+                             HeatmapView()
+                             
+                             // 所有标签卡片
+                             AllTagsCardView(showingTagsView: $showingTagsView)
+                         }
+                         .padding(.horizontal, 16)
+                         .padding(.bottom, 16)
+                     }
                     
                     Spacer()
-                    
-                    // 底部版本信息
-                    VStack(spacing: 8) {
-                        Divider()
-                            .padding(.horizontal, 20)
-                        
-                        Text("版本 1.0.0")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(UIColor.tertiaryLabel))
-                            .padding(.bottom, 30)
-                    }
                 }
                 .frame(width: sidebarWidth)
                 .background(
-                    Color(UIColor.systemBackground)
+                    Color(UIColor.systemGroupedBackground)
                         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 2, y: 0)
                 )
                 .offset(x: isPresented ? dragOffset : -sidebarWidth)

@@ -14,36 +14,24 @@ struct AllTagsCardView: View {
     @Query private var goals: [Goal]
     @Query private var contacts: [Contact]
     @Query private var users: [User]
+    @Query private var tags: [Tag]
     @ObservedObject private var tagColorManager = TagColorManager.shared
     
     @Binding var showingTagsView: Bool
     
     // 获取所有标签
     private func getAllTags() -> [String] {
-        var tags = Set<String>()
+        var tagNames = Set<String>()
         
-        // 收集目标标签
-        for goal in goals where !goal.isDeleted {
-            for tag in goal.tags {
-                tags.insert(tag)
-            }
-        }
+        // 从Tag对象中获取所有标签名称（包括未关联的标签）
+        tags.forEach { tagNames.insert($0.name) }
         
-        // 收集联系人标签
-        for contact in contacts {
-            for tag in contact.tags {
-                tags.insert(tag)
-            }
-        }
+        // 从关联的元素中获取标签名称（确保完整性）
+        goals.filter { !$0.isDeleted }.forEach { tagNames.formUnion($0.tags) }
+        contacts.forEach { tagNames.formUnion($0.tags) }
+        users.forEach { tagNames.formUnion($0.tags) }
         
-        // 收集用户标签
-        for user in users {
-            for tag in user.tags {
-                tags.insert(tag)
-            }
-        }
-        
-        return Array(tags).sorted()
+        return Array(tagNames).sorted()
     }
     
     // 计算使用标签的项目数量

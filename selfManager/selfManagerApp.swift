@@ -29,6 +29,7 @@ struct selfManagerApp: App {
     // 添加状态变量来跟踪当前选中的标签页
     @State private var selectedTab = 0
     @StateObject private var navigationManager = NavigationManager.shared
+    @StateObject private var sidebarManager = SidebarManager.shared
     @State private var loadingError: Error? = nil
     // 添加状态变量来控制欢迎页面的显示
     @State private var isShowingWelcome = true
@@ -86,7 +87,57 @@ struct selfManagerApp: App {
             print("Could not create ModelContainer: \(error)")
         }
     }
-
+    
+    // 初始化示例数据
+    private func initializeSampleData(modelContext: ModelContext) {
+        // 强制重新创建示例数据以解决标签显示问题
+        let tagDescriptor = FetchDescriptor<Tag>()
+        let userDescriptor = FetchDescriptor<User>()
+        
+        do {
+            let existingTags = try modelContext.fetch(tagDescriptor)
+            let existingUsers = try modelContext.fetch(userDescriptor)
+            
+            // 如果没有用户数据，创建默认用户
+            if existingUsers.isEmpty {
+                let defaultUser = User(
+                    name: "张三",
+                    avatar: "👤",
+                    tags: ["自律", "高效", "成长"],
+                    userDescription: "热爱生活，追求自我提升的普通人"
+                )
+                modelContext.insert(defaultUser)
+            }
+            
+            // 强制创建示例标签（即使已存在也重新创建）
+            let sampleTags = [
+                Tag(name: "自律", tagDescription: "保持良好的自我管理习惯", color: "Blue"),
+                Tag(name: "高效", tagDescription: "提高工作和学习效率", color: "Green"),
+                Tag(name: "成长", tagDescription: "持续学习和自我提升", color: "Orange"),
+                Tag(name: "健康", tagDescription: "保持身心健康", color: "Red"),
+                Tag(name: "学习", tagDescription: "知识学习和技能提升", color: "Purple"),
+                Tag(name: "工作", tagDescription: "职业发展相关", color: "Pink"),
+                Tag(name: "生活", tagDescription: "日常生活管理", color: "Teal"),
+                Tag(name: "社交", tagDescription: "人际关系维护", color: "Gray")
+            ]
+            
+            // 检查每个标签是否已存在，不存在则创建
+            for sampleTag in sampleTags {
+                let existingTag = existingTags.first { $0.name == sampleTag.name }
+                if existingTag == nil {
+                    modelContext.insert(sampleTag)
+                }
+            }
+            
+            // 保存更改
+            try modelContext.save()
+            print("示例数据初始化完成")
+            
+        } catch {
+            print("初始化示例数据失败: \(error)")
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -95,68 +146,82 @@ struct selfManagerApp: App {
                     if let container = sharedModelContainer {
                         ZStack {
                             TabView(selection: $selectedTab) {
-                                HomeView(selectedTab: $selectedTab)
-                                    .tabItem {
-                                        Image(systemName: "house.fill")
-                                        Text("首页")
-                                    }
-                                    .tag(0)
-                                    .onTapGesture {
-                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
-                                        if !shouldPopToRoot {
-                                            selectedTab = 0
-                                        }
-                                    }
-                                
-                                GoalView(selectedTab: $selectedTab)
-                                    .tabItem {
-                                        Image(systemName: "target")
-                                        Text("目标")
-                                    }
-                                    .tag(1)
-                                    .onTapGesture {
-                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
-                                        if !shouldPopToRoot {
-                                            selectedTab = 1
-                                        }
-                                    }
-                                
-                                RecordView(selectedTab: $selectedTab)
-                                    .tabItem {
-                                        Image(systemName: "newspaper.fill")
-                                        Text("记录")
-                                    }
-                                    .tag(2)
-                                    .onTapGesture {
-                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
-                                        if !shouldPopToRoot {
-                                            selectedTab = 2
-                                        }
-                                    }
-                                
-                                ContactView(selectedTab: $selectedTab)
-                                    .tabItem {
-                                        Image(systemName: "person.3.fill")
-                                        Text("人脉")
-                                    }
-                                    .tag(3)
-                                    .onTapGesture {
-                                        let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
-                                        if !shouldPopToRoot {
-                                            selectedTab = 3
-                                        }
-                                    }
+                        HomeView(selectedTab: $selectedTab)
+                            .tabItem {
+                                Image(systemName: "house.fill")
+                                Text("首页")
                             }
-                            .modelContainer(container)
-                            .enableSwipeBackGesture()
+                            .tag(0)
+                            .onTapGesture {
+                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
+                                if !shouldPopToRoot {
+                                    selectedTab = 0
+                                }
+                            }
+                        
+                        GoalView(selectedTab: $selectedTab)
+                            .tabItem {
+                                Image(systemName: "target")
+                                Text("目标")
+                            }
+                            .tag(1)
+                            .onTapGesture {
+                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
+                                if !shouldPopToRoot {
+                                    selectedTab = 1
+                                }
+                            }
+                        
+                        RecordView(selectedTab: $selectedTab)
+                            .tabItem {
+                                Image(systemName: "newspaper.fill")
+                                Text("记录")
+                            }
+                            .tag(2)
+                            .onTapGesture {
+                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
+                                if !shouldPopToRoot {
+                                    selectedTab = 2
+                                }
+                            }
+                        
+                        ContactView(selectedTab: $selectedTab)
+                            .tabItem {
+                                Image(systemName: "person.3.fill")
+                                Text("人脉")
+                            }
+                            .tag(3)
+                            .onTapGesture {
+                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
+                                if !shouldPopToRoot {
+                                    selectedTab = 3
+                                }
+                            }
+                        
+                        TagsView()
+                            .tabItem {
+                                Image(systemName: "tag.fill")
+                                Text("标签")
+                            }
+                            .tag(4)
+                            .onTapGesture {
+                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 4, currentTab: selectedTab)
+                                if !shouldPopToRoot {
+                                    selectedTab = 4
+                                }
+                            }
+                    }
                             .onAppear {
-                                // 启动回收站清理服务
-                                TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
-                            }
+                                // 启动垃圾清理服务
+                TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
+                initializeSampleData(modelContext: container.mainContext)
+            }
                             
                             // 侧边栏覆盖层
-                            SidebarView(isPresented: .constant(SidebarManager.shared.isPresented), selectedTab: $selectedTab)
+                            SidebarView(isPresented: $sidebarManager.isPresented, selectedTab: $selectedTab)
                         }
+                        .modelContainer(container)
+                        .enableSwipeBackGesture()
                     } else {
                         // 空视图，当欢迎页面显示时作为占位符
                         Color.clear

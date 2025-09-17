@@ -10,6 +10,7 @@ import SwiftData
 
 struct ImprovementDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     // 待改进项列表
     @Query private var improvements: [Improvement]
@@ -353,10 +354,8 @@ struct ImprovementDetailView: View {
             }
         }
     }
-    
-    // 删除待改进项
-    @Environment(\.modelContext) private var modelContext
 
+    // 删除待改进项
     private func deleteImprovement(at offsets: IndexSet) {
         for index in offsets {
             modelContext.delete(improvements[index])

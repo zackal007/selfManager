@@ -10,6 +10,8 @@ import SwiftData
 
 struct TagsView: View {
     @Environment(\.modelContext) private var modelContext
+    // 确保modelContext在视图初始化时可用
+    @State private var isModelContextReady = false
     @Query private var goals: [Goal]
     @Query private var contacts: [Contact]
     @Query private var users: [User]
@@ -36,28 +38,57 @@ struct TagsView: View {
     }
     
     // 查询所有Tag对象
-    @Query private var tags: [Tag]
+    @Query(sort: \Tag.createTime, order: .reverse) private var tags: [Tag]
     
     // 获取所有标签
     private var allTags: [String] {
-        var tagNames = Set<String>()
+        // 直接使用Tag对象的名称，确保即使没有关联项目也能显示
+        var tagNames = tags.map { $0.name }
         
-        // 从Tag对象中获取所有标签名称（包括未关联的标签）
-        tags.forEach { tagNames.insert($0.name) }
-        
-        // 从关联的元素中获取标签名称（确保完整性）
-        goals.forEach { tagNames.formUnion($0.tags) }
-        contacts.forEach { tagNames.formUnion($0.tags) }
-        if let user = users.first {
-            tagNames.formUnion(user.tags)
+        // 如果没有标签，检查并初始化
+        if tagNames.isEmpty {
+            // 在下一个更新周期中初始化标签
+            DispatchQueue.main.async {
+                checkAndInitializeTags()
+            }
         }
         
         // 搜索过滤
         if !searchText.isEmpty {
-            return Array(tagNames).filter { $0.localizedCaseInsensitiveContains(searchText) }.sorted()
+            return tagNames.filter { $0.localizedCaseInsensitiveContains(searchText) }.sorted()
         }
         
-        return Array(tagNames).sorted()
+        return tagNames.sorted()
+    }
+    
+    // 检查是否需要初始化标签
+    private func checkAndInitializeTags() {
+        // 如果没有标签，添加一些默认标签
+        if tags.isEmpty {
+            initializeSampleTags()
+        }
+    }
+    
+    // 强制初始化示例标签
+    private func initializeSampleTags() {
+        let sampleTags = [
+            Tag(name: "工作", tagDescription: "职业发展相关", color: "Blue"),
+            Tag(name: "学习", tagDescription: "知识学习和技能提升", color: "Green"),
+            Tag(name: "生活", tagDescription: "日常生活管理", color: "Orange"),
+            Tag(name: "健康", tagDescription: "保持身心健康", color: "Red"),
+            Tag(name: "娱乐", tagDescription: "休闲娱乐活动", color: "Purple")
+        ]
+        
+        for tag in sampleTags {
+            modelContext.insert(tag)
+        }
+        
+        do {
+            try modelContext.save()
+            print("标签初始化完成")
+        } catch {
+            print("标签初始化失败: \(error)")
+        }
     }
     
     // 获取标签对象
@@ -239,6 +270,10 @@ struct TagsView: View {
 
         .navigationTitle("标签管理")
         .navigationBarTitleDisplayMode(.large)
+        .onAppear {
+            isModelContextReady = true
+            checkAndInitializeTags()
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 12) {
