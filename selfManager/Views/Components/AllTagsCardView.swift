@@ -23,10 +23,7 @@ struct AllTagsCardView: View {
     private func getAllTags() -> [String] {
         var tagNames = Set<String>()
         
-        // 从Tag对象中获取所有标签名称（包括未关联的标签）
-        tags.forEach { tagNames.insert($0.name) }
-        
-        // 从关联的元素中获取标签名称（确保完整性）
+        // 只从实际使用的元素中获取标签名称
         goals.filter { !$0.isDeleted }.forEach { tagNames.formUnion($0.tags) }
         contacts.forEach { tagNames.formUnion($0.tags) }
         users.forEach { tagNames.formUnion($0.tags) }

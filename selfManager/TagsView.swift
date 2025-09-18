@@ -16,9 +16,10 @@ struct TagsView: View {
     @Query private var contacts: [Contact]
     @Query private var users: [User]
     @Query private var tagCategories: [TagCategory]
+    @Query(sort: \Tag.createTime, order: .reverse) private var tags: [Tag]
     @Environment(\.dismiss) private var dismiss
     
-    // 观察TagColorManager的变化以实现即时更新
+    // 标签颜色管理器
     @ObservedObject private var tagColorManager = TagColorManager.shared
     
     @State private var searchText = ""
@@ -37,58 +38,50 @@ struct TagsView: View {
         var id: String { self.rawValue }
     }
     
-    // 查询所有Tag对象
-    @Query(sort: \Tag.createTime, order: .reverse) private var tags: [Tag]
-    
     // 获取所有标签
     private var allTags: [String] {
-        // 直接使用Tag对象的名称，确保即使没有关联项目也能显示
-        var tagNames = tags.map { $0.name }
+        // 使用与侧边栏相同的逻辑，收集所有实际使用的标签
+        var tagSet = Set<String>()
         
-        // 如果没有标签，检查并初始化
-        if tagNames.isEmpty {
-            // 在下一个更新周期中初始化标签
-            DispatchQueue.main.async {
-                checkAndInitializeTags()
+        // 收集目标标签
+        for goal in goals where !goal.isDeleted {
+            for tag in goal.tags {
+                tagSet.insert(tag)
             }
         }
         
-        // 搜索过滤
-        if !searchText.isEmpty {
-            return tagNames.filter { $0.localizedCaseInsensitiveContains(searchText) }.sorted()
+        // 收集联系人标签
+        for contact in contacts {
+            for tag in contact.tags {
+                tagSet.insert(tag)
+            }
         }
         
-        return tagNames.sorted()
+        // 收集用户标签
+        for user in users {
+            for tag in user.tags {
+                tagSet.insert(tag)
+            }
+        }
+        
+        let allTagNames = Array(tagSet).sorted()
+        
+        // 搜索过滤
+        if !searchText.isEmpty {
+            return allTagNames.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+        
+        return allTagNames
     }
     
     // 检查是否需要初始化标签
     private func checkAndInitializeTags() {
-        // 如果没有标签，添加一些默认标签
-        if tags.isEmpty {
-            initializeSampleTags()
-        }
+        // 不再自动创建默认标签，让用户根据需要手动创建
     }
     
-    // 强制初始化示例标签
+    // 强制初始化示例标签（已废弃，不再使用）
     private func initializeSampleTags() {
-        let sampleTags = [
-            Tag(name: "工作", tagDescription: "职业发展相关", color: "Blue"),
-            Tag(name: "学习", tagDescription: "知识学习和技能提升", color: "Green"),
-            Tag(name: "生活", tagDescription: "日常生活管理", color: "Orange"),
-            Tag(name: "健康", tagDescription: "保持身心健康", color: "Red"),
-            Tag(name: "娱乐", tagDescription: "休闲娱乐活动", color: "Purple")
-        ]
-        
-        for tag in sampleTags {
-            modelContext.insert(tag)
-        }
-        
-        do {
-            try modelContext.save()
-            print("标签初始化完成")
-        } catch {
-            print("标签初始化失败: \(error)")
-        }
+        // 不再自动创建默认标签，让用户根据需要手动创建
     }
     
     // 获取标签对象
@@ -272,7 +265,6 @@ struct TagsView: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             isModelContextReady = true
-            checkAndInitializeTags()
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

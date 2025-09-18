@@ -103,31 +103,13 @@ struct selfManagerApp: App {
                 let defaultUser = User(
                     name: "张三",
                     avatar: "👤",
-                    tags: ["自律", "高效", "成长"],
+                    tags: [],
                     userDescription: "热爱生活，追求自我提升的普通人"
                 )
                 modelContext.insert(defaultUser)
             }
             
-            // 强制创建示例标签（即使已存在也重新创建）
-            let sampleTags = [
-                Tag(name: "自律", tagDescription: "保持良好的自我管理习惯", color: "Blue"),
-                Tag(name: "高效", tagDescription: "提高工作和学习效率", color: "Green"),
-                Tag(name: "成长", tagDescription: "持续学习和自我提升", color: "Orange"),
-                Tag(name: "健康", tagDescription: "保持身心健康", color: "Red"),
-                Tag(name: "学习", tagDescription: "知识学习和技能提升", color: "Purple"),
-                Tag(name: "工作", tagDescription: "职业发展相关", color: "Pink"),
-                Tag(name: "生活", tagDescription: "日常生活管理", color: "Teal"),
-                Tag(name: "社交", tagDescription: "人际关系维护", color: "Gray")
-            ]
-            
-            // 检查每个标签是否已存在，不存在则创建
-            for sampleTag in sampleTags {
-                let existingTag = existingTags.first { $0.name == sampleTag.name }
-                if existingTag == nil {
-                    modelContext.insert(sampleTag)
-                }
-            }
+            // 不再自动创建默认标签，让用户根据需要手动创建
             
             // 保存更改
             try modelContext.save()

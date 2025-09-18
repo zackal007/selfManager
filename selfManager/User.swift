@@ -19,7 +19,7 @@ class User {
     var userDescription: String
     var trashExpirationDays: Int = 30 // 回收站内容的默认过期时间（天）
     
-    init(name: String = "张三", avatar: String = "👤", tags: [String] = ["自律", "高效", "成长"], userDescription: String = "热爱生活，追求自我提升的普通人", trashExpirationDays: Int = 30) {
+    init(name: String = "张三", avatar: String = "👤", tags: [String] = [], userDescription: String = "热爱生活，追求自我提升的普通人", trashExpirationDays: Int = 30) {
         self.name = name
         self.avatar = avatar
         self.tagsString = tags.joined(separator: ",")
