@@ -17,6 +17,7 @@ struct NotesStyleRecordEditor: View {
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var showImagePicker = false
     @State private var isTextEditorFocused = false
+    @FocusState private var isTextFieldFocused: Bool
     
     let minHeight: CGFloat
     let onImagesChanged: (([Data]) -> Void)?
@@ -52,6 +53,16 @@ struct NotesStyleRecordEditor: View {
         .padding(16)
         .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
+        .contentShape(Rectangle()) // 确保整个区域可以响应点击
+        .onTapGesture {
+            // 点击编辑器外部区域时收起键盘
+            if isTextFieldFocused {
+                isTextFieldFocused = false
+                isTextEditorFocused = false
+                // 隐藏键盘
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            }
+        }
         .photosPicker(
             isPresented: $showImagePicker,
             selection: $selectedPhotos,
@@ -64,6 +75,9 @@ struct NotesStyleRecordEditor: View {
         .onChange(of: text) { _, _ in
             onTextChanged?()
         }
+        .onChange(of: isTextFieldFocused) { _, newValue in
+            isTextEditorFocused = newValue
+        }
     }
     
     // MARK: - 文本编辑器视图
@@ -71,6 +85,7 @@ struct NotesStyleRecordEditor: View {
         ZStack(alignment: .topLeading) {
             // 文本编辑器
             TextEditor(text: $text)
+                .focused($isTextFieldFocused)
                 .padding(12)
                 .font(.body)
                 .lineSpacing(4)
@@ -84,11 +99,16 @@ struct NotesStyleRecordEditor: View {
                         )
                 )
                 .onTapGesture {
+                    // 点击文本编辑器时获取焦点
+                    isTextFieldFocused = true
                     isTextEditorFocused = true
                 }
-                .onSubmit {
-                    isTextEditorFocused = false
-                }
+                .simultaneousGesture(
+                    // 防止点击TextEditor时触发外部的onTapGesture
+                    TapGesture().onEnded { _ in
+                        // 空实现，用于阻止事件冒泡
+                    }
+                )
             
             // 占位符文本
             if text.isEmpty {
@@ -137,6 +157,17 @@ struct NotesStyleRecordEditor: View {
         .padding(12)
         .background(Color(UIColor.tertiarySystemBackground))
         .cornerRadius(8)
+        .simultaneousGesture(
+            // 防止点击图片区域时触发外部的onTapGesture
+            TapGesture().onEnded { _ in
+                // 点击图片区域时收起键盘
+                if isTextFieldFocused {
+                    isTextFieldFocused = false
+                    isTextEditorFocused = false
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
+        )
     }
     
     // MARK: - 单个图片项视图
@@ -185,6 +216,12 @@ struct NotesStyleRecordEditor: View {
         HStack(spacing: 20) {
             // 添加图片按钮
             Button(action: {
+                // 点击添加图片按钮时先收起键盘
+                if isTextFieldFocused {
+                    isTextFieldFocused = false
+                    isTextEditorFocused = false
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
                 showImagePicker = true
             }) {
                 HStack(spacing: 6) {
@@ -209,6 +246,17 @@ struct NotesStyleRecordEditor: View {
                 .foregroundColor(.secondary)
         }
         .padding(.top, 8)
+        .simultaneousGesture(
+            // 防止点击工具栏时触发外部的onTapGesture
+            TapGesture().onEnded { _ in
+                // 点击工具栏区域时收起键盘
+                if isTextFieldFocused {
+                    isTextFieldFocused = false
+                    isTextEditorFocused = false
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
+        )
     }
     
     // MARK: - 辅助方法
