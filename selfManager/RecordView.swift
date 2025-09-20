@@ -607,7 +607,7 @@ struct RecordView: View {
                             // 移除当前选中日期显示
                         }
                         .padding(.vertical, 4)
-                        .background(Color(UIColor.systemBackground))
+                        .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
@@ -723,7 +723,7 @@ struct RecordView: View {
                             .padding(.horizontal, 8)
                         }
                         .padding(.vertical, 4)
-                        .background(Color(UIColor.systemBackground))
+                        .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
@@ -810,7 +810,7 @@ struct RecordView: View {
                             .padding(.top, 8)
                         }
                         .padding(.vertical, 4)
-                        .background(Color(UIColor.systemBackground))
+                        .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
@@ -906,7 +906,7 @@ struct RecordView: View {
                             .padding(.top, 8)
                         }
                         .padding(.vertical, 4)
-                        .background(Color(UIColor.systemBackground))
+                        .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
@@ -1053,7 +1053,7 @@ struct RecordView: View {
                             .padding(.vertical, 8)
                         }
                         .padding(.vertical, 4)
-                        .background(Color(UIColor.systemBackground))
+                        .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
@@ -1093,7 +1093,7 @@ struct RecordView: View {
                                         
                                         Spacer()
                                     }
-                                    .background(Color(UIColor.systemBackground))
+                                    .background(Color(UIColor.systemGroupedBackground))
                                     .cornerRadius(8)
                                     .padding(.horizontal)
                                     .padding(.top, 8)
