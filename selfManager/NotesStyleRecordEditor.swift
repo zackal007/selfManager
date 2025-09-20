@@ -50,9 +50,6 @@ struct NotesStyleRecordEditor: View {
             // 底部工具栏
             toolbarView
         }
-        .padding(16)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
         .contentShape(Rectangle()) // 确保整个区域可以响应点击
         .onTapGesture {
             // 点击编辑器外部区域时收起键盘
