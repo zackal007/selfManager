@@ -1160,7 +1160,7 @@ struct RecordView: View {
                                             NotesStyleRecordEditor(
                                                 text: $recordContent,
                                                 images: $selectedImages,
-                                                minHeight: UIScreen.main.bounds.height * 0.4,
+                                                minHeight: UIScreen.main.bounds.height * 0.6,
                                                 onImagesChanged: { images in
                                                     selectedImages = images
                                                     contentModified = true
@@ -1169,6 +1169,7 @@ struct RecordView: View {
                                                     contentModified = true
                                                 }
                                             )
+                                            .frame(maxHeight: .infinity)
                                             .padding(.horizontal)
                                             .onChange(of: recordContent) { _, _ in
                                                 // 标记内容已修改

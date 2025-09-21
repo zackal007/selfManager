@@ -39,8 +39,9 @@ struct NotesStyleRecordEditor: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // 文本编辑区域
+            // 文本编辑区域 - 使用Flexible填充可用空间
             textEditorView
+                .layoutPriority(1)
             
             // 图片展示区域
             if !images.isEmpty {
@@ -50,6 +51,7 @@ struct NotesStyleRecordEditor: View {
             // 底部工具栏
             toolbarView
         }
+        .frame(maxHeight: .infinity)
         .contentShape(Rectangle()) // 确保整个区域可以响应点击
         .onTapGesture {
             // 点击编辑器外部区域时收起键盘
@@ -117,7 +119,7 @@ struct NotesStyleRecordEditor: View {
                     .allowsHitTesting(false)
             }
         }
-        .frame(minHeight: minHeight)
+        .frame(minHeight: minHeight, maxHeight: .infinity)
     }
     
     // MARK: - 图片展示区域
