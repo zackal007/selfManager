@@ -35,6 +35,11 @@ struct selfManagerApp: App {
     @State private var isShowingWelcome = true
     @State private var isLoading = true
     
+    /// 收起键盘的方法
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
     init() {
         // 初始化时不创建ModelContainer，而是在onAppear中创建
         // 这样可以确保在主线程上创建ModelContainer
@@ -135,6 +140,7 @@ struct selfManagerApp: App {
                             }
                             .tag(0)
                             .onTapGesture {
+                                dismissKeyboard()
                                 let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
                                 if !shouldPopToRoot {
                                     selectedTab = 0
@@ -148,6 +154,7 @@ struct selfManagerApp: App {
                             }
                             .tag(1)
                             .onTapGesture {
+                                dismissKeyboard()
                                 let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
                                 if !shouldPopToRoot {
                                     selectedTab = 1
@@ -161,6 +168,7 @@ struct selfManagerApp: App {
                             }
                             .tag(2)
                             .onTapGesture {
+                                dismissKeyboard()
                                 let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
                                 if !shouldPopToRoot {
                                     selectedTab = 2
@@ -174,6 +182,7 @@ struct selfManagerApp: App {
                             }
                             .tag(3)
                             .onTapGesture {
+                                dismissKeyboard()
                                 let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
                                 if !shouldPopToRoot {
                                     selectedTab = 3

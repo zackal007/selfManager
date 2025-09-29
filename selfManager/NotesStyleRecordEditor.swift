@@ -55,12 +55,7 @@ struct NotesStyleRecordEditor: View {
         .contentShape(Rectangle()) // 确保整个区域可以响应点击
         .onTapGesture {
             // 点击编辑器外部区域时收起键盘
-            if isTextFieldFocused {
-                isTextFieldFocused = false
-                isTextEditorFocused = false
-                // 隐藏键盘
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            }
+            dismissKeyboard()
         }
         .photosPicker(
             isPresented: $showImagePicker,
@@ -76,6 +71,23 @@ struct NotesStyleRecordEditor: View {
         }
         .onChange(of: isTextFieldFocused) { _, newValue in
             isTextEditorFocused = newValue
+            // 当焦点状态改变时，如果失去焦点则收起键盘
+            if !newValue {
+                dismissKeyboard()
+            }
+        }
+    }
+    
+    // MARK: - 键盘收起方法
+    private func dismissKeyboard() {
+        if isTextFieldFocused {
+            isTextFieldFocused = false
+        }
+        isTextEditorFocused = false
+        
+        // 强制收起键盘
+        DispatchQueue.main.async {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
     }
     
@@ -108,6 +120,10 @@ struct NotesStyleRecordEditor: View {
                         // 空实现，用于阻止事件冒泡
                     }
                 )
+                .onSubmit {
+                    // 当用户完成输入时（如按下Done按钮）收起键盘
+                    dismissKeyboard()
+                }
             
             // 占位符文本
             if text.isEmpty {
@@ -160,11 +176,7 @@ struct NotesStyleRecordEditor: View {
             // 防止点击图片区域时触发外部的onTapGesture
             TapGesture().onEnded { _ in
                 // 点击图片区域时收起键盘
-                if isTextFieldFocused {
-                    isTextFieldFocused = false
-                    isTextEditorFocused = false
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
+                dismissKeyboard()
             }
         )
     }
@@ -216,12 +228,12 @@ struct NotesStyleRecordEditor: View {
             // 添加图片按钮
             Button(action: {
                 // 点击添加图片按钮时先收起键盘
-                if isTextFieldFocused {
-                    isTextFieldFocused = false
-                    isTextEditorFocused = false
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                dismissKeyboard()
+                
+                // 延迟显示图片选择器，确保键盘完全收起
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    showImagePicker = true
                 }
-                showImagePicker = true
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: "photo")
@@ -249,11 +261,7 @@ struct NotesStyleRecordEditor: View {
             // 防止点击工具栏时触发外部的onTapGesture
             TapGesture().onEnded { _ in
                 // 点击工具栏区域时收起键盘
-                if isTextFieldFocused {
-                    isTextFieldFocused = false
-                    isTextEditorFocused = false
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
+                dismissKeyboard()
             }
         )
     }
@@ -279,8 +287,6 @@ struct NotesStyleRecordEditor: View {
         }
     }
 }
-
-
 
 // MARK: - 预览
 #Preview {

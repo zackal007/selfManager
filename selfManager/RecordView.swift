@@ -42,6 +42,9 @@ struct RecordView: View {
     private let recordTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
     @State private var currentRecordTypeIndex: Int = 0
     
+    // 添加键盘失焦状态管理
+    @FocusState private var isAnyFieldFocused: Bool
+    
     // 同步记录类型索引
     private func syncRecordTypeIndex() {
         if let index = recordTypes.firstIndex(of: selectedRecordType) {
@@ -395,10 +398,11 @@ struct RecordView: View {
     var body: some View {
         NavigationStack(path: navigationManager.getNavigationPath(for: 2)) {
             VStack(spacing: 0) {
-                // 顶部标题栏
+                // 顶部导航栏
                 HStack {
                     // 侧边栏按钮
                     Button(action: {
+                        dismissKeyboard()
                         showSidebar = true
                     }) {
                         Image(systemName: "line.horizontal.3")
@@ -420,6 +424,7 @@ struct RecordView: View {
                     MenuButton {
                         // 视图模式菜单内容
                         Button(action: {
+                            dismissKeyboard()
                             // 日期选择器显示/隐藏
                             withAnimation {
                                 showDatePicker.toggle()
@@ -432,6 +437,7 @@ struct RecordView: View {
                         
                         // 跳转到今天
                         Button(action: {
+                            dismissKeyboard()
                             // 如果内容已修改，先保存当前记录
                             if contentModified {
                                 autoSaveRecord(recordType: selectedRecordType)
@@ -458,6 +464,7 @@ struct RecordView: View {
                             let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
                             ForEach(orderedTypes, id: \.self) { type in
                                 FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
+                                    dismissKeyboard()
                                     // 如果内容已修改，先保存当前记录
                                     if contentModified {
                                         autoSaveRecord(recordType: selectedRecordType)
@@ -473,6 +480,9 @@ struct RecordView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 12)
                 .onChange(of: selectedRecordType) { oldValue, newValue in
+                    // 切换记录类型时收起键盘
+                    dismissKeyboard()
+                    
                     // 如果内容已修改，先保存当前记录
                     if contentModified {
                         autoSaveRecord(recordType: oldValue)
@@ -1229,6 +1239,9 @@ struct RecordView: View {
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .onChange(of: currentRecordTypeIndex) { newIndex in
+                    // 切换页签时收起键盘
+                    dismissKeyboard()
+                    
                     // 如果内容已修改，先保存当前记录
                     if contentModified {
                         autoSaveRecord(recordType: selectedRecordType)
@@ -1268,6 +1281,9 @@ struct RecordView: View {
                 .cornerRadius(16)
             }
             .navigationBarHidden(true)
+            .onTapGesture {
+                dismissKeyboard()
+            }
             .background(
                 Group {
                     // 目标详情页导航
@@ -1947,6 +1963,14 @@ struct RecordView: View {
         
         // 加载对应的记录
         loadCurrentRecord()
+    }
+    
+    // MARK: - 键盘管理
+    private func dismissKeyboard() {
+        DispatchQueue.main.async {
+            isAnyFieldFocused = false
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 
 }
