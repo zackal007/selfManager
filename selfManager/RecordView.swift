@@ -1248,6 +1248,8 @@ struct RecordView: View {
                     }
                     // 同步更新selectedRecordType
                     selectedRecordType = recordTypes[newIndex]
+                    // 加载对应的记录内容
+                    loadCurrentRecord()
                     // 重置修改状态
                     contentModified = false
                 }
@@ -1960,6 +1962,9 @@ struct RecordView: View {
         if let date = calendar.date(from: dateComponents) {
             currentDate = date
         }
+        
+        // 同步页签索引，确保TabView内容更新
+        syncRecordTypeIndex()
         
         // 加载对应的记录
         loadCurrentRecord()
