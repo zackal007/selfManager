@@ -9,20 +9,6 @@ import SwiftUI
 import UIKit
 import Foundation
 import SwiftData
-
-// 添加BlurView组件用于顶部栏的模糊背景效果
-struct BlurView: UIViewRepresentable {
-    var style: UIBlurEffect.Style
-    
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        uiView.effect = UIBlurEffect(style: style)
-    }
-}
 // 导入共享组件，包含FilterChip
 
 // 目标优先级枚举

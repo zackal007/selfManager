@@ -398,87 +398,100 @@ struct RecordView: View {
     var body: some View {
         NavigationStack(path: navigationManager.getNavigationPath(for: 2)) {
             VStack(spacing: 0) {
-                // 顶部导航栏
-                HStack {
-                    // 侧边栏按钮
-                    Button(action: {
-                        dismissKeyboard()
-                        showSidebar = true
-                    }) {
-                        Image(systemName: "line.horizontal.3")
-                            .font(.title2)
-                            .foregroundColor(.primary)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    Spacer()
-                    
-                    Text("记录")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    // 菜单按钮
-                    MenuButton {
-                        // 视图模式菜单内容
+                // 悬浮的顶部标题栏（整合记录类型筛选器）
+                VStack(spacing: 0) {
+                    // 第一行：标题和按钮
+                    HStack(alignment: .center) {
+                        // 侧边栏按钮
                         Button(action: {
                             dismissKeyboard()
-                            // 日期选择器显示/隐藏
-                            withAnimation {
-                                showDatePicker.toggle()
-                            }
+                            showSidebar = true
                         }) {
-                            Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "calendar.badge.minus" : "calendar.badge.plus")
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemGray5).opacity(0.8))
+                                    .frame(width: 38, height: 38)
+                                
+                                Image(systemName: "line.3.horizontal")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color(UIColor.label))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("  记录")
+                                .font(.system(size: 26, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(UIColor.label))
                         }
                         
-                        Divider()
+                        Spacer()
                         
-                        // 跳转到今天
-                        Button(action: {
-                            dismissKeyboard()
-                            // 如果内容已修改，先保存当前记录
-                            if contentModified {
-                                autoSaveRecord(recordType: selectedRecordType)
+                        // 菜单按钮
+                        MenuButton {
+                            // 视图模式菜单内容
+                            Button(action: {
+                                dismissKeyboard()
+                                // 日期选择器显示/隐藏
+                                withAnimation {
+                                    showDatePicker.toggle()
+                                }
+                            }) {
+                                Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "calendar.badge.minus" : "calendar.badge.plus")
                             }
-                            // 重置为当前日期
-                            currentDate = Date()
-                            updateDateComponents()
-                            loadCurrentRecord()
-                            // 重置修改状态
-                            contentModified = false
-                        }) {
-                            Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
+                            
+                            Divider()
+                            
+                            // 跳转到今天
+                            Button(action: {
+                                dismissKeyboard()
+                                // 如果内容已修改，先保存当前记录
+                                if contentModified {
+                                    autoSaveRecord(recordType: selectedRecordType)
+                                }
+                                // 重置为当前日期
+                                currentDate = Date()
+                                updateDateComponents()
+                                loadCurrentRecord()
+                                // 重置修改状态
+                                contentModified = false
+                            }) {
+                                Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
+                            }
                         }
                     }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                
-                // 记录类型筛选器
-                VStack(alignment: .leading, spacing: 8) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            // 自定义页签顺序：近期、日记、周记、月记、季记、年记
-                            let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
-                            ForEach(orderedTypes, id: \.self) { type in
-                                FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
-                                    dismissKeyboard()
-                                    // 如果内容已修改，先保存当前记录
-                                    if contentModified {
-                                        autoSaveRecord(recordType: selectedRecordType)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .padding(.top, 44) // 使用固定值代替弃用的API
+                    
+                    // 第二行：记录类型筛选器（页签选择器）
+                    VStack(alignment: .leading, spacing: 8) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                // 自定义页签顺序：近期、日记、周记、月记、季记、年记
+                                let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
+                                ForEach(orderedTypes, id: \.self) { type in
+                                    FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
+                                        dismissKeyboard()
+                                        // 如果内容已修改，先保存当前记录
+                                        if contentModified {
+                                            autoSaveRecord(recordType: selectedRecordType)
+                                        }
+                                        selectedRecordType = type
+                                        syncRecordTypeIndex()
                                     }
-                                    selectedRecordType = type
-                                    syncRecordTypeIndex()
                                 }
                             }
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal)
                     }
+                    .padding(.top, 8)
+                    .padding(.bottom, 12)
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 12)
+                .frame(maxWidth: .infinity)
+                .background(BlurView(style: .systemMaterial))
+                .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
+                .ignoresSafeArea(.all, edges: .top)
                 .onChange(of: selectedRecordType) { oldValue, newValue in
                     // 切换记录类型时收起键盘
                     dismissKeyboard()

@@ -272,21 +272,6 @@ private func tagColor(for tag: String) -> Color {
     // 使用TagColorManager获取标签颜色，确保整个应用中标签颜色一致
     return TagColorManager.shared.getColor(for: tag)
 }
-
-// 模糊背景视图
-// BlurView结构体 - 用于创建模糊效果背景
-struct BlurView: UIViewRepresentable {
-    var style: UIBlurEffect.Style
-    
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        uiView.effect = UIBlurEffect(style: style)
-    }
-}
     
     // 用户信息卡片
     private var userProfileSection: some View {
