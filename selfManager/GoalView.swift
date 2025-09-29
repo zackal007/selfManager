@@ -9,6 +9,20 @@ import SwiftUI
 import UIKit
 import Foundation
 import SwiftData
+
+// 添加BlurView组件用于顶部栏的模糊背景效果
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: style)
+    }
+}
 // 导入共享组件，包含FilterChip
 
 // 目标优先级枚举
@@ -445,124 +459,151 @@ struct GoalView: View {
             NavigationStack(path: navigationManager.getNavigationPath(for: 1)) {
                 VStack(spacing: 0) {
                     
-                    // 顶部标题栏
-                    HStack {
-                        // 侧边栏按钮
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                showSidebar = true
-                            }
-                        }) {
-                            Image(systemName: "line.3.horizontal")
-                                .font(.system(size: 24))
-                                .foregroundColor(.blue)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        
-                        Text("目标")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
-                        Spacer()
-                        
-                        // 搜索按钮
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                showSearchBar.toggle()
-                                if !showSearchBar {
-                                    searchText = ""
-                                    isSearching = false
+                    // 悬浮的顶部标题栏（整合页签选择器）
+                    VStack(spacing: 0) {
+                        // 第一行：标题和按钮
+                        HStack(alignment: .center) {
+                            // 侧边栏按钮
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showSidebar = true
+                                }
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemGray5).opacity(0.8))
+                                        .frame(width: 38, height: 38)
+                                    
+                                    Image(systemName: "line.3.horizontal")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(UIColor.label))
                                 }
                             }
-                        }) {
-                            Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
-                                .font(.system(size: 24))
-                                .foregroundColor(.blue)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        
-                        // 添加目标按钮
-                        Button(action: {
-                            showAddGoalSheet = true
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.blue)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        
-                        // 使用自定义视图替代复杂的Menu表达式
-                        MenuButton {
-                            // 刷新目标数据按钮
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("  目标")
+                                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                                    .foregroundColor(Color(UIColor.label))
+                            }
+                            
+                            Spacer()
+                            
+                            // 搜索按钮
                             Button(action: {
-                                // 重新加载目标数据
-                                // 通过切换一个刷新状态变量强制刷新视图
-                                refreshGoals.toggle()
-                            }) {
-                                Label("刷新目标", systemImage: "arrow.clockwise")
-                            }
-                            Divider()
-                            // 回收站选项
-                            Button(action: {
-                                showTrashView = true
-                            }) {
-                                Label("回收站", systemImage: "trash")
-                            }
-                            Divider()
-                            // 视图切换选项
-                            Group {
-                                viewModeMenuContent
-                            }
-                            Divider()
-                            // 分类子菜单
-                            Group {
-                                categoryMenuContent
-                            }
-                            // 排序子菜单
-                            Group {
-                                sortMenuContent
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    
-                    // 目标类型筛选器
-                    VStack(alignment: .leading, spacing: 8) {
-                       ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                // 全部选项
-                                FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
-                                    selectedGoalType = nil
-                                    selectedSegment = 0
-                                    syncGoalTypeIndex()
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showSearchBar.toggle()
+                                    if !showSearchBar {
+                                        searchText = ""
+                                        isSearching = false
+                                    }
                                 }
-                                
-                                // 各种目标类型
-                                ForEach(GoalType.allCases, id: \.self) { type in
-                                    FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
-                                        selectedGoalType = type
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                        .frame(width: 38, height: 38)
+                                    
+                                    Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            // 添加目标按钮
+                            Button(action: {
+                                showAddGoalSheet = true
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                        .frame(width: 38, height: 38)
+                                    
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            // 使用自定义视图替代复杂的Menu表达式
+                            MenuButton {
+                                // 刷新目标数据按钮
+                                Button(action: {
+                                    // 重新加载目标数据
+                                    // 通过切换一个刷新状态变量强制刷新视图
+                                    refreshGoals.toggle()
+                                }) {
+                                    Label("刷新目标", systemImage: "arrow.clockwise")
+                                }
+                                Divider()
+                                // 回收站选项
+                                Button(action: {
+                                    showTrashView = true
+                                }) {
+                                    Label("回收站", systemImage: "trash")
+                                }
+                                Divider()
+                                // 视图切换选项
+                                Group {
+                                    viewModeMenuContent
+                                }
+                                Divider()
+                                // 分类子菜单
+                                Group {
+                                    categoryMenuContent
+                                }
+                                // 排序子菜单
+                                Group {
+                                    sortMenuContent
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .padding(.top, 44) // 使用固定值代替弃用的API
+                        
+                        // 第二行：目标类型筛选器（页签选择器）
+                        VStack(alignment: .leading, spacing: 8) {
+                           ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    // 全部选项
+                                    FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
+                                        selectedGoalType = nil
+                                        selectedSegment = 0
                                         syncGoalTypeIndex()
-                                        // 根据选择的目标类型设置selectedSegment
-                                        switch type {
-                                        case .life:
-                                            selectedSegment = 0
-                                        case .yearly:
-                                            selectedSegment = 1
-                                        case .shortTerm:
-                                            selectedSegment = 2
-                                        case .habit:
-                                            selectedSegment = 3
+                                    }
+                                    
+                                    // 各种目标类型
+                                    ForEach(GoalType.allCases, id: \.self) { type in
+                                        FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
+                                            selectedGoalType = type
+                                            syncGoalTypeIndex()
+                                            // 根据选择的目标类型设置selectedSegment
+                                            switch type {
+                                            case .life:
+                                                selectedSegment = 0
+                                            case .yearly:
+                                                selectedSegment = 1
+                                            case .shortTerm:
+                                                selectedSegment = 2
+                                            case .habit:
+                                                selectedSegment = 3
+                                            }
                                         }
                                     }
                                 }
+                                .padding(.horizontal, 16)
                             }
-                            .padding(.horizontal)
                         }
+                        .padding(.top, 8)
+                        .padding(.bottom, 12)
                     }
-                    .padding(.top, 8)
-                    .padding(.bottom, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(BlurView(style: .systemMaterial))
+                    .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
+                    .ignoresSafeArea(.all, edges: .top)
                     
                     // 搜索栏
                     if showSearchBar {
