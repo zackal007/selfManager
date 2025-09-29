@@ -895,6 +895,7 @@ struct EditContactView: View {
     @State private var selectedFrequency: ContactFrequency
     @State private var tags: String
     @State private var newTag: String = ""
+    @State private var isExample: Bool
     
     init(contact: Contact) {
         self.contact = contact
@@ -909,6 +910,7 @@ struct EditContactView: View {
         self._selectedImportance = State(initialValue: contact.importance)
         self._selectedFrequency = State(initialValue: contact.frequency)
         self._tags = State(initialValue: contact.tags.joined(separator: ", "))
+        self._isExample = State(initialValue: contact.isExample)
     }
     
     var body: some View {
@@ -957,6 +959,8 @@ struct EditContactView: View {
                     TextField("标签 (用逗号分隔)", text: $tags)
                     TextField("备注", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
+                    
+                    Toggle("设为榜样联系人", isOn: $isExample)
                 }
             }
             .navigationBarTitle("编辑联系人", displayMode: .inline)
@@ -984,6 +988,7 @@ struct EditContactView: View {
         contact.importance = selectedImportance
         contact.frequency = selectedFrequency
         contact.tags = tags.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) }.filter { !$0.isEmpty }
+        contact.isExample = isExample
         contact.modifyTime = Date()
         
         // 重新计算下次联系时间

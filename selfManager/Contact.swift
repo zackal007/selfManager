@@ -126,6 +126,7 @@ final class Contact {
     var modifyTime: Date
     var avatar: String? // 头像图片名称或路径
     var relatedGoalIdsString: String = ""  // 关联目标ID字符串
+    var isExample: Bool = false  // 是否为榜样联系人
     
     // 计算属性，用于获取和设置关联目标ID数组
     var relatedGoalIds: [UUID] {

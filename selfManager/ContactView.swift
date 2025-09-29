@@ -75,9 +75,9 @@ struct ContactView: View {
         return sortContacts(categorizeContacts(workContacts))
     }
     
-    private var processedReminderContacts: [Contact] {
-        let reminderContacts = allContacts.filter { $0.needsContactReminder }
-        return sortContacts(categorizeContacts(reminderContacts))
+    private var processedExampleContacts: [Contact] {
+        let exampleContacts = allContacts.filter { $0.isExample }
+        return sortContacts(categorizeContacts(exampleContacts))
     }
     
     // 搜索过滤后的联系人
@@ -102,7 +102,7 @@ struct ContactView: View {
         case 1: return processedFamilyContacts
         case 2: return processedFriendContacts
         case 3: return processedWorkContacts
-        case 4: return processedReminderContacts
+        case 4: return processedExampleContacts
         default: return processedAllContacts
         }
     }
@@ -281,8 +281,8 @@ struct ContactView: View {
                         selectedSegment = 3
                     }
                     
-                    // 提醒选项
-                    FilterChip(title: "提醒", isSelected: selectedSegment == 4) {
+                    // 榜样选项
+                    FilterChip(title: "榜样", isSelected: selectedSegment == 4) {
                         selectedSegment = 4
                     }
                 }
