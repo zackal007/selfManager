@@ -191,7 +191,7 @@ struct ImagePickerView: View {
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                             }
-                            .onChange(of: selectedPhotoItem) { newItem in
+                            .onChange(of: selectedPhotoItem) { _, newItem in
                                 if let newItem = newItem {
                                     isLoading = true
                                     loadTransferable(from: newItem)

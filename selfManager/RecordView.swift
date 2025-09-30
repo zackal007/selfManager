@@ -1254,7 +1254,7 @@ struct RecordView: View {
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .onChange(of: currentRecordTypeIndex) { newIndex in
+                .onChange(of: currentRecordTypeIndex) { _, newIndex in
                     // 切换页签时收起键盘
                     dismissKeyboard()
                     

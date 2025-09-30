@@ -728,7 +728,7 @@ struct GoalView: View {
                         }
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                    .onChange(of: currentGoalTypeIndex) { newIndex in
+                    .onChange(of: currentGoalTypeIndex) { _, newIndex in
                         // 同步更新selectedGoalType
                         selectedGoalType = goalTypes[newIndex]
                     }

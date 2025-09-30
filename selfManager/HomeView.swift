@@ -239,13 +239,13 @@ struct HomeView: View {
                 loadSavedGoalFilters()
             }
         }
-        .onChange(of: selectedGoalType) { _ in
+        .onChange(of: selectedGoalType) {
             updateFilteredGoals()
         }
-        .onChange(of: selectedImportance) { _ in
+        .onChange(of: selectedImportance) {
             updateFilteredGoals()
         }
-        .onChange(of: searchText) { _ in
+        .onChange(of: searchText) {
             updateFilteredGoals()
         }
 }

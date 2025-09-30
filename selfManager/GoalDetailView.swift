@@ -953,7 +953,7 @@ struct GoalDetailView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .frame(width: 160)
-                .onChange(of: editingImportance) { newValue in
+                .onChange(of: editingImportance) { oldValue, newValue in
                     let oldImportance = goal.importance
                     goal.importance = newValue
                     goal.modifyTime = Date()
@@ -1240,7 +1240,7 @@ struct GoalDetailView: View {
                         }
                         .pickerStyle(SegmentedPickerStyle())
                         .frame(width: 160)
-                        .onChange(of: editingImportance) { newValue in
+                        .onChange(of: editingImportance) { oldValue, newValue in
                             let oldImportance = goal.importance
                             goal.importance = newValue
                             goal.modifyTime = Date()
