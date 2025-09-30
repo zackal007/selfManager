@@ -150,8 +150,6 @@ struct ContactView: View {
                         searchBarView
                     }
                     
-                    segmentedControlView
-                    
                     contentView
                 }
                 .background(Color(.systemGroupedBackground))
@@ -189,7 +187,7 @@ struct ContactView: View {
     
     // 分段控制器视图
     private var segmentedControlView: some View {
-        segmentedControl
+        EmptyView() // 已整合到headerView中，保留空视图以避免编译错误
     }
     
     // 内容视图
@@ -199,61 +197,124 @@ struct ContactView: View {
     
     // 顶部标题栏
     private var headerView: some View {
-        HStack {
-            // 侧边栏按钮
-            Button(action: {
-                showSidebar = true
-            }) {
-                Image(systemName: "line.horizontal.3")
-                    .font(.title2)
-                    .foregroundColor(.primary)
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            Spacer()
-            
-            Text("人脉")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundColor(.primary)
-            
-            Spacer()
-            
-            // 搜索按钮
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showSearchBar.toggle()
-                    if !showSearchBar {
-                        searchText = ""
+        // 悬浮的顶部标题栏（整合联系人类型筛选器）
+        VStack(spacing: 0) {
+            // 第一行：标题和按钮
+            HStack(alignment: .center) {
+                // 侧边栏按钮
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showSidebar = true
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(UIColor.systemGray5).opacity(0.8))
+                            .frame(width: 38, height: 38)
+                        
+                        Image(systemName: "line.3.horizontal")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.label))
                     }
                 }
-            }) {
-                Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
-                    .font(.system(size: 24))
-                    .foregroundColor(.blue)
+                .buttonStyle(PlainButtonStyle())
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("  人脉")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.label))
+                }
+                
+                Spacer()
+                
+                // 搜索按钮
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showSearchBar.toggle()
+                        if !showSearchBar {
+                            searchText = ""
+                        }
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(UIColor.systemBlue).opacity(0.1))
+                            .frame(width: 38, height: 38)
+                        
+                        Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                // 添加联系人按钮
+                Button(action: {
+                    showAddContactSheet = true
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(UIColor.systemBlue).opacity(0.1))
+                            .frame(width: 38, height: 38)
+                        
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                // 使用自定义视图替代复杂的Menu表达式
+                MenuButton {
+                    viewModeMenuContent
+                    Divider()
+                    categoryMenuContent
+                    sortMenuContent
+                }
             }
-            .buttonStyle(ScaleButtonStyle())
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .padding(.top, 44) // 使用固定值代替弃用的API
             
-            // 添加联系人按钮
-            Button(action: {
-                showAddContactSheet = true
-            }) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.blue)
+            // 第二行：联系人类型筛选器
+            VStack(alignment: .leading, spacing: 8) {
+               ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        // 全部选项
+                        FilterChip(title: "全部", isSelected: selectedSegment == 0) {
+                            selectedSegment = 0
+                        }
+                        
+                        // 家人选项
+                        FilterChip(title: "家人", isSelected: selectedSegment == 1) {
+                            selectedSegment = 1
+                        }
+                        
+                        // 朋友选项
+                        FilterChip(title: "朋友", isSelected: selectedSegment == 2) {
+                            selectedSegment = 2
+                        }
+                        
+                        // 工作选项
+                        FilterChip(title: "工作", isSelected: selectedSegment == 3) {
+                            selectedSegment = 3
+                        }
+                        
+                        // 榜样选项
+                        FilterChip(title: "榜样", isSelected: selectedSegment == 4) {
+                            selectedSegment = 4
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
             }
-            .buttonStyle(ScaleButtonStyle())
-            
-            // 菜单按钮
-            MenuButton {
-                viewModeMenuContent
-                Divider()
-                categoryMenuContent
-                sortMenuContent
-            }
+            .padding(.top, 8)
+            .padding(.bottom, 12)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity)
+        .background(BlurView(style: .systemMaterial))
+        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
+        .ignoresSafeArea(.all, edges: .top)
     }
     
     // 联系人类型筛选器
