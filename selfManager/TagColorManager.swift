@@ -51,7 +51,12 @@ class TagColorManager: ObservableObject {
     
     // 获取标签颜色
     func getColor(for tag: String) -> Color {
+        // 优先按原始键读取，其次尝试规范化键，最后使用稳定的默认颜色
         if let colorString = tagColors[tag], let color = Color(hex: colorString) {
+            return color
+        }
+        let normalized = normalizeTag(tag)
+        if let colorString = tagColors[normalized], let color = Color(hex: colorString) {
             return color
         }
         return defaultColor(for: tag)
@@ -59,7 +64,11 @@ class TagColorManager: ObservableObject {
     
     // 设置标签颜色
     func setColor(_ color: Color, for tag: String) {
-        tagColors[tag] = color.toHex()
+        let hex = color.toHex()
+        let normalized = normalizeTag(tag)
+        // 同时保存原始键与规范化键，提升兼容性
+        tagColors[tag] = hex
+        tagColors[normalized] = hex
         saveTagColors()
         // 触发颜色更新通知
         DispatchQueue.main.async {
@@ -69,9 +78,19 @@ class TagColorManager: ObservableObject {
     
     // 更新标签名称
     func updateTagName(from oldTag: String, to newTag: String) {
-        if let colorString = tagColors[oldTag] {
-            tagColors[newTag] = colorString
-            tagColors.removeValue(forKey: oldTag)
+        let oldExact = oldTag
+        let oldNorm = normalizeTag(oldTag)
+        let newExact = newTag
+        let newNorm = normalizeTag(newTag)
+
+        let colorString = tagColors[oldExact] ?? tagColors[oldNorm]
+        if let cs = colorString {
+            // 写入新标签的原始与规范化键
+            tagColors[newExact] = cs
+            tagColors[newNorm] = cs
+            // 移除旧标签的两种键
+            tagColors.removeValue(forKey: oldExact)
+            tagColors.removeValue(forKey: oldNorm)
             saveTagColors()
             // 触发颜色更新通知
             DispatchQueue.main.async {
@@ -82,7 +101,9 @@ class TagColorManager: ObservableObject {
     
     // 删除标签颜色
     func removeColor(for tag: String) {
+        let normalized = normalizeTag(tag)
         tagColors.removeValue(forKey: tag)
+        tagColors.removeValue(forKey: normalized)
         saveTagColors()
         // 触发颜色更新通知
         DispatchQueue.main.async {
@@ -111,8 +132,28 @@ class TagColorManager: ObservableObject {
     
     // 默认颜色生成
     private func defaultColor(for tag: String) -> Color {
-        let index = abs(tag.hashValue) % availableColors.count
+        // 使用稳定的、可复现的字符串哈希（DJB2）来映射颜色索引
+        // 同时进行规范化处理以避免大小写与空白差异
+        let normalized = tag.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.isEmpty {
+            return .blue
+        }
+        let index = stableIndex(for: normalized)
         return availableColors[index]
+    }
+
+    // 规范化标签键，避免大小写与空白差异
+    private func normalizeTag(_ tag: String) -> String {
+        tag.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    // 稳定的字符串哈希索引（DJB2变体），确保不同时间/会话一致
+    private func stableIndex(for string: String) -> Int {
+        var hash: UInt64 = 5381
+        for scalar in string.unicodeScalars {
+            hash = ((hash << 5) &+ hash) &+ UInt64(scalar.value)
+        }
+        return Int(hash % UInt64(availableColors.count))
     }
 }
 
