@@ -549,7 +549,6 @@ struct GoalView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .padding(.top, 44) // 使用固定值代替弃用的API
                         
                         // 导航标签：目标类型筛选页签（切换视图内容）
                         VStack(alignment: .leading, spacing: 8) {
@@ -588,9 +587,9 @@ struct GoalView: View {
                         .padding(.bottom, 12)
                     }
                     .frame(maxWidth: .infinity)
-                    .background(BlurView(style: .systemMaterial))
+                    .background(.ultraThinMaterial)
                     .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
-                    .ignoresSafeArea(.all, edges: .top)
+                    .safeAreaPadding(.top)
                     
                     // 输入框：目标搜索栏（控制关键词与筛选状态）
                     if showSearchBar {
