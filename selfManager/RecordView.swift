@@ -396,7 +396,9 @@ struct RecordView: View {
     }
     
     var body: some View {
+        // 页面导航容器（记录页的 NavigationStack）
         NavigationStack(path: navigationManager.getNavigationPath(for: 2)) {
+            // 顶层布局容器（承载顶部栏、日期选择器与内容区域）
             VStack(spacing: 0) {
                 // 悬浮的顶部标题栏（整合记录类型筛选器）
                 VStack(spacing: 0) {
@@ -1180,6 +1182,7 @@ struct RecordView: View {
                                         VStack(alignment: .leading, spacing: 12) {
                                             // 移除记录标题
                                             
+                                            // 记录正文编辑器（富文本与图片），绑定到 recordContent
                                             NotesStyleRecordEditor(
                                                 text: $recordContent,
                                                 images: $selectedImages,
@@ -1299,6 +1302,7 @@ struct RecordView: View {
             .onTapGesture {
                 dismissKeyboard()
             }
+            // 隐式导航链接容器（跳转目标/联系人/记录详情）
             .background(
                 Group {
                     // 目标详情页导航
@@ -1375,6 +1379,7 @@ struct RecordView: View {
                     contentModified = false
                 }
             }
+            // 侧边栏覆盖层（应用全局导航）
             .overlay(
                 SidebarView(
                     isPresented: $showSidebar,

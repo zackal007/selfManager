@@ -132,7 +132,8 @@ struct selfManagerApp: App {
                 Group {
                     if let container = sharedModelContainer {
                         ZStack {
-                            TabView(selection: $selectedTab) {
+            // 顶栏/入口导航：应用主 TabBar（修改标签或顺序从这里入手）
+            TabView(selection: $selectedTab) {
                         HomeView(selectedTab: $selectedTab)
                             .tabItem {
                                 Image(systemName: "house.fill")

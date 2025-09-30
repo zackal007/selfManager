@@ -121,7 +121,8 @@ struct TagsView: View {
         return TagColorManager.shared.getColor(for: tag)
     }
     
-    var body: some View {
+var body: some View {
+        // 页面主体布局容器（顶层 VStack，用于组织页面内容）
         VStack(spacing: 0) {
             // 搜索栏 - 优化设计
             VStack(spacing: 16) {
@@ -130,7 +131,7 @@ struct TagsView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
                             .font(.system(size: 16, weight: .medium))
-                        
+                        // 标签搜索输入框（TextField）
                         TextField("搜索标签", text: $searchText)
                             .font(.system(size: 16))
                         
@@ -167,12 +168,14 @@ struct TagsView: View {
             )
             
             // 标签网格布局 - iOS原生风格的按钮块
+            // 标签网格与导航链接列表
             ScrollView {
                 LazyVGrid(columns: [
                     GridItem(.flexible(), spacing: 12),
                     GridItem(.flexible(), spacing: 12)
                 ], spacing: 12) {
                     ForEach(allTags, id: \.self) { tag in
+                        // 导航到标签详情页面（NavigationLink）
                         NavigationLink(destination: TagDetailView(tag: tag, tagType: selectedTagType)) {
                             VStack(spacing: 12) {
                                 // 标签主体内容
@@ -261,15 +264,18 @@ struct TagsView: View {
         }
 
 
+        // 导航栏标题（NavigationTitle）
         .navigationTitle("标签管理")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             isModelContextReady = true
         }
+        // 顶部工具栏（右侧操作按钮）
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 12) {
                     // 同步标签按钮
+                    // 同步已有标签按钮
                     Button(action: {
                         syncExistingTags()
                     }) {
@@ -279,6 +285,7 @@ struct TagsView: View {
                     }
                     
                     // 添加标签按钮
+                    // 添加标签按钮（弹出添加表单）
                     Button(action: {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             showingAddTag = true
@@ -292,6 +299,7 @@ struct TagsView: View {
                     }
                     
                     // 管理分类按钮
+                    // 标签分类管理入口（导航到分类列表）
                     NavigationLink(destination: TagCategoryListView()) {
                         HStack(spacing: 4) {
                             Image(systemName: "folder.fill")
@@ -310,6 +318,7 @@ struct TagsView: View {
                 }
             }
         }
+        // 添加标签弹窗（Sheet）
         .sheet(isPresented: $showingAddTag) {
             addTagView
         }
@@ -318,6 +327,7 @@ struct TagsView: View {
     
     // 添加标签视图 - 优化设计
     private var addTagView: some View {
+        // 添加标签弹窗的导航容器（NavigationView）
         NavigationView {
             VStack(spacing: 0) {
                 // 头部区域
@@ -334,13 +344,14 @@ struct TagsView: View {
                     }
                     .padding(.top, 32)
                     
-                    // 输入框区域
+                    // 输入框区域（新标签的名称与描述）
                     VStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("标签名称")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
+                            // 新标签名称输入框（TextField）
                             TextField("请输入标签名称", text: $newTag)
                                 .font(.system(size: 16))
                                 .padding(.horizontal, 16)
@@ -360,6 +371,7 @@ struct TagsView: View {
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
+                            // 新标签描述输入框（TextField）
                             TextField("请输入标签描述", text: $newTagDescription)
                                 .font(.system(size: 16))
                                 .padding(.horizontal, 16)
@@ -370,7 +382,7 @@ struct TagsView: View {
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12)
                                                 .stroke(newTagDescription.isEmpty ? Color.clear : Color(UIColor.systemBlue), lineWidth: 2)
-                                        )
+                                            )
                                 )
                         }
                     }
@@ -1197,7 +1209,7 @@ struct TagInfoHeader: View {
                         }
                         
                         VStack(spacing: 16) {
-                            // 标签名称
+                            // 标签名称输入（TextField）
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("标签名称")
                                     .font(.system(size: 16, weight: .semibold))
@@ -1224,7 +1236,7 @@ struct TagInfoHeader: View {
                                     }
                             }
                             
-                            // 描述
+                            // 标签描述输入（TextField）
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("描述（可选）")
                                     .font(.system(size: 16, weight: .semibold))
@@ -1246,7 +1258,7 @@ struct TagInfoHeader: View {
                                     )
                             }
                             
-                            // 分类
+                            // 分类选择（Menu 下拉选择器）
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("分类")
                                     .font(.system(size: 16, weight: .semibold))

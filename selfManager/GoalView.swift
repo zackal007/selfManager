@@ -442,10 +442,11 @@ struct GoalView: View {
     var body: some View { 
         ZStack {
             // 主视图
+            // 页面导航容器：Goal 页主 NavigationStack（目标列表的路由栈）
             NavigationStack(path: navigationManager.getNavigationPath(for: 1)) {
                 VStack(spacing: 0) {
                     
-                    // 悬浮的顶部标题栏（整合页签选择器）
+                    // 顶栏：页面标题与操作菜单（修改顶栏按钮或布局从这里入手）
                     VStack(spacing: 0) {
                         // 第一行：标题和按钮
                         HStack(alignment: .center) {
@@ -550,7 +551,7 @@ struct GoalView: View {
                         .padding(.vertical, 10)
                         .padding(.top, 44) // 使用固定值代替弃用的API
                         
-                        // 第二行：目标类型筛选器（页签选择器）
+                        // 导航标签：目标类型筛选页签（切换视图内容）
                         VStack(alignment: .leading, spacing: 8) {
                            ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 10) {
@@ -591,7 +592,7 @@ struct GoalView: View {
                     .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
                     .ignoresSafeArea(.all, edges: .top)
                     
-                    // 搜索栏
+                    // 输入框：目标搜索栏（控制关键词与筛选状态）
                     if showSearchBar {
                         searchBarView
                     }
@@ -682,7 +683,7 @@ struct GoalView: View {
                     .background(Color(.systemBackground).opacity(0.5))
                 }
                 
-                // 目标列表 - 使用TabView实现丝滑滑动
+                // 页面框：目标内容区域 TabView（按类型分页滑动）
                 GeometryReader { geometry in
                     TabView(selection: $currentGoalTypeIndex) {
                         ForEach(goalTypes.indices, id: \.self) { index in
@@ -840,6 +841,7 @@ struct GoalView: View {
                 .foregroundColor(.gray)
                 .padding(.leading, 8)
             
+            // 输入框：搜索关键词（Goal页搜索主入口）
             TextField("搜索目标...", text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
                 .onTapGesture {
@@ -1349,9 +1351,12 @@ struct AddGoalView: View {
     
     var body: some View {
         ZStack {
+            // 页面导航容器：添加目标表单的导航栈（顶部标题与按钮）
             NavigationView {
+                // 页面框：添加目标的表单主体（包含各类输入控件）
                 Form {
                     Section(header: Text("目标信息")) {
+                        // 输入框：目标名称（必填）
                         TextField("目标名称", text: $goalName)
                             .overlay(
                                 goalName.isEmpty ? 
@@ -1359,25 +1364,31 @@ struct AddGoalView: View {
                                 alignment: .trailing
                             )
                         
+                        // 输入框：目标描述（可选，支持长文本）
                         TextField("目标描述", text: $goalDescription)
                             .frame(height: 80)
                         
+                        // 选择控件：目标类别（影响展示与分类）
                         Picker("类别", selection: $selectedCategory) {
                             ForEach(categories, id: \.self) { category in
                                 Text(category).tag(category)
                             }
                         }
                         
+                        // 输入框：标签（逗号分隔，用于筛选与标注）
                         TextField("标签 (用逗号分隔)", text: $tags)
                         
+                        // 开关控件：是否设置截止日期
                         Toggle("设置截止日期", isOn: $hasDueDate)
                         
                         if hasDueDate {
+                            // 日期选择器：目标截止日期
                             DatePicker("截止日期", selection: $dueDate, displayedComponents: [.date])
                         }
                     }
                 }
                 .navigationBarTitle("添加目标", displayMode: .inline)
+                // 顶栏：添加目标页的取消/保存按钮（右侧保存，左侧取消）
                 .navigationBarItems(
                     leading: Button("取消") {
                         isPresented = false

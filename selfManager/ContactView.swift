@@ -140,12 +140,16 @@ struct ContactView: View {
     }
     
     var body: some View {
+        // 页面导航容器：管理人脉页面的导航栈
         NavigationStack(path: navigationManager.getNavigationPath(for: 3)) {
+            // 页面框架容器：承载顶栏、搜索栏与列表内容
             ZStack {
                 // 主内容
+                // 顶栏：页面标题与操作菜单（侧边栏、搜索、添加、筛选）
                 VStack(spacing: 0) {
                     headerView
                     
+                    // 搜索输入框：用于搜索联系人
                     if showSearchBar {
                         searchBarView
                     }
@@ -154,29 +158,33 @@ struct ContactView: View {
                 }
                 .background(Color(.systemGroupedBackground))
                 .navigationBarHidden(true)
+                // 导航目的地：进入目标详情
                 .navigationDestination(isPresented: $showGoalDetail) {
                     if let goalId = selectedGoalId,
                        let goal = allGoals.first(where: { $0.id == goalId }) {
                         GoalDetailView(goal: goal)
                     }
                 }
+                // 导航目的地：进入联系人详情
                 .navigationDestination(isPresented: $showContactDetail) {
                     if let contactId = selectedContactId,
                        let contact = allContacts.first(where: { $0.id == contactId }) {
                         ContactDetailView(contact: contact)
                     }
                 }
+                // 导航目的地：进入记录详情
                 .navigationDestination(isPresented: $showRecordDetail) {
                     if let recordId = selectedRecordId,
                        let record = allRecords.first(where: { $0.id == recordId }) {
                         RecordView(selectedTab: .constant(2))
                     }
                 }
+                // 弹窗：添加联系人表单
                 .sheet(isPresented: $showAddContactSheet) {
                     AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)
                 }
                 
-                // 侧边栏
+                // 侧边栏：显示应用功能菜单
                 SidebarView(
                     isPresented: $showSidebar,
                     selectedTab: $selectedTab
@@ -355,11 +363,13 @@ struct ContactView: View {
     }
     
     // 搜索栏
+    // 顶栏下的搜索区域：包含图标与文本输入
     private var searchBarView: some View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
             
+            // 文本输入框：联系人搜索关键词
             TextField("搜索联系人", text: $searchText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
         }

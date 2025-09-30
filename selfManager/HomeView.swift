@@ -110,6 +110,7 @@ struct HomeView: View {
     }
     
     var body: some View {
+        // 页面导航容器：Home 页的主 NavigationStack（路由和返回栈）
         NavigationStack(path: navigationManager.getNavigationPath(for: 0)) {
             ZStack(alignment: .top) {
                 ScrollView {
