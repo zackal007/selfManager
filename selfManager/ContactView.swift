@@ -282,7 +282,6 @@ struct ContactView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .padding(.top, 44) // 使用固定值代替弃用的API
             
             // 第二行：联系人类型筛选器
             VStack(alignment: .leading, spacing: 8) {
@@ -320,9 +319,9 @@ struct ContactView: View {
             .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
-        .background(BlurView(style: .systemMaterial))
+        .background(.ultraThinMaterial)
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
-        .ignoresSafeArea(.all, edges: .top)
+        .safeAreaPadding(.top)
     }
     
     // 联系人类型筛选器
