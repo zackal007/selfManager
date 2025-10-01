@@ -9,6 +9,13 @@ import SwiftUI
 import UIKit
 import Foundation
 import SwiftData
+// 用于传递并测量顶栏高度的偏好键
+struct HeaderHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
 // 导入共享组件，包含FilterChip
 
 // 目标优先级枚举
@@ -145,6 +152,8 @@ struct GoalView: View {
     // 目标类型相关状态变量
     @State private var goalTypes: [GoalType?] = [nil] + GoalType.allCases.map { $0 as GoalType? }
     @State private var currentGoalTypeIndex = 0
+    // 顶栏动态高度（用于同步透明占位的高度，防止内容被遮挡）
+    @State private var headerHeight: CGFloat = 120
     
     // MARK: - 菜单组件
     // 视图模式菜单内容
@@ -444,9 +453,8 @@ struct GoalView: View {
             // 主视图
             // 页面导航容器：Goal 页主 NavigationStack（目标列表的路由栈）
             NavigationStack(path: navigationManager.getNavigationPath(for: 1)) {
-                VStack(spacing: 0) {
-                    
-                    // 顶栏：页面标题与操作菜单（修改顶栏按钮或布局从这里入手）
+                ZStack(alignment: .top) {
+                    // 悬浮的顶部标题栏（覆盖层），使用系统材质实现动态模糊
                     VStack(spacing: 0) {
                         // 第一行：标题和按钮
                         HStack(alignment: .center) {
@@ -548,7 +556,7 @@ struct GoalView: View {
                             }
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 8)
                         
                         // 导航标签：目标类型筛选页签（切换视图内容）
                         VStack(alignment: .leading, spacing: 8) {
@@ -583,17 +591,36 @@ struct GoalView: View {
                                 .padding(.horizontal, 16)
                             }
                         }
-                        .padding(.top, 8)
-                        .padding(.bottom, 12)
+                        .padding(.top, 6)
+                        .padding(.bottom, 10)
                     }
                     .frame(maxWidth: .infinity)
-                    .background(.ultraThinMaterial)
-                    .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
                     .safeAreaPadding(.top)
+                    .background(
+                        BlurView(style: .systemMaterial)
+                            .ignoresSafeArea(.all, edges: .top)
+                    )
+                    .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
+                    .zIndex(10)
+                    .overlay(
+                        GeometryReader { proxy in
+                            Color.clear
+                                .preference(key: HeaderHeightPreferenceKey.self, value: proxy.size.height)
+                        }
+                    )
+                    .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
+                        headerHeight = height
+                    }
+                    
+                    // 顶栏已迁移为覆盖层，这里加入透明占位以避免初始内容被遮挡
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: headerHeight)
                     
                     // 输入框：目标搜索栏（控制关键词与筛选状态）
                     if showSearchBar {
                         searchBarView
+                            .zIndex(9)
                     }
                 
                 // 年份选择器
@@ -690,7 +717,6 @@ struct GoalView: View {
                                 VStack(spacing: 16) {
                                     // 移除了分类标题
                                     Spacer().frame(height: 8)
-                                    .padding(.top, 8)
                                 
                                     // 根据视图模式显示不同的布局
                                     if viewMode == .gallery {
@@ -721,6 +747,7 @@ struct GoalView: View {
                                         }
                                     }
                                 }
+                                .padding(.top, 118)
                                 .padding(.bottom, 16)
                             }
                             .tag(index)
