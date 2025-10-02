@@ -76,7 +76,35 @@ struct RecordView: View {
                 }
 
                 Spacer()
+                // 左侧增加：日期选择器显示/隐藏按钮 + 当前时间文案（仅非“近期”显示）
+                if selectedRecordType != .recent {
+                    HStack(spacing: 8) {
+                        Button(action: {
+                            dismissKeyboard()
+                            withAnimation {
+                                showDatePicker.toggle()
+                            }
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color(UIColor.label))
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color(UIColor.systemGray5).opacity(0.8))
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
 
+                        Text(headerInlineDateText)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                    }
+                }
+                
                 // 菜单按钮
                 MenuButton {
                     // 视图模式菜单内容
@@ -87,7 +115,7 @@ struct RecordView: View {
                             showDatePicker.toggle()
                         }
                     }) {
-                        Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "calendar.badge.minus" : "calendar.badge.plus")
+                        Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "chevron.up" : "chevron.down")
                     }
 
                     Divider()
@@ -1223,6 +1251,7 @@ struct RecordView: View {
                                 .padding(.top, 0)
                                 .padding(.bottom, 20)
                             }
+                            .zIndex(5)
                         }
                         .tag(index)
                     }
@@ -1275,6 +1304,7 @@ struct RecordView: View {
             .safeAreaInset(edge: .top) {
                 headerView
             }
+            .safeAreaPadding(.top)
             .navigationBarHidden(true)
             .onTapGesture {
                 dismissKeyboard()
@@ -1336,6 +1366,8 @@ struct RecordView: View {
                 loadCurrentRecord()
                 // 重置修改状态
                 contentModified = false
+                // 默认在非“近期”类型下显示日期选择器
+                showDatePicker = selectedRecordType != .recent
                 // 只在第一次加载时清理重复记录
                 if !hasCleanedDuplicates {
                     cleanDuplicateRecords()
@@ -1365,6 +1397,8 @@ struct RecordView: View {
                     autoSaveRecord(recordType: oldValue)
                 }
                 
+                // 切换到非“近期”类型时，自动显示日期选择器；切换到“近期”时隐藏
+                showDatePicker = newValue != .recent
                 // 如果切换到年记，重置为当前系统时间并设置年份列表的基准年份
                 if newValue == .yearly {
                     currentDate = Date() // 重置为当前系统时间
@@ -1399,6 +1433,38 @@ struct RecordView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy年MM月dd日"
         return formatter.string(from: currentDate)
+    }
+
+    // 顶栏内联日期文本：根据记录类型显示不同格式
+    var headerInlineDateText: String {
+        switch selectedRecordType {
+        case .recent:
+            return ""
+        case .daily:
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy年MM月dd日"
+            return formatter.string(from: currentDate)
+        case .weekly:
+            let calendar = self.calendar
+            let year = calendar.component(.year, from: currentDate)
+            let week = calendar.component(.weekOfYear, from: currentDate)
+            return "\(year)年第\(week)周"
+        case .monthly:
+            let calendar = self.calendar
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            return "\(year)年\(month)月"
+        case .quarterly:
+            let calendar = self.calendar
+            let year = calendar.component(.year, from: currentDate)
+            let month = calendar.component(.month, from: currentDate)
+            let quarter = (month - 1) / 3 + 1
+            return "\(year)年第\(quarter)季度"
+        case .yearly:
+            let calendar = self.calendar
+            let year = calendar.component(.year, from: currentDate)
+            return "\(year)年"
+        }
     }
     
     // 注意：yearMonthFormatter 已在文件顶部声明
