@@ -47,6 +47,8 @@ struct ContactView: View {
     @State private var showGoalDetail = false
     @State private var showContactDetail = false
     @State private var showRecordDetail = false
+    // 顶栏动态高度（用于透明占位，避免内容被遮挡）
+    @State private var headerHeight: CGFloat = 120
     
     // 初始化方法，接收selectedTab绑定
     init(selectedTab: Binding<Int>) {
@@ -147,11 +149,10 @@ struct ContactView: View {
                 // 主内容
                 // 顶栏：页面标题与操作菜单（侧边栏、搜索、添加、筛选）
                 VStack(spacing: 0) {
-                    headerView
-                    
                     // 搜索输入框：用于搜索联系人
                     if showSearchBar {
                         searchBarView
+                            .zIndex(9)
                     }
                     
                     contentView
@@ -189,6 +190,9 @@ struct ContactView: View {
                     isPresented: $showSidebar,
                     selectedTab: $selectedTab
                 )
+            }
+            .safeAreaInset(edge: .top) {
+                headerView
             }
         }
     }
@@ -319,9 +323,21 @@ struct ContactView: View {
             .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial)
+        .background(
+            BlurView(style: .systemMaterial)
+                .ignoresSafeArea(.all, edges: .top)
+        )
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
-        .safeAreaPadding(.top)
+        .zIndex(10)
+        .overlay(
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(key: HeaderHeightPreferenceKey.self, value: proxy.size.height)
+            }
+        )
+        .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
+            headerHeight = height
+        }
     }
     
     // 联系人类型筛选器
