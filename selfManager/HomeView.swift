@@ -560,9 +560,8 @@ private func tagColor(for tag: String) -> Color {
 
     // MARK: - 被Ping的目标卡片
     private var pingedGoalSection: some View {
-        Group {
-            if let latestID = pingManager.latestPingedGoalID,
-               let goal = goals.first(where: { $0.id == latestID }) {
+        ForEach(pingManager.allPingedGoalIDs, id: \.self) { goalID in
+            if let goal = goals.first(where: { $0.id == goalID }) {
                 // 直接显示目标卡片，添加取消Ping按钮
                 ZStack(alignment: .topTrailing) {
                     // 使用完整的GoalCard而非SimplifiedGoalCard
@@ -573,7 +572,7 @@ private func tagColor(for tag: String) -> Color {
                                 HStack {
                                     Spacer()
                                     Button(action: {
-                                        pingManager.unping(goalID: latestID)
+                                        pingManager.unping(goalID: goalID)
                                     }) {
                                         HStack(spacing: 6) {
                                             Image(systemName: "pin.slash.fill")

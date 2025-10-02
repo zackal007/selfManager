@@ -1060,19 +1060,19 @@ struct GoalDetailView: View {
 
             // “钉子”按钮：钉住/取消钉住当前目标
             Button(action: {
-                if pingManager.pingedMap[goal.id] != nil {
-                    pingManager.unping(goalID: goal.id)
-                } else {
-                    pingManager.ping(goalID: goal.id)
-                }
+                if pingManager.isPinged(goalID: goal.id) {
+                pingManager.unping(goalID: goal.id)
+            } else {
+                pingManager.ping(goalID: goal.id)
+            }
             }) {
-                Image(systemName: pingManager.pingedMap[goal.id] != nil ? "pin.fill" : "pin")
+                Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.fill" : "pin")
                     .font(.system(size: 18))
-                    .foregroundColor(pingManager.pingedMap[goal.id] != nil ? Color(UIColor.systemBlue) : Color(UIColor.systemGray))
+                    .foregroundColor(pingManager.isPinged(goalID: goal.id) ? Color(UIColor.systemBlue) : Color(UIColor.systemGray))
                     .frame(width: 32, height: 32)
                     .background(Color(UIColor.systemGray6))
                     .clipShape(Circle())
-                    .accessibilityLabel(pingManager.pingedMap[goal.id] != nil ? "取消钉住" : "钉住")
+                    .accessibilityLabel(pingManager.isPinged(goalID: goal.id) ? "取消钉住" : "钉住")
             }
             .buttonStyle(PlainButtonStyle())
 

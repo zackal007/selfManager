@@ -37,6 +37,18 @@ class PingManager: ObservableObject {
     var latestPingedGoalID: UUID? {
         return pingedMap.sorted { $0.value > $1.value }.first?.key
     }
+    
+    var allPingedGoalIDs: [UUID] {
+        return pingedMap.sorted { $0.value > $1.value }.map { $0.key }
+    }
+    
+    func isPinged(goalID: UUID) -> Bool {
+        return pingedMap[goalID] != nil
+    }
+    
+    func isPinged(goal: Goal) -> Bool {
+        return isPinged(goalID: goal.id)
+    }
 
     // MARK: - Persistence
     private func save() {
