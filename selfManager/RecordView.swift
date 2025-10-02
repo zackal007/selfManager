@@ -45,6 +45,11 @@ struct RecordView: View {
     // 添加键盘失焦状态管理
     @FocusState private var isAnyFieldFocused: Bool
     
+    // 顶栏动态高度（用于同步透明占位的高度，防止内容被遮挡）
+    @State private var headerHeight: CGFloat = 120
+    // 顶栏透明占位的上移调整量（减去一定高度以靠近顶栏）
+    private let headerPlaceholderOffset: CGFloat = 36
+    
     // 同步记录类型索引
     private func syncRecordTypeIndex() {
         if let index = recordTypes.firstIndex(of: selectedRecordType) {
@@ -487,12 +492,25 @@ struct RecordView: View {
                         }
                     }
                     .padding(.top, 8)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 8)
                 }
                 .frame(maxWidth: .infinity)
-                .background(.ultraThinMaterial)
-                .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
                 .safeAreaPadding(.top)
+                .background(
+                    BlurView(style: .systemMaterial)
+                        .ignoresSafeArea(.all, edges: .top)
+                )
+                .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
+                .zIndex(10)
+                .overlay(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: HeaderHeightPreferenceKey.self, value: proxy.size.height)
+                    }
+                )
+                .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
+                    headerHeight = height
+                }
                 .onChange(of: selectedRecordType) { oldValue, newValue in
                     // 切换记录类型时收起键盘
                     dismissKeyboard()
@@ -515,9 +533,14 @@ struct RecordView: View {
                     contentModified = false
                 }
                 
-                // 日期选择器 - 只在下拉时显示
-                if showDatePicker {
-                    VStack {
+                // 顶栏后的内容容器
+                VStack(spacing: 0) {
+
+                    // 内部内容容器：移除背景与圆角，避免灰色块延伸至顶栏下方
+                    VStack(spacing: 0) {
+                        // 日期选择器 - 只在下拉时显示
+                        if showDatePicker {
+                            VStack {
                         // 根据选择的记录类型显示不同的日期选择器
                         switch selectedRecordType {
                     case .recent: // 近期 - 不显示日期选择器
@@ -800,7 +823,7 @@ struct RecordView: View {
                             .padding(.horizontal, 8)
                             // 月份网格
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 3), spacing: 24) {
-                                ForEach(1...12, id: \ .self) { month in
+                                ForEach(1...12, id: \.self) { month in
                                     Button(action: {
                                         var components = self.calendar.dateComponents([.year, .month, .day], from: currentDate)
                                         components.month = month
@@ -888,7 +911,7 @@ struct RecordView: View {
                             .padding(.horizontal, 8)
                             // 季度选择器
                             HStack(spacing: 24) {
-                                ForEach(1...4, id: \ .self) { q in
+                                ForEach(1...4, id: \.self) { q in
                                     Button(action: {
                                         // 如果内容已修改，先保存当前记录
                                         if contentModified {
@@ -1084,12 +1107,12 @@ struct RecordView: View {
                     default:
                         EmptyView()
                     }
-                    }
-                    .padding(.bottom, 8)
-                }
-                
-                // 记录内容区域 - 使用TabView实现左右滑动
-                TabView(selection: $currentRecordTypeIndex) {
+                            }
+                            .padding(.bottom, 8)
+                        }
+                        
+                        // 记录内容区域 - 使用TabView实现左右滑动
+                        TabView(selection: $currentRecordTypeIndex) {
                     ForEach(recordTypes.indices, id: \.self) { index in
                         ScrollView {
                             VStack(spacing: 0) {
@@ -1117,8 +1140,6 @@ struct RecordView: View {
                                         
                                         Spacer()
                                     }
-                                    .background(Color(UIColor.systemGroupedBackground))
-                                    .cornerRadius(8)
                                     .padding(.horizontal)
                                     .padding(.top, 8)
                                 }
@@ -1246,14 +1267,19 @@ struct RecordView: View {
                                         // 自动保存已启用，不再需要保存按钮
                                     }
                                 }
+                                .padding(.top, 0)
                                 .padding(.bottom, 20)
                             }
                         }
                         .tag(index)
                     }
-                }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .onChange(of: currentRecordTypeIndex) { _, newIndex in
+                    }
+                        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                        .safeAreaInset(edge: .top) {
+                            Color.clear
+                                .frame(height: headerHeight)
+                        }
+                        .onChange(of: currentRecordTypeIndex) { _, newIndex in
                     // 切换页签时收起键盘
                     dismissKeyboard()
                     
@@ -1266,9 +1292,11 @@ struct RecordView: View {
                     // 加载对应的记录内容
                     loadCurrentRecord()
                     // 重置修改状态
-                    contentModified = false
-                }
-                    
+                            contentModified = false
+                        }
+                    }
+                    // 移除背景与圆角，保持外层列表卡片自身样式
+                
                     // 保存成功提示
                     if showSaveSuccessToast {
                         VStack {
@@ -1294,8 +1322,6 @@ struct RecordView: View {
                         }
                     }
                 }
-                .background(Color(UIColor.systemGroupedBackground))
-                .cornerRadius(16)
             }
             .navigationBarHidden(true)
             .onTapGesture {
@@ -1385,6 +1411,9 @@ struct RecordView: View {
                     selectedTab: $selectedTab
                 )
             )
+        }
+        
+        // 关闭 body
         }
     
     // 格式化日期

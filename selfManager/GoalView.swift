@@ -446,7 +446,7 @@ struct GoalView: View {
         return tagColorManager.getColor(for: tag)
     }
     
-
+	
     
     var body: some View { 
         ZStack {
