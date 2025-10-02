@@ -136,8 +136,8 @@ struct selfManagerApp: App {
             TabView(selection: $selectedTab) {
                         HomeView(selectedTab: $selectedTab)
                             .tabItem {
-                                Image(systemName: "house.fill")
-                                Text("首页")
+                                Image(systemName: "person.fill")
+                                Text("我")
                             }
                             .tag(0)
                             .onTapGesture {

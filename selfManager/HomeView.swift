@@ -1023,58 +1023,7 @@ private func tagColor(for tag: String) -> Color {
         }
     }
     
-    // 焦虑区域 - 扁平化设计
-    private var anxietySection: some View {
-        Button(action: {
-            // 这里可以添加焦虑详情页面的跳转
-        }) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.title3)
-                        .foregroundColor(Color(UIColor.systemRed))
-                    Text("最近焦虑")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(UIColor.label))
-                    Spacer()
-                    
-                    // 详情按钮
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(Color(UIColor.tertiaryLabel))
-                }
-                
-                // 焦虑列表
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(anxieties, id: \.self) { anxiety in
-                        HStack(spacing: 12) {
-                            // 警告图标
-                            Text("⚠️")
-                                .font(.system(size: 16))
-                            
-                            // 焦虑内容
-                            Text(anxiety)
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(Color(UIColor.systemBackground))
-                        .cornerRadius(12)
-                        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
-                    }
-                }
-            }
-            .padding(16)
-            .background(Color(UIColor.secondarySystemGroupedBackground))
-            .cornerRadius(16)
-            .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
+
     
     // 成就图标现在直接使用 Achievement 模型中的 emoji 属性
     
