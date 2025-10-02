@@ -184,15 +184,15 @@ struct ContactView: View {
                 .sheet(isPresented: $showAddContactSheet) {
                     AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)
                 }
+                .safeAreaInset(edge: .top) {
+                    headerView
+                }
                 
-                // 侧边栏：显示应用功能菜单
+                // 侧边栏：显示应用功能菜单（放在ZStack最上层，确保独立悬浮）
                 SidebarView(
                     isPresented: $showSidebar,
                     selectedTab: $selectedTab
                 )
-            }
-            .safeAreaInset(edge: .top) {
-                headerView
             }
         }
     }
