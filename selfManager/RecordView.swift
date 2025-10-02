@@ -47,8 +47,113 @@ struct RecordView: View {
     
     // 顶栏动态高度（用于同步透明占位的高度，防止内容被遮挡）
     @State private var headerHeight: CGFloat = 120
-    // 顶栏透明占位的上移调整量（减去一定高度以靠近顶栏）
-    private let headerPlaceholderOffset: CGFloat = 36
+    // 抽取顶栏视图：迁移到安全区顶部叠加
+    private var headerView: some View {
+        VStack(spacing: 0) {
+            // 第一行：标题和按钮
+            HStack(alignment: .center) {
+                // 侧边栏按钮
+                Button(action: {
+                    dismissKeyboard()
+                    showSidebar = true
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(UIColor.systemGray5).opacity(0.8))
+                            .frame(width: 38, height: 38)
+
+                        Image(systemName: "line.3.horizontal")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(UIColor.label))
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("  记录")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.label))
+                }
+
+                Spacer()
+
+                // 菜单按钮
+                MenuButton {
+                    // 视图模式菜单内容
+                    Button(action: {
+                        dismissKeyboard()
+                        // 日期选择器显示/隐藏
+                        withAnimation {
+                            showDatePicker.toggle()
+                        }
+                    }) {
+                        Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "calendar.badge.minus" : "calendar.badge.plus")
+                    }
+
+                    Divider()
+
+                    // 跳转到今天
+                    Button(action: {
+                        dismissKeyboard()
+                        // 如果内容已修改，先保存当前记录
+                        if contentModified {
+                            autoSaveRecord(recordType: selectedRecordType)
+                        }
+                        // 重置为当前日期
+                        currentDate = Date()
+                        updateDateComponents()
+                        loadCurrentRecord()
+                        // 重置修改状态
+                        contentModified = false
+                    }) {
+                        Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+
+            // 第二行：记录类型筛选器（页签选择器）
+            VStack(alignment: .leading, spacing: 8) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        // 自定义页签顺序：近期、日记、周记、月记、季记、年记
+                        let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
+                        ForEach(orderedTypes, id: \.self) { type in
+                            FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
+                                dismissKeyboard()
+                                // 如果内容已修改，先保存当前记录
+                                if contentModified {
+                                    autoSaveRecord(recordType: selectedRecordType)
+                                }
+                                selectedRecordType = type
+                                syncRecordTypeIndex()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+            }
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+        }
+        .frame(maxWidth: .infinity)
+        .background(
+            BlurView(style: .systemMaterial)
+                .ignoresSafeArea(.all, edges: .top)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
+        .zIndex(10)
+        .overlay(
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(key: HeaderHeightPreferenceKey.self, value: proxy.size.height)
+            }
+        )
+        .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
+            headerHeight = height
+        }
+    }
     
     // 同步记录类型索引
     private func syncRecordTypeIndex() {
@@ -405,134 +510,8 @@ struct RecordView: View {
         NavigationStack(path: navigationManager.getNavigationPath(for: 2)) {
             // 顶层布局容器（承载顶部栏、日期选择器与内容区域）
             VStack(spacing: 0) {
-                // 悬浮的顶部标题栏（整合记录类型筛选器）
-                VStack(spacing: 0) {
-                    // 第一行：标题和按钮
-                    HStack(alignment: .center) {
-                        // 侧边栏按钮
-                        Button(action: {
-                            dismissKeyboard()
-                            showSidebar = true
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                    .frame(width: 38, height: 38)
-                                
-                                Image(systemName: "line.3.horizontal")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(Color(UIColor.label))
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("  记录")
-                                .font(.system(size: 26, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(UIColor.label))
-                        }
-                        
-                        Spacer()
-                        
-                        // 菜单按钮
-                        MenuButton {
-                            // 视图模式菜单内容
-                            Button(action: {
-                                dismissKeyboard()
-                                // 日期选择器显示/隐藏
-                                withAnimation {
-                                    showDatePicker.toggle()
-                                }
-                            }) {
-                                Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "calendar.badge.minus" : "calendar.badge.plus")
-                            }
-                            
-                            Divider()
-                            
-                            // 跳转到今天
-                            Button(action: {
-                                dismissKeyboard()
-                                // 如果内容已修改，先保存当前记录
-                                if contentModified {
-                                    autoSaveRecord(recordType: selectedRecordType)
-                                }
-                                // 重置为当前日期
-                                currentDate = Date()
-                                updateDateComponents()
-                                loadCurrentRecord()
-                                // 重置修改状态
-                                contentModified = false
-                            }) {
-                                Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    
-                    // 第二行：记录类型筛选器（页签选择器）
-                    VStack(alignment: .leading, spacing: 8) {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                // 自定义页签顺序：近期、日记、周记、月记、季记、年记
-                                let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
-                                ForEach(orderedTypes, id: \.self) { type in
-                                    FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
-                                        dismissKeyboard()
-                                        // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
-                                        selectedRecordType = type
-                                        syncRecordTypeIndex()
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                        }
-                    }
-                    .padding(.top, 8)
-                    .padding(.bottom, 8)
-                }
-                .frame(maxWidth: .infinity)
-                .safeAreaPadding(.top)
-                .background(
-                    BlurView(style: .systemMaterial)
-                        .ignoresSafeArea(.all, edges: .top)
-                )
-                .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
-                .zIndex(10)
-                .overlay(
-                    GeometryReader { proxy in
-                        Color.clear
-                            .preference(key: HeaderHeightPreferenceKey.self, value: proxy.size.height)
-                    }
-                )
-                .onPreferenceChange(HeaderHeightPreferenceKey.self) { height in
-                    headerHeight = height
-                }
-                .onChange(of: selectedRecordType) { oldValue, newValue in
-                    // 切换记录类型时收起键盘
-                    dismissKeyboard()
-                    
-                    // 如果内容已修改，先保存当前记录
-                    if contentModified {
-                        autoSaveRecord(recordType: oldValue)
-                    }
-                    
-                    // 如果切换到年记，重置为当前系统时间并设置年份列表的基准年份
-                    if newValue == .yearly {
-                        currentDate = Date() // 重置为当前系统时间
-                        updateDateComponents() // 更新日期组件
-                        yearListBaseYear = max(1, currentYear - 7) // 确保年份不小于1
-                    }
-                    
-                    // 当记录类型变化时，加载对应的记录
-                    loadCurrentRecord()
-                    // 重置修改状态
-                    contentModified = false
-                }
-                
+                // 顶栏已迁移到 safeAreaInset(edge: .top)
+                // 保持内容容器直接紧随其后
                 // 顶栏后的内容容器
                 VStack(spacing: 0) {
 
@@ -1116,33 +1095,7 @@ struct RecordView: View {
                     ForEach(recordTypes.indices, id: \.self) { index in
                         ScrollView {
                             VStack(spacing: 0) {
-                                // 下拉区域 - 用于显示/隐藏日期选择器
-                                // 仅在非"近期"页签时显示标题区域
-                                if recordTypes[index] != .recent {
-                                    HStack {
-                                        Spacer()
-                                        
-                                        VStack(spacing: 4) {
-                                            Text(getRecordTitle(for: recordTypes[index]))
-                                                .font(.headline)
-                                                .foregroundColor(.primary)
-                                            
-                                            Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .padding(.vertical, 8)
-                                        .onTapGesture {
-                                            withAnimation {
-                                                showDatePicker.toggle()
-                                            }
-                                        }
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal)
-                                    .padding(.top, 8)
-                                }
+                                // 移除页签顶部的下拉标题栏占位，避免与悬浮顶栏产生视觉叠层
                                 
                                 VStack(alignment: .leading, spacing: 16) {
                                     // 根据记录类型显示不同内容
@@ -1275,10 +1228,6 @@ struct RecordView: View {
                     }
                     }
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                        .safeAreaInset(edge: .top) {
-                            Color.clear
-                                .frame(height: headerHeight)
-                        }
                         .onChange(of: currentRecordTypeIndex) { _, newIndex in
                     // 切换页签时收起键盘
                     dismissKeyboard()
@@ -1322,6 +1271,9 @@ struct RecordView: View {
                         }
                     }
                 }
+            }
+            .safeAreaInset(edge: .top) {
+                headerView
             }
             .navigationBarHidden(true)
             .onTapGesture {
@@ -1404,12 +1356,38 @@ struct RecordView: View {
                     contentModified = false
                 }
             }
+            .onChange(of: selectedRecordType) { oldValue, newValue in
+                // 切换记录类型时收起键盘
+                dismissKeyboard()
+                
+                // 如果内容已修改，先保存当前记录
+                if contentModified {
+                    autoSaveRecord(recordType: oldValue)
+                }
+                
+                // 如果切换到年记，重置为当前系统时间并设置年份列表的基准年份
+                if newValue == .yearly {
+                    currentDate = Date() // 重置为当前系统时间
+                    updateDateComponents() // 更新日期组件
+                    yearListBaseYear = max(1, currentYear - 7) // 确保年份不小于1
+                }
+                
+                // 当记录类型变化时，加载对应的记录
+                loadCurrentRecord()
+                // 重置修改状态
+                contentModified = false
+            }
             // 侧边栏覆盖层（应用全局导航）
             .overlay(
                 SidebarView(
                     isPresented: $showSidebar,
                     selectedTab: $selectedTab
                 )
+            )
+            // 统一页面级背景为系统分组背景，以与其他模块一致
+            .background(
+                Color(UIColor.systemGroupedBackground)
+                    .ignoresSafeArea()
             )
         }
         
