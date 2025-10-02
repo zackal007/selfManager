@@ -222,7 +222,7 @@ struct ContactView: View {
                     ZStack {
                         Circle()
                             .fill(Color(UIColor.systemGray5).opacity(0.8))
-                            .frame(width: 38, height: 38)
+                            .frame(width: 34, height: 34)
                         
                         Image(systemName: "line.3.horizontal")
                             .font(.system(size: 16, weight: .medium))
@@ -251,7 +251,7 @@ struct ContactView: View {
                     ZStack {
                         Circle()
                             .fill(Color(UIColor.systemBlue).opacity(0.1))
-                            .frame(width: 38, height: 38)
+                            .frame(width: 34, height: 34)
                         
                         Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
                             .font(.system(size: 16, weight: .medium))
@@ -267,7 +267,7 @@ struct ContactView: View {
                     ZStack {
                         Circle()
                             .fill(Color(UIColor.systemBlue).opacity(0.1))
-                            .frame(width: 38, height: 38)
+                            .frame(width: 34, height: 34)
                         
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 16, weight: .medium))
@@ -285,7 +285,7 @@ struct ContactView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 4)
             
             // 第二行：联系人类型筛选器
             VStack(alignment: .leading, spacing: 8) {
@@ -320,7 +320,7 @@ struct ContactView: View {
                 }
             }
             .padding(.top, 8)
-            .padding(.bottom, 12)
+            .padding(.bottom, 8)
         }
         .frame(maxWidth: .infinity)
         .safeAreaPadding(.top)

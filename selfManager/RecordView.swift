@@ -60,7 +60,7 @@ struct RecordView: View {
                     ZStack {
                         Circle()
                             .fill(Color(UIColor.systemGray5).opacity(0.8))
-                            .frame(width: 38, height: 38)
+                            .frame(width: 34, height: 34)
 
                         Image(systemName: "line.3.horizontal")
                             .font(.system(size: 16, weight: .medium))
@@ -139,7 +139,7 @@ struct RecordView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 4)
 
             // 第二行：记录类型筛选器（页签选择器）
             VStack(alignment: .leading, spacing: 8) {
@@ -1366,8 +1366,8 @@ struct RecordView: View {
                 loadCurrentRecord()
                 // 重置修改状态
                 contentModified = false
-                // 默认在非“近期”类型下显示日期选择器
-                showDatePicker = selectedRecordType != .recent
+                // 默认收起所有时间选择器
+                showDatePicker = false
                 // 只在第一次加载时清理重复记录
                 if !hasCleanedDuplicates {
                     cleanDuplicateRecords()
@@ -1397,8 +1397,8 @@ struct RecordView: View {
                     autoSaveRecord(recordType: oldValue)
                 }
                 
-                // 切换到非“近期”类型时，自动显示日期选择器；切换到“近期”时隐藏
-                showDatePicker = newValue != .recent
+                // 切换记录类型时保持日期选择器收起
+                showDatePicker = false
                 // 如果切换到年记，重置为当前系统时间并设置年份列表的基准年份
                 if newValue == .yearly {
                     currentDate = Date() // 重置为当前系统时间

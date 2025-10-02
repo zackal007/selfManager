@@ -467,7 +467,7 @@ struct GoalView: View {
                                 ZStack {
                                     Circle()
                                         .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                        .frame(width: 38, height: 38)
+                                        .frame(width: 34, height: 34)
                                     
                                     Image(systemName: "line.3.horizontal")
                                         .font(.system(size: 16, weight: .medium))
@@ -497,7 +497,7 @@ struct GoalView: View {
                                 ZStack {
                                     Circle()
                                         .fill(Color(UIColor.systemBlue).opacity(0.1))
-                                        .frame(width: 38, height: 38)
+                                        .frame(width: 34, height: 34)
                                     
                                     Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
                                         .font(.system(size: 16, weight: .medium))
@@ -513,7 +513,7 @@ struct GoalView: View {
                                 ZStack {
                                     Circle()
                                         .fill(Color(UIColor.systemBlue).opacity(0.1))
-                                        .frame(width: 38, height: 38)
+                                        .frame(width: 34, height: 34)
                                     
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 16, weight: .medium))
@@ -556,7 +556,7 @@ struct GoalView: View {
                             }
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 4)
                         
                         // 导航标签：目标类型筛选页签（切换视图内容）
                         VStack(alignment: .leading, spacing: 8) {
@@ -747,7 +747,7 @@ struct GoalView: View {
                                         }
                                     }
                                 }
-                                .padding(.top, 118)
+                                .padding(.top, 110)
                                 .padding(.bottom, 16)
                             }
                             .tag(index)
