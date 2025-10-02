@@ -19,6 +19,8 @@ struct GoalDetailView: View {
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
+    // 观察PingManager以管理“钉住”状态
+    @ObservedObject private var pingManager = PingManager.shared
     
     // 从文档目录加载图片
     private func loadImageFromDocuments(_ imageName: String) -> UIImage? {
@@ -1055,6 +1057,25 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.label))
             }
             .buttonStyle(PlainButtonStyle())
+
+            // “钉子”按钮：钉住/取消钉住当前目标
+            Button(action: {
+                if pingManager.pingedMap[goal.id] != nil {
+                    pingManager.unping(goalID: goal.id)
+                } else {
+                    pingManager.ping(goalID: goal.id)
+                }
+            }) {
+                Image(systemName: pingManager.pingedMap[goal.id] != nil ? "pin.fill" : "pin")
+                    .font(.system(size: 18))
+                    .foregroundColor(pingManager.pingedMap[goal.id] != nil ? Color(UIColor.systemBlue) : Color(UIColor.systemGray))
+                    .frame(width: 32, height: 32)
+                    .background(Color(UIColor.systemGray6))
+                    .clipShape(Circle())
+                    .accessibilityLabel(pingManager.pingedMap[goal.id] != nil ? "取消钉住" : "钉住")
+            }
+            .buttonStyle(PlainButtonStyle())
+
             Spacer()
             progressRingView
         }

@@ -16,6 +16,8 @@ struct HomeView: View {
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
+    // 被Ping目标管理器
+    @ObservedObject private var pingManager = PingManager.shared
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
@@ -141,6 +143,9 @@ struct HomeView: View {
                         .padding(.horizontal, 4)
                         .padding(.top, 4)
                         
+                        // 被Ping的目标独立卡片
+                        pingedGoalSection
+                        
                         // 目标区域
                         goalSection
                         
@@ -170,8 +175,7 @@ struct HomeView: View {
                         // 待改进区域
                         improvementSection
                         
-                        // 焦虑区域
-                        anxietySection
+                        // 焦虑区域（已移除模块）
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 30)
@@ -551,6 +555,46 @@ private func tagColor(for tag: String) -> Color {
             }
             
             return true
+        }
+    }
+
+    // MARK: - 被Ping的目标卡片
+    private var pingedGoalSection: some View {
+        Group {
+            if let latestID = pingManager.latestPingedGoalID,
+               let goal = goals.first(where: { $0.id == latestID }) {
+                // 直接显示目标卡片，添加取消Ping按钮
+                ZStack(alignment: .topTrailing) {
+                    // 使用完整的GoalCard而非SimplifiedGoalCard
+                    GoalCard(goal: goal)
+                        .overlay(
+                            // 右上角添加取消Ping标记
+                            VStack {
+                                HStack {
+                                    Spacer()
+                                    Button(action: {
+                                        pingManager.unping(goalID: latestID)
+                                    }) {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "pin.slash.fill")
+                                                .font(.system(size: 14))
+                                            Text("取消Ping")
+                                                .font(.system(size: 14, weight: .medium))
+                                        }
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(UIColor.systemOrange))
+                                        .cornerRadius(16)
+                                        .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 1)
+                                    }
+                                    .padding(12)
+                                }
+                                Spacer()
+                            }
+                        )
+                }
+            }
         }
     }
     
