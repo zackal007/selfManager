@@ -323,6 +323,7 @@ struct ContactView: View {
             .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
+        .safeAreaPadding(.top)
         .background(
             BlurView(style: .systemMaterial)
                 .ignoresSafeArea(.all, edges: .top)
