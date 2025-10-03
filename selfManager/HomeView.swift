@@ -9,6 +9,48 @@ import SwiftUI
 import SwiftData
 import UIKit
 
+// MARK: - 轻微晃动效果（文件作用域）
+struct JiggleEffect: ViewModifier {
+    let isActive: Bool
+    @State private var rotation: Double = -1.2
+    @State private var sway: CGFloat = -0.8
+
+    func body(content: Content) -> some View {
+        content
+            .rotationEffect(.degrees(isActive ? rotation : 0))
+            .offset(x: isActive ? sway : 0)
+            .onAppear {
+                if isActive {
+                    withAnimation(Animation.easeInOut(duration: 0.16).repeatForever(autoreverses: true)) {
+                        rotation = 1.2
+                        sway = 0.8
+                    }
+                }
+            }
+            .onChange(of: isActive) { active in
+                if active {
+                    rotation = -1.2
+                    sway = -0.8
+                    withAnimation(Animation.easeInOut(duration: 0.16).repeatForever(autoreverses: true)) {
+                        rotation = 1.2
+                        sway = 0.8
+                    }
+                } else {
+                    withAnimation(.easeOut(duration: 0.12)) {
+                        rotation = 0
+                        sway = 0
+                    }
+                }
+            }
+    }
+}
+
+extension View {
+    func jiggle(_ isActive: Bool) -> some View {
+        modifier(JiggleEffect(isActive: isActive))
+    }
+}
+
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
@@ -26,6 +68,31 @@ struct HomeView: View {
     @State private var showingAssetDetail = false
     @State private var showingImprovementDetail = false
     @State private var showingAchievementDetail = false
+
+    // MARK: - 可排序的主页卡片类型与拖拽状态
+    enum HomeCardType: String, Codable, CaseIterable, Hashable {
+        case profile
+        case asset
+        case pingedGoals
+        case goals
+        case moodAchievement // 心情+成就并排区域作为一个卡片
+        case improvement
+    }
+
+    @State private var cardOrder: [HomeCardType] = []
+    @State private var draggingCard: HomeCardType? = nil
+    @State private var dragOffset: CGSize = .zero
+    @State private var cardFrames: [HomeCardType: CGRect] = [:]
+    // 移动模式与菜单状态
+    @State private var moveModeEnabledFor: HomeCardType? = nil
+    @State private var expandedCards: Set<HomeCardType> = []
+
+    private struct CardFramePreferenceKey: PreferenceKey {
+        static var defaultValue: [HomeCardType: CGRect] = [:]
+        static func reduce(value: inout [HomeCardType: CGRect], nextValue: () -> [HomeCardType: CGRect]) {
+            value.merge(nextValue()) { _, new in new }
+        }
+    }
 
     
     // 侧边栏状态管理
@@ -122,63 +189,18 @@ struct HomeView: View {
                             .fill(Color.clear)
                             .frame(height: 40) // 将高度从 140 减小到 80
                         
-                        // 用户信息卡片
-                        userProfileSection
-                            .sheet(isPresented: $showingEdit) {
-                                UserEditView(user: user)
-                            }
-                        
-                        // 资产信息卡片
-                        assetSection
-                        
-                        // 目标标题
-                        HStack {
-                            HStack(spacing: 8) {                                
-                                // Text("目标")
-                                //     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                //     .foregroundColor(Color(UIColor.systemBlue))
-                            }
-                            Spacer()
+                        // 主页卡片渲染（支持长按拖拽排序）
+                        ForEach(cardOrder, id: \.self) { type in
+                            renderCard(type)
                         }
-                        .padding(.horizontal, 4)
-                        .padding(.top, 4)
-                        
-                        // 被Ping的目标独立卡片
-                        pingedGoalSection
-                        
-                        // 目标区域
-                        goalSection
-                        
-                        // 心情和成就区域
-                        HStack(spacing: 16) {
-                            // 心情区域
-                            moodSection
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            // 成就区域
-                            achievementSection
-                                .frame(maxWidth: .infinity)
-                        }
-                        
-                        // 需要改进的标签
-                        HStack {
-                            HStack(spacing: 8) {                                
-                                // Text("需要改进的")
-                                //     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                //     .foregroundColor(Color(UIColor.systemOrange))
-                            }
-                            Spacer()
-                        }
-                        .padding(.horizontal, 4)
-                        .padding(.top, 4)
-                        
-                        // 待改进区域
-                        improvementSection
-                        
-                        // 焦虑区域（已移除模块）
+                        .animation(.interactiveSpring(), value: cardOrder)
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 30)
+                    .onPreferenceChange(CardFramePreferenceKey.self) { frames in
+                        // 采集每个卡片在滚动坐标系中的帧信息，用于计算让位与排序
+                        cardFrames = frames
+                    }
                 }
                 .background(Color(UIColor.systemGroupedBackground))
                 .coordinateSpace(name: "scroll")
@@ -242,6 +264,8 @@ struct HomeView: View {
             if savedFilteredGoals.isEmpty {
                 loadSavedGoalFilters()
             }
+            // 加载主页卡片排序
+            loadCardOrder()
         }
         .onChange(of: selectedGoalType) {
             updateFilteredGoals()
@@ -270,6 +294,196 @@ private func countItemsWithTag(_ tag: String) -> Int {
     count += users.filter { $0.tags.contains(tag) }.count
     
     return count
+}
+
+// MARK: - 拖拽排序：渲染卡片及交互逻辑
+@ViewBuilder
+private func renderCard(_ type: HomeCardType) -> some View {
+    let isDragging = (draggingCard == type)
+    switch type {
+    case .profile:
+        userProfileSection
+            .background(cardFrameReader(for: type))
+            .offset(isDragging ? dragOffset : .zero)
+            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+            .zIndex(isDragging ? 20 : 0)
+            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+            .contentShape(Rectangle())
+            .contextMenu { cardContextMenu(for: type) }
+            .highPriorityGesture(dragIfMoveEnabled(for: type))
+            .sheet(isPresented: $showingEdit) {
+                UserEditView(user: user)
+            }
+    case .asset:
+        assetSection
+            .background(cardFrameReader(for: type))
+            .offset(isDragging ? dragOffset : .zero)
+            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+            .zIndex(isDragging ? 20 : 0)
+            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+            .contentShape(Rectangle())
+            .contextMenu { cardContextMenu(for: type) }
+            .highPriorityGesture(dragIfMoveEnabled(for: type))
+    case .pingedGoals:
+        pingedGoalSection
+            .background(cardFrameReader(for: type))
+            .offset(isDragging ? dragOffset : .zero)
+            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+            .zIndex(isDragging ? 20 : 0)
+            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+            .contentShape(Rectangle())
+            .contextMenu { cardContextMenu(for: type) }
+            .highPriorityGesture(dragIfMoveEnabled(for: type))
+    case .goals:
+        goalSection
+            .background(cardFrameReader(for: type))
+            .offset(isDragging ? dragOffset : .zero)
+            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+            .zIndex(isDragging ? 20 : 0)
+            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+            .contentShape(Rectangle())
+            .contextMenu { cardContextMenu(for: type) }
+            .highPriorityGesture(dragIfMoveEnabled(for: type))
+    case .moodAchievement:
+        HStack(spacing: 16) {
+            moodSection
+                .frame(maxWidth: .infinity, alignment: .leading)
+            achievementSection
+                .frame(maxWidth: .infinity)
+        }
+        .background(cardFrameReader(for: type))
+        .offset(isDragging ? dragOffset : .zero)
+        .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+        .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+        .zIndex(isDragging ? 20 : 0)
+        .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+        .contentShape(Rectangle())
+        .contextMenu { cardContextMenu(for: type) }
+        .highPriorityGesture(dragIfMoveEnabled(for: type))
+    case .improvement:
+        improvementSection
+            .background(cardFrameReader(for: type))
+            .offset(isDragging ? dragOffset : .zero)
+            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+            .zIndex(isDragging ? 20 : 0)
+            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+            .contentShape(Rectangle())
+            .contextMenu { cardContextMenu(for: type) }
+            .highPriorityGesture(dragIfMoveEnabled(for: type))
+    }
+}
+
+private func cardFrameReader(for type: HomeCardType) -> some View {
+    GeometryReader { geo in
+        Color.clear
+            .preference(key: CardFramePreferenceKey.self,
+                        value: [type: geo.frame(in: .named("scroll"))])
+    }
+}
+
+// 使用原生上下文菜单触发移动/调整大小，无需自定义长按手势
+
+// 仅在启用了移动模式后允许拖拽
+private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
+    DragGesture(minimumDistance: 4)
+        .onChanged { drag in
+            guard moveModeEnabledFor == type else { return }
+            if draggingCard != type {
+                withAnimation(.interactiveSpring()) {
+                    draggingCard = type
+                }
+            }
+            dragOffset = drag.translation
+            reorderIfNeeded(for: type, translation: drag.translation)
+        }
+        .onEnded { _ in
+            guard moveModeEnabledFor == type else { return }
+            finalizeDrag(for: type)
+            withAnimation(.interactiveSpring()) {
+                moveModeEnabledFor = nil
+            }
+        }
+}
+
+private func reorderIfNeeded(for type: HomeCardType, translation: CGSize) {
+    guard let fromIndex = cardOrder.firstIndex(of: type), let original = cardFrames[type] else { return }
+    let currentCenterY = original.midY + translation.height
+
+    // 按照纵向中心从上到下排序，计算插入位置
+    let sorted = cardOrder.sorted { (a, b) -> Bool in
+        (cardFrames[a]?.midY ?? 0) < (cardFrames[b]?.midY ?? 0)
+    }
+
+    var newIndex = 0
+    for t in sorted {
+        if t == type { continue }
+        let midY = cardFrames[t]?.midY ?? 0
+        if currentCenterY > midY { newIndex += 1 }
+    }
+
+    if newIndex != fromIndex {
+        withAnimation(.interactiveSpring()) {
+            var newOrder = cardOrder
+            newOrder.remove(at: fromIndex)
+            newOrder.insert(type, at: min(max(newIndex, 0), newOrder.count))
+            cardOrder = newOrder
+        }
+    }
+}
+
+private func finalizeDrag(for type: HomeCardType) {
+    withAnimation(.interactiveSpring()) {
+        draggingCard = nil
+        dragOffset = .zero
+    }
+    saveCardOrder()
+}
+
+@ViewBuilder
+private func cardContextMenu(for type: HomeCardType) -> some View {
+    Group {
+        Button(action: {
+            moveModeEnabledFor = type
+        }) {
+            Label("移动位置", systemImage: "arrow.up.and.down.and.arrow.left.and.right")
+        }
+        Button(action: {
+            if expandedCards.contains(type) {
+                expandedCards.remove(type)
+            } else {
+                expandedCards.insert(type)
+            }
+        }) {
+            Label("调整大小", systemImage: "arrow.up.left.and.arrow.down.right")
+        }
+    }
+}
+
+// MARK: - 排序持久化
+private let cardOrderKey = "home.card.order.v1"
+
+private func defaultCardOrder() -> [HomeCardType] {
+    [.profile, .asset, .pingedGoals, .goals, .moodAchievement, .improvement]
+}
+
+private func loadCardOrder() {
+    if let raw = UserDefaults.standard.array(forKey: cardOrderKey) as? [String] {
+        let mapped = raw.compactMap { HomeCardType(rawValue: $0) }
+        if !mapped.isEmpty {
+            cardOrder = mapped
+            return
+        }
+    }
+    cardOrder = defaultCardOrder()
+}
+
+private func saveCardOrder() {
+    UserDefaults.standard.set(cardOrder.map { $0.rawValue }, forKey: cardOrderKey)
 }
 
 // 为标签生成一致的颜色
