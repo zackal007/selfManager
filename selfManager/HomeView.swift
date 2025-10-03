@@ -302,70 +302,64 @@ private func renderCard(_ type: HomeCardType) -> some View {
     let isDragging = (draggingCard == type)
     switch type {
     case .profile:
-        userProfileSection
-            .background(cardFrameReader(for: type))
-            .offset(isDragging ? dragOffset : .zero)
-            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-            .zIndex(isDragging ? 20 : 0)
-            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-            .contentShape(Rectangle())
-            .contextMenu { cardContextMenu(for: type) }
-            .highPriorityGesture(dragIfMoveEnabled(for: type))
+        withMoveGesture(
+            userProfileSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
+            , for: type)
             .sheet(isPresented: $showingEdit) {
                 UserEditView(user: user)
             }
     case .asset:
-        assetSection
-            .background(cardFrameReader(for: type))
-            .offset(isDragging ? dragOffset : .zero)
-            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-            .zIndex(isDragging ? 20 : 0)
-            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-            .contentShape(Rectangle())
-            .contextMenu { cardContextMenu(for: type) }
-            .highPriorityGesture(dragIfMoveEnabled(for: type))
+        withMoveGesture(
+            assetSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
+            , for: type)
     case .pingedGoals:
-        pingedGoalSection
-            .background(cardFrameReader(for: type))
-            .offset(isDragging ? dragOffset : .zero)
-            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-            .zIndex(isDragging ? 20 : 0)
-            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-            .contentShape(Rectangle())
-            .contextMenu { cardContextMenu(for: type) }
-            .highPriorityGesture(dragIfMoveEnabled(for: type))
+        withMoveGesture(
+            pingedGoalSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
+            , for: type)
     case .goals:
-        goalSection
-            .background(cardFrameReader(for: type))
-            .offset(isDragging ? dragOffset : .zero)
-            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-            .zIndex(isDragging ? 20 : 0)
-            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-            .contentShape(Rectangle())
-            .contextMenu { cardContextMenu(for: type) }
-            .highPriorityGesture(dragIfMoveEnabled(for: type))
+        withMoveGesture(
+            goalSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
+            , for: type)
     case .moodAchievement:
-        HStack(spacing: 16) {
-            moodSection
-                .frame(maxWidth: .infinity, alignment: .leading)
-            achievementSection
-                .frame(maxWidth: .infinity)
-        }
-        .background(cardFrameReader(for: type))
-        .offset(isDragging ? dragOffset : .zero)
-        .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-        .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-        .zIndex(isDragging ? 20 : 0)
-        .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-        .contentShape(Rectangle())
-        .contextMenu { cardContextMenu(for: type) }
-        .highPriorityGesture(dragIfMoveEnabled(for: type))
-    case .improvement:
-        improvementSection
+        withMoveGesture(
+            HStack(spacing: 16) {
+                moodSection
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                achievementSection
+                    .frame(maxWidth: .infinity)
+            }
             .background(cardFrameReader(for: type))
             .offset(isDragging ? dragOffset : .zero)
             .jiggle(moveModeEnabledFor == type && draggingCard == nil)
@@ -374,7 +368,19 @@ private func renderCard(_ type: HomeCardType) -> some View {
             .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
             .contentShape(Rectangle())
             .contextMenu { cardContextMenu(for: type) }
-            .highPriorityGesture(dragIfMoveEnabled(for: type))
+        , for: type)
+    case .improvement:
+        withMoveGesture(
+            improvementSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
+            , for: type)
     }
 }
 
@@ -386,11 +392,21 @@ private func cardFrameReader(for type: HomeCardType) -> some View {
     }
 }
 
+// 仅在对应卡片处于“移动位置”模式时附加拖拽手势，避免影响滚动
+@ViewBuilder
+private func withMoveGesture<V: View>(_ view: V, for type: HomeCardType) -> some View {
+    if moveModeEnabledFor == type {
+        view.highPriorityGesture(dragIfMoveEnabled(for: type))
+    } else {
+        view
+    }
+}
+
 // 使用原生上下文菜单触发移动/调整大小，无需自定义长按手势
 
 // 仅在启用了移动模式后允许拖拽
 private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
-    DragGesture(minimumDistance: 4)
+    DragGesture(minimumDistance: 10)
         .onChanged { drag in
             guard moveModeEnabledFor == type else { return }
             if draggingCard != type {
