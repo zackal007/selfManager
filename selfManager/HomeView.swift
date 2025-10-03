@@ -86,6 +86,8 @@ struct HomeView: View {
     // 移动模式与菜单状态
     @State private var moveModeEnabledFor: HomeCardType? = nil
     @State private var expandedCards: Set<HomeCardType> = []
+    // 最近一次交换时的拖拽位移基线，避免重复计算导致跳动
+    @State private var lastSwapTranslationY: CGFloat = 0
 
     private struct CardFramePreferenceKey: PreferenceKey {
         static var defaultValue: [HomeCardType: CGRect] = [:]
@@ -413,6 +415,8 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
                 withAnimation(.interactiveSpring()) {
                     draggingCard = type
                 }
+                // 开始拖拽时重置交换基线
+                lastSwapTranslationY = 0
             }
             dragOffset = drag.translation
             reorderIfNeeded(for: type, translation: drag.translation)
@@ -423,31 +427,51 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
             withAnimation(.interactiveSpring()) {
                 moveModeEnabledFor = nil
             }
+            lastSwapTranslationY = 0
         }
 }
 
 private func reorderIfNeeded(for type: HomeCardType, translation: CGSize) {
     guard let fromIndex = cardOrder.firstIndex(of: type), let original = cardFrames[type] else { return }
-    let currentCenterY = original.midY + translation.height
+    // 相对最近一次交换的有效位移，降低频繁交换导致的跳动
+    let dy = translation.height - lastSwapTranslationY
+    // 当前卡片随拖拽产生的临时位置（用于计算与相邻卡片的重叠）
+    let currentFrame = original.offsetBy(dx: 0, dy: dy)
 
-    // 按照纵向中心从上到下排序，计算插入位置
-    let sorted = cardOrder.sorted { (a, b) -> Bool in
-        (cardFrames[a]?.midY ?? 0) < (cardFrames[b]?.midY ?? 0)
-    }
+    // 只与相邻卡片比较并一步交换，避免一次跨越多卡片造成大幅跳动
+    let hysteresis: CGFloat = 0.25 // 至少重叠对方高度的25%才触发交换
 
-    var newIndex = 0
-    for t in sorted {
-        if t == type { continue }
-        let midY = cardFrames[t]?.midY ?? 0
-        if currentCenterY > midY { newIndex += 1 }
-    }
-
-    if newIndex != fromIndex {
-        withAnimation(.interactiveSpring()) {
-            var newOrder = cardOrder
-            newOrder.remove(at: fromIndex)
-            newOrder.insert(type, at: min(max(newIndex, 0), newOrder.count))
-            cardOrder = newOrder
+    if dy > 0 {
+        // 向下拖动：与下一个卡片比较
+        let nextIndex = fromIndex + 1
+        if nextIndex < cardOrder.count, let nextFrame = cardFrames[cardOrder[nextIndex]] {
+            let overlap = currentFrame.intersection(nextFrame).height
+            let shouldSwap = overlap > nextFrame.height * hysteresis || currentFrame.midY > nextFrame.midY
+            if shouldSwap {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
+                    var newOrder = cardOrder
+                    newOrder.swapAt(fromIndex, nextIndex)
+                    cardOrder = newOrder
+                }
+                // 更新交换基线，下一次以当前位移为基准计算
+                lastSwapTranslationY = translation.height
+            }
+        }
+    } else if dy < 0 {
+        // 向上拖动：与上一个卡片比较
+        let prevIndex = fromIndex - 1
+        if prevIndex >= 0, let prevFrame = cardFrames[cardOrder[prevIndex]] {
+            let overlap = currentFrame.intersection(prevFrame).height
+            let shouldSwap = overlap > prevFrame.height * hysteresis || currentFrame.midY < prevFrame.midY
+            if shouldSwap {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
+                    var newOrder = cardOrder
+                    newOrder.swapAt(fromIndex, prevIndex)
+                    cardOrder = newOrder
+                }
+                // 更新交换基线
+                lastSwapTranslationY = translation.height
+            }
         }
     }
 }
