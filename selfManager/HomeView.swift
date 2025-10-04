@@ -146,6 +146,14 @@ struct HomeView: View {
     
     // 焦虑数据
     private let anxieties = ["工作压力大", "睡眠不足", "缺乏锻炼"]
+
+    // 根据标签筛选的目标集合
+    private var achievementGoals: [Goal] {
+        goals.filter { !$0.isDeleted && $0.tags.contains(BuiltInTags.achievement) }
+    }
+    private var anxietyGoals: [Goal] {
+        goals.filter { !$0.isDeleted && $0.tags.contains(BuiltInTags.anxiety) }
+    }
     
     // 初始化方法
     init(selectedTab: Binding<Int>) {
@@ -1183,7 +1191,7 @@ private func tagColor(for tag: String) -> Color {
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingAchievementDetail) {
             NavigationStack {
-                AchievementDetailView()
+                TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)
             }
             .presentationDetents([.height(400), .large])
             .presentationDragIndicator(.visible)
@@ -1220,21 +1228,23 @@ private func tagColor(for tag: String) -> Color {
             // 成就图标 - 横向滚动
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(achievements.prefix(5)) { achievement in
-                        VStack(spacing: 4) {
-                            Text(achievement.emoji)
-                                .font(.title2)
-                                .frame(width: 42, height: 42)
-                                .background(Color(UIColor.systemBackground))
-                                .cornerRadius(8)
-                            
-                            // 添加简短标签
-                            Text(achievement.name)
-                                .font(.caption2)
-                                .foregroundColor(Color(UIColor.secondaryLabel))
+                    ForEach(achievementGoals.prefix(8)) { goal in
+                        VStack(spacing: 6) {
+                            Text(goal.name)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(Color(UIColor.label))
                                 .lineLimit(1)
+                                .frame(width: 80)
+                            
+                            Text(BuiltInTags.achievement)
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(tagColor(for: BuiltInTags.achievement))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(tagColor(for: BuiltInTags.achievement).opacity(0.12))
+                                .cornerRadius(6)
                         }
-                        .frame(width: 60)
+                        .frame(width: 100)
                     }
                 }
                 .padding(.horizontal, 2)
@@ -1255,10 +1265,10 @@ private func tagColor(for tag: String) -> Color {
         }) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
-                    Image(systemName: "pencil.and.outline")
+                    Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemOrange))
-                    Text("待改进")
+                    Text("最近焦虑")
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color(UIColor.label))
                     Spacer()
@@ -1271,55 +1281,36 @@ private func tagColor(for tag: String) -> Color {
                     }
                 }
                 
-                // 待改进图标 - 横向滚动
+                // 最近焦虑目标 - 横向滚动
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(0..<improvements.count, id: \.self) { index in
+                    HStack(spacing: 12) {
+                        ForEach(anxietyGoals.prefix(10)) { goal in
                             VStack(spacing: 6) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(UIColor.systemOrange).opacity(0.1))
-                                        .frame(width: 56, height: 56)
-                                    
-                                    Text(improvements[index])
-                                        .font(.system(size: 24))
-                                        .foregroundColor(Color(UIColor.systemOrange))
-                                }
-                                
-                                // 添加简短标签
-                                Text(improvementLabels[index])
-                                    .font(.system(size: 12))
-                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                Text(goal.name)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
-                                    .frame(width: 70)
-                                    .multilineTextAlignment(.center)
+                                    .frame(width: 90)
                                 
-                                // 进度指示
-                                if index % 2 == 0 { // 假设部分项目需要优先处理
-                                    Text("优先")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(Color(UIColor.systemOrange))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color(UIColor.systemOrange).opacity(0.1))
-                                        .cornerRadius(6)
-                                } else {
-                                    Text("一般")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(Color(UIColor.secondaryLabel))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color(UIColor.systemGray5))
-                                        .cornerRadius(6)
-                                }
+                                Text(BuiltInTags.anxiety)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(tagColor(for: BuiltInTags.anxiety))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(tagColor(for: BuiltInTags.anxiety).opacity(0.12))
+                                    .cornerRadius(6)
                             }
-                            .frame(width: 70)
+                            .frame(width: 110)
+                            .padding(8)
+                            .background(Color(UIColor.systemBackground))
+                            .cornerRadius(10)
+                            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
                         }
                     }
                     .padding(.horizontal, 4)
                     .padding(.vertical, 8)
                 }
-                .frame(height: 100) // 增加高度以适应标签
+                .frame(height: 110)
             }
             .padding(16)
             .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -1329,7 +1320,7 @@ private func tagColor(for tag: String) -> Color {
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showingImprovementDetail) {
             NavigationStack {
-                ImprovementDetailView()
+                TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)
             }
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
