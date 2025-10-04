@@ -27,7 +27,7 @@ class AppAppearance {
         let tabBar = UITabBar.appearance()
         tabBar.standardAppearance = tabAppearance
         if #available(iOS 15.0, *) {
-            tab·Bar.scrollEdgeAppearance = tabAppearance
+            tabBar.scrollEdgeAppearance = tabAppearance
         }
         tabBar.isTranslucent = true
 
