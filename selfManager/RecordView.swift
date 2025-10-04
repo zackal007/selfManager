@@ -1249,7 +1249,7 @@ struct RecordView: View {
                                     }
                                 }
                                 .padding(.top, 0)
-                                .padding(.bottom, 20)
+                                .padding(.bottom, 30)
                             }
                             .zIndex(5)
                         }
@@ -1421,7 +1421,6 @@ struct RecordView: View {
             // 统一页面级背景为系统分组背景，以与其他模块一致
             .background(
                 Color(UIColor.systemGroupedBackground)
-                    .ignoresSafeArea()
             )
         }
         

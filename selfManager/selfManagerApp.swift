@@ -16,9 +16,45 @@ class AppAppearance {
     static func setupAppearance() {
         // 设置TabBar选中项的颜色为蓝色
         UITabBar.appearance().tintColor = UIColor.systemBlue
-        
+
+        // 统一 TabBar 外观以与首页一致（使用系统默认的半透明模糊背景）
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithDefaultBackground() // 默认模糊半透明样式
+        // 保持系统默认背景颜色与模糊效果，不强制设定为不透明
+        tabAppearance.backgroundColor = nil
+        tabAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
+
+        let tabBar = UITabBar.appearance()
+        tabBar.standardAppearance = tabAppearance
+        if #available(iOS 15.0, *) {
+            tab·Bar.scrollEdgeAppearance = tabAppearance
+        }
+        tabBar.isTranslucent = true
+
         // 设置其他UI元素的颜色
         UIButton.appearance().tintColor = UIColor.systemBlue
+
+        // 统一导航栏外观，避免透明与颜色不一致
+        let navAppearance = UINavigationBarAppearance()
+        // 使用不透明背景，防止滚动到顶部时出现透明效果
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = UIColor.systemBackground
+        // 统一标题文字颜色
+        navAppearance.titleTextAttributes = [
+            .foregroundColor: UIColor.label
+        ]
+        navAppearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor.label
+        ]
+        // 细化阴影线条，弱化分割线存在感（可按需调整或置为nil）
+        navAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.2)
+
+        let navigationBar = UINavigationBar.appearance()
+        navigationBar.standardAppearance = navAppearance
+        navigationBar.scrollEdgeAppearance = navAppearance
+        navigationBar.compactAppearance = navAppearance
+        navigationBar.isTranslucent = false
+        navigationBar.tintColor = UIColor.systemBlue
     }
 }
 

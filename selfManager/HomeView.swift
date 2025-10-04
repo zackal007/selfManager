@@ -200,8 +200,12 @@ struct HomeView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 30)
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
-                        // 采集每个卡片在滚动坐标系中的帧信息，用于计算让位与排序
-                        cardFrames = frames
+                        // 为避免“Bound preference ... update multiple times per frame”警告：
+                        // 在进入移动模式或拖拽/晃动期间不更新 cardFrames，使用进入前的静态快照即可。
+                        guard moveModeEnabledFor == nil && draggingCard == nil else { return }
+                        if shouldUpdateCardFrames(frames, comparedTo: cardFrames) {
+                            cardFrames = frames
+                        }
                     }
                 }
                 .background(Color(UIColor.systemGroupedBackground))
@@ -402,6 +406,18 @@ private func withMoveGesture<V: View>(_ view: V, for type: HomeCardType) -> some
     } else {
         view
     }
+}
+
+// 仅当位置或高度发生明显变化时更新 cardFrames，避免每帧微小变化造成多次更新
+private func shouldUpdateCardFrames(_ newFrames: [HomeCardType: CGRect], comparedTo oldFrames: [HomeCardType: CGRect]) -> Bool {
+    if newFrames.count != oldFrames.count { return true }
+    let epsilon: CGFloat = 0.5
+    for (key, newRect) in newFrames {
+        guard let oldRect = oldFrames[key] else { return true }
+        if abs(newRect.minY - oldRect.minY) > epsilon { return true }
+        if abs(newRect.height - oldRect.height) > epsilon { return true }
+    }
+    return false
 }
 
 // 使用原生上下文菜单触发移动/调整大小，无需自定义长按手势

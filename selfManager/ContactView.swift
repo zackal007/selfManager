@@ -195,6 +195,8 @@ struct ContactView: View {
                 )
             }
         }
+        // 与首页一致：在顶层隐藏系统导航栏，统一顶部外观
+        .navigationBarHidden(true)
     }
     
     // 分段控制器视图
