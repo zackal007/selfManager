@@ -104,8 +104,14 @@ struct AddTagSheet: View {
             errorMessage = err
             return
         }
-        // 新建Tag对象（便于后续编辑描述与分类）
-        let tag = Tag(name: name, tagDescription: "", color: tagColorManager.getColor(for: name).toHex() ?? "", categoryID: nil)
+        // 新建标签默认颜色：蓝色（并写入到颜色管理器与Tag对象）
+        TagColorManager.shared.setColor(.blue, for: name)
+        let tag = Tag(
+            name: name,
+            tagDescription: "",
+            color: Color.blue.toHex(),
+            categoryID: nil
+        )
         modelContext.insert(tag)
         // 回调添加到实体
         onAddTags([name])
@@ -124,6 +130,13 @@ struct AddTagSheet: View {
             VStack(spacing: 0) {
                 // 搜索与选择区域
                 VStack(spacing: 12) {
+                    // 区块标题
+                    HStack {
+                        Text("从标签库选择")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
@@ -168,6 +181,11 @@ struct AddTagSheet: View {
                                     }
                                 }
                             }
+                            .contentShape(Rectangle())
+                            .listRowBackground(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(UIColor.secondarySystemBackground))
+                            )
                         }
                     }
                     .listStyle(InsetGroupedListStyle())
@@ -185,8 +203,29 @@ struct AddTagSheet: View {
                     HStack(spacing: 8) {
                         TextField("输入新标签名称", text: $newTagName)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
-                        Button("创建并添加") { commitNewTag() }
-                            .disabled(validateNewName(newTagName) != nil)
+                        Button(action: { commitNewTag() }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                Text("创建并添加")
+                                    .font(.system(size: 15, weight: .medium))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule().fill(Color.blue)
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(validateNewName(newTagName) != nil)
+                    }
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 10, height: 10)
+                        Text("新标签默认颜色：蓝色")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
                     }
                     if let msg = validateNewName(newTagName) {
                         Text(msg)
