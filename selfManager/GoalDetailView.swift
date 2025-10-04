@@ -222,6 +222,7 @@ struct GoalDetailView: View {
     @State private var editingTask: GoalTask? = nil
     @State private var showActivityLog = false
     @Environment(\.presentationMode) var presentationMode
+    @State private var showAddTagSheet = false
     
     // 可编辑字段枚举
     enum EditableField {
@@ -1026,9 +1027,7 @@ struct GoalDetailView: View {
                 
                 // 添加标签按钮
                 Button(action: {
-                    editingField = .tag
-                    editingValue = ""
-                    showEditSheet = true
+                    showAddTagSheet = true
                 }) {
                     Image(systemName: "plus")
                         .font(.system(size: 12))
@@ -1334,11 +1333,9 @@ struct GoalDetailView: View {
                                     .cornerRadius(12)
                                 }
                                 
-                                // 添加标签按钮
+                                // 添加标签按钮（使用可复用的 AddTagSheet）
                                 Button(action: {
-                                    editingField = .tag
-                                    editingValue = ""
-                                    showEditSheet = true
+                                    showAddTagSheet = true
                                 }) {
                                     Image(systemName: "plus")
                                         .font(.system(size: 12))
@@ -1843,6 +1840,20 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showActivityLog) {
             GoalActivityLogView(goal: goal)
+        }
+        // 统一在顶层挂载添加标签弹窗，确保任意“添加标签”按钮都能生效
+        .sheet(isPresented: $showAddTagSheet) {
+            AddTagSheet(existingEntityTags: goal.tags) { names in
+                let existing = Set(goal.tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
+                let toAdd = names.filter { !existing.contains($0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()) }
+                guard !toAdd.isEmpty else { return }
+                for name in toAdd {
+                    goal.tags.append(name)
+                    GoalActivityManager.shared.logTagAdd(goal: goal, tag: name)
+                }
+                goal.modifyTime = Date()
+                do { try modelContext.save() } catch { print("Failed to save tag additions: \(error)") }
+            }
         }
         .alert(isPresented: $showDeleteAlert) {
             Alert(

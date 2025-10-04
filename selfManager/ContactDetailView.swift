@@ -35,6 +35,8 @@ struct ContactDetailView: View {
     
     // 目标选择器
     @State private var showGoalSelector = false
+    // 标签添加弹窗
+    @State private var showAddTagSheet = false
     
     enum EditingField {
         case name, company, position, phone, email, address, notes, tag
@@ -93,6 +95,22 @@ struct ContactDetailView: View {
         }
         .sheet(isPresented: $showGoalSelector) {
             GoalMultiSelectorView(contact: contact, allGoals: allGoals)
+        }
+        .sheet(isPresented: $showAddTagSheet) {
+            AddTagSheet(existingEntityTags: contact.tags) { names in
+                let existing = Set(contact.tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
+                let toAdd = names.filter { !existing.contains($0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()) }
+                guard !toAdd.isEmpty else { return }
+                for name in toAdd {
+                    contact.tags.append(name)
+                }
+                contact.modifyTime = Date()
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to save tag additions: \(error)")
+                }
+            }
         }
         .alert("删除联系人", isPresented: $showDeleteAlert) {
             Button("取消", role: .cancel) { }
@@ -461,11 +479,9 @@ struct ContactDetailView: View {
                 
                 Spacer()
                 
-                // 添加标签按钮 - 直接在视图中添加
+                // 添加标签按钮 - 打开可复用的标签添加弹窗
                 Button(action: {
-                    editingField = .tag
-                    editingValue = ""
-                    showEditSheet = true
+                    showAddTagSheet = true
                 }) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 20))
@@ -526,11 +542,9 @@ struct ContactDetailView: View {
                             .cornerRadius(12)
                         }
                         
-                        // 添加标签按钮 - 直接在视图中添加
+                        // 添加标签按钮 - 打开可复用的标签添加弹窗
                         Button(action: {
-                            editingField = .tag
-                            editingValue = ""
-                            showEditSheet = true
+                            showAddTagSheet = true
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 12))
@@ -539,33 +553,6 @@ struct ContactDetailView: View {
                                 .background(Color(UIColor.systemBlue).opacity(0.1))
                                 .clipShape(Circle())
                         }
-                        
-                        // 直接添加标签的文本框
-                        TextField("添加标签...", text: $editingValue)
-                            .font(.system(size: 14))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(12)
-                            .frame(width: 120)
-                            .onSubmit {
-                                if !editingValue.isEmpty {
-                                    // 添加新标签
-                                    if !contact.tags.contains(editingValue) {
-                                        contact.tags.append(editingValue)
-                                        // 更新修改时间
-                                        contact.modifyTime = Date()
-                                        // 保存更改
-                                        do {
-                                            try modelContext.save()
-                                        } catch {
-                                            print("Failed to save new tag: \(error)")
-                                        }
-                                    }
-                                    // 清空输入
-                                    editingValue = ""
-                                }
-                            }
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 8)
@@ -578,7 +565,7 @@ struct ContactDetailView: View {
         .cornerRadius(16)
         .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
     }
-    
+
     // 为标签生成一致的颜色 - 使用TagColorManager
     private func tagColor(for tag: String) -> Color {
         return TagColorManager.shared.getColor(for: tag)

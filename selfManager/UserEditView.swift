@@ -6,6 +6,7 @@ struct UserEditView: View {
     @Bindable var user: User
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @State private var showAddTagSheet = false
     @State private var showAddTagField = false
     @State private var newTag = ""
     @State private var avatarItem: PhotosPickerItem?
@@ -72,8 +73,7 @@ struct UserEditView: View {
                                 .cornerRadius(12)
                             }
                             Button(action: {
-                                showAddTagField = true
-                                newTag = ""
+                                showAddTagSheet = true
                             }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 12))
@@ -85,24 +85,6 @@ struct UserEditView: View {
                         }
                         .padding(.vertical, 5)
                     }
-                    if showAddTagField {
-                        HStack {
-                            TextField("新标签", text: $newTag)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            Button("添加") {
-                                let trimmed = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
-                                if !trimmed.isEmpty && !user.tags.contains(trimmed) {
-                                    user.tags.append(trimmed)
-                                    
-                                    // 创建或更新Tag对象
-                                    // 注意：这里需要获取modelContext，但UserEditView没有直接访问
-                                    // 我们需要添加Environment变量
-                                }
-                                showAddTagField = false
-                                newTag = ""
-                            }
-                        }
-                    }
                 }
                 
 
@@ -110,6 +92,21 @@ struct UserEditView: View {
             .navigationTitle("我的信息")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(leading: Button("取消") { dismiss() }, trailing: Button("保存") { dismiss() })
+            .sheet(isPresented: $showAddTagSheet) {
+                AddTagSheet(existingEntityTags: user.tags) { names in
+                    let existing = Set(user.tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
+                    let toAdd = names.filter { !existing.contains($0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()) }
+                    guard !toAdd.isEmpty else { return }
+                    for name in toAdd {
+                        user.tags.append(name)
+                    }
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to save user tag additions: \(error)")
+                    }
+                }
+            }
             .onChange(of: avatarItem) { oldItem, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
