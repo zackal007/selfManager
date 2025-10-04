@@ -51,6 +51,10 @@ class TagColorManager: ObservableObject {
     
     // 获取标签颜色
     func getColor(for tag: String) -> Color {
+        // 内置标签使用预设颜色
+        if BuiltInTags.isBuiltIn(tag) {
+            return BuiltInTags.color(for: tag)
+        }
         // 优先按原始键读取，其次尝试规范化键，最后使用稳定的默认颜色
         if let colorString = tagColors[tag], let color = Color(hex: colorString) {
             return color
@@ -64,6 +68,8 @@ class TagColorManager: ObservableObject {
     
     // 设置标签颜色
     func setColor(_ color: Color, for tag: String) {
+        // 禁止修改内置标签颜色
+        if BuiltInTags.isBuiltIn(tag) { return }
         let hex = color.toHex()
         let normalized = normalizeTag(tag)
         // 同时保存原始键与规范化键，提升兼容性
@@ -78,6 +84,10 @@ class TagColorManager: ObservableObject {
     
     // 更新标签名称
     func updateTagName(from oldTag: String, to newTag: String) {
+        // 禁止对内置标签执行重命名颜色迁移
+        if BuiltInTags.isBuiltIn(oldTag) || BuiltInTags.isBuiltIn(newTag) {
+            return
+        }
         let oldExact = oldTag
         let oldNorm = normalizeTag(oldTag)
         let newExact = newTag
@@ -101,6 +111,8 @@ class TagColorManager: ObservableObject {
     
     // 删除标签颜色
     func removeColor(for tag: String) {
+        // 内置标签颜色固定，不移除
+        if BuiltInTags.isBuiltIn(tag) { return }
         let normalized = normalizeTag(tag)
         tagColors.removeValue(forKey: tag)
         tagColors.removeValue(forKey: normalized)

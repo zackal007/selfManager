@@ -150,7 +150,8 @@ struct selfManagerApp: App {
                 modelContext.insert(defaultUser)
             }
             
-            // 不再自动创建默认标签，让用户根据需要手动创建
+            // 确保系统内置标签存在
+            BuiltInTags.ensureExists(modelContext: modelContext)
             
             // 保存更改
             try modelContext.save()

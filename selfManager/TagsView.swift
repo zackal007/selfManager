@@ -63,6 +63,9 @@ struct TagsView: View {
                 tagSet.insert(tag)
             }
         }
+
+        // 保证系统内置标签始终可见（即使未关联任何内容）
+        BuiltInTags.allNames.forEach { tagSet.insert($0) }
         
         let allTagNames = Array(tagSet).sorted()
         
@@ -198,6 +201,17 @@ var body: some View {
                                             .background(
                                                 Capsule()
                                                     .fill(Color.white.opacity(0.2))
+                                            )
+                                    }
+                                    if BuiltInTags.isBuiltIn(tag) {
+                                        Text("系统内置")
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.9))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.white.opacity(0.25))
                                             )
                                     }
                                 }
@@ -1132,22 +1146,12 @@ struct TagInfoHeader: View {
                 // 操作按钮区域
                 HStack(spacing: 12) {
                     Spacer()
-                    
-                    // 编辑按钮 - 直接切换到编辑模式
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            // 初始化编辑状态的值
-                            editedTag = tag
-                            tagDescriptionText = tagObject?.tagDescription ?? ""
-                            selectedColor = tagColor
-                            selectedCategoryID = tagCategory?.id
-                            isEditing = true
-                        }
-                    }) {
+
+                    if BuiltInTags.isBuiltIn(tag) {
                         HStack(spacing: 6) {
-                            Image(systemName: "pencil")
+                            Image(systemName: "lock.fill")
                                 .font(.system(size: 14, weight: .medium))
-                            Text("编辑")
+                            Text("系统内置标签")
                                 .font(.system(size: 15, weight: .medium))
                         }
                         .foregroundColor(.white)
@@ -1158,42 +1162,78 @@ struct TagInfoHeader: View {
                                 .fill(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color(UIColor.systemBlue),
-                                            Color(UIColor.systemBlue).opacity(0.8)
+                                            Color(UIColor.systemGray),
+                                            Color(UIColor.systemGray).opacity(0.8)
                                         ]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
                                 )
-                                .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 4, x: 0, y: 2)
+                                .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
                         )
-                    }
-                    
-                    // 删除按钮
-                    Button(action: onDelete) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 14, weight: .medium))
-                            Text("删除")
-                                .font(.system(size: 15, weight: .medium))
+                    } else {
+                        // 编辑按钮 - 直接切换到编辑模式
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                // 初始化编辑状态的值
+                                editedTag = tag
+                                tagDescriptionText = tagObject?.tagDescription ?? ""
+                                selectedColor = tagColor
+                                selectedCategoryID = tagCategory?.id
+                                isEditing = true
+                            }
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 14, weight: .medium))
+                                Text("编辑")
+                                    .font(.system(size: 15, weight: .medium))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color(UIColor.systemBlue),
+                                                Color(UIColor.systemBlue).opacity(0.8)
+                                            ]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 4, x: 0, y: 2)
+                            )
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.red,
-                                            Color.red.opacity(0.8)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
+
+                        // 删除按钮
+                        Button(action: onDelete) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 14, weight: .medium))
+                                Text("删除")
+                                    .font(.system(size: 15, weight: .medium))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color.red,
+                                                Color.red.opacity(0.8)
+                                            ]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
                                     )
-                                )
-                                .shadow(color: Color.red.opacity(0.3), radius: 4, x: 0, y: 2)
-                        )
+                                    .shadow(color: Color.red.opacity(0.3), radius: 4, x: 0, y: 2)
+                            )
+                        }
                     }
                 }
             } else {
@@ -1445,9 +1485,16 @@ struct TagInfoHeader: View {
     // 保存标签方法
     private func saveTag() {
         let trimmedTag = editedTag.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         if trimmedTag.isEmpty {
             alertMessage = "标签名称不能为空"
+            showingSaveAlert = true
+            return
+        }
+
+        // 内置标签不可编辑或重命名
+        if BuiltInTags.isBuiltIn(trimmedTag) {
+            alertMessage = "系统内置标签不可编辑"
             showingSaveAlert = true
             return
         }
