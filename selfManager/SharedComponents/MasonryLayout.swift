@@ -4,6 +4,11 @@ struct MasonrySpanKey: LayoutValueKey {
     static let defaultValue: Int = 1
 }
 
+// 允许为每个子视图提供一个固定高度，优先于 sizeThatFits
+struct MasonryHeightKey: LayoutValueKey {
+    static let defaultValue: CGFloat = 0
+}
+
 extension View {
     func masonrySpan(_ span: Int) -> some View {
         self.layoutValue(key: MasonrySpanKey.self, value: max(1, span))
@@ -32,7 +37,15 @@ struct MasonryLayout: Layout {
         for subview in subviews {
             let span = min(max(1, subview[MasonrySpanKey.self]), cols)
             let itemWidth = colWidth * CGFloat(span) + spacing * CGFloat(span - 1)
-            let size = subview.sizeThatFits(.init(width: itemWidth, height: nil))
+            // 如果提供了固定高度，直接使用该高度
+            let overrideHeight = subview[MasonryHeightKey.self]
+            let size: CGSize = {
+                if overrideHeight > 0 {
+                    return CGSize(width: itemWidth, height: overrideHeight)
+                } else {
+                    return subview.sizeThatFits(.init(width: itemWidth, height: nil))
+                }
+            }()
             if span == 1 {
                 let idx = columnHeights.enumerated().min(by: { $0.element < $1.element })?.offset ?? 0
                 columnHeights[idx] += size.height + spacing
@@ -67,7 +80,15 @@ struct MasonryLayout: Layout {
         for subview in subviews {
             let span = min(max(1, subview[MasonrySpanKey.self]), cols)
             let itemWidth = colWidth * CGFloat(span) + spacing * CGFloat(span - 1)
-            let size = subview.sizeThatFits(.init(width: itemWidth, height: nil))
+            // 如果提供了固定高度，直接使用该高度
+            let overrideHeight = subview[MasonryHeightKey.self]
+            let size: CGSize = {
+                if overrideHeight > 0 {
+                    return CGSize(width: itemWidth, height: overrideHeight)
+                } else {
+                    return subview.sizeThatFits(.init(width: itemWidth, height: nil))
+                }
+            }()
             if span == 1 {
                 let idx = columnHeights.enumerated().min(by: { $0.element < $1.element })?.offset ?? 0
                 let x = bounds.minX + horizontalPadding + CGFloat(idx) * (colWidth + spacing)

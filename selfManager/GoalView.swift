@@ -1122,13 +1122,15 @@ struct AllGoalListView: View {
 
 struct GoalCard: View {
     let goal: Goal
-    var cardWidth: CGFloat
+    var cardWidth: CGFloat?
+    var isFixedHeightContainer: Bool = false
     @State private var nameAndDescHeight: CGFloat = 0
     
     // 初始化方法，提供默认值
-    init(goal: Goal, cardWidth: CGFloat? = nil) {
+    init(goal: Goal, cardWidth: CGFloat? = nil, isFixedHeightContainer: Bool = false) {
         self.goal = goal
-        self.cardWidth = cardWidth ?? 160
+        self.cardWidth = cardWidth
+        self.isFixedHeightContainer = isFixedHeightContainer
     }
     // 获取进度颜色
     private var progressColor: Color {
@@ -1157,49 +1159,88 @@ struct GoalCard: View {
     }
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
-            ZStack {
+            ZStack(alignment: .topLeading) {
                 // 背景图片或默认渐变背景 - 置于底层
                 if let imageName = goal.backgroundImage {
                     // 首先尝试从应用资源中加载预设图片
                     if let uiImage = UIImage(named: imageName) {
                         // 预设背景图片 - 占满整个卡片
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: cardWidth)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .opacity(0.7) // 降低不透明度，使内容更易读
+                        if isFixedHeightContainer {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .opacity(0.7)
+                        } else {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .opacity(0.7)
+                        }
                     } else {
                         // 尝试从文档目录加载用户自定义图片
                         let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
                         if let uiImage = UIImage(contentsOfFile: fileURL.path) {
                             // 用户自定义背景图片 - 占满整个卡片
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: cardWidth)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
-                                .opacity(0.7) // 降低不透明度，使内容更易读
-                                // 添加模糊效果，提高可读性
-                                .blur(radius: 1.5)
+                            if isFixedHeightContainer {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                                    .clipped()
+                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    .opacity(0.7)
+                                    .blur(radius: 1.5)
+                            } else {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    .opacity(0.7)
+                                    .blur(radius: 1.5)
+                            }
                         }
                     }
                 } else {
                     // 默认渐变背景 - 占满整个卡片
-                    LinearGradient(
-                        gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .frame(width: cardWidth)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    if isFixedHeightContainer {
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                    } else {
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                    }
                 }
                 
                 // 添加半透明覆盖层，使内容更易读
-                Rectangle()
-                    .fill(Color(UIColor.systemBackground).opacity(0.5))
-                    .frame(width: cardWidth)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                if isFixedHeightContainer {
+                    Rectangle()
+                        .fill(Color(UIColor.systemBackground).opacity(0.5))
+                        .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                } else {
+                    Rectangle()
+                        .fill(Color(UIColor.systemBackground).opacity(0.5))
+                        .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
                 
                 // 卡片阴影
                 RoundedRectangle(cornerRadius: 20)
@@ -1351,9 +1392,12 @@ struct GoalCard: View {
                     // 添加底部空白，推动内容向上
                     Spacer()
                 }
-                .frame(width: cardWidth, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
+                .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
             }
-            .frame(width: cardWidth) // 卡片宽度固定，高度自适应
+            // 让内部容器的最大高度继承父容器的提议高度，从而在主页1×1固定高度下裁剪
+            .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .clipped() // 保证背景与内容不越界，避免与其他卡片重叠
+            .clipShape(RoundedRectangle(cornerRadius: 20)) // 统一圆角外观，确保与其他卡片一致
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }

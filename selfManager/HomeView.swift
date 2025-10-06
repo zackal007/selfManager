@@ -609,8 +609,12 @@ private func renderCard(for id: HomeCardID) -> some View {
     case .pingedGoal(let gid):
         if let goal = goals.first(where: { $0.id == gid }) {
             withMoveGesture(
-                GoalCard(goal: goal)
-                    .frame(height: heightForCard(id))
+                GoalCard(goal: goal, isFixedHeightContainer: true)
+                    // 提供给 Masonry 固定高度，避免 sizeThatFits 高度失控
+                    .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
+                    .frame(height: heightForCard(id), alignment: .top) // 当内容超出时优先显示顶部
+                    .clipped() // 防止内部内容越界导致与其他卡片重叠
+                    .clipShape(RoundedRectangle(cornerRadius: 20)) // 与其它卡片保持一致的圆角外观
                     .background(cardFrameReader(for: id))
                     .offset({
                         let base = cardOffsetsByID[id] ?? .zero
