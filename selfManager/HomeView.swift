@@ -355,17 +355,8 @@ private func renderCard(_ type: HomeCardType) -> some View {
                 .contextMenu { cardContextMenu(for: type) }
             , for: type)
     case .goals:
-        withMoveGesture(
-            goalSection
-                .background(cardFrameReader(for: type))
-                .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-                .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-                .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
-            , for: type)
+        // 隐藏“近期目标”卡片
+        EmptyView()
     case .moodAchievement:
         withMoveGesture(
             HStack(spacing: 16) {
@@ -765,6 +756,7 @@ private func tagColor(for tag: String) -> Color {
     @State private var goalFilterExpanded: Bool = UserDefaults.standard.bool(forKey: "goalFilterExpanded")
     @State private var selectedGoalType: GoalType? = nil
     @State private var selectedImportance: GoalImportance? = nil
+    @State private var selectedTags: Set<String> = []
     @State private var savedFilteredGoals: [Goal] = []
     @State private var searchText: String = UserDefaults.standard.string(forKey: "goalSearchText") ?? ""
     
@@ -779,7 +771,7 @@ private func tagColor(for tag: String) -> Color {
         let defaults = UserDefaults.standard
         
         // 批量获取所有需要的值，减少UserDefaults访问次数
-        let keys = ["goalFilterExpanded", "goalSearchText", "selectedGoalType", "selectedImportance"]
+        let keys = ["goalFilterExpanded", "goalSearchText", "selectedGoalType", "selectedImportance", "goalFilterTags"]
         let values = defaults.dictionaryRepresentation().filter { keys.contains($0.key) }
         
         // 加载筛选条件
@@ -801,6 +793,13 @@ private func tagColor(for tag: String) -> Color {
         } else {
             selectedImportance = nil
         }
+
+        // 加载标签
+        if let tagArray = values["goalFilterTags"] as? [String] {
+            selectedTags = Set(tagArray)
+        } else {
+            selectedTags = []
+        }
         
         // 应用筛选条件到目标列表
         updateFilteredGoals()
@@ -809,7 +808,7 @@ private func tagColor(for tag: String) -> Color {
     // 更新筛选后的目标列表 - 优化版本
     private func updateFilteredGoals() {
         // 如果没有任何筛选条件，直接使用所有目标
-        if selectedGoalType == nil && selectedImportance == nil && searchText.isEmpty {
+        if selectedGoalType == nil && selectedImportance == nil && searchText.isEmpty && selectedTags.isEmpty {
             savedFilteredGoals = goals
             return
         }
@@ -823,6 +822,12 @@ private func tagColor(for tag: String) -> Color {
             
             if let importance = selectedImportance, goal.goalImportance != importance {
                 return false
+            }
+
+            // 检查标签
+            if !selectedTags.isEmpty {
+                let matchesTag = goal.tags.contains { selectedTags.contains($0) }
+                if !matchesTag { return false }
             }
             
             // 最后检查搜索文本（计算成本较高）
@@ -889,7 +894,8 @@ private func tagColor(for tag: String) -> Color {
                 selectedGoalType: $selectedGoalType,
                 selectedImportance: $selectedImportance,
                 savedFilteredGoals: $savedFilteredGoals,
-                searchText: $searchText
+                searchText: $searchText,
+                selectedTags: $selectedTags
             )
         }
     }

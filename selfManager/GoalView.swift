@@ -145,6 +145,15 @@ struct GoalView: View {
     @State private var showSearchBar = false
     @State private var searchText = ""
     @State private var isSearching = false
+
+    // "最近"筛选迁移相关状态变量（保持与 HomeView 一致）
+    @State private var showGoalPopup = false
+    @State private var goalFilterExpanded: Bool = UserDefaults.standard.bool(forKey: "goalFilterExpanded")
+    // 弹窗内独立的类型筛选，避免切换页签
+    @State private var popupSelectedGoalType: GoalType? = nil
+    @State private var selectedImportance: GoalImportance? = nil
+    @State private var selectedTags: Set<String> = []
+    @State private var savedFilteredGoals: [Goal] = []
     
     // 刷新目标数据的状态变量
     @State private var refreshGoals = false
@@ -154,6 +163,16 @@ struct GoalView: View {
     @State private var currentGoalTypeIndex = 0
     // 顶栏动态高度（用于同步透明占位的高度，防止内容被遮挡）
     @State private var headerHeight: CGFloat = 120
+
+    // “全部”页统一数据源：优先使用弹窗保存的筛选结果；否则按搜索文本回退
+    private var allTabDisplayGoals: [Goal] {
+        // 若存在筛选条件，则严格使用保存的筛选结果（即便为空）
+        if (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty) {
+            return savedFilteredGoals
+        }
+        // 无筛选条件时，根据是否正在搜索选择数据源
+        return isSearching ? filteredGoals : allGoals
+    }
     
     // MARK: - 菜单组件
     // 视图模式菜单内容
@@ -484,27 +503,25 @@ struct GoalView: View {
                             
                             Spacer()
                             
-                            // 搜索按钮
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    showSearchBar.toggle()
-                                    if !showSearchBar {
-                                        searchText = ""
-                                        isSearching = false
+                            // 搜索按钮（仅在“全部”页签显示，点击弹出筛选弹窗）
+                            if selectedGoalType == nil {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        showGoalPopup = true
+                                    }
+                                }) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                            .frame(width: 34, height: 34)
+                                        
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(Color(UIColor.systemBlue))
                                     }
                                 }
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(UIColor.systemBlue).opacity(0.1))
-                                        .frame(width: 34, height: 34)
-                                    
-                                    Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(Color(UIColor.systemBlue))
-                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle())
                             
                             // 添加目标按钮
                             Button(action: {
@@ -717,6 +734,58 @@ struct GoalView: View {
                                 VStack(spacing: 16) {
                                     // 移除了分类标题
                                     Spacer().frame(height: 8)
+                                    // “全部”页签顶部筛选提示（页面上方，而非整个模块顶部）
+                                    if goalTypes[index] == nil {
+                                        let filtersActive = (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty)
+                                        if filtersActive {
+                                            HStack(spacing: 10) {
+                                                Text("当前为筛选结果")
+                                                    .font(.caption)
+                                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 6)
+                                                    .background(Color(UIColor.systemGray6))
+                                                    .cornerRadius(15)
+
+                                                Button(action: {
+                                                    // 取消筛选：清空筛选条件与结果
+                                                    popupSelectedGoalType = nil
+                                                    selectedImportance = nil
+                                                    searchText = ""
+                                                    selectedTags.removeAll()
+                                                    savedFilteredGoals = []
+
+                                                    // 同步移除持久化的筛选条件
+                                                    let defaults = UserDefaults.standard
+                                                    defaults.removeObject(forKey: "selectedGoalType")
+                                                    defaults.removeObject(forKey: "selectedImportance")
+                                                    defaults.removeObject(forKey: "goalSearchText")
+                                                    defaults.removeObject(forKey: "goalFilterTags")
+
+                                                    updateFilteredGoals()
+                                                }) {
+                                                    Text("取消筛选")
+                                                        .font(.caption)
+                                                        .foregroundColor(Color(UIColor.systemBlue))
+                                                        .underline()
+                                                }
+
+                                                Spacer()
+                                            }
+                                            .padding(.horizontal)
+                                            .padding(.top, 8)
+                                            // 当筛选结果为空时显示“无结果”提示
+                                            if allTabDisplayGoals.isEmpty {
+                                                HStack {
+                                                    Text("无结果")
+                                                        .font(.caption)
+                                                        .foregroundColor(Color(UIColor.secondaryLabel))
+                                                    Spacer()
+                                                }
+                                                .padding(.horizontal)
+                                            }
+                                        }
+                                    }
                                 
                                     // 根据视图模式显示不同的布局
                                     if viewMode == .gallery {
@@ -730,7 +799,7 @@ struct GoalView: View {
                                         case .habit:
                                             HabitGoalGalleryView(goals: processedHabitGoals, geometry: geometry)
                                         case nil:
-                                            AllGoalGalleryView(goals: sortGoals(isSearching ? filteredGoals : allGoals), geometry: geometry)
+                                            AllGoalGalleryView(goals: sortGoals(allTabDisplayGoals), geometry: geometry)
                                         }
                                     } else {
                                         switch goalTypes[index] {
@@ -743,7 +812,7 @@ struct GoalView: View {
                                         case .habit:
                                             HabitGoalListView(goals: processedHabitGoals)
                                         case nil:
-                                            AllGoalListView(goals: sortGoals(isSearching ? filteredGoals : allGoals))
+                                            AllGoalListView(goals: sortGoals(allTabDisplayGoals))
                                         }
                                     }
                                 }
@@ -798,44 +867,36 @@ struct GoalView: View {
         .sheet(isPresented: $showTrashView) {
             TrashView()
         }
+        // 筛选弹窗（仅“全部”页签入口触发）
+        .sheet(isPresented: $showGoalPopup) {
+            GoalPopupView(
+                goalFilterExpanded: $goalFilterExpanded,
+                selectedGoalType: $popupSelectedGoalType,
+                selectedImportance: $selectedImportance,
+                savedFilteredGoals: $savedFilteredGoals,
+                searchText: $searchText,
+                selectedTags: $selectedTags
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            loadSavedGoalFilters()
+        }
+        .onChange(of: popupSelectedGoalType) { _, _ in
+            updateFilteredGoals()
+        }
+        .onChange(of: selectedImportance) { _, _ in
+            updateFilteredGoals()
+        }
         .onChange(of: searchText) { _, newValue in
             isSearching = !newValue.isEmpty
+            updateFilteredGoals()
         }
-        .overlay(
-            // 搜索状态指示器
-            Group {
-                if isSearching {
-                    VStack {
-                        HStack {
-                            Text("搜索: \"\(searchText)\"")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.blue)
-                                .cornerRadius(15)
-                            
-                            Button("清除") {
-                                searchText = ""
-                                isSearching = false
-                            }
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        
-                        Spacer()
-                    }
-                }
-            }
-        )
+        .onChange(of: selectedTags) { _, _ in
+            updateFilteredGoals()
+        }
+        // 移除模块级 overlay 提示，改为页签内顶部提示
         
         // 侧边栏组件
         SidebarView(isPresented: $showSidebar, selectedTab: $selectedTab)
@@ -843,6 +904,48 @@ struct GoalView: View {
     }
     
     // MARK: - Private Methods
+
+    // 从 UserDefaults 加载并应用筛选条件
+    private func loadSavedGoalFilters() {
+        let defaults = UserDefaults.standard
+        goalFilterExpanded = defaults.bool(forKey: "goalFilterExpanded")
+
+        if let typeRaw = defaults.string(forKey: "selectedGoalType"), let type = GoalType(rawValue: typeRaw) {
+            popupSelectedGoalType = type
+        } else {
+            popupSelectedGoalType = nil
+        }
+
+        if let importanceObj = defaults.object(forKey: "selectedImportance") as? Int, let imp = GoalImportance(rawValue: importanceObj) {
+            selectedImportance = imp
+        } else {
+            selectedImportance = nil
+        }
+
+        searchText = defaults.string(forKey: "goalSearchText") ?? ""
+        if let tagArray = defaults.array(forKey: "goalFilterTags") as? [String] {
+            selectedTags = Set(tagArray)
+        } else {
+            selectedTags = []
+        }
+        updateFilteredGoals()
+    }
+
+    // 根据当前筛选条件更新筛选结果数组
+    private func updateFilteredGoals() {
+        let goalsSource = allGoals
+        let filtered = goalsSource.filter { goal in
+            let typeMatches = (popupSelectedGoalType == nil) || (goal.goalType == popupSelectedGoalType)
+            let importanceMatches = (selectedImportance == nil) || (goal.goalImportance == selectedImportance)
+            let tagMatches = selectedTags.isEmpty || goal.tags.contains { selectedTags.contains($0) }
+            let searchMatches = searchText.isEmpty ||
+                goal.name.localizedCaseInsensitiveContains(searchText) ||
+                goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
+                goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            return typeMatches && importanceMatches && tagMatches && searchMatches
+        }
+        savedFilteredGoals = filtered
+    }
     
     // 获取类别标题
     private func getCategoryTitle(for segment: Int, category: Int) -> String {
@@ -895,8 +998,7 @@ struct GoalView: View {
         // 当selectedGoalType为nil时，返回所有目标
         if selectedGoalType == nil {
             // 返回所有类型的目标
-            let goals = isSearching ? filteredGoals : allGoals
-            return sortGoals(goals)
+            return sortGoals(allTabDisplayGoals)
         }
         
         // 否则按分段控制器选择返回特定类型的目标

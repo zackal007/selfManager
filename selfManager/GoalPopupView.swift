@@ -24,6 +24,7 @@ struct GoalPopupView: View {
     @Binding var selectedImportance: GoalImportance?
     @Binding var savedFilteredGoals: [Goal]
     @Binding var searchText: String
+    @Binding var selectedTags: Set<String>
     
     // 保存筛选设置
     func saveFilterSettings() {
@@ -35,6 +36,7 @@ struct GoalPopupView: View {
         defaults.set(selectedGoalType?.rawValue, forKey: "selectedGoalType")
         defaults.set(selectedImportance?.rawValue as Int?, forKey: "selectedImportance")
         defaults.set(searchText, forKey: "goalSearchText")
+        defaults.set(Array(selectedTags), forKey: "goalFilterTags")
     }
     
     // 计算筛选后的目标
@@ -46,174 +48,150 @@ struct GoalPopupView: View {
             // 应用优先级筛选
             let importanceMatches = selectedImportance == nil || goal.goalImportance == selectedImportance
             
+            // 应用标签筛选（任意匹配一个标签即可）
+            let tagMatches = selectedTags.isEmpty || goal.tags.contains { selectedTags.contains($0) }
+
             // 应用搜索文本筛选
             let searchMatches = searchText.isEmpty ||
                 goal.name.localizedCaseInsensitiveContains(searchText) ||
                 goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
                 goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
             
-            return typeMatches && importanceMatches && searchMatches
+            return typeMatches && importanceMatches && tagMatches && searchMatches
         }
+    }
+
+    // 可选标签列表（去重后按字母排序）
+    private var availableTags: [String] {
+        Array(Set(allGoals.flatMap { $0.tags })).sorted()
     }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 筛选器部分
+                // 筛选器部分（移除“筛选器”标签与展开/收起按钮，默认展开）
                 VStack {
+                    // 默认展开内容
+                    // 搜索框
                     HStack {
-                        Text("筛选器")
-                            .font(.headline)
-                            .foregroundColor(Color(UIColor.label))
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(Color(UIColor.systemGray))
                         
-                        Spacer()
+                        TextField("搜索目标", text: $searchText)
+                            .autocapitalization(.none)
+                            .disableAutocorrection(true)
                         
-                        Button(action: {
-                            withAnimation {
-                                goalFilterExpanded.toggle()
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color(UIColor.systemGray))
                             }
-                        }) {
-                            Image(systemName: goalFilterExpanded ? "chevron.up" : "chevron.down")
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(8)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .clipShape(Circle())
                         }
                     }
+                    .padding(10)
+                    .background(Color(UIColor.systemGray6))
+                    .cornerRadius(10)
                     .padding(.horizontal)
                     .padding(.top)
                     
-                    if goalFilterExpanded {
-                        // 搜索框
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(Color(UIColor.systemGray))
-                            
-                            TextField("搜索目标", text: $searchText)
-                                .autocapitalization(.none)
-                                .disableAutocorrection(true)
-                            
-                            if !searchText.isEmpty {
-                                Button(action: {
-                                    searchText = ""
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(Color(UIColor.systemGray))
-                                }
-                            }
-                        }
-                        .padding(10)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                    // 目标类型筛选
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("目标类型")
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                            .padding(.horizontal)
                         
-                        // 目标类型筛选
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("目标类型")
-                                .font(.subheadline)
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                                .padding(.horizontal)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 10) {
-                                    // 全部选项
-                                    FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
-                                        selectedGoalType = nil
-                                    }
-                                    
-                                    // 各种目标类型
-                                    ForEach(GoalType.allCases, id: \.self) { type in
-                                        FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
-                                            selectedGoalType = type
-                                        }
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                // 全部选项
+                                FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
+                                    selectedGoalType = nil
+                                }
+                                
+                                // 各种目标类型
+                                ForEach(GoalType.allCases, id: \.self) { type in
+                                    FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
+                                        selectedGoalType = type
                                     }
                                 }
-                                .padding(.horizontal)
                             }
+                            .padding(.horizontal)
                         }
-                        .padding(.top, 8)
-                        
-                        // 优先级筛选
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("优先级")
-                                .font(.subheadline)
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                                .padding(.horizontal)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 10) {
-                                    // 全部选项
-                                    FilterChip(title: "全部", isSelected: selectedImportance == nil) {
-                                        selectedImportance = nil
-                                    }
-                                    
-                                    // 各种优先级
-                                    ForEach(GoalImportance.allCases, id: \.self) { importance in
-                                        FilterChip(
-                                            title: importance.displayName,
-                                            isSelected: selectedImportance == importance,
-                                            color: importance.color
-                                        ) {
-                                            selectedImportance = importance
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                        .padding(.top, 8)
-                        .padding(.bottom)
                     }
+                    .padding(.top, 8)
+                    
+                    // 优先级筛选
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("优先级")
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                            .padding(.horizontal)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                // 全部选项
+                                FilterChip(title: "全部", isSelected: selectedImportance == nil) {
+                                    selectedImportance = nil
+                                }
+                                
+                                // 各种优先级
+                                ForEach(GoalImportance.allCases.filter { $0 != .critical }, id: \.self) { importance in
+                                    FilterChip(
+                                        title: importance.displayName,
+                                        isSelected: selectedImportance == importance,
+                                        color: importance.color
+                                    ) {
+                                        selectedImportance = importance
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    .padding(.top, 8)
+                    
+                    // 标签筛选
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("标签")
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                            .padding(.horizontal)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                // 全部选项
+                                FilterChip(title: "全部", isSelected: selectedTags.isEmpty) {
+                                    selectedTags.removeAll()
+                                }
+                                
+                                ForEach(availableTags, id: \.self) { tag in
+                                    FilterChip(title: tag, isSelected: selectedTags.contains(tag)) {
+                                        if selectedTags.contains(tag) {
+                                            selectedTags.remove(tag)
+                                        } else {
+                                            selectedTags.insert(tag)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom)
                 }
-                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(16)
                 .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
                 .padding(.horizontal)
                 .padding(.top)
                 
-                // 目标列表
-                if filteredGoals.isEmpty {
-                    VStack(spacing: 20) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 40))
-                            .foregroundColor(Color(UIColor.systemGray))
-                        
-                        Text("没有找到匹配的目标")
-                            .font(.headline)
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                        
-                        Button(action: {
-                            // 重置筛选条件
-                            selectedGoalType = nil
-                            selectedImportance = nil
-                            searchText = ""
-                            // 保存重置后的筛选条件
-                            saveFilterSettings()
-                        }) {
-                            Text("清除筛选条件")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(8)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(UIColor.systemBackground))
-                } else {
-                    List {
-                        ForEach(filteredGoals) { goal in
-                            NavigationLink(destination: GoalDetailView(goal: goal)) {
-                                GoalRowView(goal: goal)
-                            }
-                        }
-                    }
-                    .listStyle(InsetGroupedListStyle())
-                }
+                // 移除筛选结果展示区域，保留弹窗仅用于筛选条件设定
+                Spacer()
             }
-            .navigationTitle("近期目标")
+            .navigationTitle("目标筛选")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -222,7 +200,7 @@ struct GoalPopupView: View {
                         saveFilterSettings()
                         dismiss()
                     }) {
-                        Text("保存筛选")
+                        Text("确认")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(Color(UIColor.systemBlue))
                     }
@@ -232,6 +210,12 @@ struct GoalPopupView: View {
                 // 在视图消失时保存筛选设置
                 saveFilterSettings()
             }
+            .onAppear {
+                // 默认保持展开状态
+                goalFilterExpanded = true
+            }
+            // 弹窗背景色统一
+            .background(Color(UIColor.systemBackground))
         }
     }
 }
@@ -305,7 +289,8 @@ struct GoalRowView: View {
         selectedGoalType: .constant(nil),
         selectedImportance: .constant(nil),
         savedFilteredGoals: .constant([]),
-        searchText: .constant("")
+        searchText: .constant(""),
+        selectedTags: .constant([])
     )
     .modelContainer(for: Goal.self, inMemory: true)
 }
