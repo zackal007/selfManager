@@ -73,25 +73,31 @@ struct HomeView: View {
     enum HomeCardType: String, Codable, CaseIterable, Hashable {
         case profile
         case asset
-        case pingedGoals
+        case pingedGoals // 旧分组卡片（不再使用）
         case goals
         case moodAchievement // 心情+成就并排区域作为一个卡片
         case improvement
     }
 
-    @State private var cardOrder: [HomeCardType] = []
-    @State private var draggingCard: HomeCardType? = nil
+    enum HomeCardID: Hashable, Codable {
+        case type(HomeCardType)
+        case pingedGoal(UUID)
+    }
+
+    @State private var cardOrderIDs: [HomeCardID] = []
+    @State private var draggingCardID: HomeCardID? = nil
     @State private var dragOffset: CGSize = .zero
-    @State private var cardFrames: [HomeCardType: CGRect] = [:]
+    @State private var cardFramesByID: [HomeCardID: CGRect] = [:]
+    @State private var cardOffsetsByID: [HomeCardID: CGSize] = [:]
     // 移动模式与菜单状态
-    @State private var moveModeEnabledFor: HomeCardType? = nil
-    @State private var expandedCards: Set<HomeCardType> = []
+    @State private var moveModeEnabledForID: HomeCardID? = nil
+    @State private var expandedCardsByID: Set<HomeCardID> = []
     // 最近一次交换时的拖拽位移基线，避免重复计算导致跳动
     @State private var lastSwapTranslationY: CGFloat = 0
 
     private struct CardFramePreferenceKey: PreferenceKey {
-        static var defaultValue: [HomeCardType: CGRect] = [:]
-        static func reduce(value: inout [HomeCardType: CGRect], nextValue: () -> [HomeCardType: CGRect]) {
+        static var defaultValue: [HomeCardID: CGRect] = [:]
+        static func reduce(value: inout [HomeCardID: CGRect], nextValue: () -> [HomeCardID: CGRect]) {
             value.merge(nextValue()) { _, new in new }
         }
     }
@@ -200,19 +206,22 @@ struct HomeView: View {
                             .frame(height: 40) // 将高度从 140 减小到 80
                         
                         // 主页卡片渲染（支持长按拖拽排序）
-                        ForEach(cardOrder, id: \.self) { type in
-                            renderCard(type)
+                        MasonryLayout(spacing: 16, minColumnWidth: 320) {
+                            ForEach(cardOrderIDs, id: \.self) { id in
+                                renderCard(for: id)
+                                    .masonrySpan(spanForCard(id))
+                            }
                         }
-                        .animation(.interactiveSpring(), value: cardOrder)
+                        .animation(.interactiveSpring(), value: cardOrderIDs)
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 30)
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
                         // 为避免“Bound preference ... update multiple times per frame”警告：
                         // 在进入移动模式或拖拽/晃动期间不更新 cardFrames，使用进入前的静态快照即可。
-                        guard moveModeEnabledFor == nil && draggingCard == nil else { return }
-                        if shouldUpdateCardFrames(frames, comparedTo: cardFrames) {
-                            cardFrames = frames
+                        guard moveModeEnabledForID == nil && draggingCardID == nil else { return }
+                        if shouldUpdateCardFrames(frames, comparedTo: cardFramesByID) {
+                            cardFramesByID = frames
                         }
                     }
                 }
@@ -278,8 +287,8 @@ struct HomeView: View {
             if savedFilteredGoals.isEmpty {
                 loadSavedGoalFilters()
             }
-            // 加载主页卡片排序
-            loadCardOrder()
+            // 加载主页卡片排序（按 ID 渲染，包括独立的 Ping 目标）
+            loadCardOrderIDs()
         }
         .onChange(of: selectedGoalType) {
             updateFilteredGoals()
@@ -290,7 +299,10 @@ struct HomeView: View {
         .onChange(of: searchText) {
             updateFilteredGoals()
         }
-}
+        .onChange(of: pingManager.allPingedGoalIDs) {
+            syncPingedGoalCardsIntoOrder()
+        }
+    }
 
 
 
@@ -310,18 +322,126 @@ private func countItemsWithTag(_ tag: String) -> Int {
     return count
 }
 
+// MARK: - ID 排序持久化与同步
+private let cardOrderIDsKey = "home.card.order.ids.v1"
+
+private func defaultCardOrderIDs() -> [HomeCardID] {
+    var ids: [HomeCardID] = [
+        .type(.profile),
+        .type(.asset)
+    ]
+    // 将现有被Ping目标作为独立卡片插入
+    for gid in pingManager.allPingedGoalIDs {
+        ids.append(.pingedGoal(gid))
+    }
+    // 追加其他静态卡片（不包含旧的 .pingedGoals 分组卡片）
+    ids.append(contentsOf: [
+        .type(.moodAchievement),
+        .type(.improvement)
+    ])
+    return ids
+}
+
+private func encodeHomeCardID(_ id: HomeCardID) -> String {
+    switch id {
+    case .type(let t):
+        return "T:" + t.rawValue
+    case .pingedGoal(let gid):
+        return "G:" + gid.uuidString
+    }
+}
+
+private func decodeHomeCardID(_ s: String) -> HomeCardID? {
+    if s.hasPrefix("T:") {
+        let raw = String(s.dropFirst(2))
+        if let t = HomeCardType(rawValue: raw) {
+            // 过滤掉旧的分组卡片
+            if t == .pingedGoals { return nil }
+            return .type(t)
+        }
+        return nil
+    } else if s.hasPrefix("G:") {
+        let raw = String(s.dropFirst(2))
+        if let uuid = UUID(uuidString: raw) {
+            return .pingedGoal(uuid)
+        }
+        return nil
+    }
+    return nil
+}
+
+private func loadCardOrderIDs() {
+    if let raw = UserDefaults.standard.array(forKey: cardOrderIDsKey) as? [String] {
+        var decoded = raw.compactMap { decodeHomeCardID($0) }
+        if !decoded.isEmpty {
+            // 移除已被取消Ping的目标卡片
+            decoded.removeAll { id in
+                if case .pingedGoal(let gid) = id {
+                    return !pingManager.allPingedGoalIDs.contains(gid)
+                }
+                return false
+            }
+            // 确保静态卡片存在
+            let requiredStatics: [HomeCardType] = [.profile, .asset, .moodAchievement, .improvement]
+            for t in requiredStatics {
+                let tid = HomeCardID.type(t)
+                if !decoded.contains(tid) {
+                    decoded.insert(tid, at: max(0, min(decoded.count, 0)))
+                }
+            }
+            // 添加新的被Ping目标卡片（默认追加到末尾）
+            for gid in pingManager.allPingedGoalIDs {
+                let pid = HomeCardID.pingedGoal(gid)
+                if !decoded.contains(pid) { decoded.append(pid) }
+            }
+            cardOrderIDs = decoded
+            return
+        }
+    }
+    cardOrderIDs = defaultCardOrderIDs()
+}
+
+private func saveCardOrderIDs() {
+    let encoded = cardOrderIDs.map { encodeHomeCardID($0) }
+    UserDefaults.standard.set(encoded, forKey: cardOrderIDsKey)
+}
+
+private func syncPingedGoalCardsIntoOrder() {
+    var current = cardOrderIDs
+    // 移除不再被Ping的目标卡片
+    current.removeAll { id in
+        if case .pingedGoal(let gid) = id {
+            return !pingManager.allPingedGoalIDs.contains(gid)
+        }
+        return false
+    }
+    // 添加新的被Ping的目标卡片（追加到末尾）
+    for gid in pingManager.allPingedGoalIDs {
+        let pid = HomeCardID.pingedGoal(gid)
+        if !current.contains(pid) { current.append(pid) }
+    }
+    // 不引入旧的分组卡片
+    current.removeAll { id in
+        if case .type(let t) = id, t == .pingedGoals { return true }
+        return false
+    }
+    cardOrderIDs = current
+    saveCardOrderIDs()
+}
+
 // MARK: - 拖拽排序：渲染卡片及交互逻辑
 @ViewBuilder
 private func renderCard(_ type: HomeCardType) -> some View {
-    let isDragging = (draggingCard == type)
+    let id = HomeCardID.type(type)
+    let isDragging = (draggingCardID == id)
     switch type {
     case .profile:
         withMoveGesture(
             userProfileSection
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                 .zIndex(isDragging ? 20 : 0)
                 .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
                 .contentShape(Rectangle())
@@ -335,25 +455,16 @@ private func renderCard(_ type: HomeCardType) -> some View {
             assetSection
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                 .zIndex(isDragging ? 20 : 0)
                 .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
                 .contentShape(Rectangle())
                 .contextMenu { cardContextMenu(for: type) }
             , for: type)
     case .pingedGoals:
-        withMoveGesture(
-            pingedGoalSection
-                .background(cardFrameReader(for: type))
-                .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
-                .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-                .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
-            , for: type)
+        // 旧的“被Ping目标分组卡片”不再使用，避免重复渲染
+        EmptyView()
     case .goals:
         // 隐藏“近期目标”卡片
         EmptyView()
@@ -367,8 +478,8 @@ private func renderCard(_ type: HomeCardType) -> some View {
             }
             .background(cardFrameReader(for: type))
             .offset(isDragging ? dragOffset : .zero)
-            .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-            .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+            .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+            .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
             .zIndex(isDragging ? 20 : 0)
             .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
             .contentShape(Rectangle())
@@ -379,8 +490,8 @@ private func renderCard(_ type: HomeCardType) -> some View {
             improvementSection
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledFor == type && draggingCard == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCards.contains(type) ? 1.04 : 1.0))
+                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                 .zIndex(isDragging ? 20 : 0)
                 .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
                 .contentShape(Rectangle())
@@ -389,67 +500,108 @@ private func renderCard(_ type: HomeCardType) -> some View {
     }
 }
 
-private func cardFrameReader(for type: HomeCardType) -> some View {
+@ViewBuilder
+private func renderCard(for id: HomeCardID) -> some View {
+    switch id {
+    case .type(let type):
+        renderCard(type)
+    case .pingedGoal(let gid):
+        if let goal = goals.first(where: { $0.id == gid }) {
+            withMoveGesture(
+                GoalCard(goal: goal)
+                    .background(cardFrameReader(for: id))
+                    .offset({
+                        let base = cardOffsetsByID[id] ?? .zero
+                        let extra = (draggingCardID == id) ? dragOffset : .zero
+                        return CGSize(width: base.width + extra.width, height: base.height + extra.height)
+                    }())
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(draggingCardID == id ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
+                    .contentShape(Rectangle())
+                , for: id)
+        } else {
+            Color.clear.frame(height: 20)
+        }
+    }
+}
+
+private func cardFrameReader(for id: HomeCardID) -> some View {
     GeometryReader { geo in
         Color.clear
             .preference(key: CardFramePreferenceKey.self,
-                        value: [type: geo.frame(in: .named("scroll"))])
+                        value: [id: geo.frame(in: .named("scroll"))])
     }
 }
 
-// 仅在对应卡片处于“移动位置”模式时附加拖拽手势，避免影响滚动
-@ViewBuilder
-private func withMoveGesture<V: View>(_ view: V, for type: HomeCardType) -> some View {
-    if moveModeEnabledFor == type {
-        view.highPriorityGesture(dragIfMoveEnabled(for: type))
+private func withMoveGesture<V: View>(_ view: V, for id: HomeCardID) -> some View {
+    var decorated = AnyView(view)
+    // 仅为被 ping 的目标卡片提供长按菜单以激活移动模式
+    switch id {
+    case .pingedGoal:
+        decorated = AnyView(decorated.contextMenu { cardContextMenu(for: id) })
+    case .type:
+        break
+    }
+
+    if moveModeEnabledForID == id {
+        return AnyView(decorated.highPriorityGesture(dragIfMoveEnabled(for: id)))
     } else {
-        view
+        return decorated
     }
 }
 
-// 仅当位置或高度发生明显变化时更新 cardFrames，避免每帧微小变化造成多次更新
-private func shouldUpdateCardFrames(_ newFrames: [HomeCardType: CGRect], comparedTo oldFrames: [HomeCardType: CGRect]) -> Bool {
+private func shouldUpdateCardFrames(_ newFrames: [HomeCardID: CGRect], comparedTo oldFrames: [HomeCardID: CGRect]) -> Bool {
     if newFrames.count != oldFrames.count { return true }
     let epsilon: CGFloat = 0.5
     for (key, newRect) in newFrames {
         guard let oldRect = oldFrames[key] else { return true }
         if abs(newRect.minY - oldRect.minY) > epsilon { return true }
         if abs(newRect.height - oldRect.height) > epsilon { return true }
+        if abs(newRect.minX - oldRect.minX) > epsilon { return true }
     }
     return false
 }
 
-// 使用原生上下文菜单触发移动/调整大小，无需自定义长按手势
+private func spanForCard(_ id: HomeCardID) -> Int {
+    switch id {
+    case .type(let type):
+        switch type {
+        case .profile, .asset:
+            return 2
+        default:
+            return 1
+        }
+    case .pingedGoal:
+        return 1
+    }
+}
 
-// 仅在启用了移动模式后允许拖拽
-private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
+private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
     DragGesture(minimumDistance: 10)
         .onChanged { drag in
-            guard moveModeEnabledFor == type else { return }
-            if draggingCard != type {
+            guard moveModeEnabledForID == id else { return }
+            if draggingCardID != id {
                 withAnimation(.interactiveSpring()) {
-                    draggingCard = type
+                    draggingCardID = id
                 }
-                // 开始拖拽时重置交换基线
-                lastSwapTranslationY = 0
             }
             dragOffset = drag.translation
-            reorderIfNeeded(for: type, translation: drag.translation)
+            reorderIfNeeded(for: id, translation: drag.translation)
         }
         .onEnded { _ in
-            guard moveModeEnabledFor == type else { return }
-            finalizeDrag(for: type)
+            guard moveModeEnabledForID == id else { return }
+            finalizeDrag(for: id)
             withAnimation(.interactiveSpring()) {
-                moveModeEnabledFor = nil
+                moveModeEnabledForID = nil
             }
-            lastSwapTranslationY = 0
         }
 }
 
-private func reorderIfNeeded(for type: HomeCardType, translation: CGSize) {
-    guard let fromIndex = cardOrder.firstIndex(of: type), let original = cardFrames[type] else { return }
-    // 相对最近一次交换的有效位移，降低频繁交换导致的跳动
-    let dy = translation.height - lastSwapTranslationY
+private func reorderIfNeeded(for id: HomeCardID, translation: CGSize) {
+    guard let fromIndex = cardOrderIDs.firstIndex(of: id), let original = cardFramesByID[id] else { return }
+    let dy = translation.height
     // 当前卡片随拖拽产生的临时位置（用于计算与相邻卡片的重叠）
     let currentFrame = original.offsetBy(dx: 0, dy: dy)
 
@@ -459,59 +611,140 @@ private func reorderIfNeeded(for type: HomeCardType, translation: CGSize) {
     if dy > 0 {
         // 向下拖动：与下一个卡片比较
         let nextIndex = fromIndex + 1
-        if nextIndex < cardOrder.count, let nextFrame = cardFrames[cardOrder[nextIndex]] {
+        if nextIndex < cardOrderIDs.count, let nextFrame = cardFramesByID[cardOrderIDs[nextIndex]] {
             let overlap = currentFrame.intersection(nextFrame).height
             let shouldSwap = overlap > nextFrame.height * hysteresis || currentFrame.midY > nextFrame.midY
             if shouldSwap {
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
-                    var newOrder = cardOrder
+                    var newOrder = cardOrderIDs
                     newOrder.swapAt(fromIndex, nextIndex)
-                    cardOrder = newOrder
+                    cardOrderIDs = newOrder
                 }
-                // 更新交换基线，下一次以当前位移为基准计算
-                lastSwapTranslationY = translation.height
             }
         }
     } else if dy < 0 {
         // 向上拖动：与上一个卡片比较
         let prevIndex = fromIndex - 1
-        if prevIndex >= 0, let prevFrame = cardFrames[cardOrder[prevIndex]] {
+        if prevIndex >= 0, let prevFrame = cardFramesByID[cardOrderIDs[prevIndex]] {
             let overlap = currentFrame.intersection(prevFrame).height
             let shouldSwap = overlap > prevFrame.height * hysteresis || currentFrame.midY < prevFrame.midY
             if shouldSwap {
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
-                    var newOrder = cardOrder
+                    var newOrder = cardOrderIDs
                     newOrder.swapAt(fromIndex, prevIndex)
-                    cardOrder = newOrder
+                    cardOrderIDs = newOrder
                 }
-                // 更新交换基线
-                lastSwapTranslationY = translation.height
             }
         }
     }
 }
 
-private func finalizeDrag(for type: HomeCardType) {
+@ViewBuilder
+private func cardContextMenu(for id: HomeCardID) -> some View {
+    Group {
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                moveModeEnabledForID = id
+            }
+        } label: {
+            Label("移动位置", systemImage: "arrow.up.arrow.down")
+        }
+
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                if expandedCardsByID.contains(id) {
+                    expandedCardsByID.remove(id)
+                } else {
+                    expandedCardsByID.insert(id)
+                }
+            }
+        } label: {
+            Label("调整大小", systemImage: "arrow.up.left.and.arrow.down.right")
+        }
+    }
+}
+
+private func finalizeDrag(for id: HomeCardID) {
     withAnimation(.interactiveSpring()) {
-        draggingCard = nil
+        draggingCardID = nil
         dragOffset = .zero
     }
-    saveCardOrder()
+    saveCardOrderIDs()
 }
+
+private func cardFrameReader(for type: HomeCardType) -> some View {
+    GeometryReader { geo in
+        Color.clear
+            .preference(key: CardFramePreferenceKey.self,
+                        value: [HomeCardID.type(type): geo.frame(in: .named("scroll"))])
+    }
+}
+
+// 仅在对应卡片处于“移动位置”模式时附加拖拽手势，避免影响滚动
+@ViewBuilder
+private func withMoveGesture<V: View>(_ view: V, for type: HomeCardType) -> some View {
+    if moveModeEnabledForID == .type(type) {
+        view.highPriorityGesture(dragIfMoveEnabled(for: type))
+    } else {
+        view
+    }
+}
+
+// （保留上方 ID 版本 shouldUpdateCardFrames 实现，删除重复声明）
+
+// Masonry 跨列设置：个人信息与资产卡片占两列，其余占一列
+private func spanForCard(_ type: HomeCardType) -> Int {
+    switch type {
+    case .profile, .asset:
+        return 2
+    default:
+        return 1
+    }
+}
+
+// 使用原生上下文菜单触发移动/调整大小，无需自定义长按手势
+
+// 仅在启用了移动模式后允许拖拽
+private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
+    DragGesture(minimumDistance: 10)
+        .onChanged { drag in
+            let id = HomeCardID.type(type)
+            guard moveModeEnabledForID == id else { return }
+            if draggingCardID != id {
+                withAnimation(.interactiveSpring()) {
+                    draggingCardID = id
+                }
+                // 开始拖拽时重置交换基线
+                lastSwapTranslationY = 0
+            }
+            dragOffset = drag.translation
+        }
+        .onEnded { _ in
+            withAnimation(.interactiveSpring()) {
+                draggingCardID = nil
+                dragOffset = .zero
+                moveModeEnabledForID = nil
+            }
+            lastSwapTranslationY = 0
+        }
+}
+
+// 类型卡片暂不进行重排，仅支持位置预览拖拽
 
 @ViewBuilder
 private func cardContextMenu(for type: HomeCardType) -> some View {
+    let id = HomeCardID.type(type)
     Group {
         Button(action: {
-            moveModeEnabledFor = type
+            moveModeEnabledForID = id
         }) {
             Label("移动位置", systemImage: "arrow.up.and.down.and.arrow.left.and.right")
         }
         Button(action: {
-            if expandedCards.contains(type) {
-                expandedCards.remove(type)
+            if expandedCardsByID.contains(id) {
+                expandedCardsByID.remove(id)
             } else {
-                expandedCards.insert(type)
+                expandedCardsByID.insert(id)
             }
         }) {
             Label("调整大小", systemImage: "arrow.up.left.and.arrow.down.right")
@@ -519,27 +752,7 @@ private func cardContextMenu(for type: HomeCardType) -> some View {
     }
 }
 
-// MARK: - 排序持久化
-private let cardOrderKey = "home.card.order.v1"
-
-private func defaultCardOrder() -> [HomeCardType] {
-    [.profile, .asset, .pingedGoals, .goals, .moodAchievement, .improvement]
-}
-
-private func loadCardOrder() {
-    if let raw = UserDefaults.standard.array(forKey: cardOrderKey) as? [String] {
-        let mapped = raw.compactMap { HomeCardType(rawValue: $0) }
-        if !mapped.isEmpty {
-            cardOrder = mapped
-            return
-        }
-    }
-    cardOrder = defaultCardOrder()
-}
-
-private func saveCardOrder() {
-    UserDefaults.standard.set(cardOrder.map { $0.rawValue }, forKey: cardOrderKey)
-}
+// 旧的类型排序持久化已移除，已改用基于 HomeCardID 的 cardOrderIDs
 
 // 为标签生成一致的颜色
 private func tagColor(for tag: String) -> Color {
