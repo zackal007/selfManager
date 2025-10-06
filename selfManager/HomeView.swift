@@ -75,7 +75,8 @@ struct HomeView: View {
         case asset
         case pingedGoals // 旧分组卡片（不再使用）
         case goals
-        case moodAchievement // 心情+成就并排区域作为一个卡片
+        case mood      // 心情卡片（独立模块）
+        case achievement // 成就卡片（独立模块）
         case improvement
     }
 
@@ -217,9 +218,7 @@ struct HomeView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 30)
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
-                        // 为避免“Bound preference ... update multiple times per frame”警告：
-                        // 在进入移动模式或拖拽/晃动期间不更新 cardFrames，使用进入前的静态快照即可。
-                        guard moveModeEnabledForID == nil && draggingCardID == nil else { return }
+                        // 为实现拖拽过程中动态让位，需要在拖拽时也更新快照
                         if shouldUpdateCardFrames(frames, comparedTo: cardFramesByID) {
                             cardFramesByID = frames
                         }
@@ -336,7 +335,8 @@ private func defaultCardOrderIDs() -> [HomeCardID] {
     }
     // 追加其他静态卡片（不包含旧的 .pingedGoals 分组卡片）
     ids.append(contentsOf: [
-        .type(.moodAchievement),
+        .type(.mood),
+        .type(.achievement),
         .type(.improvement)
     ])
     return ids
@@ -358,6 +358,11 @@ private func decodeHomeCardID(_ s: String) -> HomeCardID? {
             // 过滤掉旧的分组卡片
             if t == .pingedGoals { return nil }
             return .type(t)
+        }
+        // 兼容旧版本：如果读到 moodAchievement，迁移为两个独立模块
+        if raw == "moodAchievement" {
+            // 返回 nil，让 loadCardOrderIDs 在必备静态卡片阶段补全 mood 与 achievement
+            return nil
         }
         return nil
     } else if s.hasPrefix("G:") {
@@ -381,8 +386,13 @@ private func loadCardOrderIDs() {
                 }
                 return false
             }
+            // 移除旧的合并卡片（如果存在于历史编码中）
+            decoded.removeAll { id in
+                if case .type(let t) = id, t.rawValue == "moodAchievement" { return true }
+                return false
+            }
             // 确保静态卡片存在
-            let requiredStatics: [HomeCardType] = [.profile, .asset, .moodAchievement, .improvement]
+            let requiredStatics: [HomeCardType] = [.profile, .asset, .mood, .achievement, .improvement]
             for t in requiredStatics {
                 let tid = HomeCardID.type(t)
                 if !decoded.contains(tid) {
@@ -468,22 +478,29 @@ private func renderCard(_ type: HomeCardType) -> some View {
     case .goals:
         // 隐藏“近期目标”卡片
         EmptyView()
-    case .moodAchievement:
+    case .mood:
         withMoveGesture(
-            HStack(spacing: 16) {
-                moodSection
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                achievementSection
-                    .frame(maxWidth: .infinity)
-            }
-            .background(cardFrameReader(for: type))
-            .offset(isDragging ? dragOffset : .zero)
-            .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-            .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-            .zIndex(isDragging ? 20 : 0)
-            .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-            .contentShape(Rectangle())
-            .contextMenu { cardContextMenu(for: type) }
+            moodSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
+        , for: type)
+    case .achievement:
+        withMoveGesture(
+            achievementSection
+                .background(cardFrameReader(for: type))
+                .offset(isDragging ? dragOffset : .zero)
+                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                .zIndex(isDragging ? 20 : 0)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .contentShape(Rectangle())
+                .contextMenu { cardContextMenu(for: type) }
         , for: type)
     case .improvement:
         withMoveGesture(
@@ -545,7 +562,8 @@ private func withMoveGesture<V: View>(_ view: V, for id: HomeCardID) -> some Vie
         break
     }
 
-    if moveModeEnabledForID == id {
+    // 在移动模式下允许拖拽任意卡片，开始拖拽时自动切换为当前移动目标
+    if moveModeEnabledForID != nil {
         return AnyView(decorated.highPriorityGesture(dragIfMoveEnabled(for: id)))
     } else {
         return decorated
@@ -581,14 +599,20 @@ private func spanForCard(_ id: HomeCardID) -> Int {
 private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
     DragGesture(minimumDistance: 10)
         .onChanged { drag in
-            guard moveModeEnabledForID == id else { return }
-            if draggingCardID != id {
+            // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
+            guard moveModeEnabledForID != nil else { return }
+            if moveModeEnabledForID != id {
+                withAnimation(.interactiveSpring()) {
+                    moveModeEnabledForID = id
+                    draggingCardID = id
+                }
+            } else if draggingCardID != id {
                 withAnimation(.interactiveSpring()) {
                     draggingCardID = id
                 }
             }
             dragOffset = drag.translation
-            reorderIfNeeded(for: id, translation: drag.translation)
+            reorderDuringDrag(for: id, translation: drag.translation)
         }
         .onEnded { _ in
             guard moveModeEnabledForID == id else { return }
@@ -599,42 +623,46 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
         }
 }
 
-private func reorderIfNeeded(for id: HomeCardID, translation: CGSize) {
-    guard let fromIndex = cardOrderIDs.firstIndex(of: id), let original = cardFramesByID[id] else { return }
-    let dy = translation.height
-    // 当前卡片随拖拽产生的临时位置（用于计算与相邻卡片的重叠）
-    let currentFrame = original.offsetBy(dx: 0, dy: dy)
+private func reorderDuringDrag(for id: HomeCardID, translation: CGSize) {
+    guard let fromIndex = cardOrderIDs.firstIndex(of: id), let originalFrame = cardFramesByID[id] else { return }
+    let currentFrame = originalFrame.offsetBy(dx: 0, dy: translation.height)
 
-    // 只与相邻卡片比较并一步交换，避免一次跨越多卡片造成大幅跳动
-    let hysteresis: CGFloat = 0.25 // 至少重叠对方高度的25%才触发交换
+    // 根据拖拽后卡片的 midY，计算它应插入的位置索引
+    let otherIDs = cardOrderIDs.enumerated().filter { $0.offset != fromIndex }.map { $0.element }
+    // 按当前快照中卡片的 minY 排序，构建线性顺序参考
+    let sortedOthers: [HomeCardID] = otherIDs.sorted { a, b in
+        let fa = cardFramesByID[a]?.minY ?? .greatestFiniteMagnitude
+        let fb = cardFramesByID[b]?.minY ?? .greatestFiniteMagnitude
+        return fa < fb
+    }
 
-    if dy > 0 {
-        // 向下拖动：与下一个卡片比较
-        let nextIndex = fromIndex + 1
-        if nextIndex < cardOrderIDs.count, let nextFrame = cardFramesByID[cardOrderIDs[nextIndex]] {
-            let overlap = currentFrame.intersection(nextFrame).height
-            let shouldSwap = overlap > nextFrame.height * hysteresis || currentFrame.midY > nextFrame.midY
-            if shouldSwap {
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
-                    var newOrder = cardOrderIDs
-                    newOrder.swapAt(fromIndex, nextIndex)
-                    cardOrderIDs = newOrder
-                }
-            }
+    // 计算目标插入位置：找到 currentFrame.midY 应处于的相邻边界
+    var targetIndex = 0
+    for (idx, oid) in sortedOthers.enumerated() {
+        if let frame = cardFramesByID[oid] {
+            if currentFrame.midY > frame.midY { targetIndex = idx + 1 }
         }
-    } else if dy < 0 {
-        // 向上拖动：与上一个卡片比较
-        let prevIndex = fromIndex - 1
-        if prevIndex >= 0, let prevFrame = cardFramesByID[cardOrderIDs[prevIndex]] {
-            let overlap = currentFrame.intersection(prevFrame).height
-            let shouldSwap = overlap > prevFrame.height * hysteresis || currentFrame.midY < prevFrame.midY
-            if shouldSwap {
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
-                    var newOrder = cardOrderIDs
-                    newOrder.swapAt(fromIndex, prevIndex)
-                    cardOrderIDs = newOrder
-                }
-            }
+    }
+
+    // 将 targetIndex 映射回原数组的索引空间
+    var newOrder = cardOrderIDs
+    newOrder.remove(at: fromIndex)
+    if targetIndex >= sortedOthers.count {
+        newOrder.append(id)
+    } else {
+        // 找到在原数组中的插入点（使用对应 otherID 的当前索引）
+        let anchorID = sortedOthers[targetIndex]
+        if let anchorIndexInOriginal = newOrder.firstIndex(of: anchorID) {
+            newOrder.insert(id, at: anchorIndexInOriginal)
+        } else {
+            newOrder.insert(id, at: targetIndex)
+        }
+    }
+
+    // 若位置未变化，则不触发动画
+    if newOrder != cardOrderIDs {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
+            cardOrderIDs = newOrder
         }
     }
 }
@@ -683,7 +711,8 @@ private func cardFrameReader(for type: HomeCardType) -> some View {
 // 仅在对应卡片处于“移动位置”模式时附加拖拽手势，避免影响滚动
 @ViewBuilder
 private func withMoveGesture<V: View>(_ view: V, for type: HomeCardType) -> some View {
-    if moveModeEnabledForID == .type(type) {
+    // 在移动模式下允许拖拽任意卡片，开始拖拽时自动切换为当前移动目标
+    if moveModeEnabledForID != nil {
         view.highPriorityGesture(dragIfMoveEnabled(for: type))
     } else {
         view
@@ -709,23 +738,27 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
     DragGesture(minimumDistance: 10)
         .onChanged { drag in
             let id = HomeCardID.type(type)
-            guard moveModeEnabledForID == id else { return }
-            if draggingCardID != id {
+            // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
+            guard moveModeEnabledForID != nil else { return }
+            if moveModeEnabledForID != id {
+                withAnimation(.interactiveSpring()) {
+                    moveModeEnabledForID = id
+                    draggingCardID = id
+                }
+            } else if draggingCardID != id {
                 withAnimation(.interactiveSpring()) {
                     draggingCardID = id
                 }
-                // 开始拖拽时重置交换基线
-                lastSwapTranslationY = 0
             }
             dragOffset = drag.translation
+            reorderDuringDrag(for: id, translation: drag.translation)
         }
         .onEnded { _ in
+            guard moveModeEnabledForID == HomeCardID.type(type) else { return }
+            finalizeDrag(for: HomeCardID.type(type))
             withAnimation(.interactiveSpring()) {
-                draggingCardID = nil
-                dragOffset = .zero
                 moveModeEnabledForID = nil
             }
-            lastSwapTranslationY = 0
         }
 }
 
