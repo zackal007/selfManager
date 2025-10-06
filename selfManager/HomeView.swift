@@ -85,6 +85,18 @@ struct HomeView: View {
         case pingedGoal(UUID)
     }
 
+    // 卡片尺寸枚举与状态
+    enum HomeCardSize: String, Codable, CaseIterable {
+        case small   // 1行 × 1列
+        case medium  // 1行 × 2列
+        case large   // 2行 × 2列
+    }
+
+    @State private var cardSizesByID: [HomeCardID: HomeCardSize] = [:]
+    private let smallRowHeight: CGFloat = 160
+    private let gridSpacing: CGFloat = 16
+    private var largeRowHeight: CGFloat { smallRowHeight * 2 + gridSpacing }
+
     @State private var cardOrderIDs: [HomeCardID] = []
     @State private var draggingCardID: HomeCardID? = nil
     @State private var dragOffset: CGSize = .zero
@@ -288,6 +300,8 @@ struct HomeView: View {
             }
             // 加载主页卡片排序（按 ID 渲染，包括独立的 Ping 目标）
             loadCardOrderIDs()
+            // 加载并应用卡片尺寸设置
+            loadCardSizes()
         }
         .onChange(of: selectedGoalType) {
             updateFilteredGoals()
@@ -439,6 +453,71 @@ private func syncPingedGoalCardsIntoOrder() {
     saveCardOrderIDs()
 }
 
+// MARK: - 卡片尺寸持久化与计算
+private let cardSizesKey = "home.card.sizes.v1"
+
+private func defaultSizeForID(_ id: HomeCardID) -> HomeCardSize {
+    switch id {
+    case .type(let t):
+        switch t {
+        case .profile, .asset:
+            return .medium
+        default:
+            return .small
+        }
+    case .pingedGoal:
+        return .small
+    }
+}
+
+private func loadCardSizes() {
+    if let raw = UserDefaults.standard.dictionary(forKey: cardSizesKey) as? [String: String] {
+        var result: [HomeCardID: HomeCardSize] = [:]
+        for (encodedID, rawSize) in raw {
+            if let id = decodeHomeCardID(encodedID), let size = HomeCardSize(rawValue: rawSize) {
+                result[id] = size
+            }
+        }
+        cardSizesByID = result
+    } else {
+        cardSizesByID = [:]
+    }
+}
+
+private func saveCardSizes() {
+    var raw: [String: String] = [:]
+    for (id, size) in cardSizesByID {
+        raw[encodeHomeCardID(id)] = size.rawValue
+    }
+    UserDefaults.standard.set(raw, forKey: cardSizesKey)
+}
+
+private func setCardSize(_ size: HomeCardSize, for id: HomeCardID) {
+    withAnimation(.spring(response: 0.3, dampingFraction: 0.88)) {
+        cardSizesByID[id] = size
+    }
+    saveCardSizes()
+}
+
+private func widthSpanForCard(_ id: HomeCardID) -> Int {
+    let size = cardSizesByID[id] ?? defaultSizeForID(id)
+    switch size {
+    case .small: return 1
+    case .medium: return 2
+    case .large: return 2
+    }
+}
+
+private func heightForCard(_ id: HomeCardID) -> CGFloat {
+    let size = cardSizesByID[id] ?? defaultSizeForID(id)
+    switch size {
+    case .small, .medium:
+        return smallRowHeight
+    case .large:
+        return largeRowHeight
+    }
+}
+
 // MARK: - 拖拽排序：渲染卡片及交互逻辑
 @ViewBuilder
 private func renderCard(_ type: HomeCardType) -> some View {
@@ -448,6 +527,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
     case .profile:
         withMoveGesture(
             userProfileSection
+                .frame(height: heightForCard(id))
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
@@ -463,6 +543,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
     case .asset:
         withMoveGesture(
             assetSection
+                .frame(height: heightForCard(id))
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
@@ -481,6 +562,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
     case .mood:
         withMoveGesture(
             moodSection
+                .frame(height: heightForCard(id))
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
@@ -493,6 +575,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
     case .achievement:
         withMoveGesture(
             achievementSection
+                .frame(height: heightForCard(id))
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
@@ -505,6 +588,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
     case .improvement:
         withMoveGesture(
             improvementSection
+                .frame(height: heightForCard(id))
                 .background(cardFrameReader(for: type))
                 .offset(isDragging ? dragOffset : .zero)
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
@@ -526,6 +610,7 @@ private func renderCard(for id: HomeCardID) -> some View {
         if let goal = goals.first(where: { $0.id == gid }) {
             withMoveGesture(
                 GoalCard(goal: goal)
+                    .frame(height: heightForCard(id))
                     .background(cardFrameReader(for: id))
                     .offset({
                         let base = cardOffsetsByID[id] ?? .zero
@@ -583,17 +668,8 @@ private func shouldUpdateCardFrames(_ newFrames: [HomeCardID: CGRect], comparedT
 }
 
 private func spanForCard(_ id: HomeCardID) -> Int {
-    switch id {
-    case .type(let type):
-        switch type {
-        case .profile, .asset:
-            return 2
-        default:
-            return 1
-        }
-    case .pingedGoal:
-        return 1
-    }
+    // 根据用户选择的尺寸返回跨列宽度
+    return widthSpanForCard(id)
 }
 
 private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
@@ -669,6 +745,7 @@ private func reorderDuringDrag(for id: HomeCardID, translation: CGSize) {
 
 @ViewBuilder
 private func cardContextMenu(for id: HomeCardID) -> some View {
+    let current = cardSizesByID[id] ?? defaultSizeForID(id)
     Group {
         Button {
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -679,15 +756,19 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
         }
 
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
-                if expandedCardsByID.contains(id) {
-                    expandedCardsByID.remove(id)
-                } else {
-                    expandedCardsByID.insert(id)
-                }
-            }
+            setCardSize(.small, for: id)
         } label: {
-            Label("调整大小", systemImage: "arrow.up.left.and.arrow.down.right")
+            Label("小尺寸 1×1", systemImage: current == .small ? "checkmark.circle" : "circle")
+        }
+        Button {
+            setCardSize(.medium, for: id)
+        } label: {
+            Label("中尺寸 1×2", systemImage: current == .medium ? "checkmark.circle" : "circle")
+        }
+        Button {
+            setCardSize(.large, for: id)
+        } label: {
+            Label("大尺寸 2×2", systemImage: current == .large ? "checkmark.circle" : "circle")
         }
     }
 }
@@ -767,20 +848,21 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
 @ViewBuilder
 private func cardContextMenu(for type: HomeCardType) -> some View {
     let id = HomeCardID.type(type)
+    let current = cardSizesByID[id] ?? defaultSizeForID(id)
     Group {
         Button(action: {
             moveModeEnabledForID = id
         }) {
             Label("移动位置", systemImage: "arrow.up.and.down.and.arrow.left.and.right")
         }
-        Button(action: {
-            if expandedCardsByID.contains(id) {
-                expandedCardsByID.remove(id)
-            } else {
-                expandedCardsByID.insert(id)
-            }
-        }) {
-            Label("调整大小", systemImage: "arrow.up.left.and.arrow.down.right")
+        Button(action: { setCardSize(.small, for: id) }) {
+            Label("小尺寸 1×1", systemImage: current == .small ? "checkmark.circle" : "circle")
+        }
+        Button(action: { setCardSize(.medium, for: id) }) {
+            Label("中尺寸 1×2", systemImage: current == .medium ? "checkmark.circle" : "circle")
+        }
+        Button(action: { setCardSize(.large, for: id) }) {
+            Label("大尺寸 2×2", systemImage: current == .large ? "checkmark.circle" : "circle")
         }
     }
 }
@@ -889,6 +971,7 @@ private func tagColor(for tag: String) -> Color {
             }
         }
         .padding(20)
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
@@ -986,6 +1069,7 @@ private func tagColor(for tag: String) -> Color {
             }
         }
         .padding(20)
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
@@ -1323,6 +1407,7 @@ private func tagColor(for tag: String) -> Color {
                 .frame(height: 56)
             }
             .padding(16)
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(16)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
@@ -1436,6 +1521,7 @@ private func tagColor(for tag: String) -> Color {
 
             }
             .padding(16)
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(16)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
@@ -1562,9 +1648,10 @@ private func tagColor(for tag: String) -> Color {
                     .padding(.horizontal, 4)
                     .padding(.vertical, 8)
                 }
-                .frame(height: 110)
+                .frame(height: 56)
             }
             .padding(16)
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(16)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
