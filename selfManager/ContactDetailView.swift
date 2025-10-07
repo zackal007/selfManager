@@ -15,6 +15,8 @@ struct ContactDetailView: View {
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
+    // Ping 管理器：用于将联系人固定到主页
+    @ObservedObject private var pingManager = PingManager.shared
     
     @Bindable var contact: Contact
     
@@ -29,6 +31,8 @@ struct ContactDetailView: View {
     
     // 联系记录
     @State private var showContactLogSheet = false
+    // 头像选择弹窗
+    @State private var showAvatarPicker = false
     
     // 删除确认
     @State private var showDeleteAlert = false
@@ -56,9 +60,6 @@ struct ContactDetailView: View {
                 
                 // 标签
                 tagsView
-                
-                // 联系记录
-                contactHistoryView
                 
                 // 备注
                 notesView
@@ -90,8 +91,18 @@ struct ContactDetailView: View {
         .sheet(isPresented: $showEditSheet) {
             EditContactView(contact: contact)
         }
-        .sheet(isPresented: $showContactLogSheet) {
-            ContactLogView(contact: contact)
+        .sheet(isPresented: $showAvatarPicker) {
+            ImagePickerView(
+                selectedImage: .init(
+                    get: { contact.avatar },
+                    set: { contact.avatar = $0 }
+                ),
+                onSelect: { imageName in
+                    contact.avatar = imageName
+                    contact.modifyTime = Date()
+                    try? modelContext.save()
+                }
+            )
         }
         .sheet(isPresented: $showGoalSelector) {
             GoalMultiSelectorView(contact: contact, allGoals: allGoals)
@@ -143,7 +154,7 @@ struct ContactDetailView: View {
                         Text("添加")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundColor(Color("Colors/Blue"))
+                    .foregroundColor(Color("Blue"))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -172,7 +183,7 @@ struct ContactDetailView: View {
                             HStack(spacing: 12) {
                                 // 目标状态指示器
                                 Circle()
-                                    .fill(goal.progress >= 1.0 ? Color("Colors/Green") : Color("Colors/Blue"))
+                                    .fill(goal.progress >= 1.0 ? Color("Green") : Color("Blue"))
                                     .frame(width: 10, height: 10)
                                 
                                 // 目标名称
@@ -224,6 +235,14 @@ struct ContactDetailView: View {
             .frame(height: 160)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             
+            // 顶部右侧：Ping/取消Ping 到主页按钮
+            HStack {
+                Spacer()
+                pingButton
+            }
+            .padding(.top, 10)
+            .padding(.trailing, 16)
+            
             VStack(spacing: 0) {
                 // 头像和基本信息并排布局
                 HStack(alignment: .center, spacing: 20) {
@@ -234,8 +253,9 @@ struct ContactDetailView: View {
                             .frame(width: 90, height: 90)
                             .shadow(color: Color(contact.importance.color).opacity(0.3), radius: 8, x: 0, y: 4)
                         
-                        if let avatar = contact.avatar {
-                            Image(avatar)
+                        if let avatar = contact.avatar,
+                           let ui = (UIImage(named: avatar) ?? loadAvatarUIImage(avatar)) {
+                            Image(uiImage: ui)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: 84, height: 84)
@@ -249,6 +269,21 @@ struct ContactDetailView: View {
                                 .font(.system(size: 36, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(contact.importance.color))
                         }
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        Button(action: { showAvatarPicker = true }) {
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Color.black.opacity(0.4))
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle().stroke(Color.white.opacity(0.8), lineWidth: 1)
+                                )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .offset(x: 6, y: 6)
                     }
                     .padding(.leading, 4)
                     
@@ -321,6 +356,31 @@ struct ContactDetailView: View {
         .cornerRadius(16)
         .shadow(color: Color(UIColor.label).opacity(0.08), radius: 12, x: 0, y: 4)
     }
+
+    // 顶部 Ping/取消Ping 按钮
+    private var pingButton: some View {
+        let isPinned = pingManager.isPinged(contactID: contact.id)
+        return Button(action: {
+            if isPinned {
+                pingManager.unping(contactID: contact.id)
+            } else {
+                pingManager.ping(contactID: contact.id)
+            }
+        }) {
+            HStack(spacing: 6) {
+                Image(systemName: isPinned ? "pin.slash.fill" : "pin.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                Text(isPinned ? "取消Ping" : "Ping到主页")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .foregroundColor(Color(UIColor.systemBlue))
+            .background(Color(UIColor.systemBlue).opacity(0.12))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
     
     // 联系方式 - 现代卡片设计
     private var contactInfoView: some View {
@@ -330,36 +390,42 @@ struct ContactDetailView: View {
                 Text("联系方式")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
-                
+
                 Spacer()
-                
-                // 快速操作按钮
-                if let phone = contact.phone, !phone.isEmpty {
-                    Button(action: {
-                        if let url = URL(string: "tel:\(phone)") {
-                            UIApplication.shared.open(url)
+
+                // 快速操作按钮（统一样式）
+                HStack(spacing: 8) {
+                    if let phone = contact.phone, !phone.isEmpty {
+                        Button(action: {
+                            if let url = URL(string: "tel:\(phone)") {
+                                UIApplication.shared.open(url)
+                            }
+                        }) {
+                            Image(systemName: "phone.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .frame(width: 28, height: 28)
+                                .foregroundColor(.green)
+                                .background(Color.green.opacity(0.12))
+                                .clipShape(Circle())
                         }
-                    }) {
-                        Image(systemName: "phone.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(.green)
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.horizontal, 4)
-                }
-                
-                if let email = contact.email, !email.isEmpty {
-                    Button(action: {
-                        if let url = URL(string: "mailto:\(email)") {
-                            UIApplication.shared.open(url)
+
+                    if let email = contact.email, !email.isEmpty {
+                        Button(action: {
+                            if let url = URL(string: "mailto:\(email)") {
+                                UIApplication.shared.open(url)
+                            }
+                        }) {
+                            Image(systemName: "envelope.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .frame(width: 28, height: 28)
+                                .foregroundColor(Color("Blue"))
+                                .background(Color("Blue").opacity(0.12))
+                                .clipShape(Circle())
                         }
-                    }) {
-                        Image(systemName: "envelope.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(Color("Colors/Blue"))
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.horizontal, 4)
                 }
             }
             
@@ -425,7 +491,7 @@ struct ContactDetailView: View {
                     HStack {
                         Image(systemName: "calendar.badge.clock")
                             .font(.system(size: 16))
-                            .foregroundColor(Color("Colors/Purple"))
+                            .foregroundColor(Color("Purple"))
                         Text("联系频率")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
@@ -437,7 +503,7 @@ struct ContactDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color("Colors/Purple").opacity(0.05))
+                .background(Color("Purple").opacity(0.05))
                 .cornerRadius(12)
                 
                 // 重要程度卡片
@@ -505,6 +571,8 @@ struct ContactDetailView: View {
                     .padding(.vertical, 16)
                     Spacer()
                 }
+                .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
+                .cornerRadius(8)
             } else {
                 // 使用流式布局展示标签 - 参考目标详情页的实现
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -591,7 +659,7 @@ struct ContactDetailView: View {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12))
                     }
-                    .foregroundColor(Color("Colors/Blue"))
+                    .foregroundColor(Color("Blue"))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -603,7 +671,7 @@ struct ContactDetailView: View {
                     HStack {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.system(size: 16))
-                            .foregroundColor(Color("Colors/Teal"))
+                            .foregroundColor(Color("Teal"))
                         Text("最后联系")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
@@ -621,7 +689,7 @@ struct ContactDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color("Colors/Teal").opacity(0.05))
+                .background(Color("Teal").opacity(0.05))
                 .cornerRadius(12)
                 
                 // 下次联系卡片
@@ -629,7 +697,7 @@ struct ContactDetailView: View {
                     HStack {
                         Image(systemName: "calendar")
                             .font(.system(size: 16))
-                            .foregroundColor(Color("Colors/Blue"))
+                            .foregroundColor(Color("Blue"))
                         Text("下次联系")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
@@ -639,12 +707,12 @@ struct ContactDetailView: View {
                         HStack(spacing: 4) {
                             Text(nextContact, formatter: dateFormatter)
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(contact.needsContactReminder ? Color("Colors/Red") : .primary)
+                                .foregroundColor(contact.needsContactReminder ? Color("Red") : .primary)
                             
                             if contact.needsContactReminder {
                                 Image(systemName: "bell.fill")
                                     .font(.system(size: 14))
-                                    .foregroundColor(Color("Colors/Red"))
+                                    .foregroundColor(Color("Red"))
                             }
                         }
                     } else {
@@ -655,7 +723,7 @@ struct ContactDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color("Colors/Blue").opacity(0.05))
+                .background(Color("Blue").opacity(0.05))
                 .cornerRadius(12)
             }
         }
@@ -684,7 +752,7 @@ struct ContactDetailView: View {
                 }) {
                     Image(systemName: "square.and.pencil")
                         .font(.system(size: 18))
-                        .foregroundColor(Color("Colors/Blue"))
+                        .foregroundColor(Color("Blue"))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -738,7 +806,7 @@ struct ContactDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color("Colors/Green"))
+                .background(Color("Green"))
                 .foregroundColor(.white)
                 .cornerRadius(12)
             }
@@ -760,7 +828,7 @@ struct ContactDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color("Colors/Blue"))
+                        .background(Color("Blue"))
                         .foregroundColor(.white)
                         .cornerRadius(12)
                     }
@@ -781,7 +849,7 @@ struct ContactDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color("Colors/Orange"))
+                        .background(Color("Orange"))
                         .foregroundColor(.white)
                         .cornerRadius(12)
                     }
@@ -802,7 +870,7 @@ struct ContactDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color("Colors/Purple"))
+                        .background(Color("Purple"))
                         .foregroundColor(.white)
                         .cornerRadius(12)
                     }
@@ -819,6 +887,18 @@ struct ContactDetailView: View {
         try? modelContext.save()
         presentationMode.wrappedValue.dismiss()
     }
+
+    // 从文档目录加载头像图片（当不在资产库时）
+    private func loadAvatarUIImage(_ name: String) -> UIImage? {
+        let fm = FileManager.default
+        if let doc = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let url = doc.appendingPathComponent(name)
+            if fm.fileExists(atPath: url.path) {
+                return UIImage(contentsOfFile: url.path)
+            }
+        }
+        return nil
+    }
     
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -834,14 +914,14 @@ struct ContactInfoRow: View {
     let title: String
     let value: String
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundColor(Color("Colors/Blue"))
-                    .frame(width: 24)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color("Blue"))
+                    .frame(width: 24, height: 24)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)

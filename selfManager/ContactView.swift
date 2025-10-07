@@ -399,24 +399,67 @@ struct ContactView: View {
     // 联系人列表视图
     private var contactListView: some View {
         ScrollView {
-            LazyVStack(spacing: 12) {
-                if filteredContacts.isEmpty {
+            if filteredContacts.isEmpty {
+                LazyVStack(spacing: 12) {
                     emptyStateView
-                } else {
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 20)
+            } else if viewMode == .gallery {
+                GeometryReader { geometry in
+                    let columns = 2
+                    let spacing: CGFloat = 12
+                    let cardWidth = (geometry.size.width - CGFloat(columns + 1) * spacing) / CGFloat(columns)
+                    HStack(alignment: .top, spacing: spacing) {
+                        // 左列
+                        LazyVStack(spacing: spacing) {
+                            ForEach(leftColumnItems(filteredContacts), id: \.id) { contact in
+                                NavigationLink(destination: ContactDetailView(contact: contact)) {
+                                    ContactCard(contact: contact)
+                                        .frame(width: cardWidth)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        // 右列
+                        LazyVStack(spacing: spacing) {
+                            ForEach(rightColumnItems(filteredContacts), id: \.id) { contact in
+                                NavigationLink(destination: ContactDetailView(contact: contact)) {
+                                    ContactCard(contact: contact)
+                                        .frame(width: cardWidth)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    .padding(.horizontal, spacing)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 20)
+            } else {
+                LazyVStack(spacing: 12) {
                     ForEach(filteredContacts, id: \.id) { contact in
                         NavigationLink(destination: ContactDetailView(contact: contact)) {
-                            if viewMode == .gallery {
-                                ContactCard(contact: contact)
-                            } else {
-                                ContactListItem(contact: contact)
-                            }
+                            ContactListItem(contact: contact)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 20)
+        }
+    }
+
+    // 拆分左右列（参考目标模块的瀑布流样式）
+    private func leftColumnItems(_ items: [Contact]) -> [Contact] {
+        items.enumerated().compactMap { index, item in
+            index % 2 == 0 ? item : nil
+        }
+    }
+    private func rightColumnItems(_ items: [Contact]) -> [Contact] {
+        items.enumerated().compactMap { index, item in
+            index % 2 == 1 ? item : nil
         }
     }
     

@@ -79,10 +79,10 @@ enum ContactImportance: Int, Codable, Hashable, CaseIterable {
     
     var color: String {
         switch self {
-        case .low: return "Colors/Gray"
-        case .medium: return "Colors/Blue"
-        case .high: return "Colors/Orange"
-        case .critical: return "Colors/Red"
+        case .low: return "Gray"
+        case .medium: return "Blue"
+        case .high: return "Orange"
+        case .critical: return "Red"
         }
     }
 }

@@ -83,6 +83,7 @@ struct HomeView: View {
     enum HomeCardID: Hashable, Codable {
         case type(HomeCardType)
         case pingedGoal(UUID)
+        case pingedContact(UUID)
     }
 
     // 卡片尺寸枚举与状态
@@ -315,6 +316,9 @@ struct HomeView: View {
         .onChange(of: pingManager.allPingedGoalIDs) {
             syncPingedGoalCardsIntoOrder()
         }
+        .onChange(of: pingManager.allPingedContactIDs) {
+            syncPingedContactCardsIntoOrder()
+        }
     }
 
 
@@ -347,6 +351,10 @@ private func defaultCardOrderIDs() -> [HomeCardID] {
     for gid in pingManager.allPingedGoalIDs {
         ids.append(.pingedGoal(gid))
     }
+    // 将现有被Ping联系人作为独立卡片插入
+    for cid in pingManager.allPingedContactIDs {
+        ids.append(.pingedContact(cid))
+    }
     // 追加其他静态卡片（不包含旧的 .pingedGoals 分组卡片）
     ids.append(contentsOf: [
         .type(.mood),
@@ -362,6 +370,8 @@ private func encodeHomeCardID(_ id: HomeCardID) -> String {
         return "T:" + t.rawValue
     case .pingedGoal(let gid):
         return "G:" + gid.uuidString
+    case .pingedContact(let cid):
+        return "C:" + cid.uuidString
     }
 }
 
@@ -385,6 +395,12 @@ private func decodeHomeCardID(_ s: String) -> HomeCardID? {
             return .pingedGoal(uuid)
         }
         return nil
+    } else if s.hasPrefix("C:") {
+        let raw = String(s.dropFirst(2))
+        if let uuid = UUID(uuidString: raw) {
+            return .pingedContact(uuid)
+        }
+        return nil
     }
     return nil
 }
@@ -397,6 +413,13 @@ private func loadCardOrderIDs() {
             decoded.removeAll { id in
                 if case .pingedGoal(let gid) = id {
                     return !pingManager.allPingedGoalIDs.contains(gid)
+                }
+                return false
+            }
+            // 移除已被取消Ping的联系人卡片
+            decoded.removeAll { id in
+                if case .pingedContact(let cid) = id {
+                    return !pingManager.allPingedContactIDs.contains(cid)
                 }
                 return false
             }
@@ -416,6 +439,11 @@ private func loadCardOrderIDs() {
             // 添加新的被Ping目标卡片（默认追加到末尾）
             for gid in pingManager.allPingedGoalIDs {
                 let pid = HomeCardID.pingedGoal(gid)
+                if !decoded.contains(pid) { decoded.append(pid) }
+            }
+            // 添加新的被Ping联系人卡片（默认追加到末尾）
+            for cid in pingManager.allPingedContactIDs {
+                let pid = HomeCardID.pingedContact(cid)
                 if !decoded.contains(pid) { decoded.append(pid) }
             }
             cardOrderIDs = decoded
@@ -453,6 +481,29 @@ private func syncPingedGoalCardsIntoOrder() {
     saveCardOrderIDs()
 }
 
+private func syncPingedContactCardsIntoOrder() {
+    var current = cardOrderIDs
+    // 移除不再被Ping的联系人卡片
+    current.removeAll { id in
+        if case .pingedContact(let cid) = id {
+            return !pingManager.allPingedContactIDs.contains(cid)
+        }
+        return false
+    }
+    // 添加新的被Ping的联系人卡片（追加到末尾）
+    for cid in pingManager.allPingedContactIDs {
+        let pid = HomeCardID.pingedContact(cid)
+        if !current.contains(pid) { current.append(pid) }
+    }
+    // 不引入旧的分组卡片
+    current.removeAll { id in
+        if case .type(let t) = id, t == .pingedGoals { return true }
+        return false
+    }
+    cardOrderIDs = current
+    saveCardOrderIDs()
+}
+
 // MARK: - 卡片尺寸持久化与计算
 private let cardSizesKey = "home.card.sizes.v1"
 
@@ -465,7 +516,7 @@ private func defaultSizeForID(_ id: HomeCardID) -> HomeCardSize {
         default:
             return .small
         }
-    case .pingedGoal:
+    case .pingedGoal, .pingedContact:
         return .small
     }
 }
@@ -630,6 +681,29 @@ private func renderCard(for id: HomeCardID) -> some View {
         } else {
             Color.clear.frame(height: 20)
         }
+    case .pingedContact(let cid):
+        if let contact = contacts.first(where: { $0.id == cid }) {
+            withMoveGesture(
+                ContactCard(contact: contact)
+                    .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
+                    .frame(height: heightForCard(id), alignment: .top)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .background(cardFrameReader(for: id))
+                    .offset({
+                        let base = cardOffsetsByID[id] ?? .zero
+                        let extra = (draggingCardID == id) ? dragOffset : .zero
+                        return CGSize(width: base.width + extra.width, height: base.height + extra.height)
+                    }())
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(draggingCardID == id ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
+                    .contentShape(Rectangle())
+                , for: id)
+        } else {
+            Color.clear.frame(height: 20)
+        }
     }
 }
 
@@ -645,7 +719,7 @@ private func withMoveGesture<V: View>(_ view: V, for id: HomeCardID) -> some Vie
     var decorated = AnyView(view)
     // 仅为被 ping 的目标卡片提供长按菜单以激活移动模式
     switch id {
-    case .pingedGoal:
+    case .pingedGoal, .pingedContact:
         decorated = AnyView(decorated.contextMenu { cardContextMenu(for: id) })
     case .type:
         break
