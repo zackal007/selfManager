@@ -684,22 +684,25 @@ private func renderCard(for id: HomeCardID) -> some View {
     case .pingedContact(let cid):
         if let contact = contacts.first(where: { $0.id == cid }) {
             withMoveGesture(
-                ContactCard(contact: contact)
-                    .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
-                    .frame(height: heightForCard(id), alignment: .top)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .background(cardFrameReader(for: id))
-                    .offset({
-                        let base = cardOffsetsByID[id] ?? .zero
-                        let extra = (draggingCardID == id) ? dragOffset : .zero
-                        return CGSize(width: base.width + extra.width, height: base.height + extra.height)
-                    }())
-                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-                    .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-                    .zIndex(draggingCardID == id ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
-                    .contentShape(Rectangle())
+                NavigationLink(destination: ContactDetailView(contact: contact)) {
+                    ContactCard(contact: contact)
+                        .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
+                        .frame(height: heightForCard(id), alignment: .top)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .background(cardFrameReader(for: id))
+                        .offset({
+                            let base = cardOffsetsByID[id] ?? .zero
+                            let extra = (draggingCardID == id) ? dragOffset : .zero
+                            return CGSize(width: base.width + extra.width, height: base.height + extra.height)
+                        }())
+                        .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                        .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                        .zIndex(draggingCardID == id ? 20 : 0)
+                        .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(PlainButtonStyle())
                 , for: id)
         } else {
             Color.clear.frame(height: 20)
