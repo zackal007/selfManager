@@ -26,7 +26,7 @@ struct SettingsView: View {
     private let syncOptions = ["手动同步", "每天", "每周"]
     
     var body: some View {
-        NavigationStack {
+        
             List {
                 // 外观设置
                 Section(header: sectionHeader(title: "外观", systemImage: "paintbrush.fill")) {
@@ -145,7 +145,6 @@ struct SettingsView: View {
                 // 加载当前的回收站过期时间设置
                 loadTrashExpirationDays()
             }
-        }
     }
     
     private func sectionHeader(title: String, systemImage: String) -> some View {

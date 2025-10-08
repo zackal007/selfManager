@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI 变更预览说明</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif; margin: 24px; }
+    h1 { font-size: 20px; margin-bottom: 12px; }
+    p { line-height: 1.6; }
+    code { background: #f4f4f7; padding: 2px 6px; border-radius: 4px; }
+    .card { width: 320px; height: 160px; border-radius: 20px; background: linear-gradient(135deg, rgba(0,123,255,0.7), rgba(111,66,193,0.7)); position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.15); overflow: hidden; }
+    .overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.5); }
+    .content { position: absolute; inset: 0; padding: 18px 20px; }
+    .title { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+    .desc { color: #666; font-size: 13px; }
+  </style>
+  </head>
+<body>
+  <h1>主页目标卡片宽度修复预览说明</h1>
+  <p>本次修改修复了当卡片尺寸设置为 <code>1x1</code> 时，卡片在 Masonry 布局中可能出现的“超出单列宽度”的问题。具体做法是避免在 <code>GoalCard</code> 内部使用 <code>frame(maxWidth: .infinity)</code>，从而让卡片遵循 Masonry 的 <code>itemWidth</code> 提议宽度。</p>
+  <p>下面的示意卡片宽度等于单列宽度（默认约 <code>320px</code>），以展示“单列占位”的效果：</p>
+  <div class="card">
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="title">示例目标名称</div>
+      <div class="desc">这是一段描述，用于模拟 1x1 卡片内容。</div>
+    </div>
+  </div>
+  <p>请在 App 中进入主页，长按目标卡片设置为 <code>1x1</code> 后确认其宽度是否严格限制在单列。</p>
+</body>
+</html>

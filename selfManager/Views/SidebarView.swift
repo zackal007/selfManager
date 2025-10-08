@@ -37,6 +37,7 @@ struct SidebarView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var showingTagsView = false
     @State private var showingSettingsView = false
+    @StateObject private var navigationManager = NavigationManager.shared
     
     // 侧边栏宽度
     private let sidebarWidth: CGFloat = 320
@@ -123,7 +124,10 @@ struct SidebarView: View {
     private var toolMenuItems: [SidebarMenuItem] {
         [
             SidebarMenuItem(title: "标签管理", icon: "tag.fill", badge: "\(getAllTags().count)") {
-                showingTagsView = true
+                // 切换到首页并通过路由 push 标签管理
+                selectedTab = 0
+                navigationManager.homeNavigationPath.append(AppRoute.tags)
+                closeSidebar()
             },
             SidebarMenuItem(title: "帮助与反馈", icon: "questionmark.circle") {
                 // 这里可以添加帮助页面的导航逻辑
@@ -213,7 +217,10 @@ struct SidebarView: View {
                         
                         // 设置按钮
                         Button(action: {
-                            showingSettingsView = true
+                            // 切换到首页并通过路由 push 设置页
+                            selectedTab = 0
+                            navigationManager.homeNavigationPath.append(AppRoute.settings)
+                            closeSidebar()
                         }) {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 18, weight: .medium))
@@ -275,20 +282,7 @@ struct SidebarView: View {
         .onAppear {
             dragOffset = 0
         }
-        .sheet(isPresented: $showingTagsView) {
-            NavigationStack {
-                TagsView()
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showingSettingsView) {
-            NavigationStack {
-                SettingsView()
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-        }
+        // 已改为 push 导航，不再使用弹窗展示
     }
     
     // 关闭侧边栏

@@ -291,6 +291,27 @@ struct HomeView: View {
                 .ignoresSafeArea(.all, edges: .top)
             }
             .navigationBarHidden(true)
+            // 通过路由类型进行页面 push 映射
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .tags:
+                    TagsView()
+                case .settings:
+                    SettingsView()
+                case .assets:
+                    AssetDetailView()
+                case .profile:
+                    if let firstUser = users.first {
+                        UserEditView(user: firstUser)
+                    } else {
+                        Text("暂无用户信息")
+                    }
+                case .achievements:
+                    TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)
+                case .anxieties:
+                    TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)
+                }
+            }
         }
 
         .onAppear {
@@ -682,32 +703,43 @@ private func renderCard(for id: HomeCardID) -> some View {
             Color.clear.frame(height: 20)
         }
     case .pingedContact(let cid):
-        if let contact = contacts.first(where: { $0.id == cid }) {
-            withMoveGesture(
-                NavigationLink(destination: ContactDetailView(contact: contact)) {
-                    ContactCard(contact: contact)
-                        .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
-                        .frame(height: heightForCard(id), alignment: .top)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .background(cardFrameReader(for: id))
-                        .offset({
-                            let base = cardOffsetsByID[id] ?? .zero
-                            let extra = (draggingCardID == id) ? dragOffset : .zero
-                            return CGSize(width: base.width + extra.width, height: base.height + extra.height)
-                        }())
-                        .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-                        .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-                        .zIndex(draggingCardID == id ? 20 : 0)
-                        .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
-                        .contentShape(Rectangle())
+                if let contact = contacts.first(where: { $0.id == cid }) {
+                    withMoveGesture(
+                        NavigationLink(destination: ContactDetailView(contact: contact)) {
+                            ContactCard(contact: contact)
+                                .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
+                                .frame(height: heightForCard(id), alignment: .top)
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                // 右上角类型角标：人脉
+                                .overlay(alignment: .topTrailing) {
+                                    Text("人脉")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color(UIColor.systemPurple).opacity(0.85))
+                                        .clipShape(Capsule())
+                                        .padding(8)
+                                }
+                                .background(cardFrameReader(for: id))
+                                .offset({
+                                    let base = cardOffsetsByID[id] ?? .zero
+                                    let extra = (draggingCardID == id) ? dragOffset : .zero
+                                    return CGSize(width: base.width + extra.width, height: base.height + extra.height)
+                                }())
+                                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                                .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                                .zIndex(draggingCardID == id ? 20 : 0)
+                                .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        , for: id)
+                } else {
+                    Color.clear.frame(height: 20)
                 }
-                .buttonStyle(PlainButtonStyle())
-                , for: id)
-        } else {
-            Color.clear.frame(height: 20)
-        }
-    }
+            }
 }
 
 private func cardFrameReader(for id: HomeCardID) -> some View {
@@ -1018,13 +1050,14 @@ private func tagColor(for tag: String) -> Color {
                 Spacer()
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    // 详情按钮
-                    Button(action: { showingEdit = true }) {
-                        ZStack {
+                    // 详情按钮改为导航推入
+                    if let firstUser = users.first {
+                        NavigationLink(destination: UserEditView(user: firstUser)) {
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 12))
                                 .foregroundColor(Color(UIColor.systemGray))
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
 
                     Spacer()
@@ -1066,19 +1099,10 @@ private func tagColor(for tag: String) -> Color {
     
     // 资产信息卡片
     private var assetSection: some View {
-        Button(action: {
-            showingAssetDetail = true
-        }) {
+        NavigationLink(destination: AssetDetailView()) {
             assetCardContent
         }
         .buttonStyle(PlainButtonStyle())
-        .sheet(isPresented: $showingAssetDetail) {
-            NavigationStack {
-                AssetDetailView()
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-        }
     }
     
     private var assetCardContent: some View {
@@ -1498,9 +1522,7 @@ private func tagColor(for tag: String) -> Color {
     
     // 成就展示区域
     private var achievementSection: some View {
-        Button(action: {
-            showingAchievementDetail = true
-        }) {
+        NavigationLink(destination: TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "trophy.fill")
@@ -1567,17 +1589,12 @@ private func tagColor(for tag: String) -> Color {
                             .background(Color(UIColor.systemBackground))
                             .cornerRadius(12)
                             .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                showingAchievementDetail = true
-                            }
-                        }
+                        .contentShape(Rectangle())
+                    }
                         
                         // 查看更多按钮
                         if achievements.count > 3 {
-                            Button(action: {
-                                showingAchievementDetail = true
-                            }) {
+                            Button(action: {}) {
                                 VStack(spacing: 10) {
                                     Image(systemName: "ellipsis.circle.fill")
                                         .font(.system(size: 30))
@@ -1608,13 +1625,6 @@ private func tagColor(for tag: String) -> Color {
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
-        .sheet(isPresented: $showingAchievementDetail) {
-            NavigationStack {
-                TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)
-            }
-            .presentationDetents([.height(400), .large])
-            .presentationDragIndicator(.visible)
-        }
     }
     
     private var achievementCardContent: some View {
@@ -1679,9 +1689,7 @@ private func tagColor(for tag: String) -> Color {
     
     // 待改进区域 - 扁平化设计
     private var improvementSection: some View {
-        Button(action: {
-            showingImprovementDetail = true
-        }) {
+        NavigationLink(destination: TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -1738,13 +1746,6 @@ private func tagColor(for tag: String) -> Color {
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
-        .sheet(isPresented: $showingImprovementDetail) {
-            NavigationStack {
-                TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-        }
     }
     
 

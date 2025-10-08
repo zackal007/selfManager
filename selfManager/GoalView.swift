@@ -1169,7 +1169,7 @@ struct GoalCard: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                                .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
                                 .clipped()
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .opacity(0.7)
@@ -1177,7 +1177,7 @@ struct GoalCard: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                                .frame(maxWidth: cardWidth, alignment: .topLeading)
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .opacity(0.7)
                         }
@@ -1190,7 +1190,7 @@ struct GoalCard: View {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                                    .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
                                     .clipped()
                                     .clipShape(RoundedRectangle(cornerRadius: 20))
                                     .opacity(0.7)
@@ -1199,7 +1199,7 @@ struct GoalCard: View {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                                    .frame(maxWidth: cardWidth, alignment: .topLeading)
                                     .clipShape(RoundedRectangle(cornerRadius: 20))
                                     .opacity(0.7)
                                     .blur(radius: 1.5)
@@ -1214,7 +1214,7 @@ struct GoalCard: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                        .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
                         .clipped()
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     } else {
@@ -1223,7 +1223,7 @@ struct GoalCard: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                        .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                        .frame(maxWidth: cardWidth, alignment: .topLeading)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     }
                 }
@@ -1232,13 +1232,13 @@ struct GoalCard: View {
                 if isFixedHeightContainer {
                     Rectangle()
                         .fill(Color(UIColor.systemBackground).opacity(0.5))
-                        .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
                         .clipped()
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                 } else {
                     Rectangle()
                         .fill(Color(UIColor.systemBackground).opacity(0.5))
-                        .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading)
+                        .frame(maxWidth: cardWidth, alignment: .topLeading)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 
@@ -1392,12 +1392,23 @@ struct GoalCard: View {
                     // 添加底部空白，推动内容向上
                     Spacer()
                 }
-                .frame(maxWidth: cardWidth ?? .infinity, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
+                .frame(maxWidth: cardWidth, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
             }
             // 让内部容器的最大高度继承父容器的提议高度，从而在主页1×1固定高度下裁剪
-            .frame(maxWidth: cardWidth ?? .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
             .clipped() // 保证背景与内容不越界，避免与其他卡片重叠
             .clipShape(RoundedRectangle(cornerRadius: 20)) // 统一圆角外观，确保与其他卡片一致
+            // 右上角类型角标：目标
+            .overlay(alignment: .topTrailing) {
+                Text("目标")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(UIColor.systemBlue).opacity(0.85))
+                    .clipShape(Capsule())
+                    .padding(8)
+            }
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
