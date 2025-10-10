@@ -180,6 +180,35 @@ struct ContactView: View {
                         RecordView(selectedTab: .constant(2))
                     }
                 }
+                // 导航目的地：进入设置与标签管理（使用当前选项卡的导航栈）
+                .navigationDestination(for: AppRoute.self) { route in
+                    switch route {
+                    case .tags:
+                        TagsView()
+                            .navigationBarBackButtonHidden(true)
+                            .navigationTitle("我的标签")
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("返回") {
+                                        navigationManager.pop(for: selectedTab)
+                                    }
+                                }
+                            }
+                    case .settings:
+                        SettingsView()
+                            .navigationBarBackButtonHidden(true)
+                            .navigationTitle("设置")
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("返回") {
+                                        navigationManager.pop(for: selectedTab)
+                                    }
+                                }
+                            }
+                    default:
+                        EmptyView()
+                    }
+                }
                 // 弹窗：添加联系人表单
                 .sheet(isPresented: $showAddContactSheet) {
                     AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)

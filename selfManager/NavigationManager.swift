@@ -27,6 +27,23 @@ class NavigationManager: ObservableObject {
     private let doubleTapTimeInterval: TimeInterval = 0.5
     
     private init() {}
+
+    /// 弹出当前标签栈的最后一个路由
+    /// - Parameter tabIndex: 模块索引（0:首页 1:目标 2:记录 3:人脉）
+    func pop(for tabIndex: Int) {
+        switch tabIndex {
+        case 0:
+            if !homeNavigationPath.isEmpty { homeNavigationPath.removeLast() }
+        case 1:
+            if !goalNavigationPath.isEmpty { goalNavigationPath.removeLast() }
+        case 2:
+            if !recordNavigationPath.isEmpty { recordNavigationPath.removeLast() }
+        case 3:
+            if !contactNavigationPath.isEmpty { contactNavigationPath.removeLast() }
+        default:
+            if !homeNavigationPath.isEmpty { homeNavigationPath.removeLast() }
+        }
+    }
     
     /// 处理标签点击事件
     /// - Parameters:

@@ -124,9 +124,19 @@ struct SidebarView: View {
     private var toolMenuItems: [SidebarMenuItem] {
         [
             SidebarMenuItem(title: "标签管理", icon: "tag.fill", badge: "\(getAllTags().count)") {
-                // 切换到首页并通过路由 push 标签管理
-                selectedTab = 0
-                navigationManager.homeNavigationPath.append(AppRoute.tags)
+                // 将“标签管理”推入当前选中标签页的导航栈
+                switch selectedTab {
+                case 0:
+                    navigationManager.homeNavigationPath.append(AppRoute.tags)
+                case 1:
+                    navigationManager.goalNavigationPath.append(AppRoute.tags)
+                case 2:
+                    navigationManager.recordNavigationPath.append(AppRoute.tags)
+                case 3:
+                    navigationManager.contactNavigationPath.append(AppRoute.tags)
+                default:
+                    navigationManager.homeNavigationPath.append(AppRoute.tags)
+                }
                 closeSidebar()
             },
             SidebarMenuItem(title: "帮助与反馈", icon: "questionmark.circle") {
@@ -217,9 +227,19 @@ struct SidebarView: View {
                         
                         // 设置按钮
                         Button(action: {
-                            // 切换到首页并通过路由 push 设置页
-                            selectedTab = 0
-                            navigationManager.homeNavigationPath.append(AppRoute.settings)
+                            // 将“设置”推入当前选中标签页的导航栈
+                            switch selectedTab {
+                            case 0:
+                                navigationManager.homeNavigationPath.append(AppRoute.settings)
+                            case 1:
+                                navigationManager.goalNavigationPath.append(AppRoute.settings)
+                            case 2:
+                                navigationManager.recordNavigationPath.append(AppRoute.settings)
+                            case 3:
+                                navigationManager.contactNavigationPath.append(AppRoute.settings)
+                            default:
+                                navigationManager.homeNavigationPath.append(AppRoute.settings)
+                            }
                             closeSidebar()
                         }) {
                             Image(systemName: "gearshape.fill")
@@ -281,6 +301,27 @@ struct SidebarView: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isPresented)
         .onAppear {
             dragOffset = 0
+        }
+        // 监听“查看全部标签”触发，切换到首页并推入标签管理页
+        .onChange(of: showingTagsView) { newValue in
+            if newValue {
+                // 将“标签管理”推入当前选中标签页的导航栈
+                switch selectedTab {
+                case 0:
+                    navigationManager.homeNavigationPath.append(AppRoute.tags)
+                case 1:
+                    navigationManager.goalNavigationPath.append(AppRoute.tags)
+                case 2:
+                    navigationManager.recordNavigationPath.append(AppRoute.tags)
+                case 3:
+                    navigationManager.contactNavigationPath.append(AppRoute.tags)
+                default:
+                    navigationManager.homeNavigationPath.append(AppRoute.tags)
+                }
+                // 关闭侧边栏并复位状态
+                closeSidebar()
+                showingTagsView = false
+            }
         }
         // 已改为 push 导航，不再使用弹窗展示
     }

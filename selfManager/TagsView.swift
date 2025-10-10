@@ -279,7 +279,7 @@ var body: some View {
 
 
         // 导航栏标题（NavigationTitle）
-        .navigationTitle("标签管理")
+        .navigationTitle("我的标签")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             isModelContextReady = true

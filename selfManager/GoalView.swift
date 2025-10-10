@@ -831,6 +831,34 @@ struct GoalView: View {
             }
             .background(Color(UIColor.systemGroupedBackground))
             .edgesIgnoringSafeArea(.bottom)
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .tags:
+                    TagsView()
+                        .navigationBarBackButtonHidden(true)
+                        .navigationTitle("我的标签")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("返回") {
+                                    navigationManager.pop(for: selectedTab)
+                                }
+                            }
+                        }
+                case .settings:
+                    SettingsView()
+                        .navigationBarBackButtonHidden(true)
+                        .navigationTitle("设置")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("返回") {
+                                    navigationManager.pop(for: selectedTab)
+                                }
+                            }
+                        }
+                default:
+                    EmptyView()
+                }
+            }
             
             // 年份变化提示
             if showYearChangeToast {

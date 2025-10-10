@@ -1337,6 +1337,34 @@ struct RecordView: View {
             }
             .safeAreaPadding(.top)
             .navigationBarHidden(true)
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .tags:
+                    TagsView()
+                        .navigationBarBackButtonHidden(true)
+                        .navigationTitle("我的标签")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("返回") {
+                                    navigationManager.pop(for: selectedTab)
+                                }
+                            }
+                        }
+                case .settings:
+                    SettingsView()
+                        .navigationBarBackButtonHidden(true)
+                        .navigationTitle("设置")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("返回") {
+                                    navigationManager.pop(for: selectedTab)
+                                }
+                            }
+                        }
+                default:
+                    EmptyView()
+                }
+            }
             .onTapGesture {
                 dismissKeyboard()
             }
