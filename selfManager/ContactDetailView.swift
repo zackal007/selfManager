@@ -52,17 +52,13 @@ struct ContactDetailView: View {
                 // 头部信息
                 headerView
                 
+                // 标签
+                tagsView
+
                 // 联系方式
                 contactInfoView
                 
-                // 分类信息
-                categoryInfoView
-                
-                // 标签
-                tagsView
-                
                 // 备注
-                notesView
                 
                 // 关联目标
                 relatedGoalsView
@@ -70,27 +66,21 @@ struct ContactDetailView: View {
                 // 操作按钮
                 actionButtonsView
             }
+            .padding(.top, 12)
             .padding(.horizontal, 16)
             .padding(.bottom, 20)
         }
-        .navigationBarTitle(contact.name, displayMode: .large)
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationBarTitle("", displayMode: .inline)
+        .navigationBarBackButtonHidden(true)
         .navigationBarItems(
-            trailing: Menu {
-                Button("编辑联系人") {
-                    showEditSheet = true
+            leading: Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text("返回")
                 }
-                
-                Button("删除联系人", role: .destructive) {
-                    showDeleteAlert = true
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.title2)
             }
         )
-        .sheet(isPresented: $showEditSheet) {
-            EditContactView(contact: contact)
-        }
         .sheet(isPresented: $showAvatarPicker) {
             ImagePickerView(
                 selectedImage: .init(
@@ -137,7 +127,10 @@ struct ContactDetailView: View {
     private var relatedGoalsView: some View {
         VStack(alignment: .leading, spacing: 16) {
             // 标题栏
-            HStack {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.triangle.branch")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemRed))
                 Text("关联目标")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
@@ -154,7 +147,7 @@ struct ContactDetailView: View {
                         Text("添加")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundColor(Color("Blue"))
+                    .foregroundColor(Color(UIColor.systemRed))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -223,17 +216,7 @@ struct ContactDetailView: View {
     // 头部信息 - 现代化设计
     private var headerView: some View {
         ZStack(alignment: .top) {
-            // 背景渐变
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(contact.importance.color).opacity(0.2),
-                    Color(UIColor.systemBackground)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 160)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            // 白卡背景移除固定高度，整体背景由外层提供
             
             // 顶部右侧：Ping/取消Ping 到主页按钮
             HStack {
@@ -249,9 +232,8 @@ struct ContactDetailView: View {
                     // 头像
                     ZStack {
                         Circle()
-                            .fill(Color(contact.importance.color).opacity(0.3))
+                            .fill(Color("Blue").opacity(0.12))
                             .frame(width: 90, height: 90)
-                            .shadow(color: Color(contact.importance.color).opacity(0.3), radius: 8, x: 0, y: 4)
                         
                         if let avatar = contact.avatar,
                            let ui = (UIImage(named: avatar) ?? loadAvatarUIImage(avatar)) {
@@ -267,7 +249,7 @@ struct ContactDetailView: View {
                         } else {
                             Text(String(contact.name.prefix(1)))
                                 .font(.system(size: 36, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(contact.importance.color))
+                                .foregroundColor(Color("Blue"))
                         }
                     }
                     .overlay(alignment: .bottomTrailing) {
@@ -287,59 +269,53 @@ struct ContactDetailView: View {
                     }
                     .padding(.leading, 4)
                     
-                    // 基本信息
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(contact.name)
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                        
-                        if let company = contact.company, let position = contact.position {
-                            Text("\(position) @ \(company)")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        } else if let company = contact.company {
-                            Text(company)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        } else if let position = contact.position {
-                            Text(position)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        }
-                        
-                        Spacer().frame(height: 4)
-                        
-                        // 联系类型和重要程度 - 使用标签样式
+                    // 基本信息（就地编辑，仅姓名）
+                    VStack(alignment: .leading, spacing: 8) {
+                        TextField(
+                            "姓名",
+                            text: Binding(
+                                get: { contact.name },
+                                set: { newValue in
+                                    contact.name = newValue
+                                    contact.modifyTime = Date()
+                                    try? modelContext.save()
+                                }
+                            )
+                        )
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                        // 联系人类型选择器（移动至头像卡片）
                         HStack(spacing: 8) {
-                            // 联系类型标签
-                            HStack(spacing: 4) {
-                                Image(systemName: contact.contactType.iconName)
-                                    .font(.system(size: 12))
-                                Text(contact.contactType.displayName)
-                                    .font(.system(size: 12, weight: .medium))
+                            // 固定为“朋友”icon，蓝色，不随选择变化
+                            Image(systemName: "person.2.fill")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 24, height: 24)
+                            Picker("", selection: Binding(get: { contact.contactType }, set: { newValue in
+                                contact.contactType = newValue
+                                contact.modifyTime = Date()
+                                try? modelContext.save()
+                            })) {
+                                ForEach(ContactType.allCases, id: \.self) { type in
+                                    HStack {
+                                        Image(systemName: type.iconName)
+                                        Text(type.displayName)
+                                    }
+                                    .tag(type)
+                                }
                             }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(contact.importance.color).opacity(0.1))
-                            .foregroundColor(Color(contact.importance.color))
-                            .cornerRadius(8)
-                            
-                            // 重要程度标签
-                            HStack(spacing: 4) {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 12))
-                                Text(contact.importance.displayName)
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(contact.importance.color).opacity(0.1))
-                            .foregroundColor(Color(contact.importance.color))
-                            .cornerRadius(8)
+                            .pickerStyle(.menu)
+                        }
+                        HStack(spacing: 12) {
+                            // 备注使用灰色“报纸”icon
+                            Image(systemName: "newspaper.fill")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.systemGray))
+                                .frame(width: 24, height: 24)
+                            TextField("备注", text: optionalBinding(\.notes))
+                                .autocapitalization(.none)
                         }
                     }
                     .padding(.trailing, 8)
@@ -353,8 +329,8 @@ struct ContactDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.08), radius: 12, x: 0, y: 4)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 
     // 顶部 Ping/取消Ping 按钮
@@ -386,7 +362,10 @@ struct ContactDetailView: View {
     private var contactInfoView: some View {
         VStack(alignment: .leading, spacing: 16) {
             // 标题栏
-            HStack {
+            HStack(spacing: 8) {
+                Image(systemName: "phone.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemRed))
                 Text("联系方式")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
@@ -404,8 +383,8 @@ struct ContactDetailView: View {
                             Image(systemName: "phone.fill")
                                 .font(.system(size: 14, weight: .semibold))
                                 .frame(width: 28, height: 28)
-                                .foregroundColor(.green)
-                                .background(Color.green.opacity(0.12))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .background(Color(UIColor.systemBlue).opacity(0.12))
                                 .clipShape(Circle())
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -420,8 +399,8 @@ struct ContactDetailView: View {
                             Image(systemName: "envelope.fill")
                                 .font(.system(size: 14, weight: .semibold))
                                 .frame(width: 28, height: 28)
-                                .foregroundColor(Color("Blue"))
-                                .background(Color("Blue").opacity(0.12))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .background(Color(UIColor.systemBlue).opacity(0.12))
                                 .clipShape(Circle())
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -429,52 +408,40 @@ struct ContactDetailView: View {
                 }
             }
             
-            // 联系信息列表
-            VStack(spacing: 16) {
-                if let phone = contact.phone, !phone.isEmpty {
-                    ContactInfoRow(icon: "phone.fill", title: "电话", value: phone) {
-                        if let url = URL(string: "tel:\(phone)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }
+            // 联系信息（就地编辑）
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: "phone.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .frame(width: 24, height: 24)
+                    TextField("电话", text: optionalBinding(\.phone))
+                        .keyboardType(.phonePad)
                 }
                 
-                if let email = contact.email, !email.isEmpty {
-                    ContactInfoRow(icon: "envelope.fill", title: "邮箱", value: email) {
-                        if let url = URL(string: "mailto:\(email)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }
+                HStack(spacing: 12) {
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .frame(width: 24, height: 24)
+                    TextField("邮箱", text: optionalBinding(\.email))
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
                 }
                 
-                if let address = contact.address, !address.isEmpty {
-                    ContactInfoRow(icon: "location.fill", title: "地址", value: address) {
-                        // 可以添加地图导航功能
-                        if let encodedAddress = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                           let url = URL(string: "https://maps.apple.com/?q=\(encodedAddress)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }
-                }
-                
-                if (contact.phone == nil || contact.phone?.isEmpty == true) &&
-                   (contact.email == nil || contact.email?.isEmpty == true) &&
-                   (contact.address == nil || contact.address?.isEmpty == true) {
-                    HStack {
-                        Spacer()
-                        Text("暂无联系方式")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                    }
-                    .padding(.vertical, 8)
+                HStack(spacing: 12) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .frame(width: 24, height: 24)
+                    TextField("地址", text: optionalBinding(\.address))
                 }
             }
         }
         .padding(16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
     // 分类信息 - 现代卡片设计
@@ -486,51 +453,115 @@ struct ContactDetailView: View {
             
             // 使用卡片式设计展示分类信息
             HStack(spacing: 16) {
-                // 联系频率卡片
+                // 联系类型卡片（就地编辑）
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        // 固定为“朋友”icon，蓝色
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("联系人类型")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
+                    Picker("", selection: Binding(get: { contact.contactType }, set: { newValue in
+                        contact.contactType = newValue
+                        contact.modifyTime = Date()
+                        try? modelContext.save()
+                    })) {
+                        ForEach(ContactType.allCases, id: \.self) { type in
+                            HStack {
+                                Image(systemName: type.iconName)
+                                Text(type.displayName)
+                            }.tag(type)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(Color("Blue").opacity(0.05))
+                .cornerRadius(12)
+
+                // 联系频率卡片（就地编辑）
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "calendar.badge.clock")
                             .font(.system(size: 16))
-                            .foregroundColor(Color("Purple"))
+                            .foregroundColor(Color(UIColor.systemRed))
                         Text("联系频率")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
-                    
-                    Text(contact.frequency.displayName)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primary)
+                    Picker("", selection: Binding(get: { contact.frequency }, set: { newValue in
+                        contact.frequency = newValue
+                        contact.modifyTime = Date()
+                        try? modelContext.save()
+                    })) {
+                        ForEach(ContactFrequency.allCases, id: \.self) { frequency in
+                            Text(frequency.displayName).tag(frequency)
+                        }
+                    }
+                    .pickerStyle(.menu)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color("Purple").opacity(0.05))
                 .cornerRadius(12)
                 
-                // 重要程度卡片
+                // 重要程度卡片（就地编辑）
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "star.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(Color(contact.importance.color))
+                            .foregroundColor(Color(UIColor.systemRed))
                         Text("重要程度")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
-                    
-                    Text(contact.importance.displayName)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Color(contact.importance.color))
+                    Picker("", selection: Binding(get: { contact.importance }, set: { newValue in
+                        contact.importance = newValue
+                        contact.modifyTime = Date()
+                        try? modelContext.save()
+                    })) {
+                        ForEach(ContactImportance.allCases, id: \.self) { importance in
+                            Text(importance.displayName).tag(importance)
+                        }
+                    }
+                    .pickerStyle(.menu)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color(contact.importance.color).opacity(0.05))
                 .cornerRadius(12)
+
+                // 备注编辑区（整合到头像卡片）
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "note.text")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                        Text("备注")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                    }
+
+                    TextEditor(text: optionalBinding(\.notes))
+                        .frame(minHeight: 120)
+                        .padding(12)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(8)
+                        .onChange(of: contact.notes ?? "") { _ in
+                            contact.modifyTime = Date()
+                            try? modelContext.save()
+                        }
+                }
             }
         }
         .padding(16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
     // 标签 - 现代设计
@@ -538,32 +569,36 @@ struct ContactDetailView: View {
     private var tagsView: some View {
         VStack(alignment: .leading, spacing: 16) {
             // 标题栏
-            HStack {
+            HStack(spacing: 8) {
+                Image(systemName: "tag.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemRed))
                 Text("标签")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                 
                 Spacer()
-                
-                // 添加标签按钮 - 打开可复用的标签添加弹窗
-                Button(action: {
-                    showAddTagSheet = true
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(Color(UIColor.systemBlue))
-                }
-                .buttonStyle(PlainButtonStyle())
             }
             
             // 标签内容
             if contact.tags.isEmpty {
                 HStack {
                     Spacer()
-                    VStack(spacing: 8) {
-                        Image(systemName: "tag")
-                            .font(.system(size: 24))
-                            .foregroundColor(.secondary.opacity(0.5))
+                    VStack(spacing: 12) {
+                        Button(action: { showAddTagSheet = true }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 16))
+                                Text("添加标签")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .foregroundColor(Color(UIColor.systemRed))
+                            .background(Color(UIColor.systemRed).opacity(0.12))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(PlainButtonStyle())
                         Text("暂无标签")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -616,9 +651,9 @@ struct ContactDetailView: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 12))
-                                .foregroundColor(Color(UIColor.systemBlue))
+                                .foregroundColor(Color(UIColor.systemRed))
                                 .frame(width: 24, height: 24)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .background(Color(UIColor.systemRed).opacity(0.1))
                                 .clipShape(Circle())
                         }
                     }
@@ -630,8 +665,8 @@ struct ContactDetailView: View {
         }
         .padding(16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 
     // 为标签生成一致的颜色 - 使用TagColorManager
@@ -729,154 +764,51 @@ struct ContactDetailView: View {
         }
         .padding(16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
-    // 备注 - 现代卡片设计
-    private var notesView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // 标题栏
-            HStack {
-                Text("备注")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-                
-                Spacer()
-                
-                // 编辑备注按钮
-                Button(action: {
-                    editingField = .notes
-                    editingValue = contact.notes ?? ""
-                    showEditSheet = true
-                }) {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 18))
-                        .foregroundColor(Color("Blue"))
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            
-            // 备注内容
-            if let notes = contact.notes, !notes.isEmpty {
-                Text(notes)
-                    .font(.system(size: 16))
-                    .lineSpacing(4)
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(8)
-            } else {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 8) {
-                        Image(systemName: "note.text")
-                            .font(.system(size: 24))
-                            .foregroundColor(.secondary.opacity(0.5))
-                        Text("暂无备注")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 16)
-                    Spacer()
-                }
-                .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
-                .cornerRadius(8)
-            }
-        }
-        .padding(16)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
-    }
+    // 已移除：备注卡片已整合到头像卡片
     
     // 操作按钮 - 现代设计
     private var actionButtonsView: some View {
         VStack(spacing: 16) {
-            // 标记为已联系按钮
+            if let address = contact.address, !address.isEmpty {
+                Button(action: {
+                    let encodedAddress = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                    guard let url = URL(string: "https://maps.apple.com/?q=\(encodedAddress)") else { return }
+                    UIApplication.shared.open(url)
+                }) {
+                    HStack {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 18))
+                        Text("导航地址")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color("Purple"))
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
             Button(action: {
-                contact.updateLastContactDate()
-                try? modelContext.save()
+                showDeleteAlert = true
             }) {
                 HStack {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image(systemName: "trash.fill")
                         .font(.system(size: 18))
-                    Text("标记为已联系")
+                    Text("删除联系人")
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color("Green"))
+                .background(Color("Red"))
                 .foregroundColor(.white)
                 .cornerRadius(12)
             }
             .buttonStyle(PlainButtonStyle())
-            
-            // 联系方式快捷操作
-            HStack(spacing: 16) {
-                if let phone = contact.phone, !phone.isEmpty {
-                    Button(action: {
-                        if let url = URL(string: "tel:\(phone)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: "phone.fill")
-                                .font(.system(size: 18))
-                            Text("拨打电话")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color("Blue"))
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                if let email = contact.email, !email.isEmpty {
-                    Button(action: {
-                        if let url = URL(string: "mailto:\(email)") {
-                            UIApplication.shared.open(url)
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: "envelope.fill")
-                                .font(.system(size: 18))
-                            Text("发送邮件")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color("Orange"))
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                if let address = contact.address, !address.isEmpty {
-                    Button(action: {
-                        let encodedAddress = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                        guard let url = URL(string: "https://maps.apple.com/?q=\(encodedAddress)") else { return }
-                        UIApplication.shared.open(url)
-                    }) {
-                        HStack {
-                            Image(systemName: "map.fill")
-                                .font(.system(size: 18))
-                            Text("导航地址")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color("Purple"))
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
@@ -906,6 +838,19 @@ struct ContactDetailView: View {
         formatter.timeStyle = .none
         return formatter
     }()
+
+    // 可选字符串字段的绑定助手：将nil映射为空串，保存修改
+    private func optionalBinding(_ keyPath: ReferenceWritableKeyPath<Contact, String?>) -> Binding<String> {
+        Binding<String>(
+            get: { contact[keyPath: keyPath] ?? "" },
+            set: { newValue in
+                let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                contact[keyPath: keyPath] = trimmed.isEmpty ? nil : trimmed
+                contact.modifyTime = Date()
+                try? modelContext.save()
+            }
+        )
+    }
 }
 
 // MARK: - 联系信息行
@@ -920,7 +865,7 @@ struct ContactInfoRow: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color("Blue"))
+                    .foregroundColor(Color(UIColor.systemRed))
                     .frame(width: 24, height: 24)
                 
                 VStack(alignment: .leading, spacing: 2) {

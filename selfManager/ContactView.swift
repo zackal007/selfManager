@@ -206,7 +206,19 @@ struct ContactView: View {
     
     // 内容视图
     private var contentView: some View {
-        contactListView
+        TabView(selection: $selectedSegment) {
+            /*
+            ForEach(0..<5, id: \.self) { index in
+                contactListView
+                    .tag(index)
+            }
+            */
+            ForEach(0..<5) { index in
+                contactListView
+                    .tag(index)
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
     }
     
     // 顶部标题栏
@@ -631,22 +643,22 @@ struct ContactCard: View {
                     .foregroundColor(Color(contact.importance.color))
             }
             
-            // 标签
+            // 标签（最多显示3行，不滚动）
             if !contact.tags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(contact.tags, id: \.self) { tag in
-                            Text(tag)
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(TagColorManager.shared.getColor(for: tag))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
+                FlowLayout(spacing: 6) {
+                    ForEach(contact.tags, id: \.self) { tag in
+                        Text(tag)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(TagColorManager.shared.getColor(for: tag))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
-                    .padding(.horizontal, 1)
                 }
+                // 估算：每行约24pt高度（含间距），3行≈84pt
+                .frame(maxHeight: 84)
+                .clipped()
             }
             
             // 最后联系时间和提醒状态
@@ -811,20 +823,7 @@ struct ContactGalleryCard: View {
                 .frame(height: 34)
             }
             
-            // 备注（大卡显示更多，小卡显示3行）
-            if let notes = contact.notes, !notes.isEmpty {
-                VStack(spacing: 4) {
-                    Text("备注")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                    Text(notes)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(3)
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
-            }
+            // 已移除备注显示：列表与画廊卡片不再展示备注
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .center)

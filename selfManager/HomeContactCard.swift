@@ -87,25 +87,22 @@ struct HomeContactCard: View {
                 .frame(height: s.tagRowHeight)
             }
 
-            // 备注（居中）
+            // 备注（直接显示备注内容，不再显示“备注”标题）
             if let notes = contact.notes, !notes.isEmpty {
-                VStack(spacing: 6) {
-                    Text("备注")
-                        .font(.system(size: s.notesTitleSize, weight: .medium))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                    let unlimited = (s.notesLines == nil)
+                VStack(spacing: 4) {
                     Text(notes)
                         .font(.system(size: s.notesTextSize))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                        .lineLimit(s.notesLines)
-                        .fixedSize(horizontal: false, vertical: unlimited)
+                        .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
+                        .lineLimit(s.notesLines)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
                 .frame(maxWidth: .infinity)
             }
 
             Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity)
         .frame(height: containerHeight, alignment: .top)
         .padding(12)
         .background(Color(UIColor.systemBackground))
