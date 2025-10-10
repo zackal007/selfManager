@@ -729,14 +729,15 @@ private func renderCard(for id: HomeCardID) -> some View {
         }
     case .pingedContact(let cid):
                 if let contact = contacts.first(where: { $0.id == cid }) {
+                    let size = cardSizesByID[id] ?? defaultSizeForID(id)
                     withMoveGesture(
                         NavigationLink(destination: ContactDetailView(contact: contact)) {
-                            ContactCard(contact: contact)
+                            HomeContactCard(contact: contact, size: size, containerHeight: heightForCard(id))
                                 .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
                                 .frame(height: heightForCard(id), alignment: .top)
                                 .clipped()
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                                // 右上角类型角标：人脉
+                                // 右上角类型角标：人脉（保持当前样式不变）
                                 .overlay(alignment: .topTrailing) {
                                     Text("人脉")
                                         .font(.system(size: 11, weight: .semibold))
@@ -744,11 +745,11 @@ private func renderCard(for id: HomeCardID) -> some View {
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(Color(UIColor.systemPurple).opacity(0.85))
-                                        .clipShape(Capsule())
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
                                         .padding(8)
                                 }
                                 .background(cardFrameReader(for: id))
-                                .offset({
+                            .offset({
                                     let base = cardOffsetsByID[id] ?? .zero
                                     let extra = (draggingCardID == id) ? dragOffset : .zero
                                     return CGSize(width: base.width + extra.width, height: base.height + extra.height)
@@ -1864,17 +1865,17 @@ struct HomeGoalCard: View {
         case .small:
             return CardStyle(
                 nameSize: 16, descSize: 12, padding: 12, spacing: 6, progressHeight: 4,
-                nameLines: 2, descLines: 1, overlayOpacity: 0.88
+                nameLines: 2, descLines: 1, overlayOpacity: 0.5
             )
         case .medium:
             return CardStyle(
                 nameSize: 18, descSize: 13, padding: 16, spacing: 8, progressHeight: 5,
-                nameLines: 2, descLines: 2, overlayOpacity: 0.86
+                nameLines: 2, descLines: 2, overlayOpacity: 0.5
             )
         case .large:
             return CardStyle(
                 nameSize: 20, descSize: 14, padding: 16, spacing: 10, progressHeight: 6,
-                nameLines: 3, descLines: 3, overlayOpacity: 0.85
+                nameLines: 3, descLines: 3, overlayOpacity: 0.5
             )
         }
     }
@@ -1892,7 +1893,7 @@ struct HomeGoalCard: View {
                     .clipped() // 精确裁剪并隐藏超出部分
             } else {
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
+                    gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -1901,7 +1902,7 @@ struct HomeGoalCard: View {
             }
         } else {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
+                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

@@ -29,7 +29,9 @@ struct AchievementDetailView: View {
                 SectionHeader(title: "成就列表")
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(achievementGoals) { goal in
-                        AchievementCard(goal: goal)
+                        NavigationLink(destination: GoalDetailView(goal: goal)) {
+                            AchievementCard(goal: goal)
+                        }
                     }
                 }
             }

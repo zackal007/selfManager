@@ -24,11 +24,13 @@ struct AnxietyDetailView: View {
                 VStack(spacing: 16) {
                     AnxietyStatsCard(total: totalCount, weekly: weeklyCount)
                     SectionHeader(title: "焦虑列表")
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(anxietyGoals) { goal in
-                            AnxietyCard(goal: goal)
-                        }
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(anxietyGoals) { goal in
+                            NavigationLink(destination: GoalDetailView(goal: goal)) {
+                                AnxietyCard(goal: goal)
+                            }
                     }
+                }
                 }
                 .padding(16)
             }

@@ -26,8 +26,8 @@ struct ContactView: View {
     // 分段控制器选择
     @State private var selectedSegment = 0
     
-    // 视图模式：画廊视图或列表视图
-    @State private var viewMode: ViewMode = .list
+    // 视图模式：画廊视图或列表视图（默认优先展示卡片视图）
+    @State private var viewMode: ViewMode = .gallery
     
     // 分类和排序选项
     @State private var categoryOption: CategoryOption = .type
@@ -415,7 +415,7 @@ struct ContactView: View {
                         LazyVStack(spacing: spacing) {
                             ForEach(leftColumnItems(filteredContacts), id: \.id) { contact in
                                 NavigationLink(destination: ContactDetailView(contact: contact)) {
-                                    ContactCard(contact: contact)
+                                    ContactGalleryCard(contact: contact)
                                         .frame(width: cardWidth)
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -425,7 +425,7 @@ struct ContactView: View {
                         LazyVStack(spacing: spacing) {
                             ForEach(rightColumnItems(filteredContacts), id: \.id) { contact in
                                 NavigationLink(destination: ContactDetailView(contact: contact)) {
-                                    ContactCard(contact: contact)
+                                    ContactGalleryCard(contact: contact)
                                         .frame(width: cardWidth)
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -748,6 +748,89 @@ struct ContactListItem: View {
         .background(Color(UIColor.systemBackground))
         .cornerRadius(8)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 1, x: 0, y: 1)
+    }
+}
+
+// MARK: - 画廊卡片（样式对齐主页人脉卡片）
+struct ContactGalleryCard: View {
+    let contact: Contact
+    
+    var body: some View {
+        VStack(alignment: .center, spacing: 10) {
+            // 头像（圆形，重要程度色为底色）
+            ZStack {
+                Circle()
+                    .fill(Color(contact.importance.color).opacity(0.2))
+                    .frame(width: 56, height: 56)
+                
+                if let avatar = contact.avatar {
+                    Image(avatar)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 56, height: 56)
+                        .clipShape(Circle())
+                } else {
+                    Text(String(contact.name.prefix(1)))
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(Color(contact.importance.color))
+                }
+            }
+            
+            // 姓名（居中）
+            Text(contact.name)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .center)
+            
+            // 联系人类型（居中，辅助色，无背景）
+            Text(contact.contactType.displayName)
+                .font(.system(size: 13))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            // 标签（居中、水平滚动，样式与个人信息一致）
+            if !contact.tags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(contact.tags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.system(size: 14, weight: .medium))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(TagColorManager.shared.getColor(for: tag))
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                }
+                .frame(height: 34)
+            }
+            
+            // 备注（大卡显示更多，小卡显示3行）
+            if let notes = contact.notes, !notes.isEmpty {
+                VStack(spacing: 4) {
+                    Text("备注")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                    Text(notes)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
     }
 }
 
