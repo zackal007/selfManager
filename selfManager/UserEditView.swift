@@ -13,8 +13,7 @@ struct UserEditView: View {
     @State private var avatarImage: Image?
     
     var body: some View {
-        NavigationStack {
-            Form {
+        Form {
                 Section(header: Text("我的信息")) {
                     HStack {
                         Text("用户名:")
@@ -86,13 +85,79 @@ struct UserEditView: View {
                         .padding(.vertical, 5)
                     }
                 }
-                
 
+                Section(header: Text("自定义信息"), footer: Text("可添加任意名称-信息键值对。主页将于 2×2 信息卡片中部分显示，超出内容自动隐藏。")) {
+                    VStack(spacing: 8) {
+                        ForEach(user.customInfos, id: \.id) { info in
+                            HStack(spacing: 8) {
+                                TextField("名称", text: Binding(
+                                    get: { info.key },
+                                    set: { newKey in
+                                        var arr = user.customInfos
+                                        if let idx = arr.firstIndex(where: { $0.id == info.id }) {
+                                            arr[idx].key = newKey
+                                            user.customInfos = arr
+                                        }
+                                    }
+                                ))
+                                .textFieldStyle(.roundedBorder)
+
+                                TextField("信息", text: Binding(
+                                    get: { info.value },
+                                    set: { newVal in
+                                        var arr = user.customInfos
+                                        if let idx = arr.firstIndex(where: { $0.id == info.id }) {
+                                            arr[idx].value = newVal
+                                            user.customInfos = arr
+                                        }
+                                    }
+                                ))
+                                .textFieldStyle(.roundedBorder)
+
+                                Button(action: {
+                                    var arr = user.customInfos
+                                    if let idx = arr.firstIndex(where: { $0.id == info.id }) {
+                                        arr.remove(at: idx)
+                                        user.customInfos = arr
+                                        try? modelContext.save()
+                                    }
+                                }) {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(Color(UIColor.systemRed))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+
+                        Button(action: {
+                            var arr = user.customInfos
+                            arr.append(UserCustomInfo(key: "", value: ""))
+                            user.customInfos = arr
+                        }) {
+                            Label("添加字段", systemImage: "plus")
+                                .foregroundColor(Color(UIColor.systemBlue))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.vertical, 4)
+                }
+        }
+        .navigationTitle("我的信息")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("返回") { dismiss() }
             }
-            .navigationTitle("我的信息")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(leading: Button("取消") { dismiss() }, trailing: Button("保存") { dismiss() })
-            .sheet(isPresented: $showAddTagSheet) {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("保存") {
+                    // 保存更改
+                    try? modelContext.save()
+                    dismiss()
+                }
+            }
+        }
+        .sheet(isPresented: $showAddTagSheet) {
                 AddTagSheet(existingEntityTags: user.tags) { names in
                     let existing = Set(user.tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
                     let toAdd = names.filter { !existing.contains($0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()) }
@@ -106,8 +171,8 @@ struct UserEditView: View {
                         print("Failed to save user tag additions: \(error)")
                     }
                 }
-            }
-            .onChange(of: avatarItem) { oldItem, newItem in
+        }
+        .onChange(of: avatarItem) { oldItem, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
                         if let uiImage = UIImage(data: data) {
@@ -119,8 +184,8 @@ struct UserEditView: View {
                         }
                     }
                 }
-            }
-            .onAppear {
+        }
+        .onAppear {
                 // 加载已保存的头像
                 if !user.avatar.isEmpty {
                     if let uiImage = ImageUtility.loadImageFromAppDirectory(fileName: user.avatar) {
@@ -133,7 +198,6 @@ struct UserEditView: View {
                     // 如果没有头像，显示默认头像
                     avatarImage = nil // Set to nil to show default PhotosPicker content
                 }
-            }
         }
     }
 }

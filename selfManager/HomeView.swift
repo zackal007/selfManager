@@ -1127,6 +1127,43 @@ private func tagColor(for tag: String) -> Color {
                 }
                 .padding(.vertical, 5)
             }
+
+            // 自定义信息（仅在 2x2 大卡片显示部分）
+            if (cardSizesByID[HomeCardID.type(.profile)] ?? defaultSizeForID(HomeCardID.type(.profile))) == .large {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("自定义信息")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+
+                    if user.customInfos.isEmpty {
+                        Text("暂无自定义信息")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                    } else {
+                        // 仅显示前几条，超出卡片将被容器裁剪隐藏
+                        ForEach(Array(user.customInfos.prefix(6))) { info in
+                            HStack(spacing: 8) {
+                                Text(info.key)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color(UIColor.label))
+                                    .lineLimit(1)
+                                Text(":")
+                                    .foregroundColor(Color(UIColor.systemGray))
+                                Text(info.value)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                    .lineLimit(1)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(UIColor.systemBackground))
+                            .cornerRadius(10)
+                        }
+                    }
+                }
+                .padding(.top, 8)
+            }
         }
         .padding(20)
         .frame(maxHeight: .infinity, alignment: .top)
