@@ -66,19 +66,17 @@ struct ContactView: View {
     }
     
     private var processedFriendContacts: [Contact] {
-        let friendContacts = allContacts.filter { $0.contactType == .friend }
+        let friendContacts = allContacts.filter { $0.contactType == .intimateFriend }
         return sortContacts(categorizeContacts(friendContacts))
     }
     
     private var processedWorkContacts: [Contact] {
-        let workContacts = allContacts.filter { contact in
-            contact.contactType == .colleague || contact.contactType == .business
-        }
+        let workContacts = allContacts.filter { $0.contactType == .workplace }
         return sortContacts(categorizeContacts(workContacts))
     }
     
     private var processedExampleContacts: [Contact] {
-        let exampleContacts = allContacts.filter { $0.isExample }
+        let exampleContacts = allContacts.filter { $0.contactType == .roleModel }
         return sortContacts(categorizeContacts(exampleContacts))
     }
     
@@ -99,14 +97,26 @@ struct ContactView: View {
     
     // 根据选中的分段返回对应的联系人数据
     private func contactsForSelectedSegment() -> [Contact] {
+        let base: [Contact]
         switch selectedSegment {
-        case 0: return processedAllContacts
-        case 1: return processedFamilyContacts
-        case 2: return processedFriendContacts
-        case 3: return processedWorkContacts
-        case 4: return processedExampleContacts
-        default: return processedAllContacts
+        case 0:
+            base = allContacts
+        case 1:
+            base = allContacts.filter { $0.contactType == .family }
+        case 2:
+            base = allContacts.filter { $0.contactType == .intimateFriend }
+        case 3:
+            base = allContacts.filter { $0.contactType == .workplace }
+        case 4:
+            base = allContacts.filter { $0.contactType == .roleModel }
+        case 5:
+            base = allContacts.filter { $0.contactType == .other }
+        case 6:
+            base = allContacts.filter { [.doctor, .lawyer, .rich, .official, .gangster].contains($0.contactType) }
+        default:
+            base = allContacts
         }
+        return sortContacts(categorizeContacts(base))
     }
     
     // 根据分类选项对联系人进行分类
@@ -242,7 +252,7 @@ struct ContactView: View {
                     .tag(index)
             }
             */
-            ForEach(0..<5) { index in
+            ForEach(0..<7) { index in
                 contactListView
                     .tag(index)
             }
@@ -344,19 +354,29 @@ struct ContactView: View {
                             selectedSegment = 1
                         }
                         
-                        // 朋友选项
-                        FilterChip(title: "朋友", isSelected: selectedSegment == 2) {
+                        // 挚友选项
+                        FilterChip(title: "挚友", isSelected: selectedSegment == 2) {
                             selectedSegment = 2
                         }
                         
-                        // 工作选项
-                        FilterChip(title: "工作", isSelected: selectedSegment == 3) {
+                        // 职场选项
+                        FilterChip(title: "职场", isSelected: selectedSegment == 3) {
                             selectedSegment = 3
                         }
                         
                         // 榜样选项
                         FilterChip(title: "榜样", isSelected: selectedSegment == 4) {
                             selectedSegment = 4
+                        }
+
+                        // 其他选项
+                        FilterChip(title: "其他", isSelected: selectedSegment == 5) {
+                            selectedSegment = 5
+                        }
+
+                        // 有用选项（医生/律师/富人/官员/混混）
+                        FilterChip(title: "有用", isSelected: selectedSegment == 6) {
+                            selectedSegment = 6
                         }
                     }
                     .padding(.horizontal, 16)
@@ -399,19 +419,29 @@ struct ContactView: View {
                         selectedSegment = 1
                     }
                     
-                    // 朋友选项
-                    FilterChip(title: "朋友", isSelected: selectedSegment == 2) {
+                    // 挚友选项
+                    FilterChip(title: "挚友", isSelected: selectedSegment == 2) {
                         selectedSegment = 2
                     }
                     
-                    // 工作选项
-                    FilterChip(title: "工作", isSelected: selectedSegment == 3) {
+                    // 职场选项
+                    FilterChip(title: "职场", isSelected: selectedSegment == 3) {
                         selectedSegment = 3
                     }
                     
                     // 榜样选项
                     FilterChip(title: "榜样", isSelected: selectedSegment == 4) {
                         selectedSegment = 4
+                    }
+
+                    // 其他选项
+                    FilterChip(title: "其他", isSelected: selectedSegment == 5) {
+                        selectedSegment = 5
+                    }
+
+                    // 有用选项（医生/律师/富人/官员/混混）
+                    FilterChip(title: "有用", isSelected: selectedSegment == 6) {
+                        selectedSegment = 6
                     }
                 }
                 .padding(.horizontal)
@@ -755,18 +785,11 @@ struct ContactListItem: View {
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                if let company = contact.company, let position = contact.position {
-                    Text("\(position) @ \(company)")
+                if let notes = contact.notes, !notes.isEmpty {
+                    Text(notes)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                } else if let company = contact.company {
-                    Text(company)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                } else if let position = contact.position {
-                    Text(position)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
             }
             

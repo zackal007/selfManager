@@ -49,10 +49,19 @@ struct AddContactView: View {
                                 Text("姓名不能为空").foregroundColor(.red).font(.caption) : nil,
                                 alignment: .trailing
                             )
-                        
-                        TextField("公司", text: $company)
-                        
-                        TextField("职位", text: $position)
+
+                        Picker("分类", selection: $selectedContactType) {
+                            ForEach(ContactType.allCases, id: \.self) { type in
+                                HStack {
+                                    Image(systemName: type.iconName)
+                                    Text(type.displayName)
+                                }
+                                .tag(type)
+                            }
+                        }
+
+                        TextField("备注", text: $notes, axis: .vertical)
+                            .lineLimit(3...6)
                     }
                     
                     Section(header: Text("联系方式")) {
@@ -66,42 +75,7 @@ struct AddContactView: View {
                         TextField("地址", text: $address)
                     }
                     
-                    Section(header: Text("分类信息")) {
-                        Picker("联系人类型", selection: $selectedContactType) {
-                            ForEach(ContactType.allCases, id: \.self) { type in
-                                HStack {
-                                    Image(systemName: type.iconName)
-                                    Text(type.displayName)
-                                }
-                                .tag(type)
-                            }
-                        }
-                        
-                        Picker("重要程度", selection: $selectedImportance) {
-                            ForEach(ContactImportance.allCases, id: \.self) { importance in
-                                Text(importance.displayName).tag(importance)
-                            }
-                        }
-                        
-                        Picker("联系频率", selection: $selectedFrequency) {
-                            ForEach(ContactFrequency.allCases, id: \.self) { frequency in
-                                Text(frequency.displayName).tag(frequency)
-                            }
-                        }
-                    }
                     
-                    Section(header: Text("其他信息")) {
-                        TextField("标签 (用逗号分隔)", text: $tags)
-                        
-                        Toggle("设置最后联系时间", isOn: $hasLastContactDate)
-                        
-                        if hasLastContactDate {
-                            DatePicker("最后联系时间", selection: $lastContactDate, displayedComponents: [.date])
-                        }
-                        
-                        TextField("备注", text: $notes, axis: .vertical)
-                            .lineLimit(3...6)
-                    }
                 }
                 .navigationBarTitle("添加联系人", displayMode: .inline)
                 .navigationBarItems(
@@ -180,14 +154,9 @@ struct AddContactView: View {
             contactType: selectedContactType,
             importance: selectedImportance,
             frequency: selectedFrequency,
-            tags: tags.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) }.filter { !$0.isEmpty },
-            lastContactDate: hasLastContactDate ? lastContactDate : nil
+            tags: [],
+            lastContactDate: nil
         )
-        
-        // 如果设置了最后联系时间，计算下次联系时间
-        if hasLastContactDate {
-            newContact.updateLastContactDate(lastContactDate)
-        }
         
         // 保存到数据库
         modelContext.insert(newContact)
@@ -199,12 +168,16 @@ struct AddContactView: View {
             switch newContact.contactType {
             case .family:
                 selectedSegment = 1
-            case .friend:
+            case .intimateFriend:
                 selectedSegment = 2
-            case .colleague, .business:
+            case .workplace:
                 selectedSegment = 3
-            default:
-                selectedSegment = 0
+            case .roleModel:
+                selectedSegment = 4
+            case .other:
+                selectedSegment = 5
+            case .doctor, .lawyer, .rich, .official, .gangster:
+                selectedSegment = 6
             }
             
             // 显示成功提示

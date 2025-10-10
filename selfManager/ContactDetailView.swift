@@ -1117,7 +1117,7 @@ struct FlowLayout: Layout {
         position: "产品经理",
         phone: "13800138000",
         email: "zhangsan@example.com",
-        contactType: .colleague,
+        contactType: .workplace,
         importance: .high,
         frequency: .monthly
     )

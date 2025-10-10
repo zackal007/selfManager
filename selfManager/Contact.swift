@@ -10,31 +10,43 @@ import SwiftData
 
 // 联系人类型枚举
 enum ContactType: Int, Codable, Hashable, CaseIterable {
-    case family = 0      // 家人
-    case friend = 1      // 朋友
-    case colleague = 2   // 同事
-    case business = 3    // 商务
-    case mentor = 4      // 导师
-    case other = 5       // 其他
-    
+    case family = 0        // 家人
+    case intimateFriend = 1// 挚友
+    case workplace = 2     // 职场
+    case roleModel = 3     // 榜样
+    case doctor = 4        // 医生
+    case lawyer = 5        // 律师
+    case rich = 6          // 富人
+    case official = 7      // 官员
+    case gangster = 8      // 混混
+    case other = 9         // 其他
+
     var displayName: String {
         switch self {
         case .family: return "家人"
-        case .friend: return "朋友"
-        case .colleague: return "同事"
-        case .business: return "商务"
-        case .mentor: return "导师"
+        case .intimateFriend: return "挚友"
+        case .workplace: return "职场"
+        case .roleModel: return "榜样"
+        case .doctor: return "医生"
+        case .lawyer: return "律师"
+        case .rich: return "富人"
+        case .official: return "官员"
+        case .gangster: return "混混"
         case .other: return "其他"
         }
     }
-    
+
     var iconName: String {
         switch self {
         case .family: return "house.fill"
-        case .friend: return "person.2.fill"
-        case .colleague: return "briefcase.fill"
-        case .business: return "building.2.fill"
-        case .mentor: return "graduationcap.fill"
+        case .intimateFriend: return "person.2.fill"
+        case .workplace: return "briefcase.fill"
+        case .roleModel: return "star.fill"
+        case .doctor: return "stethoscope"
+        case .lawyer: return "building.columns.fill"
+        case .rich: return "dollarsign.circle.fill"
+        case .official: return "shield.fill"
+        case .gangster: return "exclamationmark.triangle.fill"
         case .other: return "person.fill"
         }
     }
