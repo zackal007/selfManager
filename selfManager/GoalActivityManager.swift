@@ -62,6 +62,14 @@ class GoalActivityManager {
             return []
         }
     }
+
+    // 获取指定日期的所有活动日志（按天）
+    func getActivityLogs(forDate date: Date) -> [ActivityLogEntry] {
+        let calendar = Calendar.current
+        return getAllActivityLogs().filter { log in
+            calendar.isDate(log.date, equalTo: date, toGranularity: .day)
+        }.sorted(by: { $0.date < $1.date })
+    }
     
     // 保存活动日志
     private func saveActivityLogs(_ logs: [ActivityLogEntry]) {
@@ -98,11 +106,9 @@ class GoalActivityManager {
         let month = calendar.component(.month, from: today)
         let day = calendar.component(.day, from: today)
         
-        // 查找当天的日记
-        let dailyType = RecordType.daily
+        // 查找当天的日记（不在谓词中比较 RecordType，避免 SwiftData 对枚举捕获的限制）
         let fetchDescriptor = FetchDescriptor<Record>(
             predicate: #Predicate<Record> { record in
-                record.recordType == dailyType &&
                 record.year == year &&
                 record.month == month &&
                 record.day == day
@@ -211,6 +217,129 @@ class GoalActivityManager {
         }
         
         return activityText
+    }
+
+    // 解析任务标题（从日志message中提取）
+    private func parseTaskTitle(from message: String) -> String {
+        if let range = message.range(of: "任务: ") {
+            let title = message[range.upperBound...]
+            return String(title).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return message
+    }
+
+    // 将 ActivityLogEntry 格式化为汇总行（带时间、变更值）
+    private func formatLogLine(_ log: ActivityLogEntry) -> String {
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let timeString = timeFormatter.string(from: log.date)
+        var line = "  • \(timeString) \(log.message)"
+        if let old = log.oldValue, let new = log.newValue, (!old.isEmpty || !new.isEmpty) {
+            line += "  \(old) → \(new)"
+        } else if let new = log.newValue, !new.isEmpty {
+            line += "  \(new)"
+        }
+        return line
+    }
+
+    // 生成当天目标动态（全部类型）汇总文本并写入日记（带区块标记，便于更新替换）
+    func syncDailyCompletionSummaryToDiary(for date: Date, modelContext: ModelContext) {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+
+        // 收集当天的所有目标活动日志
+        let dayLogs = getActivityLogs(forDate: date)
+        // 按目标分组并按时间排序
+        var grouped: [UUID: [ActivityLogEntry]] = [:]
+        for log in dayLogs {
+            grouped[log.goalId, default: []].append(log)
+        }
+        for key in grouped.keys {
+            grouped[key]?.sort(by: { $0.date < $1.date })
+        }
+
+        // 构建汇总文本
+        let startMarker = "--- 今日目标完成情况（自动汇总） 开始 ---"
+        let endMarker = "--- 今日目标完成情况（自动汇总） 结束 ---"
+        var summaryLines: [String] = []
+        summaryLines.append("📝 当日目标动态")
+
+        for (goalId, logs) in grouped {
+            // 获取目标名称
+            let goalName: String
+            if let goal = try? modelContext.fetch(FetchDescriptor<Goal>(predicate: #Predicate<Goal> { $0.id == goalId })).first {
+                goalName = goal.name
+            } else {
+                goalName = "未知目标"
+            }
+
+            summaryLines.append("- 目标《\(goalName)》")
+            if logs.isEmpty {
+                summaryLines.append("  （当日无目标动态）")
+            } else {
+                for log in logs {
+                    summaryLines.append(formatLogLine(log))
+                }
+            }
+        }
+
+        if grouped.isEmpty {
+            summaryLines.append("- （当日无目标动态）")
+        }
+
+        let blockText = (
+            [startMarker] + summaryLines + [endMarker]
+        ).joined(separator: "\n")
+
+        // 查找当天的日记（不在谓词中比较 RecordType，避免 SwiftData 对枚举捕获的限制）
+        let fetchDescriptor = FetchDescriptor<Record>(
+            predicate: #Predicate<Record> { record in
+                record.year == year &&
+                record.month == month &&
+                record.day == day
+            }
+        )
+
+        do {
+            let existing = try modelContext.fetch(fetchDescriptor)
+            if let record = existing.first {
+                // 替换或追加区块
+                if let startRange = record.content.range(of: startMarker) {
+                    if let endRange = record.content.range(of: endMarker) {
+                        // 替换标记区间
+                        let before = record.content[..<startRange.lowerBound]
+                        let after = record.content[endRange.upperBound...]
+                        record.content = String(before) + blockText + String(after)
+                    } else {
+                        // 仅有开始标记，移除到末尾
+                        let before = record.content[..<startRange.lowerBound]
+                        record.content = String(before) + blockText
+                    }
+                } else {
+                    let separator = record.content.isEmpty ? "" : "\n\n"
+                    record.content += separator + blockText
+                }
+            } else {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy年MM月dd日"
+                let dateString = formatter.string(from: date)
+                let newRecord = Record(
+                    title: "\(dateString) 日记",
+                    content: blockText,
+                    recordType: .daily,
+                    year: year,
+                    month: month,
+                    day: day
+                )
+                modelContext.insert(newRecord)
+            }
+
+            try modelContext.save()
+        } catch {
+            print("同步当天目标完成情况到日记失败: \(error)")
+        }
     }
     
     // 记录目标创建

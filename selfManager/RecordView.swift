@@ -136,6 +136,35 @@ struct RecordView: View {
                     }) {
                         Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
                     }
+
+                    // 仅在“日记”页签显示：汇总今日目标完成情况
+                    if selectedRecordType == .daily {
+                        Divider()
+                        Button(action: {
+                            dismissKeyboard()
+                            GoalActivityManager.shared.syncDailyCompletionSummaryToDiary(for: currentDate, modelContext: modelContext)
+                            // 重新加载当日记录以展示汇总内容
+                            loadCurrentRecord()
+                        }) {
+                            Label("汇总今日目标完成情况", systemImage: "doc.on.doc")
+                        }
+                    }
+
+                    // 根据当前记录类型，提供汇总按钮
+                    if selectedRecordType == .weekly || selectedRecordType == .monthly || selectedRecordType == .quarterly || selectedRecordType == .yearly {
+                        Divider()
+                        Button(action: {
+                            dismissKeyboard()
+                            refreshAggregationForCurrentPeriod()
+                        }) {
+                            Label(
+                                selectedRecordType == .weekly ? "汇总本周" :
+                                selectedRecordType == .monthly ? "汇总本月" :
+                                selectedRecordType == .quarterly ? "汇总本季" : "汇总本年",
+                                systemImage: "text.append"
+                            )
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -1187,13 +1216,15 @@ struct RecordView: View {
                                             NotesStyleRecordEditor(
                                                 text: $recordContent,
                                                 images: $selectedImages,
-                                                minHeight: UIScreen.main.bounds.height * 0.6,
+                                                minHeight: 120,
                                                 onImagesChanged: { images in
                                                     selectedImages = images
                                                     contentModified = true
                                                 },
                                                 onTextChanged: {
                                                     contentModified = true
+                                                    // 文本变更时即时自动保存，强制检查避免丢失
+                                                    autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
                                                 }
                                             )
                                             .frame(maxHeight: .infinity)
@@ -1512,6 +1543,39 @@ struct RecordView: View {
             let year = calendar.component(.year, from: currentDate)
             return "\(year)年 年记"
         }
+    }
+
+    // 刷新当前周期的归纳内容，仅更新显示，不持久化归纳块
+    private func refreshAggregationForCurrentPeriod() {
+        // 同步当前日期组件
+        updateDateComponents()
+        let year = currentYear
+        let month = currentMonth
+        let week = currentWeek
+        let quarter = currentQuarter
+
+        // 仅保留用户输入部分，避免重复归纳块
+        let userContent = extractUserContent(from: recordContent, recordType: selectedRecordType)
+
+        // 计算下一级记录的归纳内容
+        var lowerLevelContent = ""
+        switch selectedRecordType {
+        case .weekly:
+            lowerLevelContent = getLowerLevelRecordsContent(recordType: .weekly, year: year, week: week)
+        case .monthly:
+            lowerLevelContent = getLowerLevelRecordsContent(recordType: .monthly, year: year, month: month)
+        case .quarterly:
+            lowerLevelContent = getLowerLevelRecordsContent(recordType: .quarterly, year: year, quarter: quarter)
+        case .yearly:
+            lowerLevelContent = getLowerLevelRecordsContent(recordType: .yearly, year: year)
+        default:
+            break
+        }
+
+        // 更新显示内容（用户内容 + 归纳内容）
+        recordContent = userContent + lowerLevelContent
+        // 此为自动归纳刷新，不标记为用户修改
+        contentModified = false
     }
     
     // 保存记录方法

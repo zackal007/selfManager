@@ -26,7 +26,7 @@ struct NotesStyleRecordEditor: View {
     init(
         text: Binding<String>,
         images: Binding<[Data]> = .constant([]),
-        minHeight: CGFloat = 200,
+        minHeight: CGFloat = 120,
         onImagesChanged: (([Data]) -> Void)? = nil,
         onTextChanged: (() -> Void)? = nil
     ) {
@@ -93,22 +93,19 @@ struct NotesStyleRecordEditor: View {
     
     // MARK: - 文本编辑器视图
     private var textEditorView: some View {
-        ZStack(alignment: .topLeading) {
+        let lineHeight = UIFont.preferredFont(forTextStyle: .body).lineHeight + 4 // 与 .lineSpacing(4) 对齐
+        let desiredMinHeight = max(minHeight, lineHeight * 12) // 显示约 12 行文本高度
+
+        return ZStack(alignment: .topLeading) {
             // 文本编辑器
             TextEditor(text: $text)
                 .focused($isTextFieldFocused)
-                .padding(12)
+                .padding(8) // 适当减少内边距以增加有效编辑宽度
                 .font(.body)
                 .lineSpacing(4)
                 .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(
-                            isTextEditorFocused ? Color.accentColor : Color.clear,
-                            lineWidth: 2
-                        )
-                )
+                .cornerRadius(12) // 改为更明显的圆角设计，仅作用于可编辑区域
+                .frame(maxWidth: .infinity) // 在不改变外部容器的前提下尽量占满可用宽度
                 .onTapGesture {
                     // 点击文本编辑器时获取焦点
                     isTextFieldFocused = true
@@ -135,7 +132,7 @@ struct NotesStyleRecordEditor: View {
                     .allowsHitTesting(false)
             }
         }
-        .frame(minHeight: minHeight, maxHeight: .infinity)
+        .frame(minHeight: desiredMinHeight, maxHeight: .infinity)
     }
     
     // MARK: - 图片展示区域
