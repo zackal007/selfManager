@@ -1547,7 +1547,7 @@ private func tagColor(for tag: String) -> Color {
     
     // 成就展示区域
     private var achievementSection: some View {
-        NavigationLink(destination: TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)) {
+        NavigationLink(destination: AchievementDetailView()) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "trophy.fill")
@@ -1564,70 +1564,39 @@ private func tagColor(for tag: String) -> Color {
                         .font(.system(size: 12))
                         .foregroundColor(Color(UIColor.systemGray))
                 }
-                // 仅展示最近的 1-4 个成就（随卡片尺寸变化）
+                // 根据卡片尺寸展示最多 2/6/12 个成就
                 let idForSize = HomeCardID.type(.achievement)
                 let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
                 let displayCount: Int = {
                     switch size {
-                    case .small: return 1   // 1×1 显示 1 条
-                    case .medium: return 2  // 1×2 显示 2 条
-                    case .large: return 4   // 2×2 显示 4 条
+                    case .small: return 2   // 1×1 显示 2 条
+                    case .medium: return 6  // 1×2 显示 6 条
+                    case .large: return 12  // 2×2 显示 12 条
                     }
                 }()
-                let completedSorted = achievements.filter { $0.isCompleted && $0.completionDate != nil }
-                let baseList = completedSorted.isEmpty ? achievements : completedSorted
-                let recentAchievements = Array(baseList.prefix(displayCount))
+                // 使用带有“成就”标签的目标作为数据源（直接展示前 N 条）
+                let recentGoals = Array(achievementGoals.prefix(displayCount))
 
-                if recentAchievements.isEmpty {
+                if recentGoals.isEmpty {
                     Text("暂无成就")
                         .font(.subheadline)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                         .padding(.vertical, 8)
                 } else {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(recentAchievements) { achievement in
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(UIColor.systemYellow).opacity(0.12))
-                                        .frame(width: 24, height: 24)
-                                    Text(achievement.emoji)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(Color(UIColor.systemYellow))
-                                }
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(achievement.name.isEmpty ? "未命名成就" : achievement.name)
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(Color(UIColor.label))
-                                        .lineLimit(1)
-
-                                    HStack(spacing: 6) {
-                                        if achievement.isCompleted {
-                                            Text("已完成")
-                                                .font(.caption2)
-                                                .foregroundColor(Color(UIColor.systemGreen))
-                                        } else {
-                                            Text("进行中")
-                                                .font(.caption2)
-                                                .foregroundColor(Color(UIColor.systemOrange))
-                                        }
-                                        Text(achievement.category)
-                                            .font(.caption2)
-                                            .foregroundColor(Color(UIColor.secondaryLabel))
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color(UIColor.systemGray6))
-                                            .cornerRadius(4)
-                                    }
-                                }
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(recentGoals) { goal in
+                            HStack {
+                                Text(goal.name.isEmpty ? "未命名成就" : goal.name)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(Color(UIColor.label))
+                                    .lineLimit(1)
                                 Spacer()
                             }
                             .padding(.vertical, 6)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, 10)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(10)
-                            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
+                            .cornerRadius(8)
+                            .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                         }
                     }
                 }
@@ -1704,32 +1673,31 @@ private func tagColor(for tag: String) -> Color {
     
     // 待改进区域 - 扁平化设计
     private var improvementSection: some View {
-        NavigationLink(destination: TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)) {
+        NavigationLink(destination: AnxietyDetailView()) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemOrange))
-                    Text("最近焦虑")
+                    Text("焦虑")
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color(UIColor.label))
                     Spacer()
                     
                     // 详情按钮
-                    HStack(spacing: 4) {                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12))
-                            .foregroundColor(Color(UIColor.systemGray))
-                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(UIColor.systemGray))
                 }
-                // 仅展示最近的 1-4 个焦虑（随卡片尺寸变化）
+                // 参考“成就”卡片：根据卡片尺寸展示最多 2/6/12 条焦虑
+                // 使用现有的改进卡片类型（improvement）作为尺寸 ID
                 let idForSize = HomeCardID.type(.improvement)
                 let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
                 let displayCount: Int = {
                     switch size {
-                    case .small: return 1   // 1×1 显示 1 个
-                    case .medium: return 2  // 1×2 显示 2 个
-                    case .large: return 4   // 2×2 显示 4 个
+                    case .small: return 2   // 1×1 显示 2 条
+                    case .medium: return 6  // 1×2 显示 6 条
+                    case .large: return 12  // 2×2 显示 12 条
                     }
                 }()
                 let recentAnxieties = Array(anxietyGoals.prefix(displayCount))
@@ -1740,27 +1708,20 @@ private func tagColor(for tag: String) -> Color {
                         .foregroundColor(Color(UIColor.secondaryLabel))
                         .padding(.vertical, 8)
                 } else {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 6) {
                         ForEach(recentAnxieties) { goal in
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(tagColor(for: BuiltInTags.anxiety).opacity(0.15))
-                                    .frame(width: 18, height: 18)
-                                    .overlay(
-                                        Text("⚠️")
-                                            .font(.system(size: 11))
-                                    )
-                                Text(goal.name)
+                            HStack {
+                                Text(goal.name.isEmpty ? "未命名焦虑" : goal.name)
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
                                 Spacer()
                             }
                             .padding(.vertical, 6)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, 10)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(10)
-                            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
+                            .cornerRadius(8)
+                            .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                         }
                     }
                 }

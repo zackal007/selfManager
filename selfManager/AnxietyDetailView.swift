@@ -1,0 +1,139 @@
+import SwiftUI
+import SwiftData
+import UIKit
+
+struct AnxietyDetailView: View {
+    @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
+
+    private var anxietyGoals: [Goal] {
+        goals.filter { !$0.isDeleted && $0.tags.contains(BuiltInTags.anxiety) }
+    }
+    private var totalCount: Int { anxietyGoals.count }
+    private var weeklyCount: Int {
+        let cal = Calendar.current
+        let now = Date()
+        let start = cal.date(byAdding: .day, value: -6, to: cal.startOfDay(for: now)) ?? now
+        return anxietyGoals.filter { $0.createTime >= start }.count
+    }
+
+    private let columns: [GridItem] = [GridItem(.flexible()), GridItem(.flexible())]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    AnxietyStatsCard(total: totalCount, weekly: weeklyCount)
+                    SectionHeader(title: "焦虑列表")
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(anxietyGoals) { goal in
+                            AnxietyCard(goal: goal)
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .navigationTitle("焦虑中心")
+            .navigationBarTitleDisplayMode(.inline)
+            .background(Color(UIColor.systemGroupedBackground))
+        }
+    }
+}
+
+private struct SectionHeader: View {
+    let title: String
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(UIColor.label))
+            Spacer()
+        }
+    }
+}
+
+private struct AnxietyStatsCard: View {
+    let total: Int
+    let weekly: Int
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("总焦虑数")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Text("\(total)")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                }
+                Spacer()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("近7天新增")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    HStack(alignment: .bottom, spacing: 6) {
+                        Image(systemName: weekly >= 0 ? "arrow.up.right" : "arrow.down.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(weekly >= 0 ? Color(UIColor.systemOrange) : Color(UIColor.systemGreen))
+                        Text("\(weekly)")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.05), radius: 6, x: 0, y: 3)
+    }
+}
+
+private struct AnxietyCard: View {
+    let goal: Goal
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                // 参考成就条目：优先使用目标背景图作为图标，无则回退警示图标
+                let iconSize: CGFloat = 28
+                if let bgName = goal.backgroundImage, !bgName.isEmpty,
+                   let uiImage = SMImageCache.shared.image(named: bgName) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: iconSize, height: iconSize)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipped()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+                        )
+                } else {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(Color(UIColor.systemOrange))
+                        .frame(width: iconSize, height: iconSize)
+                        .background(Color(UIColor.systemOrange).opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                Text(goal.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+            }
+            Text("进度 \(Int(goal.progress * 100))%")
+                .font(.system(size: 12))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+            ProgressView(value: min(max(goal.progress, 0), 1))
+                .tint(Color(UIColor.systemBlue))
+        }
+        .padding(12)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
+    }
+}
+
+#Preview {
+    AnxietyDetailView()
+}

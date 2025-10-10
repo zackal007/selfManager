@@ -1126,7 +1126,7 @@ struct GoalCard: View {
     var isFixedHeightContainer: Bool = false
     @State private var nameAndDescHeight: CGFloat = 0
     private let minCardHeight: CGFloat = 60
-    private let horizontalPadding: CGFloat = 13 // 卡片内边距与进度/标签水平内边距
+    private let horizontalPadding: CGFloat = 6 // 卡片内边距与进度/标签水平内边距
     private let elementSpacing: CGFloat = 10     // 元素间距建议值
     
     // 初始化方法，提供默认值
