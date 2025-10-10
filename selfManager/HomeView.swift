@@ -174,6 +174,31 @@ struct HomeView: View {
     private var anxietyGoals: [Goal] {
         goals.filter { !$0.isDeleted && $0.tags.contains(BuiltInTags.anxiety) }
     }
+
+    // 最近焦虑统计（基于创建时间）
+    private var recentAnxietyWeeklyCount: Int {
+        let cal = Calendar.current
+        let now = Date()
+        let start = cal.date(byAdding: .day, value: -6, to: cal.startOfDay(for: now)) ?? now
+        return anxietyGoals.filter { $0.createTime >= start }.count
+    }
+
+    private var recentAnxietyMonthlyCount: Int {
+        let cal = Calendar.current
+        let now = Date()
+        guard let startOfMonth = cal.date(from: cal.dateComponents([.year, .month], from: now)) else { return 0 }
+        return anxietyGoals.filter { $0.createTime >= startOfMonth }.count
+    }
+
+    private var last7DaysAnxietyCounts: [Int] {
+        let cal = Calendar.current
+        let now = Date()
+        let startOfToday = cal.startOfDay(for: now)
+        return (0..<7).map { offset in
+            let day = cal.date(byAdding: .day, value: -offset, to: startOfToday) ?? startOfToday
+            return anxietyGoals.filter { g in cal.isDate(g.createTime, inSameDayAs: day) }.count
+        }.reversed()
+    }
     
     // 初始化方法
     init(selectedTab: Binding<Int>) {
@@ -681,7 +706,7 @@ private func renderCard(for id: HomeCardID) -> some View {
     case .pingedGoal(let gid):
         if let goal = goals.first(where: { $0.id == gid }) {
             withMoveGesture(
-                GoalCard(goal: goal, isFixedHeightContainer: true)
+                HomeGoalCard(goal: goal, isFixedHeightContainer: true)
                     // 提供给 Masonry 固定高度，避免 sizeThatFits 高度失控
                     .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
                     .frame(height: heightForCard(id), alignment: .top) // 当内容超出时优先显示顶部
@@ -1282,8 +1307,8 @@ private func tagColor(for tag: String) -> Color {
             if let goal = goals.first(where: { $0.id == goalID }) {
                 // 直接显示目标卡片，添加取消Ping按钮
                 ZStack(alignment: .topTrailing) {
-                    // 使用完整的GoalCard而非SimplifiedGoalCard
-                    GoalCard(goal: goal)
+                    // 使用简洁的HomeGoalCard
+                    HomeGoalCard(goal: goal)
                         .overlay(
                             // 右上角添加取消Ping标记
                             VStack {
@@ -1539,83 +1564,73 @@ private func tagColor(for tag: String) -> Color {
                         .font(.system(size: 12))
                         .foregroundColor(Color(UIColor.systemGray))
                 }
-                
-                // 成就图标 - 横向滚动
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(achievements.prefix(5)) { achievement in
-                            VStack(alignment: .leading, spacing: 10) {
-                                // 成就名称和图标
-                                HStack {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color(UIColor.systemYellow).opacity(0.1))
-                                            .frame(width: 32, height: 32)
-                                        Text(achievement.emoji)
-                                            .font(.system(size: 16))
-                                            .foregroundColor(Color(UIColor.systemYellow))
-                                    }
-                                    Text(achievement.name)
-                                        .font(.system(size: 15, weight: .medium))
-                                        .lineLimit(1)
-                                        .foregroundColor(Color(UIColor.label))
+                // 仅展示最近的 1-4 个成就（随卡片尺寸变化）
+                let idForSize = HomeCardID.type(.achievement)
+                let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
+                let displayCount: Int = {
+                    switch size {
+                    case .small: return 1   // 1×1 显示 1 条
+                    case .medium: return 2  // 1×2 显示 2 条
+                    case .large: return 4   // 2×2 显示 4 条
+                    }
+                }()
+                let completedSorted = achievements.filter { $0.isCompleted && $0.completionDate != nil }
+                let baseList = completedSorted.isEmpty ? achievements : completedSorted
+                let recentAchievements = Array(baseList.prefix(displayCount))
+
+                if recentAchievements.isEmpty {
+                    Text("暂无成就")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .padding(.vertical, 8)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(recentAchievements) { achievement in
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(UIColor.systemYellow).opacity(0.12))
+                                        .frame(width: 24, height: 24)
+                                    Text(achievement.emoji)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Color(UIColor.systemYellow))
                                 }
-                                // 完成状态
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack {
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(achievement.name.isEmpty ? "未命名成就" : achievement.name)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Color(UIColor.label))
+                                        .lineLimit(1)
+
+                                    HStack(spacing: 6) {
                                         if achievement.isCompleted {
                                             Text("已完成")
-                                                .font(.system(size: 12, weight: .semibold))
+                                                .font(.caption2)
                                                 .foregroundColor(Color(UIColor.systemGreen))
                                         } else {
-                                            Text("未完成")
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .foregroundColor(Color(UIColor.systemYellow))
+                                            Text("进行中")
+                                                .font(.caption2)
+                                                .foregroundColor(Color(UIColor.systemOrange))
                                         }
-                                        Spacer()
-                                        // 成就类型标签
                                         Text(achievement.category)
-                                            .font(.system(size: 10))
-                                            .foregroundColor(Color(UIColor.systemGray))
+                                            .font(.caption2)
+                                            .foregroundColor(Color(UIColor.secondaryLabel))
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
                                             .background(Color(UIColor.systemGray6))
                                             .cornerRadius(4)
                                     }
                                 }
+                                Spacer()
                             }
-                            .frame(width: 150, height: 80)
-                            .padding(16)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 8)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(12)
-                            .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
-                        .contentShape(Rectangle())
-                    }
-                        
-                        // 查看更多按钮
-                        if achievements.count > 3 {
-                            Button(action: {}) {
-                                VStack(spacing: 10) {
-                                    Image(systemName: "ellipsis.circle.fill")
-                                        .font(.system(size: 30))
-                                        .foregroundColor(Color(UIColor.systemYellow))
-                                    
-                                    Text("查看更多")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(Color(UIColor.systemYellow))
-                                }
-                                .frame(width: 100, height: 80)
-                                .padding(16)
-                                .background(Color(UIColor.systemYellow).opacity(0.05))
-                                .cornerRadius(12)
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                            .cornerRadius(10)
+                            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
                         }
                     }
-                    .padding(.horizontal, 2)
-                    .padding(.vertical, 4)
                 }
-                .frame(height: 56) // 增加高度以适应卡片
 
             }
             .padding(16)
@@ -1707,37 +1722,48 @@ private func tagColor(for tag: String) -> Color {
                             .foregroundColor(Color(UIColor.systemGray))
                     }
                 }
-                
-                // 最近焦虑目标 - 横向滚动
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(anxietyGoals.prefix(10)) { goal in
-                            VStack(spacing: 6) {
+                // 仅展示最近的 1-4 个焦虑（随卡片尺寸变化）
+                let idForSize = HomeCardID.type(.improvement)
+                let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
+                let displayCount: Int = {
+                    switch size {
+                    case .small: return 1   // 1×1 显示 1 个
+                    case .medium: return 2  // 1×2 显示 2 个
+                    case .large: return 4   // 2×2 显示 4 个
+                    }
+                }()
+                let recentAnxieties = Array(anxietyGoals.prefix(displayCount))
+
+                if recentAnxieties.isEmpty {
+                    Text("暂无焦虑")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .padding(.vertical, 8)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(recentAnxieties) { goal in
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(tagColor(for: BuiltInTags.anxiety).opacity(0.15))
+                                    .frame(width: 18, height: 18)
+                                    .overlay(
+                                        Text("⚠️")
+                                            .font(.system(size: 11))
+                                    )
                                 Text(goal.name)
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
-                                    .frame(width: 90)
-                                
-                                Text(BuiltInTags.anxiety)
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundColor(tagColor(for: BuiltInTags.anxiety))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(tagColor(for: BuiltInTags.anxiety).opacity(0.12))
-                                    .cornerRadius(6)
+                                Spacer()
                             }
-                            .frame(width: 110)
-                            .padding(8)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 8)
                             .background(Color(UIColor.systemBackground))
                             .cornerRadius(10)
                             .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
                         }
                     }
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 8)
                 }
-                .frame(height: 56)
             }
             .padding(16)
             .frame(maxHeight: .infinity, alignment: .top)
@@ -1746,6 +1772,59 @@ private func tagColor(for tag: String) -> Color {
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+
+    // 最近焦虑统计卡片
+    private var anxietyStatsCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                statTile(title: "总数", value: anxietyGoals.count, color: Color(UIColor.systemOrange))
+                statTile(title: "本周新增", value: recentAnxietyWeeklyCount, color: Color(UIColor.systemBlue))
+                statTile(title: "本月新增", value: recentAnxietyMonthlyCount, color: Color(UIColor.systemGreen))
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Text("近7天创建趋势")
+                    .font(.footnote)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                miniBarChart(values: last7DaysAnxietyCounts, barColor: Color(UIColor.systemOrange))
+            }
+        }
+        .padding(10)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
+    }
+
+    // 统计瓦片（局部复用）
+    private func statTile(title: String, value: Int, color: Color) -> some View {
+        VStack(spacing: 4) {
+            Text("\(value)")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(color)
+            Text(title)
+                .font(.caption)
+                .foregroundColor(Color(UIColor.secondaryLabel))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(color.opacity(0.08))
+        .cornerRadius(10)
+    }
+
+    // 迷你柱状图（局部复用）
+    private func miniBarChart(values: [Int], barColor: Color) -> some View {
+        let maxV = max(values.max() ?? 1, 1)
+        return HStack(alignment: .bottom, spacing: 6) {
+            ForEach(values.indices, id: \.self) { i in
+                let v = values[i]
+                let h = CGFloat(v) / CGFloat(maxV)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(barColor)
+                    .frame(width: 12, height: max(8, 36 * h))
+                    .opacity(v == 0 ? 0.35 : 1.0)
+            }
+        }
+        .frame(height: 40)
     }
     
 
@@ -1771,6 +1850,147 @@ private func tagColor(for tag: String) -> Color {
         return index < moodColors.count ? moodColors[index] : Color(UIColor.systemGray)
     }
 
+}
+
+// 主页专用的简洁目标卡片视图，仅显示名称、描述、进度、背景图及“目标”标签
+struct HomeGoalCard: View {
+    let goal: Goal
+    var cardWidth: CGFloat?
+    var isFixedHeightContainer: Bool = false
+
+    init(goal: Goal, cardWidth: CGFloat? = nil, isFixedHeightContainer: Bool = false) {
+        self.goal = goal
+        self.cardWidth = cardWidth
+        self.isFixedHeightContainer = isFixedHeightContainer
+    }
+
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+
+    private var progressColor: Color {
+        if goal.progress > 0.7 { return Color(UIColor.systemGreen) }
+        else if goal.progress > 0.3 { return Color(UIColor.systemOrange) }
+        else { return Color(UIColor.systemRed) }
+    }
+
+    @ViewBuilder
+    private var backgroundView: some View {
+        if let imageName = goal.backgroundImage {
+            if let uiImage = UIImage(named: imageName) {
+                let img = Image(uiImage: uiImage).resizable().scaledToFill()
+                if isFixedHeightContainer {
+                    img
+                        .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .opacity(0.3)
+                } else {
+                    img
+                        .frame(maxWidth: cardWidth, alignment: .topLeading)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .opacity(0.3)
+                }
+            } else {
+                let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
+                if let uiImage = UIImage(contentsOfFile: fileURL.path) {
+                    let img = Image(uiImage: uiImage).resizable().scaledToFill()
+                    if isFixedHeightContainer {
+                        img
+                            .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .opacity(0.3)
+                            .blur(radius: 1)
+                    } else {
+                        img
+                            .frame(maxWidth: cardWidth, alignment: .topLeading)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .opacity(0.3)
+                            .blur(radius: 1)
+                    }
+                } else {
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+        } else {
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
+    var body: some View {
+        NavigationLink(destination: GoalDetailView(goal: goal)) {
+            ZStack(alignment: .topLeading) {
+                backgroundView
+
+                Rectangle()
+                    .fill(Color(UIColor.systemBackground).opacity(0.85))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Spacer()
+                        Text("目标")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(UIColor.systemBlue))
+                            .cornerRadius(6)
+                    }
+
+                    Spacer()
+
+                    Text(goal.name)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Color(UIColor.label))
+                        .lineLimit(2)
+
+                    if !goal.goalDescription.isEmpty {
+                        Text(goal.goalDescription)
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                            .lineLimit(2)
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("进度")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                            Spacer()
+                            Text("\(Int(goal.progress * 100))%")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(progressColor)
+                        }
+
+                        ProgressView(value: goal.progress)
+                            .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
+                            .frame(height: 6)
+                    }
+                }
+                .padding(16)
+            }
+            .frame(width: cardWidth, height: isFixedHeightContainer ? nil : 120)
+            .clipped() // 保持卡片固定尺寸，隐藏超出内容
+            .background(Color(UIColor.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: Color(UIColor.label).opacity(0.08), radius: 6, x: 0, y: 3)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
 }
 
 struct HomeView_Previews: PreviewProvider {

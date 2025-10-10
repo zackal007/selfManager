@@ -35,14 +35,41 @@ struct ImprovementDetailView: View {
     private var lowPriorityCount: Int {
         improvements.filter { $0.priority == .low }.count
     }
+    private var highPriorityRatio: Double {
+        let total = improvements.count
+        return total > 0 ? Double(highPriorityCount) / Double(total) : 0.0
+    }
+    
+    // 压力指数（基于优先级分布的权重）
+    private var stressIndex: Double {
+        let total = improvements.count
+        guard total > 0 else { return 0 }
+        let score = Double(highPriorityCount) * 1.0 + Double(mediumPriorityCount) * 0.6 + Double(lowPriorityCount) * 0.3
+        return min(1.0, score / Double(total))
+    }
+    
+    // 优先级分布（比例）
+    private var priorityDistribution: [Double] {
+        let total = max(1, improvements.count)
+        return [
+            Double(highPriorityCount) / Double(total),
+            Double(mediumPriorityCount) / Double(total),
+            Double(lowPriorityCount) / Double(total)
+        ]
+    }
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: 20) {
-                        // 待改进项统计卡片
-                        improvementStatsCard
+                        // 焦虑统计（标题 + 概览卡）
+                        Text("焦虑统计")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                        improvementOverviewCard
                             .padding(.horizontal)
                             .padding(.top, 8)
                         
@@ -80,72 +107,51 @@ struct ImprovementDetailView: View {
     // 待改进项统计卡片
     private var improvementStatsCard: some View {
         VStack(spacing: 16) {
-            // 待改进项总数
-            VStack(spacing: 8) {
-                Text("待改进项总数")
-                    .font(.headline)
-                    .foregroundColor(Color(UIColor.secondaryLabel))
+            // 顶部压力指标与关键计数
+            HStack(spacing: 12) {
+                pressureGaugeRing
                 
-                Text("\(improvements.count)")
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(UIColor.systemOrange))
-            }
-            
-            // 优先级分布
-            HStack(spacing: 0) {
-                // 高优先级
                 VStack(spacing: 6) {
-                    Text("高优先级")
+                    Text("总待办")
                         .font(.caption)
                         .foregroundColor(Color(UIColor.secondaryLabel))
-                    
-                    Text("\(highPriorityCount)")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(UIColor.systemRed))
-                }
-                .frame(maxWidth: .infinity)
-                
-                // 分隔线
-                Rectangle()
-                    .fill(Color(UIColor.systemGray5))
-                    .frame(width: 1, height: 36)
-                
-                // 中优先级
-                VStack(spacing: 6) {
-                    Text("中优先级")
-                        .font(.caption)
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                    
-                    Text("\(mediumPriorityCount)")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                    Text("\(improvements.count)")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(Color(UIColor.systemOrange))
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Color(UIColor.systemOrange).opacity(0.08))
+                .cornerRadius(12)
                 
-                // 分隔线
-                Rectangle()
-                    .fill(Color(UIColor.systemGray5))
-                    .frame(width: 1, height: 36)
-                
-                // 低优先级
                 VStack(spacing: 6) {
-                    Text("低优先级")
+                    Text("高优先")
                         .font(.caption)
                         .foregroundColor(Color(UIColor.secondaryLabel))
-                    
-                    Text("\(lowPriorityCount)")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(UIColor.systemBlue))
+                    Text("\(highPriorityCount)")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.systemRed))
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Color(UIColor.systemRed).opacity(0.08))
+                .cornerRadius(12)
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 4)
-            .background(Color(UIColor.systemBackground))
-            .cornerRadius(12)
+            
+            // 优先级分布（堆叠条图）
+            VStack(alignment: .leading, spacing: 8) {
+                Text("优先级分布")
+                    .font(.footnote)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                stackedDistributionBar(values: priorityDistribution)
+                HStack(spacing: 12) {
+                    legendDot("高", color: .red)
+                    legendDot("中", color: .orange)
+                    legendDot("低", color: .blue)
+                }
+                .font(.caption2)
+                .foregroundColor(Color(UIColor.secondaryLabel))
+            }
         }
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -204,7 +210,24 @@ struct ImprovementDetailView: View {
                 selectedPriority == nil || improvement.priority == selectedPriority
             }
         
-        return VStack(spacing: 0) {
+        return VStack(alignment: .leading, spacing: 10) {
+            // 列表标题
+            HStack {
+                Text("焦虑列表")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                Spacer()
+                Button(action: { showingAddSheet = true }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(Color(UIColor.systemOrange))
+                }
+                .opacity(isEditing ? 1 : 0)
+                .animation(.easeInOut, value: isEditing)
+            }
+            .padding(.horizontal)
+            .padding(.top, 4)
+
             ForEach(filteredImprovements.indices, id: \.self) { index in
                 improvementRow(improvement: filteredImprovements[index])
                     .background(Color(UIColor.systemBackground))
@@ -238,47 +261,65 @@ struct ImprovementDetailView: View {
     
     // 待改进项行视图
     private func improvementRow(improvement: Improvement) -> some View {
-        HStack(spacing: 12) {
-            // Emoji图标
-            Text(improvement.emoji)
-                .font(.title)
-                .frame(width: 40, height: 40)
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(8)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(improvement.name)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    // 优先级标签
-                    priorityLabel(improvement.priority)
-                }
+        VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                // Emoji图标
+                Text(improvement.emoji)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(Color(UIColor.systemGray6))
+                    .clipShape(Circle())
                 
-                Text(improvement.improvementDescription)
-                    .font(.subheadline)
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                    .lineLimit(2)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(improvement.name)
+                            .font(.headline)
+                        Spacer()
+                        priorityLabel(improvement.priority)
+                    }
+                    Text(improvement.improvementDescription)
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .lineLimit(2)
+                }
+                Spacer()
             }
             
-            if isEditing {
-                Menu {
-                    Button(role: .destructive, action: {
-                        modelContext.delete(improvement)
-                    }) {
-                        Label("删除", systemImage: "trash")
+            // 线性进度：根据优先级映射权重（高100%，中60%，低30%）
+            HStack {
+                let pct: Double = {
+                    switch improvement.priority {
+                    case .high: return 1.0
+                    case .medium: return 0.6
+                    case .low: return 0.3
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundColor(Color(UIColor.tertiaryLabel))
-                        .frame(width: 24, height: 24)
-                }
+                }()
+                Text({
+                    switch improvement.priority {
+                    case .high: return "高优 1.0"
+                    case .medium: return "中优 0.6"
+                    case .low: return "低优 0.3"
+                    }
+                }())
+                    .font(.caption)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                Spacer()
+                Text(String(format: "%.0f%%", pct * 100))
+                    .font(.caption)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
             }
+            linearProgress(pct: {
+                switch improvement.priority {
+                case .high: return 1.0
+                case .medium: return 0.6
+                case .low: return 0.3
+                }
+            }(), color: priorityColor(improvement.priority))
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
+        .padding(12)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
     // 优先级标签
@@ -301,6 +342,118 @@ struct ImprovementDetailView: View {
             return Color.orange
         case .low:
             return Color.blue
+        }
+    }
+    
+    // 压力指数环形仪表
+    private var pressureGaugeRing: some View {
+        let pct = stressIndex
+        return ZStack {
+            Circle()
+                .stroke(Color(UIColor.systemGray5), lineWidth: 10)
+            Circle()
+                .trim(from: 0, to: CGFloat(pct))
+                .stroke(Color(UIColor.systemRed), style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 4) {
+                Text(String(format: "%.0f%%", pct * 100))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                Text("压力指数")
+                    .font(.caption)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+            }
+        }
+        .frame(width: 90, height: 90)
+        .padding(10)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+    }
+    
+    // 优先级分布堆叠条图
+private func stackedDistributionBar(values: [Double]) -> some View {
+    let totalWidth: CGFloat = 220
+    let colors: [Color] = [.red, .orange, .blue]
+    return ZStack(alignment: .leading) {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(Color(UIColor.systemGray5))
+            .frame(width: totalWidth, height: 12)
+        HStack(spacing: 0) {
+            ForEach(values.indices, id: \.self) { i in
+                RoundedRectangle(cornerRadius: i == 0 ? 6 : 0)
+                    .fill(colors[i])
+                    .frame(width: max(0, totalWidth * CGFloat(values[i])), height: 12)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+}
+
+// 概览卡：左侧压力指数与线性进度，右侧高优待办数量与占比
+private var improvementOverviewCard: some View {
+    VStack(spacing: 12) {
+        HStack(spacing: 16) {
+            // 左侧：压力指数（0~1）
+            VStack(alignment: .leading, spacing: 8) {
+                Text("压力指数")
+                    .font(.subheadline)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(String(format: "%.0f", stressIndex * 100))
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                    Text("/100")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                }
+                linearProgress(pct: stressIndex, color: Color(UIColor.systemBlue))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            // 右侧：高优待办数量与占比
+            VStack(alignment: .leading, spacing: 8) {
+                Text("高优待办")
+                    .font(.subheadline)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                Text("\(highPriorityCount)")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up.right")
+                        .foregroundColor(Color(UIColor.systemGreen))
+                    Text(String(format: "%.1f%%", highPriorityRatio * 100))
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.systemGreen))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    .padding(16)
+    .background(Color(UIColor.secondarySystemGroupedBackground))
+    .cornerRadius(16)
+    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+}
+
+private func linearProgress(pct: Double, color: Color) -> some View {
+    GeometryReader { geo in
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color(UIColor.systemGray5))
+                .frame(height: 8)
+            RoundedRectangle(cornerRadius: 4)
+                .fill(color)
+                .frame(width: max(0, geo.size.width * CGFloat(pct)), height: 8)
+        }
+    }
+    .frame(height: 8)
+}
+    
+    private func legendDot(_ text: String, color: Color) -> some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(text)
         }
     }
     
