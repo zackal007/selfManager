@@ -1125,6 +1125,9 @@ struct GoalCard: View {
     var cardWidth: CGFloat?
     var isFixedHeightContainer: Bool = false
     @State private var nameAndDescHeight: CGFloat = 0
+    private let minCardHeight: CGFloat = 60
+    private let horizontalPadding: CGFloat = 13 // 卡片内边距与进度/标签水平内边距
+    private let elementSpacing: CGFloat = 10     // 元素间距建议值
     
     // 初始化方法，提供默认值
     init(goal: Goal, cardWidth: CGFloat? = nil, isFixedHeightContainer: Bool = false) {
@@ -1157,6 +1160,72 @@ struct GoalCard: View {
     private func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
+
+    // 文本高度计算（考虑换行与最大行数），用于自适应卡片高度
+    private func textHeight(_ text: String, font: UIFont, width: CGFloat, maxLines: Int) -> CGFloat {
+        guard !text.isEmpty, width > 0 else { return 0 }
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byWordWrapping
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .paragraphStyle: paragraph
+        ]
+        let bounding = (text as NSString).boundingRect(
+            with: CGSize(width: width, height: CGFloat.greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attributes,
+            context: nil
+        )
+        // 每行近似高度
+        let lineHeight = font.lineHeight
+        // 限制最大行数
+        let maxHeight = lineHeight * CGFloat(max(1, maxLines))
+        return min(ceil(bounding.height), ceil(maxHeight))
+    }
+
+    // 根据可见元素动态计算卡片高度
+    private func calculatedCardHeight(for width: CGFloat) -> CGFloat {
+        let contentWidth = max(0, width - horizontalPadding * 1.6) // 估算可用文本宽度，考虑圆点与内边距
+
+        // 顶部：名称（2行）+ 可选描述（3行）
+        let nameFont = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        let descFont = UIFont.systemFont(ofSize: 13, weight: .regular)
+        let nameHeight = textHeight(goal.name, font: nameFont, width: contentWidth, maxLines: 2)
+        let descHeight = textHeight(goal.goalDescription, font: descFont, width: contentWidth, maxLines: 3)
+        let topVStackSpacing: CGFloat = 4
+        let topAreaHeight = nameHeight + (descHeight > 0 ? (topVStackSpacing + descHeight) : 0)
+
+        var total: CGFloat = 0
+        let topPadding: CGFloat = 16
+        total += topPadding
+        // 顶部区域至少占据名称高度
+        total += max(24, topAreaHeight)
+        // 与进度条的间距
+        total += elementSpacing - 2 // 当前布局中顶部到进度条为6
+        // 进度条高度与自身上边距
+        total += 6 /* bar height */ + 6 /* top padding */
+
+        // 标签区域（存在则计入）
+        if !goal.tags.isEmpty {
+            total += elementSpacing
+            total += 24 /* 标签行固定高度 */
+        }
+
+        // 子任务区域（存在则计入）
+        if !goal.tasks.isEmpty {
+            total += elementSpacing
+            // 列表高度（最多2条）；1条为24，2条为52
+            total += goal.tasks.count == 1 ? 24 : 52
+            // 内部上下间距及外部额外底部留白
+            total += 6 /* top padding */ + 20 /* bottom padding */ + 20 /* outer bottom padding */
+        }
+
+        // 底部额外留白，避免内容贴边
+        total += 16
+
+        // 安全最小高度，避免0或负值
+        return max(minCardHeight, ceil(total))
+    }
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
             ZStack(alignment: .topLeading) {
@@ -1165,80 +1234,54 @@ struct GoalCard: View {
                     // 首先尝试从应用资源中加载预设图片
                     if let uiImage = UIImage(named: imageName) {
                         // 预设背景图片 - 占满整个卡片
-                        if isFixedHeightContainer {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
-                                .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
-                                .opacity(0.7)
-                        } else {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: cardWidth, alignment: .topLeading)
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
-                                .opacity(0.7)
-                        }
+                        let width = cardWidth ?? 160
+                        let height = calculatedCardHeight(for: width)
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: width, height: height, alignment: .topLeading)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .opacity(0.7)
                     } else {
                         // 尝试从文档目录加载用户自定义图片
                         let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
                         if let uiImage = UIImage(contentsOfFile: fileURL.path) {
                             // 用户自定义背景图片 - 占满整个卡片
-                            if isFixedHeightContainer {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
-                                    .clipped()
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                                    .opacity(0.7)
-                                    .blur(radius: 1.5)
-                            } else {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(maxWidth: cardWidth, alignment: .topLeading)
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                                    .opacity(0.7)
-                                    .blur(radius: 1.5)
-                            }
+                            let width = cardWidth ?? 160
+                            let height = calculatedCardHeight(for: width)
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: width, height: height, alignment: .topLeading)
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .opacity(0.7)
+                                .blur(radius: 1.5)
                         }
                     }
                 } else {
                     // 默认渐变背景 - 占满整个卡片
-                    if isFixedHeightContainer {
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    } else {
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        .frame(maxWidth: cardWidth, alignment: .topLeading)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    }
+                    let width = cardWidth ?? 160
+                    let height = calculatedCardHeight(for: width)
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .frame(width: width, height: height, alignment: .topLeading)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 
                 // 添加半透明覆盖层，使内容更易读
-                if isFixedHeightContainer {
+                do {
+                    let width = cardWidth ?? 160
+                    let height = calculatedCardHeight(for: width)
                     Rectangle()
                         .fill(Color(UIColor.systemBackground).opacity(0.5))
-                        .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
+                        .frame(width: width, height: height, alignment: .topLeading)
                         .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                } else {
-                    Rectangle()
-                        .fill(Color(UIColor.systemBackground).opacity(0.5))
-                        .frame(maxWidth: cardWidth, alignment: .topLeading)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 
@@ -1248,8 +1291,8 @@ struct GoalCard: View {
                     .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
                 
                 // 内容容器 - 所有元素放在同一图层，向左上角对齐
-                VStack(alignment: .leading, spacing: 8) {
-                    Spacer().frame(height: 18) // 优雅的顶部内边距
+                VStack(alignment: .leading, spacing: elementSpacing) {
+                    Spacer().frame(height: 0)
                     
                     // 顶部区域：优先级指示器和目标信息
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -1293,7 +1336,7 @@ struct GoalCard: View {
                     }
                     .frame(height: 6)
                     .padding(.top, 6)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, horizontalPadding)
                     
                     // 标签区域
                     if !goal.tags.isEmpty {
@@ -1319,27 +1362,13 @@ struct GoalCard: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, horizontalPadding)
                         .frame(height: 24)
                     }
                     
                     // 子任务区域
                     if !goal.tasks.isEmpty {
                         VStack(alignment: .leading, spacing: 6) {
-                            // 子任务标题
-                            HStack {
-                                Text("子任务")
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Color(UIColor.secondaryLabel))
-                                
-                                Spacer()
-                                
-                                // 完成数量
-                                Text("\(goal.tasks.filter { $0.isCompleted }.count)/\(goal.tasks.count)")
-                                    .font(.system(size: 11, design: .rounded))
-                                    .foregroundColor(Color(UIColor.tertiaryLabel))
-                            }
-                            
                             // 子任务列表 - 最多显示2个，高度固定
                             VStack(spacing: 6) {
                                 ForEach(goal.tasks.prefix(2)) { task in
@@ -1381,34 +1410,25 @@ struct GoalCard: View {
                             }
                             .frame(height: goal.tasks.count == 1 ? 24 : 52)
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 16)
                         .padding(.top, 6)
                         .padding(.bottom, 20)
                         .background(Color(UIColor.secondarySystemBackground).opacity(0.7))
                         .cornerRadius(12)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 8)
                         .padding(.bottom, 20)
                     }
                     // 添加底部空白，推动内容向上
                     Spacer()
                 }
+                .padding(16) // 统一卡片内容内边距为16px
                 .frame(maxWidth: cardWidth, alignment: .topLeading) // 确保内容容器占满整个卡片宽度并向左上角对齐
             }
-            // 让内部容器的最大高度继承父容器的提议高度，从而在主页1×1固定高度下裁剪
-            .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
+            // 应用动态高度以确保背景图在超出时按左上角裁剪
+            .frame(width: cardWidth, height: calculatedCardHeight(for: cardWidth ?? 160), alignment: .topLeading)
             .clipped() // 保证背景与内容不越界，避免与其他卡片重叠
             .clipShape(RoundedRectangle(cornerRadius: 20)) // 统一圆角外观，确保与其他卡片一致
-            // 右上角类型角标：目标
-            .overlay(alignment: .topTrailing) {
-                Text("目标")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(UIColor.systemBlue).opacity(0.85))
-                    .clipShape(Capsule())
-                    .padding(8)
-            }
+            // 移除右上角“目标”标签
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
