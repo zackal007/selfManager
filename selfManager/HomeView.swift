@@ -1852,7 +1852,7 @@ private func tagColor(for tag: String) -> Color {
 
 }
 
-// 主页专用的简洁目标卡片视图，仅显示名称、描述、进度、背景图及“目标”标签
+// 主页专用的简洁目标卡片视图：严格 1×1 / 1×2 / 2×2 尺寸，响应式内容与精确裁剪背景
 struct HomeGoalCard: View {
     let goal: Goal
     var cardWidth: CGFloat?
@@ -1874,49 +1874,69 @@ struct HomeGoalCard: View {
         else { return Color(UIColor.systemRed) }
     }
 
+    // Masonry 网格的高度规范（与 HomeView 中保持一致）
+    private let smallRowHeight: CGFloat = 160
+    private let gridSpacing: CGFloat = 16
+    private var largeRowHeight: CGFloat { smallRowHeight * 2 + gridSpacing } // 2 行高度 + 一次间距
+
+    private enum SizeClass { case small, medium, large }
+
+    private func sizeClass(for size: CGSize) -> SizeClass {
+        if size.height >= largeRowHeight - 0.5 { return .large }
+        // 同为一行高度：通过宽度区分 1×1 与 1×2
+        if size.width > 480 { return .medium } else { return .small }
+    }
+
+    private struct CardStyle {
+        let nameSize: CGFloat
+        let descSize: CGFloat
+        let padding: CGFloat
+        let spacing: CGFloat
+        let progressHeight: CGFloat
+        let nameLines: Int
+        let descLines: Int
+        let overlayOpacity: Double
+    }
+
+    private func style(for size: CGSize) -> CardStyle {
+        switch sizeClass(for: size) {
+        case .small:
+            return CardStyle(
+                nameSize: 16, descSize: 12, padding: 12, spacing: 6, progressHeight: 4,
+                nameLines: 2, descLines: 1, overlayOpacity: 0.88
+            )
+        case .medium:
+            return CardStyle(
+                nameSize: 18, descSize: 13, padding: 16, spacing: 8, progressHeight: 5,
+                nameLines: 2, descLines: 2, overlayOpacity: 0.86
+            )
+        case .large:
+            return CardStyle(
+                nameSize: 20, descSize: 14, padding: 16, spacing: 10, progressHeight: 6,
+                nameLines: 3, descLines: 3, overlayOpacity: 0.85
+            )
+        }
+    }
+
     @ViewBuilder
-    private var backgroundView: some View {
+    private func backgroundView(for size: CGSize) -> some View {
         if let imageName = goal.backgroundImage {
-            if let uiImage = UIImage(named: imageName) {
-                let img = Image(uiImage: uiImage).resizable().scaledToFill()
-                if isFixedHeightContainer {
-                    img
-                        .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .opacity(0.3)
-                } else {
-                    img
-                        .frame(maxWidth: cardWidth, alignment: .topLeading)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .opacity(0.3)
-                }
+            let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
+            let uiImage = UIImage(named: imageName) ?? UIImage(contentsOfFile: fileURL.path)
+            if let ui = uiImage {
+                Image(uiImage: ui)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: size.width, height: size.height, alignment: .topLeading)
+                    .clipped() // 精确裁剪并隐藏超出部分
             } else {
-                let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
-                if let uiImage = UIImage(contentsOfFile: fileURL.path) {
-                    let img = Image(uiImage: uiImage).resizable().scaledToFill()
-                    if isFixedHeightContainer {
-                        img
-                            .frame(maxWidth: cardWidth, maxHeight: .infinity, alignment: .topLeading)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .opacity(0.3)
-                            .blur(radius: 1)
-                    } else {
-                        img
-                            .frame(maxWidth: cardWidth, alignment: .topLeading)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .opacity(0.3)
-                            .blur(radius: 1)
-                    }
-                } else {
-                    LinearGradient(
-                        gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .frame(width: size.width, height: size.height, alignment: .topLeading)
+                .clipped()
             }
         } else {
             LinearGradient(
@@ -1924,67 +1944,76 @@ struct HomeGoalCard: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .frame(width: size.width, height: size.height, alignment: .topLeading)
+            .clipped()
         }
     }
 
     var body: some View {
         NavigationLink(destination: GoalDetailView(goal: goal)) {
-            ZStack(alignment: .topLeading) {
-                backgroundView
+            GeometryReader { geo in
+                let size = geo.size
+                let st = style(for: size)
+                ZStack(alignment: .topLeading) {
+                    backgroundView(for: size)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                Rectangle()
-                    .fill(Color(UIColor.systemBackground).opacity(0.85))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    Rectangle()
+                        .fill(Color(UIColor.systemBackground).opacity(st.overlayOpacity))
+                        .frame(width: size.width, height: size.height)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Spacer()
-                        Text("目标")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(UIColor.systemBlue))
-                            .cornerRadius(6)
-                    }
-
-                    Spacer()
-
-                    Text(goal.name)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color(UIColor.label))
-                        .lineLimit(2)
-
-                    if !goal.goalDescription.isEmpty {
-                        Text(goal.goalDescription)
-                            .font(.system(size: 13))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                            .lineLimit(2)
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: st.spacing) {
                         HStack {
-                            Text("进度")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
                             Spacer()
-                            Text("\(Int(goal.progress * 100))%")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(progressColor)
+                            Text("目标")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(UIColor.systemBlue))
+                                .cornerRadius(6)
                         }
 
-                        ProgressView(value: goal.progress)
-                            .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
-                            .frame(height: 6)
+                        Spacer(minLength: st.spacing)
+
+                        Text(goal.name)
+                            .font(.system(size: st.nameSize, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                            .lineLimit(st.nameLines)
+                            .minimumScaleFactor(0.92)
+
+                        if !goal.goalDescription.isEmpty {
+                            Text(goal.goalDescription)
+                                .font(.system(size: st.descSize))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .lineLimit(st.descLines)
+                                .minimumScaleFactor(0.92)
+                        }
+
+                        Spacer(minLength: st.spacing)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("进度")
+                                    .font(.system(size: max(11, st.descSize - 1), weight: .medium))
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                                Spacer()
+                                Text("\(Int(goal.progress * 100))%")
+                                    .font(.system(size: max(11, st.descSize - 1), weight: .semibold))
+                                    .foregroundColor(progressColor)
+                            }
+
+                            ProgressView(value: goal.progress)
+                                .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
+                                .frame(height: st.progressHeight)
+                        }
                     }
+                    .padding(st.padding)
                 }
-                .padding(16)
+                .frame(width: size.width, height: size.height, alignment: .topLeading)
+                .clipped() // 严格隐藏超出边界的内容
             }
-            .frame(width: cardWidth, height: isFixedHeightContainer ? nil : 120)
-            .clipped() // 保持卡片固定尺寸，隐藏超出内容
             .background(Color(UIColor.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: Color(UIColor.label).opacity(0.08), radius: 6, x: 0, y: 3)
