@@ -471,7 +471,7 @@ struct GoalView: View {
         ZStack {
             // 主视图
             // 页面导航容器：Goal 页主 NavigationStack（目标列表的路由栈）
-            NavigationStack(path: navigationManager.getNavigationPath(for: 1)) {
+            NavigationStack(path: $navigationManager.goalNavigationPath) {
                 ZStack(alignment: .top) {
                     // 悬浮的顶部标题栏（覆盖层），使用系统材质实现动态模糊
                     VStack(spacing: 0) {

@@ -153,7 +153,7 @@ struct ContactView: View {
     
     var body: some View {
         // 页面导航容器：管理人脉页面的导航栈
-        NavigationStack(path: navigationManager.getNavigationPath(for: 3)) {
+        NavigationStack(path: $navigationManager.contactNavigationPath) {
             // 页面框架容器：承载顶栏、搜索栏与列表内容
             ZStack {
                 // 主内容

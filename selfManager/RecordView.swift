@@ -564,7 +564,7 @@ struct RecordView: View {
     
     var body: some View {
         // 页面导航容器（记录页的 NavigationStack）
-        NavigationStack(path: navigationManager.getNavigationPath(for: 2)) {
+        NavigationStack(path: $navigationManager.recordNavigationPath) {
             // 顶层布局容器（承载顶部栏、日期选择器与内容区域）
             VStack(spacing: 0) {
                 // 顶栏已迁移到 safeAreaInset(edge: .top)
