@@ -6,11 +6,20 @@ struct UserEditView: View {
     @Bindable var user: User
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Record.createTime, order: .reverse) private var records: [Record]
     @State private var showAddTagSheet = false
     @State private var showAddTagField = false
     @State private var newTag = ""
     @State private var avatarItem: PhotosPickerItem?
     @State private var avatarImage: Image?
+    
+    private var latestDailyMoods: [String] {
+        let moods = records
+            .filter { $0.recordType == .daily && ($0.mood?.isEmpty == false) }
+            .prefix(3)
+            .compactMap { $0.mood }
+        return Array(moods)
+    }
     
     var body: some View {
         Form {
@@ -86,6 +95,22 @@ struct UserEditView: View {
                     }
                 }
 
+                if !latestDailyMoods.isEmpty {
+                    Section(header: Text("最近心情")) {
+                        HStack(spacing: 8) {
+                            ForEach(latestDailyMoods.indices, id: \.self) { i in
+                                Text(latestDailyMoods[i])
+                                    .font(.system(size: 24))
+                                    .frame(width: 44, height: 44)
+                                    .background(Color(UIColor.systemBackground))
+                                    .cornerRadius(12)
+                                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                            }
+                        }
+                        .padding(.vertical, 6)
+                    }
+                }
+                
                 Section(header: Text("自定义信息"), footer: Text("可添加任意名称-信息键值对。主页将于 2×2 信息卡片中部分显示，超出内容自动隐藏。")) {
                     VStack(spacing: 8) {
                         ForEach(user.customInfos, id: \.id) { info in
@@ -147,7 +172,15 @@ struct UserEditView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("返回") { dismiss() }
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("返回")
+                    }
+                }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("保存") {

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import selfManager
 
 // 侧边栏菜单项数据模型
 struct SidebarMenuItem {
@@ -164,6 +165,13 @@ struct SidebarView: View {
                 VStack(spacing: 0) {
                     // 顶部用户信息区域
                     HStack(spacing: 12) {
+                        // 用户信息
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(users.first?.name ?? "尚未登录")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color(UIColor.label))
+                        }
+                        
                         // 用户头像
                         if let user = users.first, !user.avatar.isEmpty, let uiImage = ImageUtility.loadImageFromAppDirectory(fileName: user.avatar) {
                             Image(uiImage: uiImage)
@@ -204,25 +212,6 @@ struct SidebarView: View {
                                 .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
                         }
                         
-                        // 用户信息
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(users.first?.name ?? "尚未登录")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color(UIColor.label))
-                            
-                            HStack(spacing: 4) {
-                                Text("PRO")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(
-                                        Capsule()
-                                            .fill(Color(UIColor.systemBlue))
-                                    )
-                            }
-                        }
-                        
                         Spacer()
                         
                         // 设置按钮
@@ -247,6 +236,22 @@ struct SidebarView: View {
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                         }
                         .buttonStyle(PlainButtonStyle())
+                    }
+                    .onTapGesture {
+                        // 将“个人信息”推入当前选中标签页的导航栈
+                        switch selectedTab {
+                        case 0:
+                            navigationManager.homeNavigationPath.append(AppRoute.userEdit)
+                        case 1:
+                            navigationManager.goalNavigationPath.append(AppRoute.userEdit)
+                        case 2:
+                            navigationManager.recordNavigationPath.append(AppRoute.userEdit)
+                        case 3:
+                            navigationManager.contactNavigationPath.append(AppRoute.userEdit)
+                        default:
+                            navigationManager.homeNavigationPath.append(AppRoute.userEdit)
+                        }
+                        closeSidebar()
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 60)

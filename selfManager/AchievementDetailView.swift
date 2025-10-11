@@ -43,7 +43,15 @@ struct AchievementDetailView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("返回") { dismiss() }
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("返回")
+                    }
+                }
             }
         }
     }

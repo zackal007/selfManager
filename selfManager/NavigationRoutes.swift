@@ -8,4 +8,5 @@ enum AppRoute: Hashable {
     case profile
     case achievements
     case anxieties
+    case userEdit
 }

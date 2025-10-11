@@ -55,6 +55,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
     @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
+    @Query(sort: \Record.createTime, order: .reverse) private var records: [Record]
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
@@ -151,6 +152,15 @@ struct HomeView: View {
     
     // 心情数据
     private let moods = ["😊", "😢", "😡", "😴", "🤔", "😎"]
+
+    // 最近三篇日记的心情（如果存在）
+    private var latestDailyMoods: [String] {
+        let moods = records
+            .filter { $0.recordType == .daily && $0.mood != nil }
+            .prefix(3)
+            .compactMap { $0.mood }
+        return Array(moods)
+    }
     
     // 成就数据
     @Query(sort: \Achievement.completionDate, order: .reverse) private var achievements: [Achievement]
@@ -349,6 +359,12 @@ struct HomeView: View {
                     } else {
                         Text("暂无用户信息")
                     }
+                case .userEdit:
+                    if let firstUser = users.first {
+                        UserEditView(user: firstUser)
+                    } else {
+                        Text("暂无用户信息")
+                    }
                 case .achievements:
                     TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)
                 case .anxieties:
@@ -421,7 +437,6 @@ private func defaultCardOrderIDs() -> [HomeCardID] {
     }
     // 追加其他静态卡片（不包含旧的 .pingedGoals 分组卡片）
     ids.append(contentsOf: [
-        .type(.mood),
         .type(.achievement),
         .type(.improvement)
     ])
@@ -492,8 +507,13 @@ private func loadCardOrderIDs() {
                 if case .type(let t) = id, t.rawValue == "moodAchievement" { return true }
                 return false
             }
+            // 移除心情卡片（删除该模块后清理历史顺序项）
+            decoded.removeAll { id in
+                if case .type(let t) = id, t == .mood { return true }
+                return false
+            }
             // 确保静态卡片存在
-            let requiredStatics: [HomeCardType] = [.profile, .asset, .mood, .achievement, .improvement]
+            let requiredStatics: [HomeCardType] = [.profile, .asset, .achievement, .improvement]
             for t in requiredStatics {
                 let tid = HomeCardID.type(t)
                 if !decoded.contains(tid) {
@@ -675,18 +695,8 @@ private func renderCard(_ type: HomeCardType) -> some View {
         // 隐藏“近期目标”卡片
         EmptyView()
     case .mood:
-        withMoveGesture(
-            moodSection
-                .frame(height: heightForCard(id))
-                .background(cardFrameReader(for: type))
-                .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-                .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-                .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
-        , for: type)
+        // 心情卡片已删除，保持占位为空视图以兼容历史枚举
+        EmptyView()
     case .achievement:
         withMoveGesture(
             achievementSection
@@ -1108,7 +1118,7 @@ private func tagColor(for tag: String) -> Color {
                 }
                 
             }
-            
+
             // 标签
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -1130,6 +1140,34 @@ private func tagColor(for tag: String) -> Color {
 
             // 自定义信息（仅在 2x2 大卡片显示部分）
             if (cardSizesByID[HomeCardID.type(.profile)] ?? defaultSizeForID(HomeCardID.type(.profile))) == .large {
+                // 最近心情（仅 2×2 大卡片显示；来自最近三篇日记，复用心情卡片样式）
+                if !latestDailyMoods.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "face.smiling")
+                                .font(.title3)
+                                .foregroundColor(Color(UIColor.systemYellow))
+                            Text("最近心情")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color(UIColor.label))
+                        }
+                        HStack(spacing: 8) {
+                            ForEach(latestDailyMoods.indices, id: \.self) { i in
+                                Text(latestDailyMoods[i])
+                                    .font(.system(size: 24))
+                                    .frame(width: 44, height: 44)
+                                    .background(Color(UIColor.systemBackground))
+                                    .cornerRadius(12)
+                                    .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 6)
+                        .frame(height: 56)
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("自定义信息")
                         .font(.system(size: 13, weight: .semibold))

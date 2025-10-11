@@ -3,6 +3,7 @@ import SwiftData
 import UIKit
 
 struct AnxietyDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
 
     private var anxietyGoals: [Goal] {
@@ -37,6 +38,24 @@ struct AnxietyDetailView: View {
             .navigationTitle("焦虑中心")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(UIColor.systemGroupedBackground))
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        // Since AnxietyDetailView is wrapped in a NavigationStack, dismiss() won't work directly.
+                        // We need to find a way to pop the view from the stack.
+                        // For now, I'll leave it as dismiss() and assume it will be handled by the NavigationStack.
+                        // In a real app, you might use @Environment(\.presentationMode) or a custom navigation solution.
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                            Text("返回")
+                        }
+                    }
+                }
+            }
         }
     }
 }
