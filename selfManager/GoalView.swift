@@ -104,6 +104,7 @@ struct GoalView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(filter: #Predicate<Goal> { $0.isDeleted == false }, 
            sort: \Goal.createTime, order: .reverse) private var allGoals: [Goal]
+    @Query private var allUsers: [User]
     
     @ObservedObject private var tagColorManager = TagColorManager.shared
     
@@ -117,8 +118,7 @@ struct GoalView: View {
     // 导航管理器
     @StateObject private var navigationManager = NavigationManager.shared
     
-    // 侧边栏状态
-    @State private var showSidebar = false
+    // 侧边栏使用全局管理器：移除本地状态，统一为全局覆盖层
     
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
@@ -479,9 +479,7 @@ struct GoalView: View {
                         HStack(alignment: .center) {
                             // 侧边栏按钮
                             Button(action: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    showSidebar = true
-                                }
+                                SidebarManager.shared.showSidebar()
                             }) {
                                 ZStack {
                                     Circle()
@@ -855,6 +853,21 @@ struct GoalView: View {
                                 }
                             }
                         }
+                case .userEdit:
+                    if let user = allUsers.first {
+                        UserEditView(user: user)
+                            .navigationBarBackButtonHidden(true)
+                            .navigationTitle("我的信息")
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("返回") {
+                                        navigationManager.pop(for: selectedTab)
+                                    }
+                                }
+                            }
+                    } else {
+                        EmptyView()
+                    }
                 default:
                     EmptyView()
                 }
@@ -926,8 +939,7 @@ struct GoalView: View {
         }
         // 移除模块级 overlay 提示，改为页签内顶部提示
         
-        // 侧边栏组件
-        SidebarView(isPresented: $showSidebar, selectedTab: $selectedTab)
+        // 侧边栏移至应用根层，由全局 SidebarManager 控制
     }
     }
     

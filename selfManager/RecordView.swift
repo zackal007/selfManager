@@ -19,6 +19,7 @@ struct RecordView: View {
     // 查询所有目标和联系人（用于链接导航）
     @Query private var allGoals: [Goal]
     @Query private var allContacts: [Contact]
+    @Query private var allUsers: [User]
     
     // 当前显示的记录
     @State private var currentRecord: Record?
@@ -32,8 +33,7 @@ struct RecordView: View {
     // 清理重复记录的标志
     @State private var hasCleanedDuplicates = false
     
-    // 侧边栏状态
-    @State private var showSidebar = false
+    // 侧边栏使用全局管理：移除本地状态，统一为全局覆盖层
     
     // 记录类型选择器
     @State private var selectedRecordType: RecordType = .recent
@@ -55,7 +55,7 @@ struct RecordView: View {
                 // 侧边栏按钮
                 Button(action: {
                     dismissKeyboard()
-                    showSidebar = true
+                    SidebarManager.shared.showSidebar()
                 }) {
                     ZStack {
                         Circle()
@@ -1361,6 +1361,23 @@ struct RecordView: View {
                                 }
                             }
                         }
+                case .userEdit:
+                    Group {
+                        if let user = allUsers.first {
+                            UserEditView(user: user)
+                                .navigationBarBackButtonHidden(true)
+                                .navigationTitle("个人信息")
+                                .toolbar {
+                                    ToolbarItem(placement: .navigationBarLeading) {
+                                        Button("返回") {
+                                            navigationManager.pop(for: selectedTab)
+                                        }
+                                    }
+                                }
+                        } else {
+                            EmptyView()
+                        }
+                    }
                 default:
                     EmptyView()
                 }
@@ -1470,13 +1487,7 @@ struct RecordView: View {
                 // 重置修改状态
                 contentModified = false
             }
-            // 侧边栏覆盖层（应用全局导航）
-            .overlay(
-                SidebarView(
-                    isPresented: $showSidebar,
-                    selectedTab: $selectedTab
-                )
-            )
+            // 侧边栏移至应用根层，由全局 SidebarManager 控制
             // 统一页面级背景为系统分组背景，以与其他模块一致
             .background(
                 Color(UIColor.systemGroupedBackground)

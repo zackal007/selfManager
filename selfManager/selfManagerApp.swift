@@ -233,8 +233,9 @@ struct selfManagerApp: App {
                 initializeSampleData(modelContext: container.mainContext)
             }
                             
-                            // 侧边栏覆盖层
+                            // 侧边栏覆盖层（提升层级，覆盖底部导航栏）
                             SidebarView(isPresented: $sidebarManager.isPresented, selectedTab: $selectedTab)
+                                .zIndex(1000)
                         }
                         .modelContainer(container)
                         .enableSwipeBackGesture()

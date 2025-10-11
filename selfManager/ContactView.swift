@@ -15,13 +15,13 @@ struct ContactView: View {
     @Query(sort: \Contact.modifyTime, order: .reverse) private var allContacts: [Contact]
     @Query private var allGoals: [Goal]
     @Query private var allRecords: [Record]
+    @Query private var allUsers: [User]
     @StateObject private var navigationManager = NavigationManager.shared
     
     // 绑定到TabView的选中标签
     @Binding var selectedTab: Int
     
-    // 侧边栏状态
-    @State private var showSidebar = false
+    // 侧边栏使用全局管理：移除本地状态，统一为全局覆盖层
     
     // 分段控制器选择
     @State private var selectedSegment = 0
@@ -215,6 +215,23 @@ struct ContactView: View {
                                     }
                                 }
                             }
+                    case .userEdit:
+                        Group {
+                            if let user = allUsers.first {
+                                UserEditView(user: user)
+                                    .navigationBarBackButtonHidden(true)
+                                    .navigationTitle("个人信息")
+                                    .toolbar {
+                                        ToolbarItem(placement: .navigationBarLeading) {
+                                            Button("返回") {
+                                                navigationManager.pop(for: selectedTab)
+                                            }
+                                        }
+                                    }
+                            } else {
+                                EmptyView()
+                            }
+                        }
                     default:
                         EmptyView()
                     }
@@ -227,11 +244,7 @@ struct ContactView: View {
                     headerView
                 }
                 
-                // 侧边栏：显示应用功能菜单（放在ZStack最上层，确保独立悬浮）
-                SidebarView(
-                    isPresented: $showSidebar,
-                    selectedTab: $selectedTab
-                )
+                // 侧边栏移至应用根层，由全局 SidebarManager 控制
             }
         }
         // 与首页一致：在顶层隐藏系统导航栏，统一顶部外观
@@ -268,9 +281,7 @@ struct ContactView: View {
             HStack(alignment: .center) {
                 // 侧边栏按钮
                 Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showSidebar = true
-                    }
+                    SidebarManager.shared.showSidebar()
                 }) {
                     ZStack {
                         Circle()
