@@ -12,14 +12,17 @@ static NSString * const ACBundleID AC_SWIFT_PRIVATE = @"zack.selfManager";
 /// The "AccentColor" asset catalog color resource.
 static NSString * const ACColorNameAccentColor AC_SWIFT_PRIVATE = @"AccentColor";
 
-/// The "Blue" asset catalog color resource.
-static NSString * const ACColorNameBlue AC_SWIFT_PRIVATE = @"Blue";
+/// The "AppBlue" asset catalog color resource.
+static NSString * const ACColorNameAppBlue AC_SWIFT_PRIVATE = @"AppBlue";
 
-/// The "Gray" asset catalog color resource.
-static NSString * const ACColorNameGray AC_SWIFT_PRIVATE = @"Gray";
+/// The "AppGray" asset catalog color resource.
+static NSString * const ACColorNameAppGray AC_SWIFT_PRIVATE = @"AppGray";
 
-/// The "Orange" asset catalog color resource.
-static NSString * const ACColorNameOrange AC_SWIFT_PRIVATE = @"Orange";
+/// The "AppOrange" asset catalog color resource.
+static NSString * const ACColorNameAppOrange AC_SWIFT_PRIVATE = @"AppOrange";
+
+/// The "AppRed" asset catalog color resource.
+static NSString * const ACColorNameAppRed AC_SWIFT_PRIVATE = @"AppRed";
 
 /// The "Red" asset catalog color resource.
 static NSString * const ACColorNameRed AC_SWIFT_PRIVATE = @"Red";

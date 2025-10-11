@@ -18,31 +18,41 @@
 			<key>catalogPath</key>
 			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
 			<key>objcSymbol</key>
-			<string>ACColorNameBlue</string>
+			<string>ACColorNameAppBlue</string>
 			<key>relativePath</key>
-			<string>./Colors/Blue.colorset</string>
+			<string>./Colors/AppBlue.colorset</string>
 			<key>swiftSymbol</key>
-			<string>blue</string>
+			<string>appBlue</string>
 		</dict>
 		<dict>
 			<key>catalogPath</key>
 			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
 			<key>objcSymbol</key>
-			<string>ACColorNameGray</string>
+			<string>ACColorNameAppGray</string>
 			<key>relativePath</key>
-			<string>./Colors/Gray.colorset</string>
+			<string>./Colors/AppGray.colorset</string>
 			<key>swiftSymbol</key>
-			<string>gray</string>
+			<string>appGray</string>
 		</dict>
 		<dict>
 			<key>catalogPath</key>
 			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
 			<key>objcSymbol</key>
-			<string>ACColorNameOrange</string>
+			<string>ACColorNameAppOrange</string>
 			<key>relativePath</key>
-			<string>./Colors/Orange.colorset</string>
+			<string>./Colors/AppOrange.colorset</string>
 			<key>swiftSymbol</key>
-			<string>orange</string>
+			<string>appOrange</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/yack/Desktop/selfManager/selfManager/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppRed</string>
+			<key>relativePath</key>
+			<string>./Colors/AppRed.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appRed</string>
 		</dict>
 		<dict>
 			<key>catalogPath</key>

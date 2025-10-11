@@ -27,14 +27,17 @@ extension DeveloperToolsSupport.ColorResource {
     /// The "AccentColor" asset catalog color resource.
     static let accent = DeveloperToolsSupport.ColorResource(name: "AccentColor", bundle: resourceBundle)
 
-    /// The "Blue" asset catalog color resource.
-    static let blue = DeveloperToolsSupport.ColorResource(name: "Blue", bundle: resourceBundle)
+    /// The "AppBlue" asset catalog color resource.
+    static let appBlue = DeveloperToolsSupport.ColorResource(name: "AppBlue", bundle: resourceBundle)
 
-    /// The "Gray" asset catalog color resource.
-    static let gray = DeveloperToolsSupport.ColorResource(name: "Gray", bundle: resourceBundle)
+    /// The "AppGray" asset catalog color resource.
+    static let appGray = DeveloperToolsSupport.ColorResource(name: "AppGray", bundle: resourceBundle)
 
-    /// The "Orange" asset catalog color resource.
-    static let orange = DeveloperToolsSupport.ColorResource(name: "Orange", bundle: resourceBundle)
+    /// The "AppOrange" asset catalog color resource.
+    static let appOrange = DeveloperToolsSupport.ColorResource(name: "AppOrange", bundle: resourceBundle)
+
+    /// The "AppRed" asset catalog color resource.
+    static let appRed = DeveloperToolsSupport.ColorResource(name: "AppRed", bundle: resourceBundle)
 
     /// The "Red" asset catalog color resource.
     static let red = DeveloperToolsSupport.ColorResource(name: "Red", bundle: resourceBundle)
@@ -88,11 +91,41 @@ extension AppKit.NSColor {
 #endif
     }
 
-    #warning("The \"Blue\" color asset name resolves to a conflicting NSColor symbol \"blue\". Try renaming the asset.")
+    /// The "AppBlue" asset catalog color.
+    static var appBlue: AppKit.NSColor {
+#if !targetEnvironment(macCatalyst)
+        .init(resource: .appBlue)
+#else
+        .init()
+#endif
+    }
 
-    #warning("The \"Gray\" color asset name resolves to a conflicting NSColor symbol \"gray\". Try renaming the asset.")
+    /// The "AppGray" asset catalog color.
+    static var appGray: AppKit.NSColor {
+#if !targetEnvironment(macCatalyst)
+        .init(resource: .appGray)
+#else
+        .init()
+#endif
+    }
 
-    #warning("The \"Orange\" color asset name resolves to a conflicting NSColor symbol \"orange\". Try renaming the asset.")
+    /// The "AppOrange" asset catalog color.
+    static var appOrange: AppKit.NSColor {
+#if !targetEnvironment(macCatalyst)
+        .init(resource: .appOrange)
+#else
+        .init()
+#endif
+    }
+
+    /// The "AppRed" asset catalog color.
+    static var appRed: AppKit.NSColor {
+#if !targetEnvironment(macCatalyst)
+        .init(resource: .appRed)
+#else
+        .init()
+#endif
+    }
 
     #warning("The \"Red\" color asset name resolves to a conflicting NSColor symbol \"red\". Try renaming the asset.")
 
@@ -113,11 +146,41 @@ extension UIKit.UIColor {
 #endif
     }
 
-    #warning("The \"Blue\" color asset name resolves to a conflicting UIColor symbol \"blue\". Try renaming the asset.")
+    /// The "AppBlue" asset catalog color.
+    static var appBlue: UIKit.UIColor {
+#if !os(watchOS)
+        .init(resource: .appBlue)
+#else
+        .init()
+#endif
+    }
 
-    #warning("The \"Gray\" color asset name resolves to a conflicting UIColor symbol \"gray\". Try renaming the asset.")
+    /// The "AppGray" asset catalog color.
+    static var appGray: UIKit.UIColor {
+#if !os(watchOS)
+        .init(resource: .appGray)
+#else
+        .init()
+#endif
+    }
 
-    #warning("The \"Orange\" color asset name resolves to a conflicting UIColor symbol \"orange\". Try renaming the asset.")
+    /// The "AppOrange" asset catalog color.
+    static var appOrange: UIKit.UIColor {
+#if !os(watchOS)
+        .init(resource: .appOrange)
+#else
+        .init()
+#endif
+    }
+
+    /// The "AppRed" asset catalog color.
+    static var appRed: UIKit.UIColor {
+#if !os(watchOS)
+        .init(resource: .appRed)
+#else
+        .init()
+#endif
+    }
 
     #warning("The \"Red\" color asset name resolves to a conflicting UIColor symbol \"red\". Try renaming the asset.")
 
@@ -131,11 +194,17 @@ extension SwiftUI.Color {
     /// The "AccentColor" asset catalog color.
     static var accent: SwiftUI.Color { .init(.accent) }
 
-    #warning("The \"Blue\" color asset name resolves to a conflicting Color symbol \"blue\". Try renaming the asset.")
+    /// The "AppBlue" asset catalog color.
+    static var appBlue: SwiftUI.Color { .init(.appBlue) }
 
-    #warning("The \"Gray\" color asset name resolves to a conflicting Color symbol \"gray\". Try renaming the asset.")
+    /// The "AppGray" asset catalog color.
+    static var appGray: SwiftUI.Color { .init(.appGray) }
 
-    #warning("The \"Orange\" color asset name resolves to a conflicting Color symbol \"orange\". Try renaming the asset.")
+    /// The "AppOrange" asset catalog color.
+    static var appOrange: SwiftUI.Color { .init(.appOrange) }
+
+    /// The "AppRed" asset catalog color.
+    static var appRed: SwiftUI.Color { .init(.appRed) }
 
     #warning("The \"Red\" color asset name resolves to a conflicting Color symbol \"red\". Try renaming the asset.")
 
@@ -146,6 +215,18 @@ extension SwiftUI.ShapeStyle where Self == SwiftUI.Color {
 
     /// The "AccentColor" asset catalog color.
     static var accent: SwiftUI.Color { .init(.accent) }
+
+    /// The "AppBlue" asset catalog color.
+    static var appBlue: SwiftUI.Color { .init(.appBlue) }
+
+    /// The "AppGray" asset catalog color.
+    static var appGray: SwiftUI.Color { .init(.appGray) }
+
+    /// The "AppOrange" asset catalog color.
+    static var appOrange: SwiftUI.Color { .init(.appOrange) }
+
+    /// The "AppRed" asset catalog color.
+    static var appRed: SwiftUI.Color { .init(.appRed) }
 
 }
 #endif

@@ -1,9 +1,9 @@
-"/Users/yack/Desktop/selfManager/selfManager/AchievementDetailView.swift":
-  diagnostics: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.dia"
-  const-values: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.swiftconstvalues"
+"/Users/yack/Desktop/selfManager/selfManager/TagCategoryListView.swift":
   dependencies: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.d"
-  swiftdoc: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftdoc"
-  swiftsourceinfo: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftsourceinfo"
-  swiftmodule: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftmodule"
   objc-header: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-Swift.h"
+  swiftmodule: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftmodule"
+  swiftdoc: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftdoc"
+  diagnostics: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.dia"
   abi-baseline-json: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.abi.json"
+  swiftsourceinfo: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftsourceinfo"
+  const-values: "/Users/yack/Desktop/selfManager/build/selfManager.build/Release-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-master.swiftconstvalues"

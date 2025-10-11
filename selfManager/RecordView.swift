@@ -765,19 +765,18 @@ struct RecordView: View {
                                 ForEach(daysInMonth(for: currentDate), id: \.id) { day in
                                     Button(action: {
                                         if day.date != nil {
-                                            withAnimation {
-                                                // 强制保存当前记录（防止内容丢失）
-                                                autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
-                                                
-                                                currentDate = day.date!
-                                                updateDateComponents()
-                                                loadCurrentRecord()
-                                                // 重置修改状态
-                                                contentModified = false
-                                            }
+                                            // 强制保存当前记录（防止内容丢失）
+                                            autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                            
+                                            currentDate = day.date!
+                                            updateDateComponents()
+                                            loadCurrentRecord()
+                                            // 重置修改状态
+                                            contentModified = false
                                         }
                                     }) {
                                         Text(day.dayNumber)
+                                            .monospacedDigit()
                                             .font(.system(size: 16))
                                             .fontWeight(day.isSelected ? .bold : .regular)
                                             .foregroundColor(day.isSelected ? .white : (day.isToday ? .blue : (day.isCurrentMonth ? .primary : .secondary)))
@@ -796,8 +795,6 @@ struct RecordView: View {
                                                     }
                                                 }
                                             )
-                                    .font(.system(size: 16, weight: day.isSelected ? .bold : .regular))
-                                    .foregroundColor(day.isSelected ? .white : .primary)
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                     .disabled(day.date == nil)
@@ -871,18 +868,24 @@ struct RecordView: View {
                                         }
                                     }) {
                                         ZStack {
+                                            // 预留固定尺寸，避免选中时行高跳变
+                                            Rectangle()
+                                                .fill(Color.clear)
+                                                .frame(width: 36, height: 36)
                                             if self.calendar.component(.month, from: currentDate) == month {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                Circle()
                                                     .fill(Color.blue)
-                                                    .frame(height: 36)
+                                                    .frame(width: 36, height: 36)
                                             } else if self.calendar.component(.month, from: Date()) == month && 
                                                      self.calendar.component(.year, from: currentDate) == self.calendar.component(.year, from: Date()) {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                Circle()
                                                     .stroke(Color.blue, lineWidth: 2)
-                                                    .frame(height: 36)
+                                                    .frame(width: 36, height: 36)
                                             }
-                                            Text("\(month)月")
-                                                .font(.system(size: 16, weight: .semibold))
+                                            Text("\(month)")
+                                                .monospacedDigit()
+                                                .font(.system(size: 16))
+                                                .fontWeight(self.calendar.component(.month, from: currentDate) == month ? .bold : .regular)
                                                 .foregroundColor(self.calendar.component(.month, from: currentDate) == month ? .white : .primary)
                                         }
                                     }
@@ -968,18 +971,23 @@ struct RecordView: View {
                                         }
                                     }) {
                                         ZStack {
+                                            // 预留固定尺寸，避免加粗时尺寸变化
+                                            Rectangle()
+                                                .fill(Color.clear)
+                                                .frame(width: 36, height: 36)
                                             if getCurrentQuarter(currentDate) == q {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                Circle()
                                                     .fill(Color.blue)
-                                                    .frame(width: 70, height: 36)
+                                                    .frame(width: 36, height: 36)
                                             } else if getCurrentQuarter(Date()) == q && 
                                                      self.calendar.component(.year, from: currentDate) == self.calendar.component(.year, from: Date()) {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                Circle()
                                                     .stroke(Color.blue, lineWidth: 2)
-                                                    .frame(width: 70, height: 36)
+                                                    .frame(width: 36, height: 36)
                                             }
                                             Text("Q\(q)")
-                                                .font(.system(size: 16, weight: .semibold))
+                                                .font(.system(size: 16))
+                                                .fontWeight(getCurrentQuarter(currentDate) == q ? .bold : .regular)
                                                 .foregroundColor(getCurrentQuarter(currentDate) == q ? .white : .primary)
                                         }
                                     }
@@ -1114,18 +1122,24 @@ struct RecordView: View {
                                             }
                                     }) {
                                         ZStack {
+                                            // 预留固定尺寸，避免选中时行高跳变
+                                            Rectangle()
+                                                .fill(Color.clear)
+                                                .frame(width: 36, height: 36)
                                             if currentYear == year {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                RoundedRectangle(cornerRadius: 8)
                                                     .fill(Color.blue)
-                                                    .frame(height: 36)
+                                                    .frame(width: 36, height: 36)
                                             } else if self.calendar.component(.year, from: Date()) == year && 
                                                      self.calendar.component(.year, from: Date()) != currentYear {
-                                                RoundedRectangle(cornerRadius: 12)
+                                                RoundedRectangle(cornerRadius: 8)
                                                     .stroke(Color.blue, lineWidth: 2)
-                                                    .frame(height: 36)
+                                                    .frame(width: 36, height: 36)
                                             }
                                             Text("\(year)")
-                                                .font(.system(size: 16, weight: .semibold))
+                                                .monospacedDigit()
+                                                .font(.system(size: 16))
+                                                .fontWeight(currentYear == year ? .bold : .regular)
                                                 .foregroundColor(currentYear == year ? .white : .primary)
                                         }
                                     }
