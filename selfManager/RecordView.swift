@@ -1277,40 +1277,22 @@ struct RecordView: View {
                                             }
                                         }
                                         
-                                        // 心情选择（只在日记页签中显示）
-                                        if recordTypes[index] == .daily {
-                                            VStack(alignment: .leading, spacing: 12) {
-                                                Text("心情")
-                                                    .font(.headline)
-                                                    .padding(.horizontal)
-                                                
-                                                ScrollView(.horizontal, showsIndicators: false) {
-                                                    HStack(spacing: 16) {
-                                                        ForEach(["😊", "😢", "😡", "😴", "🤔", "😎"], id: \.self) { mood in
-                                                            Button(action: {
-                                                                selectedMood = mood
-                                                                // 标记内容已修改
-                                                                contentModified = true
-                                                            }) {
-                                                                Text(mood)
-                                                                    .font(.system(size: 30))
-                                                                    .padding(8)
-                                                                    .background(
-                                                                        Circle()
-                                                                            .fill(selectedMood == mood ? Color.blue.opacity(0.2) : Color.clear)
-                                                                    )
-                                                                    .overlay(
-                                                                        Circle()
-                                                                            .stroke(selectedMood == mood ? Color.blue : Color.clear, lineWidth: 2)
-                                                                    )
-                                                            }
-                                                            .buttonStyle(ScaleButtonStyle())
-                                                        }
-                                                    }
-                                                    .padding(.horizontal)
-                                                }
+                                        // 悬浮工具栏 - 整合添加图片、字数统计和心情选择
+                                        FloatingToolbarView(
+                                            text: $recordContent,
+                                            images: $selectedImages,
+                                            selectedMood: $selectedMood,
+                                            showMoodSelector: recordTypes[index] == .daily,
+                                            onImagesChanged: { images in
+                                                selectedImages = images
+                                                contentModified = true
+                                            },
+                                            onMoodChanged: { mood in
+                                                selectedMood = mood
+                                                contentModified = true
                                             }
-                                        }
+                                        )
+                                        .padding(.bottom, 20)
                                         
                                         // 自动保存已启用，不再需要保存按钮
                                     }
