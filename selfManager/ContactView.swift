@@ -769,6 +769,18 @@ struct ContactCard: View {
 struct ContactListItem: View {
     let contact: Contact
     
+    // 从文档目录加载头像图片（当不在资产库时）
+    private func loadAvatarUIImage(_ name: String) -> UIImage? {
+        let fm = FileManager.default
+        if let doc = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let url = doc.appendingPathComponent(name)
+            if fm.fileExists(atPath: url.path) {
+                return UIImage(contentsOfFile: url.path)
+            }
+        }
+        return nil
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
             // 头像
@@ -778,11 +790,18 @@ struct ContactListItem: View {
                     .frame(width: 40, height: 40)
                 
                 if let avatar = contact.avatar {
-                    Image(avatar)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 40, height: 40)
-                        .clipShape(Circle())
+                    if let uiImage = UIImage(named: avatar) ?? loadAvatarUIImage(avatar) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                    } else {
+                        Text(String(contact.name.prefix(1)))
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color(contact.importance.color))
+                    }
                 } else {
                     Text(String(contact.name.prefix(1)))
                         .font(.headline)
@@ -830,6 +849,18 @@ struct ContactListItem: View {
 struct ContactGalleryCard: View {
     let contact: Contact
     
+    // 从文档目录加载头像图片（当不在资产库时）
+    private func loadAvatarUIImage(_ name: String) -> UIImage? {
+        let fm = FileManager.default
+        if let doc = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let url = doc.appendingPathComponent(name)
+            if fm.fileExists(atPath: url.path) {
+                return UIImage(contentsOfFile: url.path)
+            }
+        }
+        return nil
+    }
+    
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
             // 头像（圆形，重要程度色为底色）
@@ -839,7 +870,8 @@ struct ContactGalleryCard: View {
                     .frame(width: 56, height: 56)
                 
                 if let avatar = contact.avatar {
-                    Image(avatar)
+                if let uiImage = UIImage(named: avatar) ?? loadAvatarUIImage(avatar) {
+                    Image(uiImage: uiImage)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 56, height: 56)
@@ -849,6 +881,11 @@ struct ContactGalleryCard: View {
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(Color(contact.importance.color))
                 }
+            } else {
+                Text(String(contact.name.prefix(1)))
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(Color(contact.importance.color))
+            }
             }
             
             // 姓名（居中）
