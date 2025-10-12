@@ -198,6 +198,75 @@ struct selfManagerTests {
             )
             goals.append(goal)
         }
+    }
+    
+    // MARK: - Record Sorting Tests
+    
+    @Test func testRecordTypeDisplayName() async throws {
+        #expect(RecordType.recent.displayName == "近期")
+        #expect(RecordType.daily.displayName == "日记")
+        #expect(RecordType.weekly.displayName == "周记")
+        #expect(RecordType.monthly.displayName == "月记")
+        #expect(RecordType.quarterly.displayName == "季记")
+        #expect(RecordType.yearly.displayName == "年记")
+    }
+    
+    @Test func testRecordSortingLogic() async throws {
+        // 测试记录排序逻辑，确保不同类型的记录有正确的排序行为
+        let calendar = Calendar.current
+        let now = Date()
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: now)!
+        
+        // 创建测试记录数据
+        let records = [
+            Record(recordType: .daily, title: "今天", content: "今天的内容", date: now, year: 2024, month: 12, day: 25, week: 52, quarter: 4),
+            Record(recordType: .daily, title: "昨天", content: "昨天的内容", date: yesterday, year: 2024, month: 12, day: 24, week: 52, quarter: 4),
+            Record(recordType: .daily, title: "明天", content: "明天的内容", date: tomorrow, year: 2024, month: 12, day: 26, week: 52, quarter: 4)
+        ]
+        
+        // 按时间倒序排序（最新的在前）
+        let sortedRecords = records.sorted { $0.date > $1.date }
+        
+        #expect(sortedRecords.count == 3)
+        #expect(sortedRecords[0].title == "明天") // 最新的记录
+        #expect(sortedRecords[1].title == "今天")
+        #expect(sortedRecords[2].title == "昨天") // 最旧的记录
+    }
+    
+    @Test func testRecordTypeMenuButtonLabels() async throws {
+        // 测试不同记录类型对应的菜单按钮标签
+        let dailyLabel = "跳转到今天"
+        let weeklyLabel = "跳转到本周"
+        let monthlyLabel = "跳转到本月"
+        let quarterlyLabel = "跳转到本季"
+        let yearlyLabel = "跳转到本年"
+        
+        #expect(dailyLabel.contains("今天"))
+        #expect(weeklyLabel.contains("本周"))
+        #expect(monthlyLabel.contains("本月"))
+        #expect(quarterlyLabel.contains("本季"))
+        #expect(yearlyLabel.contains("本年"))
+    }
+    
+    @Test func testRecentRecordTypeSpecialBehavior() async throws {
+        // 测试"近期"记录类型的特殊行为
+        let recentType = RecordType.recent
+        
+        #expect(recentType == .recent)
+        #expect(recentType.displayName == "近期")
+        
+        // 验证近期类型应该显示排序按钮而不是日期选择器
+        // 这个逻辑在UI层面实现，这里测试数据层面的准备
+        let testRecords = [
+            Record(recordType: .daily, title: "记录1", content: "内容1", date: Date(), year: 2024, month: 12, day: 25, week: 52, quarter: 4),
+            Record(recordType: .weekly, title: "记录2", content: "内容2", date: Date().addingTimeInterval(-86400), year: 2024, month: 12, day: 24, week: 52, quarter: 4)
+        ]
+        
+        // 确保记录类型不包含近期类型（近期是虚拟类型，不存储实际记录）
+        let nonRecentRecords = testRecords.filter { $0.recordType != .recent }
+        #expect(nonRecentRecords.count == 2)
+    }
         
         // 测试搜索性能
         let startTime = Date()

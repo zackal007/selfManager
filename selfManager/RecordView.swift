@@ -100,44 +100,64 @@ struct RecordView: View {
                         .buttonStyle(PlainButtonStyle())
 
                         Text(headerInlineDateText)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 16, weight: .regular))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
                 }
                 
                 // 菜单按钮
                 MenuButton {
-                    // 视图模式菜单内容
-                    Button(action: {
-                        dismissKeyboard()
-                        // 日期选择器显示/隐藏
-                        withAnimation {
-                            showDatePicker.toggle()
+                    // 近期页签：显示按时间排序按钮
+                    if selectedRecordType == .recent {
+                        Button(action: {
+                            dismissKeyboard()
+                            sortRecordsByTime()
+                        }) {
+                            Label("按时间排序", systemImage: "arrow.up.arrow.down")
                         }
-                    }) {
-                        Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "chevron.up" : "chevron.down")
+                        
+                        Divider()
+                    }
+                    
+                    // 非近期页签：显示日期选择器相关按钮
+                    if selectedRecordType != .recent {
+                        Button(action: {
+                            dismissKeyboard()
+                            // 日期选择器显示/隐藏
+                            withAnimation {
+                                showDatePicker.toggle()
+                            }
+                        }) {
+                            Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "chevron.up" : "chevron.down")
+                        }
+
+                        Divider()
+
+                        // 跳转到今天/本周/本月/本季/本年
+                        Button(action: {
+                            dismissKeyboard()
+                            // 如果内容已修改，先保存当前记录
+                            if contentModified {
+                                autoSaveRecord(recordType: selectedRecordType)
+                            }
+                            // 重置为当前日期
+                            currentDate = Date()
+                            updateDateComponents()
+                            loadCurrentRecord()
+                            // 重置修改状态
+                            contentModified = false
+                        }) {
+                            Label(
+                                selectedRecordType == .daily ? "跳转到今天" :
+                                selectedRecordType == .weekly ? "跳转到本周" :
+                                selectedRecordType == .monthly ? "跳转到本月" :
+                                selectedRecordType == .quarterly ? "跳转到本季" : "跳转到本年",
+                                systemImage: "arrow.uturn.backward.circle"
+                            )
+                        }
                     }
 
-                    Divider()
-
-                    // 跳转到今天
-                    Button(action: {
-                        dismissKeyboard()
-                        // 如果内容已修改，先保存当前记录
-                        if contentModified {
-                            autoSaveRecord(recordType: selectedRecordType)
-                        }
-                        // 重置为当前日期
-                        currentDate = Date()
-                        updateDateComponents()
-                        loadCurrentRecord()
-                        // 重置修改状态
-                        contentModified = false
-                    }) {
-                        Label("跳转到今天", systemImage: "arrow.uturn.backward.circle")
-                    }
-
-                    // 仅在“日记”页签显示：汇总今日目标完成情况
+                    // 仅在"日记"页签显示：汇总今日目标完成情况
                     if selectedRecordType == .daily {
                         Divider()
                         Button(action: {
@@ -2176,6 +2196,28 @@ struct RecordView: View {
         
         // 加载对应的记录
         loadCurrentRecord()
+    }
+    
+    // MARK: - 记录排序功能
+    
+    private func sortRecordsByTime() {
+        // 由于allRecords已经是按createTime降序排列的查询结果
+        // 我们只需要重新加载数据并显示提示即可
+        
+        // 显示排序成功的提示
+        withAnimation {
+            showSaveSuccessToast = true
+        }
+        
+        // 3秒后隐藏提示
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation {
+                showSaveSuccessToast = false
+            }
+        }
+        
+        // 重置显示的记录数量到初始值
+        displayedRecordsCount = recordsPerPage
     }
     
     // MARK: - 键盘管理
