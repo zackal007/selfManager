@@ -47,6 +47,10 @@ struct GoalDetailView: View {
     @State private var showImagePicker = false
     @State private var selectedImage: UIImage? = nil
     
+    // 打卡按钮状态变量
+    @State private var isPressed = false
+    @State private var isCheckInAnimating = false
+    
     // 根据目标名称获取目标对象
     private func getGoalByName(name: String) -> Goal? {
         // 首先尝试通过UUID查找（如果名称是UUID字符串）
@@ -910,6 +914,37 @@ struct GoalDetailView: View {
         
         // 返回上一个视图
         presentationMode.wrappedValue.dismiss()
+    }
+    
+    // 处理打卡操作
+    private func handleCheckIn() {
+        // 触发打卡动画
+        isCheckInAnimating = true
+        
+        // 记录打卡活动到日志
+        GoalActivityManager.shared.addActivityLogWithDiary(
+            goalId: goal.id,
+            goalName: goal.name,
+            type: "habit_checkin",
+            message: "完成了习惯打卡",
+            modelContext: modelContext
+        )
+        
+        // 可选：增加目标进度（根据需求决定是否启用）
+        // let oldProgress = goal.progress
+        // goal.progress = min(goal.progress + 0.01, 1.0) // 增加1%进度
+        // GoalActivityManager.shared.logProgressChange(goal: goal, oldProgress: oldProgress, modelContext: modelContext)
+        
+        // 保存更改
+        do {
+            try modelContext.save()
+        } catch {
+            print("保存打卡记录失败: \(error)")
+        }
+        
+        // 提供触觉反馈
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
     }
     
     // 删除任务
@@ -1871,29 +1906,62 @@ struct GoalDetailView: View {
             Text(dependencyWarningMessage)
         }
         .overlay(
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        // 点击hit按钮的操作
+            Group {
+                if goal.goalType == .habit {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                        // 打卡按钮点击操作
+                        handleCheckIn()
                     }) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 56, height: 56)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                        VStack(spacing: 2) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
+                                .scaleEffect(isCheckInAnimating ? 1.2 : 1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isCheckInAnimating)
+                            
+                            Text("打卡")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.white)
+                        }
+                        .frame(width: 66, height: 66)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.green.opacity(0.9),
+                                    Color.green
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
-                            .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                        )
+                        .clipShape(Circle())
+                        .shadow(color: Color.green.opacity(0.3), radius: 12, x: 0, y: 6)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                        )
+                        .scaleEffect(isPressed ? 0.95 : 1.0)
+                        .animation(.easeInOut(duration: 0.1), value: isPressed)
                     }
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 32)
+                    .buttonStyle(PlainButtonStyle())
+                    .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+                        isPressed = pressing
+                    }, perform: {})
+                    .onChange(of: isCheckInAnimating) { _, newValue in
+                        if newValue {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                isCheckInAnimating = false
+                            }
+                        }
+                    }
+                            .padding(.trailing, 24)
+                            .padding(.bottom, 32)
+                        }
+                    }
                 }
             }
         )

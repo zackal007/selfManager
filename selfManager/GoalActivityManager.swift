@@ -212,6 +212,8 @@ class GoalActivityManager {
             if let old = oldValue, let new = newValue {
                 activityText += "将目标《\(goalName)》的任务「\(old)」修改为「\(new)」"
             }
+        case "habit_checkin":
+            activityText += "完成了目标《\(goalName)》的习惯打卡"
         default:
             activityText += "\(message)《\(goalName)》"
         }
