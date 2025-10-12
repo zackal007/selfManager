@@ -1420,18 +1420,20 @@ struct GoalCard: View {
                                         HStack(spacing: 10) {
                                             // 圆形复选框 - 现代风格
                                             ZStack {
-                                                Circle()
-                                                    .stroke(task.isCompleted ? progressColor : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                                    .frame(width: 18, height: 18)
-                                                
                                                 if task.isCompleted {
+                                                    // 已完成的任务显示灰色背景和白色勾选标记
                                                     Circle()
-                                                        .fill(progressColor)
+                                                        .fill(Color(UIColor.systemGray4))
                                                         .frame(width: 18, height: 18)
                                                     
                                                     Image(systemName: "checkmark")
                                                         .font(.system(size: 9, weight: .bold))
                                                         .foregroundColor(.white)
+                                                } else {
+                                                    // 未完成的任务显示外圈
+                                                    Circle()
+                                                        .stroke(Color(UIColor.systemGray3), lineWidth: 1.5)
+                                                        .frame(width: 18, height: 18)
                                                 }
                                             }
                                             
