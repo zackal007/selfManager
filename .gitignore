@@ -1,8 +1,8 @@
 .DS_Store
-/Packages
-xcuserdata/*
-.netrc
-DerivedData/*
-build/
-build
-/.build/*
+**/DerivedData/
+**/DerivedData
+/DerivedData/
+DerivedData/
+
+**/build/
+**/.build/

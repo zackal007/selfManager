@@ -1101,7 +1101,7 @@ struct RecordView: View {
                             .padding(.horizontal, 8)
                             
                             // 年份快速选择器 - 使用网格布局（3行，每行5个年份）
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 24), count: 5), spacing: 24) {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 5), spacing: 16) {
                                 let currentYear = self.calendar.component(.year, from: currentDate)
                                 // 使用基于 yearListBaseYear 的范围，显示3行年份（共15个）
                                 ForEach(yearListBaseYear...(yearListBaseYear+14), id: \.self) { year in
@@ -1122,25 +1122,27 @@ struct RecordView: View {
                                             }
                                     }) {
                                         ZStack {
-                                            // 预留固定尺寸，避免选中时行高跳变
-                                            Rectangle()
-                                                .fill(Color.clear)
-                                                .frame(width: 36, height: 36)
                                             if currentYear == year {
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .fill(Color.blue)
-                                                    .frame(width: 36, height: 36)
+                                                    .padding(.horizontal, -2)
+                                                    .padding(.vertical, -1)
                                             } else if self.calendar.component(.year, from: Date()) == year && 
                                                      self.calendar.component(.year, from: Date()) != currentYear {
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .stroke(Color.blue, lineWidth: 2)
-                                                    .frame(width: 36, height: 36)
+                                                    .padding(.horizontal, -2)
+                                                    .padding(.vertical, -1)
                                             }
                                             Text("\(year)")
                                                 .monospacedDigit()
                                                 .font(.system(size: 16))
                                                 .fontWeight(currentYear == year ? .bold : .regular)
                                                 .foregroundColor(currentYear == year ? .white : .primary)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.8)
                                         }
                                     }
                                     .buttonStyle(PlainButtonStyle())
