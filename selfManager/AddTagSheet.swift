@@ -21,30 +21,27 @@ struct AddTagSheet: View {
     @State private var selectedNames: Set<String> = []
     @State private var newTagName: String = ""
     @State private var errorMessage: String? = nil
+    
+    // 标签分类相关状态
+    @State private var showingCategoryManagement = false
+    @Query private var tagCategories: [TagCategory]
+    @State private var selectedCategory: TagCategory?
 
     private func normalize(_ s: String) -> String {
         s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
-    // 汇总全局标签库（内置标签 + Tag对象 + 目标/联系人/用户中使用的标签）并去重
+    // 汇总全局标签库（内置标签 + 已绑定的标签）并去重，过滤掉未绑定的空标签
     private var allTags: [String] {
         var map: [String: String] = [:] // normalized -> display name
+        var usedTags: Set<String> = [] // 记录实际被使用的标签
 
-        // 内置标签优先加入（保证显示）
-        for name in BuiltInTags.allNames {
-            map[normalize(name)] = name
-        }
-
-        // 数据库中的Tag对象
-        for t in tagObjects {
-            let n = normalize(t.name)
-            if map[n] == nil { map[n] = t.name }
-        }
-
+        // 收集所有已使用的标签
         // 目标使用的标签
         for g in goals where !g.isDeleted {
             for name in g.tags {
                 let n = normalize(name)
+                usedTags.insert(n)
                 if map[n] == nil { map[n] = name }
             }
         }
@@ -53,6 +50,7 @@ struct AddTagSheet: View {
         for c in contacts where !c.isDeleted {
             for name in c.tags {
                 let n = normalize(name)
+                usedTags.insert(n)
                 if map[n] == nil { map[n] = name }
             }
         }
@@ -61,13 +59,44 @@ struct AddTagSheet: View {
         for u in users {
             for name in u.tags {
                 let n = normalize(name)
+                usedTags.insert(n)
                 if map[n] == nil { map[n] = name }
             }
         }
 
-        let all = Array(map.values)
-        if searchText.isEmpty { return all.sorted() }
-        return all.filter { $0.localizedCaseInsensitiveContains(searchText) }.sorted()
+        // 内置标签优先加入（不管是否被使用都显示）
+        for name in BuiltInTags.allNames {
+            map[normalize(name)] = name
+        }
+
+        // 只保留已使用的Tag对象（除了内置标签）
+        for t in tagObjects {
+            let n = normalize(t.name)
+            // 如果是内置标签或者已被使用，则保留
+            if BuiltInTags.isBuiltIn(t.name) || usedTags.contains(n) {
+                if map[n] == nil { map[n] = t.name }
+            }
+        }
+
+        var filtered = Array(map.values)
+        
+        // 搜索文本过滤
+        if !searchText.isEmpty {
+            filtered = filtered.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+        
+        // 分类过滤：如果选中了分类，则只保留该分类下的标签
+        if let selectedCategory = selectedCategory {
+            // 获取该分类下的所有标签对象
+            let categoryTagObjects = tagObjects.filter { $0.categoryID == selectedCategory.id }
+            let categoryTagNames = Set(categoryTagObjects.map { normalize($0.name) })
+            // 内置标签始终显示，其他标签需属于该分类
+            filtered = filtered.filter { name in
+                BuiltInTags.isBuiltIn(name) || categoryTagNames.contains(normalize(name))
+            }
+        }
+        
+        return filtered.sorted()
     }
 
     private func canAddSelection() -> Bool {
@@ -78,7 +107,7 @@ struct AddTagSheet: View {
 
     private func validateNewName(_ name: String) -> String? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty { return "标签名称不能为空" }
+        if trimmed.isEmpty { return nil } // 空名称不显示错误，只是禁用按钮
         if trimmed.count > 32 { return "标签名称长度不应超过 32 个字符" }
         // 禁止与内置标签重复
         if BuiltInTags.isBuiltIn(trimmed) { return "该标签为系统内置标签，请从列表中选择" }
@@ -115,10 +144,10 @@ struct AddTagSheet: View {
         modelContext.insert(tag)
         // 回调添加到实体
         onAddTags([name])
-        // 清理状态并关闭
+        // 清理状态
         newTagName = ""
+        searchText = ""
         errorMessage = nil
-        dismiss()
     }
 
     private func tagColor(_ name: String) -> Color {
@@ -128,22 +157,22 @@ struct AddTagSheet: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 搜索与选择区域
-                VStack(spacing: 12) {
-                    // 区块标题
-                    HStack {
-                        Text("从标签库选择")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.primary)
-                        Spacer()
-                    }
+                // 统一的标签输入区域（创建新标签 + 搜索）
+                VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
-                        TextField("搜索标签", text: $searchText)
+                        TextField("输入标签名称搜索或创建新标签", text: $newTagName)
                             .textFieldStyle(PlainTextFieldStyle())
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
+                            .onChange(of: newTagName) { _, newValue in
+                                // 输入时自动更新搜索文本
+                                searchText = newValue
+                            }
+                        if !newTagName.isEmpty {
+                            Button(action: { 
+                                newTagName = ""
+                                searchText = ""
+                            }) {
                                 Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -152,58 +181,21 @@ struct AddTagSheet: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-
-                    // 可选择标签列表（多选）
-                    List {
-                        ForEach(allTags, id: \.self) { name in
-                            Button(action: {
-                                if selectedNames.contains(name) {
-                                    selectedNames.remove(name)
-                                } else {
-                                    selectedNames.insert(name)
-                                }
-                            }) {
-                                HStack(spacing: 12) {
-                                    Circle()
-                                        .fill(tagColor(name))
-                                        .frame(width: 10, height: 10)
-                                    Text(name)
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                    if existingEntityTags.contains(where: { normalize($0) == normalize(name) }) {
-                                        Text("已有")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    if selectedNames.contains(name) {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.blue)
-                                    }
-                                }
-                            }
-                            .contentShape(Rectangle())
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(UIColor.secondarySystemBackground))
-                            )
+                    
+                    // 显示创建新标签按钮（当输入内容有效时）
+                    if let validationError = validateNewName(newTagName) {
+                        // 如果有验证错误且不是空内容，显示错误信息
+                        if !newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Text(validationError)
+                                .font(.footnote)
+                                .foregroundColor(.red)
                         }
-                    }
-                    .listStyle(InsetGroupedListStyle())
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-
-                Divider()
-                    .padding(.vertical, 8)
-
-                // 创建新标签区域
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("创建新标签")
-                        .font(.system(size: 16, weight: .semibold))
-                    HStack(spacing: 8) {
-                        TextField("输入新标签名称", text: $newTagName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        Button(action: { commitNewTag() }) {
+                    } else if !newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        // 如果内容有效且不为空，显示创建按钮
+                        Button(action: { 
+                            commitNewTag() 
+                            dismiss() // 立即关闭弹窗
+                        }) {
                             HStack(spacing: 6) {
                                 Image(systemName: "plus.circle.fill")
                                 Text("创建并添加")
@@ -217,30 +209,199 @@ struct AddTagSheet: View {
                             )
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .disabled(validateNewName(newTagName) != nil)
-                    }
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.blue)
-                            .frame(width: 10, height: 10)
-                        Text("新标签默认颜色：蓝色")
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                    }
-                    if let msg = validateNewName(newTagName) {
-                        Text(msg)
-                            .font(.footnote)
-                            .foregroundColor(.red)
                     }
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
                 .padding(.bottom, 12)
+
+                Divider()
+                    .padding(.vertical, 8)
+
+                // 标签列表区域
+                VStack(spacing: 0) {
+
+                    // 可选择标签列表（多选）
+                    List {
+                        ForEach(allTags, id: \.self) { name in
+                            Button(action: {
+                                if selectedNames.contains(name) {
+                                    selectedNames.remove(name)
+                                } else {
+                                    selectedNames.insert(name)
+                                }
+                            }) {
+                                HStack(spacing: 14) {
+                                    // 标签颜色圆圈，添加选中状态效果
+                                    ZStack {
+                                        Circle()
+                                            .fill(tagColor(name))
+                                            .frame(width: 12, height: 12)
+                                        
+                                        if selectedNames.contains(name) {
+                                            Circle()
+                                                .stroke(Color.blue, lineWidth: 2)
+                                                .frame(width: 18, height: 18)
+                                                .scaleEffect(selectedNames.contains(name) ? 1.0 : 0.8)
+                                                .animation(.easeInOut(duration: 0.2), value: selectedNames.contains(name))
+                                        }
+                                    }
+                                    .frame(width: 20, height: 20) // 固定容器大小
+                                    
+                                    Text(name)
+                                        .font(.system(size: 16, weight: selectedNames.contains(name) ? .semibold : .regular))
+                                        .foregroundColor(selectedNames.contains(name) ? .blue : .primary)
+                                        .animation(.easeInOut(duration: 0.15), value: selectedNames.contains(name))
+                                    
+                                    Spacer()
+                                    
+                                    // 已有标签标识
+                                    if existingEntityTags.contains(where: { normalize($0) == normalize(name) }) {
+                                        Text("已有")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color(UIColor.systemGray5))
+                                            )
+                                    }
+                                    
+                                    // 选中状态图标
+                                    if selectedNames.contains(name) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.blue)
+                                            .font(.system(size: 18))
+                                            .scaleEffect(selectedNames.contains(name) ? 1.0 : 0.8)
+                                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedNames.contains(name))
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                            }
+                            .contentShape(Rectangle())
+                            .listRowBackground(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(selectedNames.contains(name) ? Color.blue.opacity(0.08) : Color(UIColor.secondarySystemBackground))
+                                    .animation(.easeInOut(duration: 0.2), value: selectedNames.contains(name))
+                            )
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+                        }
+                    }
+                    .listStyle(InsetGroupedListStyle())
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(16)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
+                }
+                .padding(.horizontal, 8)
+                
+                // 标签分类管理区域
+                VStack(spacing: 12) {
+                    Divider()
+                        .padding(.horizontal, 16)
+                    
+                    // 分类管理标题和按钮
+                    HStack {
+                        Text("标签分类管理")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showingCategoryManagement = true
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "folder.circle")
+                                    .font(.system(size: 14))
+                                Text("管理")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color.blue.opacity(0.1))
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 分类选择器（如果有分类的话）
+                    if !tagCategories.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                // "全部分类"选项
+                                Button(action: {
+                                    selectedCategory = nil
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "square.grid.2x2")
+                                            .font(.system(size: 12))
+                                        Text("全部")
+                                            .font(.system(size: 13))
+                                    }
+                                    .foregroundColor(selectedCategory == nil ? .white : .primary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(selectedCategory == nil ? Color.blue : Color(UIColor.systemGray5))
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                // 各个分类选项
+                                ForEach(tagCategories, id: \.self) { category in
+                                    Button(action: {
+                                        selectedCategory = category
+                                    }) {
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(Color(hex: category.color) ?? .gray)
+                                                .frame(width: 8, height: 8)
+                                            Text(category.name)
+                                                .font(.system(size: 13))
+                                        }
+                                        .foregroundColor(selectedCategory?.id == category.id ? .white : .primary)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(selectedCategory?.id == category.id ? Color.blue : Color(UIColor.systemGray5))
+                                        )
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                        }
+                    }
+                }
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(UIColor.secondarySystemBackground))
+                        .padding(.horizontal, 8)
+                )
             }
             .navigationBarTitle("添加标签", displayMode: .inline)
             .navigationBarItems(
-                leading: Button("取消") { dismiss() },
-                trailing: Button("添加") { commitSelection() }.disabled(!canAddSelection())
+                leading: Button("取消") { 
+                    dismiss() 
+                },
+                trailing: Button("添加") {
+                    commitSelection()
+                }
+                .disabled(!canAddSelection())
             )
+            .sheet(isPresented: $showingCategoryManagement) {
+                TagCategoryListView()
+            }
         }
     }
 }
