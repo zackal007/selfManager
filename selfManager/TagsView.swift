@@ -28,6 +28,9 @@ struct TagsView: View {
     @State private var newTagDescription = "" // 新标签描述
     @State private var selectedTagType: TagType = .goal // 默认添加到目标类型
     
+    // 标签分类相关状态（采用与AddTagSheet相同的设计）
+    @State private var selectedCategory: TagCategory?
+    
     // 标签类型枚举
     enum TagType: String, CaseIterable, Identifiable {
         case all = "全部"
@@ -38,7 +41,7 @@ struct TagsView: View {
         var id: String { self.rawValue }
     }
     
-    // 获取所有标签
+    // 获取所有标签（采用与AddTagSheet相同的过滤逻辑）
     private var allTags: [String] {
         // 使用与侧边栏相同的逻辑，收集所有实际使用的标签
         var tagSet = Set<String>()
@@ -67,14 +70,33 @@ struct TagsView: View {
         // 保证系统内置标签始终可见（即使未关联任何内容）
         BuiltInTags.allNames.forEach { tagSet.insert($0) }
         
-        let allTagNames = Array(tagSet).sorted()
+        var filtered = Array(tagSet).sorted()
         
-        // 搜索过滤
+        // 搜索文本过滤
         if !searchText.isEmpty {
-            return allTagNames.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            filtered = filtered.filter { $0.localizedCaseInsensitiveContains(searchText) }
         }
         
-        return allTagNames
+        // 分类过滤：如果选中了分类，则只保留该分类下的标签
+        if let selectedCategory = selectedCategory {
+            // 特殊处理系统内置分类
+            if selectedCategory.id == BuiltInTags.systemCategoryID {
+                // 如果是系统内置分类，只显示系统内置标签
+                filtered = filtered.filter { name in
+                    BuiltInTags.isBuiltIn(name)
+                }
+            } else {
+                // 获取该分类下的所有标签对象
+                let categoryTagObjects = tags.filter { $0.categoryID == selectedCategory.id }
+                let categoryTagNames = Set(categoryTagObjects.map { $0.name })
+                // 其他分类：显示该分类下的标签（不包括系统内置标签）
+                filtered = filtered.filter { name in
+                    categoryTagNames.contains(name)
+                }
+            }
+        }
+        
+        return filtered
     }
     
     // 检查是否需要初始化标签
@@ -94,6 +116,11 @@ struct TagsView: View {
     
     // 获取标签分类名称
     private func getCategoryName(for tagName: String) -> String? {
+        // 如果是系统内置标签，返回系统内置分类名称
+        if BuiltInTags.isBuiltIn(tagName) {
+            return BuiltInTags.systemCategoryName
+        }
+        
         guard let tag = getTagObject(for: tagName),
               let categoryID = tag.categoryID else { return nil }
         
@@ -124,219 +151,216 @@ struct TagsView: View {
         return TagColorManager.shared.getColor(for: tag)
     }
     
+
+    
 var body: some View {
-        // 页面主体布局容器（顶层 VStack，用于组织页面内容）
         VStack(spacing: 0) {
-            // 搜索栏 - 优化设计
-            VStack(spacing: 16) {
-                HStack(spacing: 12) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16, weight: .medium))
-                        // 标签搜索输入框（TextField）
-                        TextField("搜索标签", text: $searchText)
-                            .font(.system(size: 16))
-                        
-                        if !searchText.isEmpty {
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    searchText = ""
-                                }
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
-                                    .font(.system(size: 16))
-                            }
+            // 采用与AddTagSheet相同的搜索输入区域设计
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    TextField("搜索标签", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                    
+                    if !searchText.isEmpty {
+                        Button(action: { 
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(UIColor.systemGray6))
-                    )
                 }
-                
-                // 页签栏已移除
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [Color(UIColor.systemBackground), Color(UIColor.systemGray6).opacity(0.3)]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
             
-            // 标签网格布局 - iOS原生风格的按钮块
-            // 标签网格与导航链接列表
-            ScrollView {
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
-                ], spacing: 12) {
-                    ForEach(allTags, id: \.self) { tag in
-                        // 导航到标签详情页面（NavigationLink）
-                        NavigationLink(destination: TagDetailView(tag: tag, tagType: selectedTagType)) {
-                            VStack(spacing: 12) {
-                                // 标签主体内容
-                                VStack(spacing: 8) {
-                                    // 标签名称
+            // 标签列表 - 采用与AddTagSheet相同的列表设计
+            List {
+                ForEach(allTags, id: \.self) { tag in
+                    Button(action: {
+                        // 使用NavigationManager直接推送标签详情页
+                        NavigationManager.shared.pushToHome(.tagDetail(tag))
+                    }) {
+                        HStack(spacing: 12) {
+                            // 颜色指示器
+                            ZStack {
+                                Circle()
+                                    .fill(tagColor(for: tag))
+                                    .frame(width: 12, height: 12)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.primary.opacity(0.2), lineWidth: 0.5)
+                                    )
+                            }
+                            
+                            // 标签名称和描述
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
                                     Text(tag)
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.center)
-                                        .minimumScaleFactor(0.8)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.primary)
+                                        .fontWeight(.medium)
                                     
-                                    // 分类标签（如果有）
-                                    if let categoryName = getCategoryName(for: tag) {
-                                        Text(categoryName)
-                                            .font(.system(size: 11, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.8))
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 2)
-                                            .background(
-                                                Capsule()
-                                                    .fill(Color.white.opacity(0.2))
-                                            )
-                                    }
+                                    // 系统内置标签标识
                                     if BuiltInTags.isBuiltIn(tag) {
-                                        Text("系统内置")
-                                            .font(.system(size: 11, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.9))
-                                            .padding(.horizontal, 8)
+                                        Text("系统")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
                                             .background(
                                                 Capsule()
-                                                    .fill(Color.white.opacity(0.25))
+                                                    .fill(Color.orange)
                                             )
                                     }
                                 }
                                 
-                                Spacer()
+                                // 标签描述（如果有）
+                                if let tagObj = getTagObject(for: tag), !tagObj.tagDescription.isEmpty {
+                                    Text(tagObj.tagDescription)
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                }
                                 
-                                // 底部信息区域
-                                HStack {
-                                    // 标签描述（如果有且不为空）
-                                    if let tagObj = getTagObject(for: tag), !tagObj.tagDescription.isEmpty {
-                                        Text(tagObj.tagDescription)
+                                // 分类名称（如果有）
+                                if let categoryName = getCategoryName(for: tag) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "folder.fill")
+                                            .font(.system(size: 10))
+                                        Text(categoryName)
                                             .font(.system(size: 12))
-                                            .foregroundColor(.white.opacity(0.7))
-                                            .lineLimit(1)
-                                            .truncationMode(.tail)
                                     }
-                                    
-                                    Spacer()
-                                    
-                                    // 计数徽章
-                                    Text("\(getTagItemCount(tag: tag))")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(tagColor(for: tag))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(
-                                            Circle()
-                                                .fill(Color.white)
-                                        )
-                                        .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 0.5)
+                                    .foregroundColor(.secondary)
                                 }
                             }
-                            .padding(16)
-                            .frame(height: 120)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                tagColor(for: tag),
-                                                tagColor(for: tag).opacity(0.8)
-                                            ]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .shadow(color: tagColor(for: tag).opacity(0.3), radius: 8, x: 0, y: 4)
-                            )
-                            .scaleEffect(1.0)
-                            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: tagColor(for: tag))
+                            
+                            Spacer()
+                            
+                            // 关联项目数量
+                            HStack(spacing: 4) {
+                                Text("\(getTagItemCount(tag: tag))")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                Image(systemName: "link")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
+                        .padding(.vertical, 12)
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(UIColor.secondarySystemBackground))
+                                .padding(.horizontal, 8)
+                        )
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
             }
-            .background(Color(UIColor.systemGroupedBackground))
-            .scrollContentBackground(.hidden)
-        }
-
-
-        // 导航栏标题（NavigationTitle）
-        .navigationTitle("我的标签")
-        .navigationBarTitleDisplayMode(.large)
-        .onAppear {
-            isModelContextReady = true
-        }
-        // 顶部工具栏（右侧操作按钮）
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 12) {
-                    // 同步标签按钮
-                    // 同步已有标签按钮
-                    Button(action: {
-                        syncExistingTags()
-                    }) {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(UIColor.systemOrange))
-                    }
+            .listStyle(.plain)
+            .padding(.top, 8)
+            
+            // 标签分类管理区域 - 采用与AddTagSheet相同的设计
+            VStack(spacing: 12) {
+                // 分类管理标题和按钮（始终显示）
+                HStack {
+                    Text("标签分类")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.primary)
                     
-                    // 添加标签按钮
-                    // 添加标签按钮（弹出添加表单）
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            showingAddTag = true
-                        }
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .scaleEffect(showingAddTag ? 0.9 : 1.0)
-                            .animation(.easeInOut(duration: 0.1), value: showingAddTag)
-                    }
+                    Spacer()
                     
-                    // 管理分类按钮
-                    // 标签分类管理入口（导航到分类列表）
                     NavigationLink(destination: TagCategoryListView()) {
                         HStack(spacing: 4) {
-                            Image(systemName: "folder.fill")
-                                .font(.system(size: 16, weight: .medium))
-                            Text("分类")
-                                .font(.system(size: 15, weight: .medium))
+                            Image(systemName: "folder.circle")
+                                .font(.system(size: 14))
+                            Text("管理")
+                                .font(.system(size: 14, weight: .medium))
                         }
-                        .foregroundColor(Color(UIColor.systemBlue))
-                        .padding(.horizontal, 12)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
                             Capsule()
-                                .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                .fill(Color.blue.opacity(0.1))
                         )
                     }
                 }
+                .padding(.horizontal, 16)
+                
+                // 分类选择器（仅当有分类时显示）
+                if !tagCategories.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            // "全部分类"选项
+                            Button(action: {
+                                selectedCategory = nil
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "square.grid.2x2")
+                                        .font(.system(size: 12))
+                                    Text("全部")
+                                        .font(.system(size: 13))
+                                }
+                                .foregroundColor(selectedCategory == nil ? .white : .primary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(selectedCategory == nil ? Color.blue : Color(UIColor.systemGray5))
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            // 各个分类选项
+                            ForEach(tagCategories, id: \.self) { category in
+                                Button(action: {
+                                    selectedCategory = category
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Circle()
+                                            .fill(Color(hex: category.color) ?? .gray)
+                                            .frame(width: 8, height: 8)
+                                        Text(category.name)
+                                            .font(.system(size: 13))
+                                    }
+                                    .foregroundColor(selectedCategory?.id == category.id ? .white : .primary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(selectedCategory?.id == category.id ? Color.blue : Color(UIColor.systemGray5))
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                }
             }
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(UIColor.secondarySystemBackground))
+                    .padding(.horizontal, 8)
+            )
         }
-        // 添加标签弹窗（Sheet）
+        .navigationBarTitleDisplayMode(.inline)
+        .padding(.bottom, 20) // 将标签分类栏向上移动
         .sheet(isPresented: $showingAddTag) {
             addTagView
         }
-        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .onAppear {
+            isModelContextReady = true
+        }
     }
     
     // 添加标签视图 - 优化设计

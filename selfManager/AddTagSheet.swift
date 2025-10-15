@@ -302,7 +302,7 @@ struct AddTagSheet: View {
                     Divider()
                         .padding(.horizontal, 16)
                     
-                    // 分类管理标题和按钮
+                    // 分类管理标题和按钮（始终显示）
                     HStack {
                         Text("标签分类管理")
                             .font(.system(size: 16, weight: .semibold))
@@ -331,7 +331,7 @@ struct AddTagSheet: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // 分类选择器（如果有分类的话）
+                    // 分类选择器（仅当有分类时显示）
                     if !tagCategories.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {

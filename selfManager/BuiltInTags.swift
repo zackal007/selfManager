@@ -13,6 +13,12 @@ struct BuiltInTags {
     // 名称常量
     static let achievement = "成就"
     static let anxiety = "焦虑"
+    
+    // 系统内置分类名称和ID
+    static let systemCategoryName = "系统内置"
+    static let systemCategoryID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+    static let systemCategoryDescription = "系统提供的默认标签，用于标记重要的事项类型"
+    static let systemCategoryColor = "#FF9500" // 系统橙色
 
     // 所有内置标签名称集合
     static let allNames: [String] = [achievement, anxiety]
@@ -48,14 +54,32 @@ struct BuiltInTags {
 
     // 确保内置标签写入数据库（若缺失则插入）
     static func ensureExists(modelContext: ModelContext) {
+        // 首先确保系统内置分类存在
+        ensureSystemCategoryExists(modelContext: modelContext)
+        
         for name in allNames {
             let descriptor = FetchDescriptor<Tag>(predicate: #Predicate<Tag> { $0.name == name })
             let exists = (try? modelContext.fetch(descriptor))?.first != nil
             if !exists {
                 let description = descriptions[name] ?? ""
-                let tag = Tag(name: name, tagDescription: description, color: "", categoryID: nil)
+                let tag = Tag(name: name, tagDescription: description, color: "", categoryID: systemCategoryID)
                 modelContext.insert(tag)
             }
+        }
+    }
+    
+    // 确保系统内置分类存在
+    private static func ensureSystemCategoryExists(modelContext: ModelContext) {
+        let descriptor = FetchDescriptor<TagCategory>(predicate: #Predicate<TagCategory> { $0.id == systemCategoryID })
+        let exists = (try? modelContext.fetch(descriptor))?.first != nil
+        if !exists {
+            let category = TagCategory(
+                name: systemCategoryName,
+                categoryDescription: systemCategoryDescription,
+                color: systemCategoryColor
+            )
+            category.id = systemCategoryID
+            modelContext.insert(category)
         }
     }
 }

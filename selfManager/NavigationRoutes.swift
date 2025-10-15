@@ -9,4 +9,5 @@ enum AppRoute: Hashable {
     case achievements
     case anxieties
     case userEdit
+    case tagDetail(String)
 }

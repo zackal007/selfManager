@@ -26,27 +26,42 @@ struct TagCategoryListView: View {
     ]
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(categories) { category in
-                        NavigationLink(destination: TagCategoryEditView(category: category)) {
-                            categoryRowView(for: category)
-                        }
-                        .buttonStyle(PlainButtonStyle())
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(categories.filter { $0.name != "系统内置" }) { category in
+                    NavigationLink(destination: TagCategoryEditView(category: category)) {
+                        categoryRowView(for: category)
                     }
-                    .onDelete(perform: deleteCategories)
+                    .buttonStyle(PlainButtonStyle())
                 }
-                
-                Spacer(minLength: 100)
+                .onDelete(perform: deleteCategories)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
+            
+            Spacer(minLength: 100)
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
         .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle("标签分类")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("返回")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(.blue)
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Text("标签分类")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.primary)
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     showingAddCategory = true
@@ -130,17 +145,17 @@ struct TagCategoryListView: View {
             )
     }
     
-    // 添加按钮视图
+    // 添加按钮视图 - 优化大小和边距
     private var addButtonView: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             Image(systemName: "plus.circle.fill")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
             Text("添加")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
         }
         .foregroundColor(.white)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .background(
             Capsule()
                 .fill(
@@ -163,15 +178,11 @@ struct TagCategoryListView: View {
                 VStack(spacing: 0) {
                     // 头部区域
                     VStack(spacing: 24) {
-                        // 图标和标题
+                        // 图标
                         VStack(spacing: 12) {
                             Image(systemName: "folder.circle.fill")
                                 .font(.system(size: 48, weight: .light))
-                                .foregroundColor(newCategoryColor)
-                            
-                            Text("添加新分类")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(.blue)
                         }
                         .padding(.top, 32)
                         
@@ -191,7 +202,7 @@ struct TagCategoryListView: View {
                                             .fill(Color(UIColor.systemGray6))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(newCategoryName.isEmpty ? Color.clear : newCategoryColor, lineWidth: 2)
+                                                    .stroke(newCategoryName.isEmpty ? Color.clear : Color.blue, lineWidth: 2)
                                             )
                                     )
                             }
@@ -210,7 +221,7 @@ struct TagCategoryListView: View {
                                             .fill(Color(UIColor.systemGray6))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(newCategoryDescription.isEmpty ? Color.clear : newCategoryColor.opacity(0.5), lineWidth: 1)
+                                                    .stroke(newCategoryDescription.isEmpty ? Color.clear : Color.blue.opacity(0.5), lineWidth: 1)
                                             )
                                     )
                             }
@@ -218,46 +229,11 @@ struct TagCategoryListView: View {
                     }
                     .padding(.horizontal, 24)
                     
-                    // 颜色选择区域
-                    VStack(spacing: 16) {
-                        HStack {
-                            Text("选择颜色")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.primary)
-                            Spacer()
-                        }
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 16) {
-                            ForEach(colorOptions, id: \.self) { color in
-                                Button(action: {
-                                    newCategoryColor = color
-                                }) {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 44, height: 44)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(newCategoryColor == color ? Color.primary : Color.clear, lineWidth: 3)
-                                        )
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.white, lineWidth: newCategoryColor == color ? 2 : 0)
-                                        )
-                                        .scaleEffect(newCategoryColor == color ? 1.1 : 1.0)
-                                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: newCategoryColor)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 32)
-                    
                     Spacer(minLength: 100)
                 }
             }
             .background(Color(UIColor.systemBackground))
-            .navigationTitle("添加分类")
+            .navigationTitle("添加标签分类")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -293,8 +269,8 @@ struct TagCategoryListView: View {
                                 .fill(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            newCategoryColor,
-                                            newCategoryColor.opacity(0.8)
+                                            Color.blue,
+                                            Color.blue.opacity(0.8)
                                         ]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -319,7 +295,7 @@ struct TagCategoryListView: View {
             let newCategory = TagCategory(
                 name: trimmedName,
                 categoryDescription: newCategoryDescription,
-                color: newCategoryColor.toHex() ?? "#0000FF"
+                color: "#007AFF"  // 默认使用iOS系统蓝色
             )
             
             modelContext.insert(newCategory)
@@ -384,6 +360,7 @@ struct TagCategoryEditView: View {
     @State private var selectedColor: Color
     @State private var showingSaveAlert = false
     @State private var alertMessage = ""
+    @State private var showingDeleteAlert = false
     
     // 可选的标签颜色
     private let colorOptions: [Color] = [
@@ -400,138 +377,110 @@ struct TagCategoryEditView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 0) {
-                    // 头部预览区域
-                    VStack(spacing: 24) {
-                        // 分类预览
-                        VStack(spacing: 16) {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(selectedColor)
-                                .frame(width: 60, height: 60)
-                                .overlay(
-                                    Image(systemName: "folder.fill")
-                                        .font(.system(size: 28, weight: .medium))
-                                        .foregroundColor(.white)
-                                )
-                                .shadow(color: selectedColor.opacity(0.3), radius: 8, x: 0, y: 4)
-                            
-                            VStack(spacing: 4) {
-                                Text(editedName.isEmpty ? "分类名称" : editedName)
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.primary)
-                                
-                                if !editedDescription.isEmpty {
-                                    Text(editedDescription)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
-                            }
-                        }
-                        .padding(.top, 32)
-                        
-                        // 输入框区域
-                        VStack(spacing: 20) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("分类名称")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.primary)
-                                
-                                TextField("请输入分类名称", text: $editedName)
-                                    .font(.system(size: 16))
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(UIColor.systemGray6))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(editedName.isEmpty ? Color.clear : selectedColor, lineWidth: 2)
-                                            )
-                                    )
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("分类描述（可选）")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.primary)
-                                
-                                TextField("请输入分类描述", text: $editedDescription)
-                                    .font(.system(size: 16))
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(UIColor.systemGray6))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(editedDescription.isEmpty ? Color.clear : selectedColor.opacity(0.5), lineWidth: 1)
-                                            )
-                                    )
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    
-                    // 颜色选择区域
+        ScrollView {
+            VStack(spacing: 0) {
+                // 头部预览区域
+                VStack(spacing: 24) {
+                    // 分类预览
                     VStack(spacing: 16) {
-                        HStack {
-                            Text("选择颜色")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.primary)
-                            Spacer()
-                        }
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.blue)
+                            .frame(width: 60, height: 60)
+                            .overlay(
+                                Image(systemName: "folder.fill")
+                                    .font(.system(size: 28, weight: .medium))
+                                    .foregroundColor(.white)
+                            )
+                            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
                         
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 16) {
-                            ForEach(colorOptions, id: \.self) { color in
-                                Button(action: {
-                                    selectedColor = color
-                                }) {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 44, height: 44)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(selectedColor == color ? Color.primary : Color.clear, lineWidth: 3)
-                                        )
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.white, lineWidth: selectedColor == color ? 2 : 0)
-                                        )
-                                        .scaleEffect(selectedColor == color ? 1.1 : 1.0)
-                                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedColor)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 8)
+                        // 删除重复的预览内容，只保留图标
                     }
-                    .padding(.horizontal, 24)
                     .padding(.top, 32)
                     
-                    Spacer(minLength: 100)
-                }
-            }
-            .background(Color(UIColor.systemBackground))
-            .navigationTitle("编辑分类")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "xmark")
+                    // 输入框区域
+                    VStack(spacing: 20) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("分类名称")
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("取消")
-                                .font(.system(size: 17, weight: .medium))
+                                .foregroundColor(.primary)
+                            
+                            TextField("请输入分类名称", text: $editedName)
+                                .font(.system(size: 16))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemGray6))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(editedName.isEmpty ? Color.clear : Color.blue, lineWidth: 2)
+                                        )
+                                )
                         }
-                        .foregroundColor(Color(UIColor.systemBlue))
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("分类描述（可选）")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            TextField("请输入分类描述", text: $editedDescription)
+                                .font(.system(size: 16))
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemGray6))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(editedDescription.isEmpty ? Color.clear : Color.blue.opacity(0.5), lineWidth: 1)
+                                        )
+                                )
+                        }
                     }
                 }
+                .padding(.horizontal, 24)
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+
+                
+                Spacer(minLength: 100)
+            }
+        }
+        .background(Color(UIColor.systemBackground))
+        .navigationTitle(category.name)
+        .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("返回")
+                            .font(.system(size: 17, weight: .medium))
+                    }
+                    .foregroundColor(Color(UIColor.systemBlue))
+                }
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 12) {
+                    // 删除按钮
+                    Button(action: {
+                        showingDeleteAlert = true
+                    }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.red)
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .fill(Color(UIColor.systemGray6))
+                            )
+                    }
+                    
+                    // 保存按钮
                     Button(action: {
                         saveCategory()
                     }) {
@@ -549,8 +498,8 @@ struct TagCategoryEditView: View {
                                 .fill(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            selectedColor,
-                                            selectedColor.opacity(0.8)
+                                            Color.blue,
+                                            Color.blue.opacity(0.8)
                                         ]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -572,6 +521,16 @@ struct TagCategoryEditView: View {
                 dismissButton: .default(Text("确定"))
             )
         }
+        .alert(isPresented: $showingDeleteAlert) {
+            Alert(
+                title: Text("确认删除"),
+                message: Text("确定要删除分类\"\(editedName)\"吗？此操作不可撤销。"),
+                primaryButton: .destructive(Text("删除")) {
+                    deleteCategory()
+                },
+                secondaryButton: .cancel(Text("取消"))
+            )
+        }
     }
     
     // 保存分类方法
@@ -587,7 +546,7 @@ struct TagCategoryEditView: View {
         // 更新分类
         category.name = trimmedName
         category.categoryDescription = editedDescription
-        category.color = selectedColor.toHex() ?? "#0000FF"
+        category.color = "#007AFF"  // 固定使用iOS系统蓝色
         category.modifyTime = Date()
         
         // 保存更改
@@ -597,6 +556,43 @@ struct TagCategoryEditView: View {
         } catch {
             alertMessage = "保存失败: \(error.localizedDescription)"
             showingSaveAlert = true
+        }
+    }
+    
+    // 删除分类方法
+    private func deleteCategory() {
+        // 更新使用此分类的标签
+        updateTagsForDeletedCategory(categoryID: category.id)
+        
+        // 删除分类
+        modelContext.delete(category)
+        
+        // 保存更改
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            alertMessage = "删除失败: \(error.localizedDescription)"
+            showingSaveAlert = true
+        }
+    }
+    
+    // 更新使用已删除分类的标签
+    private func updateTagsForDeletedCategory(categoryID: UUID) {
+        let descriptor = FetchDescriptor<Tag>(
+            predicate: #Predicate { tag in
+                tag.categoryID == categoryID
+            }
+        )
+        
+        do {
+            let tags = try modelContext.fetch(descriptor)
+            for tag in tags {
+                tag.categoryID = nil
+                tag.modifyTime = Date()
+            }
+        } catch {
+            print("更新标签分类失败: \(error)")
         }
     }
 }

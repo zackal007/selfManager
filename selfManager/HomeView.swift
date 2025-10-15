@@ -335,8 +335,13 @@ struct HomeView: View {
                         .navigationTitle("我的标签")
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button(action: {
                                     navigationManager.pop(for: selectedTab)
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "chevron.left")
+                                        Text("返回")
+                                    }
                                 }
                             }
                         }
@@ -369,6 +374,17 @@ struct HomeView: View {
                     TagDetailView(tag: BuiltInTags.achievement, tagType: .goal)
                 case .anxieties:
                     TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)
+                case .tagDetail(let tagName):
+                    TagDetailView(tag: tagName, tagType: .goal)
+                        .navigationBarBackButtonHidden(true)
+                        .navigationTitle("标签详情")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("返回") {
+                                    navigationManager.pop(for: selectedTab)
+                                }
+                            }
+                        }
                 }
             }
         }

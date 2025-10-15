@@ -150,6 +150,12 @@ class NavigationManager: ObservableObject {
         contactNavigationPath = NavigationPath()
         lastTabTapTimes.removeAll()
     }
+    
+    /// 推送路由到首页导航栈
+    /// - Parameter route: 要推送的路由
+    func pushToHome(_ route: AppRoute) {
+        homeNavigationPath.append(route)
+    }
 }
 
 /// 导航路径扩展，提供便捷方法
