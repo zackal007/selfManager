@@ -163,6 +163,11 @@ struct GoalView: View {
     @State private var currentGoalTypeIndex = 0
     // 顶栏动态高度（用于同步透明占位的高度，防止内容被遮挡）
     @State private var headerHeight: CGFloat = 120
+    
+    // 年份选择器状态变量
+    @State private var showYearPicker = false
+    @State private var currentYear = Calendar.current.component(.year, from: Date())
+    @State private var yearListBaseYear: Int = 0
 
     // “全部”页统一数据源：优先使用弹窗保存的筛选结果；否则按搜索文本回退
     private var allTabDisplayGoals: [Goal] {
@@ -306,8 +311,6 @@ struct GoalView: View {
     // 初始化示例数据的标志
     @State private var hasInitializedData = false
     
-    // 当前年份
-    @State private var currentYear = Calendar.current.component(.year, from: Date())
     @State private var yearChangeAnimation = false // 用于年份变化动画
     @State private var showYearChangeToast = false // 用于显示年份变化提示
     @State private var yearChangeDirection = "" // 用于记录年份变化方向
@@ -521,6 +524,42 @@ struct GoalView: View {
                                 .buttonStyle(PlainButtonStyle())
                             }
                             
+                            // 年份选择器按钮（仅在年度目标时显示）
+                            if selectedGoalType == .yearly {
+                                Button(action: {
+                                    dismissKeyboard()
+                                    // 添加触觉反馈
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                    impactFeedback.impactOccurred()
+                                    withAnimation {
+                                        showYearPicker.toggle()
+                                    }
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Text("\(currentYear)年")
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(Color.blue.opacity(0.8))
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.9)
+                                        
+                                        Image(systemName: showYearPicker ? "chevron.up" : "chevron.down")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(Color.blue.opacity(0.6))
+                                            .rotationEffect(.degrees(showYearPicker ? 0 : 0))
+                                            .animation(.easeInOut(duration: 0.2), value: showYearPicker)
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.blue.opacity(0.15))
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .scaleEffect(showYearPicker ? 0.98 : 1.0)
+                                .animation(.easeInOut(duration: 0.1), value: showYearPicker)
+                            }
+                            
                             // 添加目标按钮
                             Button(action: {
                                 showAddGoalSheet = true
@@ -638,91 +677,7 @@ struct GoalView: View {
                             .zIndex(9)
                     }
                 
-                // 年份选择器
-                if selectedSegment == 1 {
-                    HStack(spacing: 16) {
-                        Spacer()
-                        
-                        Button(action: {
-                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                 yearChangeAnimation = true
-                                 currentYear -= 1
-                                 yearChangeDirection = "减少"
-                             }
-                             // 使用Timer替代DispatchQueue以避免多线程问题
-                             Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                 yearChangeAnimation = false
-                                 showYearChangeToast = true
-                                 
-                                 // 嵌套Timer替代第二个DispatchQueue
-                                 Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                     showYearChangeToast = false
-                                 }
-                             }
-                         }) {
-                             Image(systemName: "chevron.left.circle.fill")
-                                 .font(.system(size: 22))
-                                 .foregroundColor(.blue)
-                                 .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
-                         }
-                         .buttonStyle(ScaleButtonStyle())
-                        
-                        Text("\(currentYear)年")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white)
-                            .frame(minWidth: 80)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.9)]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .shadow(color: Color.blue.opacity(0.3), radius: 3, x: 0, y: 2)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
-                            .scaleEffect(yearChangeAnimation ? 0.9 : 1)
-                            .opacity(yearChangeAnimation ? 0.7 : 1)
-                            .rotationEffect(Angle(degrees: yearChangeAnimation ? 2 : 0))
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: yearChangeAnimation)
-                        
-                        Button(action: {
-                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                 yearChangeAnimation = true
-                                 currentYear += 1
-                                 yearChangeDirection = "增加"
-                             }
-                             // 使用Timer替代DispatchQueue以避免多线程问题
-                             Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                 yearChangeAnimation = false
-                                 showYearChangeToast = true
-                                 
-                                 // 嵌套Timer替代第二个DispatchQueue
-                                 Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                     showYearChangeToast = false
-                                 }
-                             }
-                         }) {
-                             Image(systemName: "chevron.right.circle.fill")
-                                 .font(.system(size: 22))
-                                 .foregroundColor(.blue)
-                                 .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
-                         }
-                         .buttonStyle(ScaleButtonStyle())
-                        
-                        Spacer()
-                    }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
-                    .background(Color(.systemBackground).opacity(0.5))
-                }
+                // 年份选择器已移到顶栏下方的内容区域
                 
                 // 页面框：目标内容区域 TabView（按类型分页滑动）
                 GeometryReader { geometry in
@@ -783,7 +738,142 @@ struct GoalView: View {
                                                 .padding(.horizontal)
                                             }
                                         }
+                                }
+                                
+                                // 年度目标页签的年份选择器 - 与记录模块中年记的年份选择保持一致
+                                if selectedSegment == 1 && showYearPicker && goalTypes[index] == .yearly {
+                                    VStack(spacing: 16) {
+                                        // 年份选择器 - 横向滚动列表形式，只保留5年跳转箭头
+                                        HStack {
+                                            Button(action: {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                    yearChangeAnimation = true
+                                                    currentYear -= 5
+                                                    yearChangeDirection = "减少"
+                                                    // 调整年份列表的基准年份
+                                                    yearListBaseYear = max(1, yearListBaseYear - 5) // 确保年份不小于1
+                                                }
+                                                // 使用Timer替代DispatchQueue以避免多线程问题
+                                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
+                                                    yearChangeAnimation = false
+                                                    showYearChangeToast = true
+                                                    
+                                                    // 嵌套Timer替代第二个DispatchQueue
+                                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
+                                                        showYearChangeToast = false
+                                                    }
+                                                }
+                                            }) {
+                                                Image(systemName: "chevron.left.2")
+                                                    .font(.system(size: 16, weight: .bold))
+                                                    .foregroundColor(.primary)
+                                                    .padding(8)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            Text("\(currentYear)年")
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundColor(.primary)
+                                            
+                                            Spacer()
+                                            
+                                            Button(action: {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                    yearChangeAnimation = true
+                                                    currentYear += 5
+                                                    yearChangeDirection = "增加"
+                                                    // 调整年份列表的基准年份
+                                                    yearListBaseYear += 5
+                                                }
+                                                // 使用Timer替代DispatchQueue以避免多线程问题
+                                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
+                                                    yearChangeAnimation = false
+                                                    showYearChangeToast = true
+                                                    
+                                                    // 嵌套Timer替代第二个DispatchQueue
+                                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
+                                                        showYearChangeToast = false
+                                                    }
+                                                }
+                                            }) {
+                                                Image(systemName: "chevron.right.2")
+                                                    .font(.system(size: 16, weight: .bold))
+                                                    .foregroundColor(.primary)
+                                                    .padding(8)
+                                            }
+                                        }
+                                        .padding(.horizontal, 8)
+                                        
+                                        // 年份快速选择器 - 横向滚动列表形式
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 12) {
+                                                // 显示更多年份，提供连续的横向滚动体验
+                                                ForEach(max(1, yearListBaseYear-10)...(yearListBaseYear+30), id: \.self) { year in
+                                                    Button(action: {
+                                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                            yearChangeAnimation = true
+                                                            currentYear = year
+                                                            yearChangeDirection = year > currentYear ? "增加" : "减少"
+                                                            // 调整基准年份，保持当前选中年份在可见范围内
+                                                            if year < yearListBaseYear {
+                                                                yearListBaseYear = max(1, year - 10)
+                                                            } else if year > yearListBaseYear + 20 {
+                                                                yearListBaseYear = year - 10
+                                                            }
+                                                        }
+                                                        // 使用Timer替代DispatchQueue以避免多线程问题
+                                                        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
+                                                            yearChangeAnimation = false
+                                                            showYearChangeToast = true
+                                                            
+                                                            // 嵌套Timer替代第二个DispatchQueue
+                                                            Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
+                                                                showYearChangeToast = false
+                                                            }
+                                                        }
+                                                    }) {
+                                                        ZStack {
+                                                            if currentYear == year {
+                                                                RoundedRectangle(cornerRadius: 8)
+                                                                    .fill(Color.blue)
+                                                                    .frame(width: 60, height: 36)
+                                                            } else if Calendar.current.component(.year, from: Date()) == year && 
+                                                                     Calendar.current.component(.year, from: Date()) != currentYear {
+                                                                RoundedRectangle(cornerRadius: 8)
+                                                                    .stroke(Color.blue, lineWidth: 2)
+                                                                    .frame(width: 60, height: 36)
+                                                            } else {
+                                                                RoundedRectangle(cornerRadius: 8)
+                                                                    .fill(Color(UIColor.systemGray6))
+                                                                    .frame(width: 60, height: 36)
+                                                                    .opacity(0.6)
+                                                            }
+                                                            Text("\(year)")
+                                                                .monospacedDigit()
+                                                                .font(.system(size: 16))
+                                                                .fontWeight(currentYear == year ? .bold : .regular)
+                                                                .foregroundColor(currentYear == year ? .white : .primary)
+                                                                .frame(width: 60, height: 36)
+                                                                .lineLimit(1)
+                                                                .minimumScaleFactor(0.8)
+                                                        }
+                                                    }
+                                                    .buttonStyle(PlainButtonStyle())
+                                                }
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 8)
+                                        }
+                                        .padding(.horizontal, -8) // 抵消父容器padding，实现边缘到边缘的滚动
                                     }
+                                    .padding(.vertical, 4)
+                                    .background(Color(UIColor.systemGroupedBackground))
+                                    .cornerRadius(12)
+                                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 16) // 与目标条目之间间隔16px
+                                }
                                 
                                     // 根据视图模式显示不同的布局
                                     if viewMode == .gallery {
@@ -923,6 +1013,8 @@ struct GoalView: View {
         }
         .onAppear {
             loadSavedGoalFilters()
+            // 初始化年份列表基准年份
+            yearListBaseYear = max(1, currentYear + 10)
         }
         .onChange(of: popupSelectedGoalType) { _, _ in
             updateFilteredGoals()
@@ -1899,3 +1991,8 @@ extension RoundedRectangle {
 }
 
 // 使用SharedComponents.swift中的MenuButton
+
+// MARK: - 键盘隐藏函数
+private func dismissKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+}
