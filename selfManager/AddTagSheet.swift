@@ -198,8 +198,9 @@ struct AddTagSheet: View {
                         }) {
                             HStack(spacing: 6) {
                                 Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 16))
                                 Text("创建并添加")
-                                    .font(.system(size: 15, weight: .medium))
+                                    .font(.system(size: 14, weight: .medium))
                             }
                             .foregroundColor(.white)
                             .padding(.horizontal, 12)
@@ -236,17 +237,17 @@ struct AddTagSheet: View {
                                     ZStack {
                                         Circle()
                                             .fill(tagColor(name))
-                                            .frame(width: 12, height: 12)
+                                            .frame(width: 10, height: 10)
                                         
                                         if selectedNames.contains(name) {
                                             Circle()
                                                 .stroke(Color.blue, lineWidth: 2)
-                                                .frame(width: 18, height: 18)
+                                                .frame(width: 16, height: 16)
                                                 .scaleEffect(selectedNames.contains(name) ? 1.0 : 0.8)
                                                 .animation(.easeInOut(duration: 0.2), value: selectedNames.contains(name))
                                         }
                                     }
-                                    .frame(width: 20, height: 20) // 固定容器大小
+                                    .frame(width: 18, height: 18) // 固定容器大小
                                     
                                     Text(name)
                                         .font(.system(size: 16, weight: selectedNames.contains(name) ? .semibold : .regular))
@@ -272,7 +273,7 @@ struct AddTagSheet: View {
                                     if selectedNames.contains(name) {
                                         Image(systemName: "checkmark.circle.fill")
                                             .foregroundColor(.blue)
-                                            .font(.system(size: 18))
+                                            .font(.system(size: 16))
                                             .scaleEffect(selectedNames.contains(name) ? 1.0 : 0.8)
                                             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selectedNames.contains(name))
                                     }
@@ -391,13 +392,45 @@ struct AddTagSheet: View {
             }
             .navigationBarTitle("添加标签", displayMode: .inline)
             .navigationBarItems(
-                leading: Button("取消") { 
-                    dismiss() 
+                leading: Button(action: {
+                    dismiss()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("取消")
+                            .font(.system(size: 17, weight: .medium))
+                    }
+                    .foregroundColor(Color(UIColor.systemBlue))
                 },
-                trailing: Button("添加") {
+                trailing: Button(action: {
                     commitSelection()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("添加")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.blue,
+                                        Color.blue.opacity(0.8)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
                 }
                 .disabled(!canAddSelection())
+                .opacity(!canAddSelection() ? 0.6 : 1.0)
             )
             .sheet(isPresented: $showingCategoryManagement) {
                 TagCategoryListView()

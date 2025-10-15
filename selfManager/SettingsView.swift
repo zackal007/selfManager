@@ -26,97 +26,45 @@ struct SettingsView: View {
     private let syncOptions = ["手动同步", "每天", "每周"]
     
     var body: some View {
-        
-            List {
+        NavigationView {
+            Form {
                 // 外观设置
-                Section(header: sectionHeader(title: "外观", systemImage: "paintbrush.fill")) {
-                    Toggle(isOn: $isDarkMode) {
-                        SettingRow(title: "深色模式", systemImage: "moon.fill", color: .purple)
-                    }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.accentColor))
-                }
-                
-                // 通知设置
-                Section(header: sectionHeader(title: "通知", systemImage: "bell.fill")) {
-                    Toggle(isOn: $enableNotifications) {
-                        SettingRow(title: "推送通知", systemImage: "bell.badge.fill", color: .blue)
-                    }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.accentColor))
-                    
-                    if enableNotifications {
-                        NavigationLink(destination: Text("通知设置详情").navigationTitle("通知设置")) {
-                            SettingRow(title: "通知类型", systemImage: "bell.and.waves.left.and.right.fill", color: .blue)
-                        }
+                Section(header: Text("外观")) {
+                    HStack {
+                        Image(systemName: "moon.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.purple)
+                        Text("深色模式")
+                        Spacer()
+                        Toggle("", isOn: $isDarkMode)
+                            .labelsHidden()
                     }
                 }
                 
                 // 数据与隐私
-                Section(header: sectionHeader(title: "数据与隐私", systemImage: "lock.fill")) {
-                    Toggle(isOn: $privacyLockEnabled) {
-                        SettingRow(title: "应用锁定", systemImage: "lock.shield.fill", color: .green)
-                    }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.accentColor))
-                    
-                    Toggle(isOn: $dataBackupEnabled) {
-                        SettingRow(title: "自动备份", systemImage: "arrow.clockwise.icloud.fill", color: .blue)
-                    }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.accentColor))
-                    
-                    if dataBackupEnabled {
-                        Picker(selection: $syncFrequency, label: SettingRow(title: "同步频率", systemImage: "calendar.badge.clock", color: .blue)) {
-                            ForEach(0..<syncOptions.count, id: \.self) { index in
-                                Text(syncOptions[index])
-                            }
-                        }
-                    }
-                    
+                Section(header: Text("数据与隐私")) {
+                    // 应用锁定
                     HStack {
-                        SettingRow(title: "回收站过期时间", systemImage: "trash.circle.fill", color: .orange)
+                        Image(systemName: "lock.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.green)
+                        Text("应用锁定")
                         Spacer()
-                        Stepper(
-                            "",
-                            value: $trashExpirationDays,
-                            in: 1...90,
-                            step: 1,
-                            onEditingChanged: { _ in updateTrashExpirationDays() }
-                        )
-                        .labelsHidden()
-                        Text("\(trashExpirationDays)天")
-                            .foregroundColor(.secondary)
-                            .frame(width: 45, alignment: .trailing)
+                        Toggle("", isOn: $privacyLockEnabled)
+                            .labelsHidden()
                     }
                     
-                    Button(action: {
-                        showingBackupOptions = true
-                    }) {
-                        SettingRow(title: "备份与恢复", systemImage: "arrow.triangle.2.circlepath.icloud.fill", color: .blue)
+                    // 备份与恢复
+                    NavigationLink(destination: BackupOptionsView()) {
+                        SettingRow(title: "备份与恢复", systemImage: "externaldrive.badge.person.crop", color: .blue)
                     }
                 }
                 
-                // 关于与支持
-                Section(header: sectionHeader(title: "关于与支持", systemImage: "info.circle.fill")) {
-                    Button(action: {
-                        showingAbout = true
-                    }) {
-                        SettingRow(title: "关于应用", systemImage: "info.circle.fill", color: .orange)
-                    }
-                    
-                    Link(destination: URL(string: "mailto:support@example.com")!) {
-                        SettingRow(title: "联系支持", systemImage: "envelope.fill", color: .orange)
-                    }
-                    
-                    Link(destination: URL(string: "https://example.com/privacy")!) {
-                        SettingRow(title: "隐私政策", systemImage: "hand.raised.fill", color: .orange)
-                    }
-                }
-                
-                // 危险区域
-                Section(header: sectionHeader(title: "危险区域", systemImage: "exclamationmark.triangle.fill")) {
-                    Button(action: {
-                        showingResetConfirmation = true
-                    }) {
-                        SettingRow(title: "重置所有数据", systemImage: "trash.fill", color: .red)
-                            .foregroundColor(.red)
+                // 关于
+                Section(header: Text("关于")) {
+                    // 关于应用
+                    NavigationLink(destination: AboutView()) {
+                        SettingRow(title: "关于应用", systemImage: "info.circle", color: .blue)
                     }
                 }
             }
@@ -125,26 +73,13 @@ struct SettingsView: View {
             .navigationBarItems(trailing: Button("完成") {
                 dismiss()
             })
-            .alert(isPresented: $showingResetConfirmation) {
-                Alert(
-                    title: Text("确认重置"),
-                    message: Text("此操作将删除所有数据且无法恢复，确定要继续吗？"),
-                    primaryButton: .destructive(Text("重置")) {
-                        // 执行重置操作
-                    },
-                    secondaryButton: .cancel(Text("取消"))
-                )
-            }
             .sheet(isPresented: $showingAbout) {
                 AboutView()
             }
             .sheet(isPresented: $showingBackupOptions) {
                 BackupOptionsView()
             }
-            .onAppear {
-                // 加载当前的回收站过期时间设置
-                loadTrashExpirationDays()
-            }
+        }
     }
     
     private func sectionHeader(title: String, systemImage: String) -> some View {
@@ -160,35 +95,12 @@ struct SettingsView: View {
     
     // 加载当前的回收站过期时间设置
     private func loadTrashExpirationDays() {
-        do {
-            // 查询用户设置
-            let descriptor = FetchDescriptor<User>()
-            let users = try modelContext.fetch(descriptor)
-            
-            // 如果有用户设置，使用第一个用户的设置
-            if let user = users.first {
-                trashExpirationDays = user.trashExpirationDays
-            }
-        } catch {
-            print("获取用户设置失败: \(error)")
-        }
+        // 保留此方法以备将来使用
     }
     
     // 更新回收站过期时间设置
     private func updateTrashExpirationDays() {
-        do {
-            // 查询用户设置
-            let descriptor = FetchDescriptor<User>()
-            let users = try modelContext.fetch(descriptor)
-            
-            // 如果有用户设置，更新第一个用户的设置
-            if let user = users.first {
-                user.trashExpirationDays = trashExpirationDays
-                try modelContext.save()
-            }
-        } catch {
-            print("更新用户设置失败: \(error)")
-        }
+        // 保留此方法以备将来使用
     }
 }
 

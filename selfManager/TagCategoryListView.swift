@@ -180,9 +180,15 @@ struct TagCategoryListView: View {
                     VStack(spacing: 24) {
                         // 图标
                         VStack(spacing: 12) {
-                            Image(systemName: "folder.circle.fill")
-                                .font(.system(size: 48, weight: .light))
-                                .foregroundColor(.blue)
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.blue)
+                                .frame(width: 56, height: 56)
+                                .overlay(
+                                    Image(systemName: "folder.fill")
+                                        .font(.system(size: 26, weight: .medium))
+                                        .foregroundColor(.white)
+                                )
+                                .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
                         }
                         .padding(.top, 32)
                         
@@ -257,15 +263,15 @@ struct TagCategoryListView: View {
                     }) {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 14, weight: .semibold))
                             Text("保存")
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.system(size: 14, weight: .semibold))
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(
-                            RoundedRectangle(cornerRadius: 20)
+                            Capsule()
                                 .fill(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
@@ -385,10 +391,10 @@ struct TagCategoryEditView: View {
                     VStack(spacing: 16) {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.blue)
-                            .frame(width: 60, height: 60)
+                            .frame(width: 56, height: 56)
                             .overlay(
                                 Image(systemName: "folder.fill")
-                                    .font(.system(size: 28, weight: .medium))
+                                    .font(.system(size: 26, weight: .medium))
                                     .foregroundColor(.white)
                             )
                             .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
@@ -440,9 +446,36 @@ struct TagCategoryEditView: View {
                 }
                 .padding(.horizontal, 24)
                 
-
-                
-                Spacer(minLength: 100)
+                // 删除按钮区域
+                VStack(spacing: 16) {
+                    Divider()
+                        .padding(.horizontal, 24)
+                    
+                    Button(action: {
+                        showingDeleteAlert = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("删除分类")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(UIColor.systemGray6))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
+                }
+                .padding(.top, 32)
             }
         }
         .background(Color(UIColor.systemBackground))
@@ -465,51 +498,35 @@ struct TagCategoryEditView: View {
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 12) {
-                    // 删除按钮
-                    Button(action: {
-                        showingDeleteAlert = true
-                    }) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.red)
-                            .padding(8)
-                            .background(
-                                Circle()
-                                    .fill(Color(UIColor.systemGray6))
-                            )
+                // 保存按钮
+                Button(action: {
+                    saveCategory()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("保存")
+                            .font(.system(size: 14, weight: .semibold))
                     }
-                    
-                    // 保存按钮
-                    Button(action: {
-                        saveCategory()
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 16, weight: .semibold))
-                            Text("保存")
-                                .font(.system(size: 17, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.blue,
-                                            Color.blue.opacity(0.8)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.blue,
+                                        Color.blue.opacity(0.8)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                        )
-                    }
-                    .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .opacity(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
+                            )
+                    )
                 }
+                .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .opacity(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
             }
         }
         .presentationDetents([.large])
