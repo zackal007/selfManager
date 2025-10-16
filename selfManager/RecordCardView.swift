@@ -87,11 +87,11 @@ struct RecordCardView: View {
     private var recordTypeColor: Color {
         switch record.recordType {
         case .daily:
-            return .blue
+            return Color("AppBlue")
         case .weekly:
             return .green
         case .monthly:
-            return .orange
+            return Color("AppOrange")
         case .quarterly:
             return .purple
         case .yearly:

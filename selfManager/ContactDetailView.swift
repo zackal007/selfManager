@@ -176,7 +176,7 @@ struct ContactDetailView: View {
                             HStack(spacing: 12) {
                                 // 目标状态指示器
                                 Circle()
-                                    .fill(goal.progress >= 1.0 ? Color("Green") : Color("Blue"))
+                                    .fill(goal.progress >= 1.0 ? Color("Green") : Color("AppBlue"))
                                     .frame(width: 10, height: 10)
                                 
                                 // 目标名称
@@ -232,7 +232,7 @@ struct ContactDetailView: View {
                     // 头像
                     ZStack {
                         Circle()
-                            .fill(Color("Blue").opacity(0.12))
+                            .fill(Color("AppBlue").opacity(0.12))
                             .frame(width: 90, height: 90)
                         
                         if let avatar = contact.avatar,
@@ -249,7 +249,7 @@ struct ContactDetailView: View {
                         } else {
                             Text(String(contact.name.prefix(1)))
                                 .font(.system(size: 36, weight: .bold, design: .rounded))
-                                .foregroundColor(Color("Blue"))
+                                .foregroundColor(Color("AppBlue"))
                         }
                     }
                     .overlay(alignment: .bottomTrailing) {
@@ -480,7 +480,7 @@ struct ContactDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color("Blue").opacity(0.05))
+                .background(Color("AppBlue").opacity(0.05))
                 .cornerRadius(12)
 
                 // 联系频率卡片（就地编辑）
@@ -694,7 +694,7 @@ struct ContactDetailView: View {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12))
                     }
-                    .foregroundColor(Color("Blue"))
+                    .foregroundColor(Color("AppBlue"))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -732,7 +732,7 @@ struct ContactDetailView: View {
                     HStack {
                         Image(systemName: "calendar")
                             .font(.system(size: 16))
-                            .foregroundColor(Color("Blue"))
+                            .foregroundColor(Color("AppBlue"))
                         Text("下次联系")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
@@ -758,7 +758,7 @@ struct ContactDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color("Blue").opacity(0.05))
+                .background(Color("AppBlue").opacity(0.05))
                 .cornerRadius(12)
             }
         }

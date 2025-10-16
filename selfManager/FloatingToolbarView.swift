@@ -22,6 +22,14 @@ struct FloatingToolbarView: View {
     @Binding var selectedMood: String?
     let showMoodSelector: Bool
     
+    // 目标和联系人数据
+    let goals: [Goal]
+    let contacts: [Contact]
+    
+    // 下拉菜单状态
+    @State private var showGoalSelector = false
+    @State private var showContactSelector = false
+    
     // 回调
     var onImagesChanged: (([Data]) -> Void)?
     var onMoodChanged: ((String?) -> Void)?
@@ -33,29 +41,24 @@ struct FloatingToolbarView: View {
     var body: some View {
         VStack(spacing: 0) {
             // 主要工具栏
-            HStack(spacing: 16) {
-                // 添加图片按钮
+            HStack(spacing: 12) {
+                // 添加图片按钮（仅图标）
                 Button(action: {
                     dismissKeyboard()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         showImagePicker = true
                     }
                 }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "photo")
-                            .font(.system(size: 16, weight: .medium))
-                        Text("图片")
-                            .font(.system(size: 14, weight: .medium))
-                    }
-                    .foregroundColor(.accentColor)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.accentColor.opacity(0.1))
-                    .cornerRadius(16)
+                    Image(systemName: "photo")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32, height: 32)
+                        .background(Color.accentColor.opacity(0.1))
+                        .cornerRadius(16)
                 }
                 .buttonStyle(ScaleButtonStyle())
                 
-                // 心情选择按钮（仅在日记模式下显示）
+                // 心情选择按钮（仅图标，仅在日记模式下显示）
                 if showMoodSelector {
                     Menu {
                         // 清除心情选项
@@ -74,25 +77,73 @@ struct FloatingToolbarView: View {
                             }
                         }
                     } label: {
-                        HStack(spacing: 6) {
-                            if let mood = selectedMood {
-                                Text(mood)
-                                    .font(.system(size: 16))
-                            } else {
-                                Image(systemName: "face.smiling")
-                                    .font(.system(size: 16, weight: .medium))
-                            }
-                            Text("心情")
-                                .font(.system(size: 14, weight: .medium))
+                        if let mood = selectedMood {
+                            Text(mood)
+                                .font(.system(size: 16))
+                                .frame(width: 32, height: 32)
+                                .background(Color.accentColor.opacity(0.1))
+                                .cornerRadius(16)
+                        } else {
+                            Image(systemName: "face.smiling")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.accentColor)
+                                .frame(width: 32, height: 32)
+                                .background(Color.accentColor.opacity(0.1))
+                                .cornerRadius(16)
                         }
-                        .foregroundColor(.accentColor)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.accentColor.opacity(0.1))
-                        .cornerRadius(16)
                     }
                     .buttonStyle(ScaleButtonStyle())
                 }
+                
+                // 目标引用按钮（#）
+                Menu {
+                    // 清除目标引用选项
+                    Button("清除目标引用") {
+                        insertGoalReference(nil)
+                    }
+                    
+                    // 目标选项
+                    ForEach(goals.filter { !$0.isDeleted }, id: \.id) { goal in
+                        Button {
+                            insertGoalReference(goal)
+                        } label: {
+                            Label(goal.name, systemImage: "target")
+                        }
+                    }
+                } label: {
+                    Text("#")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32, height: 32)
+                        .background(Color.accentColor.opacity(0.1))
+                        .cornerRadius(16)
+                }
+                .buttonStyle(ScaleButtonStyle())
+                
+                // 人脉引用按钮（@）
+                Menu {
+                    // 清除人脉引用选项
+                    Button("清除人脉引用") {
+                        insertContactReference(nil)
+                    }
+                    
+                    // 联系人选项
+                    ForEach(contacts, id: \.id) { contact in
+                        Button {
+                            insertContactReference(contact)
+                        } label: {
+                            Label(contact.name, systemImage: "person")
+                        }
+                    }
+                } label: {
+                    Text("@")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32, height: 32)
+                        .background(Color.accentColor.opacity(0.1))
+                        .cornerRadius(16)
+                }
+                .buttonStyle(ScaleButtonStyle())
                 
                 Spacer()
                 
@@ -192,6 +243,22 @@ struct FloatingToolbarView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
+    // 插入目标引用
+    private func insertGoalReference(_ goal: Goal?) {
+        if let goal = goal {
+            let goalReference = "#\(goal.name) "
+            text += goalReference
+        }
+    }
+    
+    // 插入联系人引用
+    private func insertContactReference(_ contact: Contact?) {
+        if let contact = contact {
+            let contactReference = "@\(contact.name) "
+            text += contactReference
+        }
+    }
+    
     // 加载选择的图片
     private func loadSelectedPhotos(_ oldPhotos: [PhotosPickerItem]) {
         Task {
@@ -242,6 +309,8 @@ struct FloatingToolbarView_Previews: PreviewProvider {
                 images: .constant([]),
                 selectedMood: .constant("😊"),
                 showMoodSelector: true,
+                goals: [],
+                contacts: [],
                 onImagesChanged: { _ in },
                 onMoodChanged: { _ in }
             )
