@@ -47,9 +47,6 @@ struct NotesStyleRecordEditor: View {
             if !images.isEmpty {
                 imageGalleryView
             }
-            
-            // 底部工具栏
-            toolbarView
         }
         .frame(maxHeight: .infinity)
         .contentShape(Rectangle()) // 确保整个区域可以响应点击
@@ -103,7 +100,8 @@ struct NotesStyleRecordEditor: View {
                 .padding(8) // 适当减少内边距以增加有效编辑宽度
                 .font(.body)
                 .lineSpacing(4)
-                .background(Color(UIColor.secondarySystemBackground))
+                .scrollContentBackground(.hidden) // 隐藏默认背景
+                .background(Color(UIColor.systemGroupedBackground)) // 设置自定义背景色
                 .cornerRadius(12) // 改为更明显的圆角设计，仅作用于可编辑区域
                 .frame(maxWidth: .infinity) // 在不改变外部容器的前提下尽量占满可用宽度
                 .onTapGesture {
@@ -128,7 +126,8 @@ struct NotesStyleRecordEditor: View {
                     .font(.body)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
-                    .padding(.top, 20)
+                    .padding(.top, 12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .allowsHitTesting(false)
             }
         }
@@ -219,49 +218,7 @@ struct NotesStyleRecordEditor: View {
         }
     }
     
-    // MARK: - 底部工具栏
-    private var toolbarView: some View {
-        HStack(spacing: 20) {
-            // 添加图片按钮
-            Button(action: {
-                // 点击添加图片按钮时先收起键盘
-                dismissKeyboard()
-                
-                // 延迟显示图片选择器，确保键盘完全收起
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    showImagePicker = true
-                }
-            }) {
-                HStack(spacing: 6) {
-                    Image(systemName: "photo")
-                        .font(.system(size: 16, weight: .medium))
-                    Text("添加图片")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .foregroundColor(.accentColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.accentColor.opacity(0.1))
-                .cornerRadius(16)
-            }
-            .buttonStyle(ScaleButtonStyle())
-            
-            Spacer()
-            
-            // 字数统计
-            Text("\(text.count) 字")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding(.top, 8)
-        .simultaneousGesture(
-            // 防止点击工具栏时触发外部的onTapGesture
-            TapGesture().onEnded { _ in
-                // 点击工具栏区域时收起键盘
-                dismissKeyboard()
-            }
-        )
-    }
+
     
     // MARK: - 辅助方法
     private func loadSelectedPhotos(_ photos: [PhotosPickerItem]) {

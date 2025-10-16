@@ -2,7 +2,7 @@
 //  FloatingToolbarView.swift
 //  selfManager
 //
-//  悬浮工具栏视图，整合添加图片、字数统计和心情选择功能
+//  工具栏视图，整合添加图片、字数统计和心情选择功能
 //
 
 import SwiftUI
@@ -138,7 +138,7 @@ struct FloatingToolbarView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.bottom, 20)
         .photosPicker(isPresented: $showImagePicker, selection: $selectedPhotos, maxSelectionCount: 9, matching: .images)
         .onChange(of: selectedPhotos) { newValue in
             loadSelectedPhotos(newValue)

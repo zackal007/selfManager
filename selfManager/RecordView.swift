@@ -1198,64 +1198,75 @@ struct RecordView: View {
                         // 记录内容区域 - 使用TabView实现左右滑动
                         TabView(selection: $currentRecordTypeIndex) {
                     ForEach(recordTypes.indices, id: \.self) { index in
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                // 移除页签顶部的下拉标题栏占位，避免与悬浮顶栏产生视觉叠层
-                                
-                                VStack(alignment: .leading, spacing: 16) {
-                                    // 根据记录类型显示不同内容
-                                    if recordTypes[index] == .recent {
-                                        // 近期页签显示记录列表
-                                        LazyVStack(spacing: 12) {
-                                            ForEach(displayedRecords, id: \.id) { record in
-                                                RecordCardView(record: record) {
-                                                    // 点击记录卡片的处理逻辑
-                                                    navigateToRecord(record)
-                                                }
-                                            }
-                                            
-                                            // 加载更多按钮
-                                            if displayedRecordsCount < filteredRecords.count {
-                                                Button(action: loadMoreRecords) {
-                                                    HStack {
-                                                        Text("加载更多")
-                                                            .font(.body)
-                                                            .foregroundColor(.blue)
-                                                        Image(systemName: "chevron.down")
-                                                            .font(.caption)
-                                                            .foregroundColor(.blue)
+                        ZStack {
+                            // "近期"页签使用可滚动的ScrollView，其他页签使用固定尺寸不可滚动的VStack
+                            if recordTypes[index] == .recent {
+                                ScrollView {
+                                    VStack(spacing: 0) {
+                                        // 移除页签顶部的下拉标题栏占位，避免与悬浮顶栏产生视觉叠层
+                                        
+                                        VStack(alignment: .leading, spacing: 16) {
+                                            // 近期页签显示记录列表
+                                            LazyVStack(spacing: 12) {
+                                                ForEach(displayedRecords, id: \.id) { record in
+                                                    RecordCardView(record: record) {
+                                                        // 点击记录卡片的处理逻辑
+                                                        navigateToRecord(record)
                                                     }
-                                                    .padding(.vertical, 12)
+                                                }
+                                                
+                                                // 加载更多按钮
+                                                if displayedRecordsCount < filteredRecords.count {
+                                                    Button(action: loadMoreRecords) {
+                                                        HStack {
+                                                            Text("加载更多")
+                                                                .font(.body)
+                                                                .foregroundColor(.blue)
+                                                            Image(systemName: "chevron.down")
+                                                                .font(.caption)
+                                                                .foregroundColor(.blue)
+                                                        }
+                                                        .padding(.vertical, 12)
+                                                        .frame(maxWidth: .infinity)
+                                                        .background(Color(UIColor.secondarySystemBackground))
+                                                        .cornerRadius(8)
+                                                    }
+                                                    .buttonStyle(PlainButtonStyle())
+                                                }
+                                                
+                                                // 如果没有记录，显示空状态
+                                                if filteredRecords.isEmpty {
+                                                    VStack(spacing: 16) {
+                                                        Image(systemName: "doc.text")
+                                                            .font(.system(size: 48))
+                                                            .foregroundColor(.secondary)
+                                                        
+                                                        Text("暂无记录")
+                                                            .font(.headline)
+                                                            .foregroundColor(.secondary)
+                                                        
+                                                        Text("开始写下你的第一篇记录吧")
+                                                            .font(.body)
+                                                            .foregroundColor(.secondary)
+                                                            .multilineTextAlignment(.center)
+                                                    }
                                                     .frame(maxWidth: .infinity)
-                                                    .background(Color(UIColor.secondarySystemBackground))
-                                                    .cornerRadius(8)
+                                                    .padding(.vertical, 60)
                                                 }
-                                                .buttonStyle(PlainButtonStyle())
                                             }
-                                            
-                                            // 如果没有记录，显示空状态
-                                            if filteredRecords.isEmpty {
-                                                VStack(spacing: 16) {
-                                                    Image(systemName: "doc.text")
-                                                        .font(.system(size: 48))
-                                                        .foregroundColor(.secondary)
-                                                    
-                                                    Text("暂无记录")
-                                                        .font(.headline)
-                                                        .foregroundColor(.secondary)
-                                                    
-                                                    Text("开始写下你的第一篇记录吧")
-                                                        .font(.body)
-                                                        .foregroundColor(.secondary)
-                                                        .multilineTextAlignment(.center)
-                                                }
-                                                .frame(maxWidth: .infinity)
-                                                .padding(.vertical, 60)
-                                            }
+                                            .padding(.horizontal)
+                                            .frame(minHeight: UIScreen.main.bounds.height * 0.5)
                                         }
-                                        .padding(.horizontal)
-                                        .frame(minHeight: UIScreen.main.bounds.height * 0.5)
-                                    } else {
+                                        .padding(.top, 0)
+                                        .padding(.bottom, 30)
+                                    }
+                                }
+                            } else {
+                                // 其他页签使用固定尺寸不可滚动的VStack
+                                VStack(spacing: 0) {
+                                    // 移除页签顶部的下拉标题栏占位，避免与悬浮顶栏产生视觉叠层
+                                    
+                                    VStack(alignment: .leading, spacing: 16) {
                                         // 其他页签显示正常记录内容
                                         VStack(alignment: .leading, spacing: 12) {
                                             // 移除记录标题
@@ -1289,30 +1300,39 @@ struct RecordView: View {
                                             }
                                         }
                                         
-                                        // 悬浮工具栏 - 整合添加图片、字数统计和心情选择
-                                        FloatingToolbarView(
-                                            text: $recordContent,
-                                            images: $selectedImages,
-                                            selectedMood: $selectedMood,
-                                            showMoodSelector: recordTypes[index] == .daily,
-                                            onImagesChanged: { images in
-                                                selectedImages = images
-                                                contentModified = true
-                                            },
-                                            onMoodChanged: { mood in
-                                                selectedMood = mood
-                                                contentModified = true
-                                            }
-                                        )
-                                        .padding(.bottom, 20)
-                                        
-                                        // 自动保存已启用，不再需要保存按钮
+                                        // 占位空间，确保工具栏悬浮效果
+                                        Spacer()
+                                            .frame(height: 100)
                                     }
+                                    .padding(.top, 0)
+                                    .padding(.bottom, 30)
                                 }
-                                .padding(.top, 0)
-                                .padding(.bottom, 30)
+                                .frame(maxHeight: .infinity)
                             }
-                            .zIndex(5)
+                            
+                            // 工具栏 - 整合添加图片、字数统计和心情选择功能
+                            // 使用ZStack实现真正的悬浮效果，不随页面滚动而移动
+                            // "近期"页签不显示工具栏
+                            if recordTypes[index] != .recent {
+                                VStack {
+                                    Spacer()
+                                    FloatingToolbarView(
+                                        text: $recordContent,
+                                        images: $selectedImages,
+                                        selectedMood: $selectedMood,
+                                        showMoodSelector: recordTypes[index] == .daily,
+                                        onImagesChanged: { images in
+                                            selectedImages = images
+                                            contentModified = true
+                                        },
+                                        onMoodChanged: { mood in
+                                            selectedMood = mood
+                                            contentModified = true
+                                        }
+                                    )
+                                    .padding(.bottom, 8) // 调整底部间距，与底部导航栏保持20px距离
+                                }
+                            }
                         }
                         .tag(index)
                     }
