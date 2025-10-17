@@ -101,15 +101,15 @@ struct RecordView: View {
                                 
                                 // 下拉箭头图标
                                 Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.system(size: 10, weight: .semibold))
                                     .foregroundColor(Color.blue.opacity(0.6))
                                     .rotationEffect(.degrees(showDatePicker ? 0 : 0))
                                     .animation(.easeInOut(duration: 0.2), value: showDatePicker)
                             }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
                             .background(
-                                    RoundedRectangle(cornerRadius: 16)
+                                    RoundedRectangle(cornerRadius: 14)
                                         .fill(Color("AppBlue").opacity(0.15))
                                 )
                         }
@@ -125,6 +125,28 @@ struct RecordView: View {
                             }
                         }
                     }
+                }
+                
+                // 手动保存按钮 - 仅在非"近期"页签显示
+                if selectedRecordType != .recent {
+                    Button(action: {
+                        dismissKeyboard()
+                        // 添加触觉反馈
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+                        
+                        // 执行手动保存
+                        saveRecord()
+                    }) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(contentModified ? Color.blue : Color.gray)
+                            .scaleEffect(contentModified ? 1.0 : 0.9)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: contentModified)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .disabled(!contentModified)
+                    .opacity(contentModified ? 1.0 : 0.6)
                 }
                 
                 // 菜单按钮
@@ -151,25 +173,14 @@ struct RecordView: View {
                     
                     // 非近期页签：显示日期选择器相关按钮
                     if selectedRecordType != .recent {
-                        Button(action: {
-                            dismissKeyboard()
-                            // 日期选择器显示/隐藏
-                            withAnimation {
-                                showDatePicker.toggle()
-                            }
-                        }) {
-                            Label(showDatePicker ? "隐藏日期选择器" : "显示日期选择器", systemImage: showDatePicker ? "chevron.up" : "chevron.down")
-                        }
-
-                        Divider()
-
                         // 跳转到今天/本周/本月/本季/本年
                         Button(action: {
                             dismissKeyboard()
+                            // 禁用自动保存 - 改为手动保存
                             // 如果内容已修改，先保存当前记录
-                            if contentModified {
-                                autoSaveRecord(recordType: selectedRecordType)
-                            }
+                            // if contentModified {
+                            //     autoSaveRecord(recordType: selectedRecordType)
+                            // }
                             // 重置为当前日期
                             currentDate = Date()
                             updateDateComponents()
@@ -246,10 +257,11 @@ struct RecordView: View {
                         ForEach(orderedTypes, id: \.self) { type in
                             FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
                                 dismissKeyboard()
+                                // 禁用自动保存 - 改为手动保存
                                 // 如果内容已修改，先保存当前记录
-                                if contentModified {
-                                    autoSaveRecord(recordType: selectedRecordType)
-                                }
+                                // if contentModified {
+                                //     autoSaveRecord(recordType: selectedRecordType)
+                                // }
                                 selectedRecordType = type
                                 
                                 // 如果切换到年记页签，确保默认展示今年
@@ -664,10 +676,11 @@ struct RecordView: View {
                             // 年月选择器
                             HStack {
                                 Button(action: {
+                                    // 禁用自动保存 - 改为手动保存
                                     // 如果内容已修改，先保存当前记录
-                                    if contentModified {
-                                        autoSaveRecord(recordType: selectedRecordType)
-                                    }
+                                    // if contentModified {
+                                    //     autoSaveRecord(recordType: selectedRecordType)
+                                    // }
                                     if let newDate = self.calendar.date(byAdding: .month, value: -1, to: currentDate) {
                                         currentDate = newDate
                                         adjustDateToRecordType(selectedRecordType)
@@ -691,10 +704,11 @@ struct RecordView: View {
                                 Spacer()
                                 
                                 Button(action: {
+                                        // 禁用自动保存 - 改为手动保存
                                         // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
+                                        // if contentModified {
+                                        //     autoSaveRecord(recordType: selectedRecordType)
+                                        // }
                                         if let newDate = self.calendar.date(byAdding: .month, value: 1, to: currentDate) {
                                             currentDate = newDate
                                             adjustDateToRecordType(selectedRecordType)
@@ -728,8 +742,9 @@ struct RecordView: View {
                                 ForEach(daysInMonth(for: currentDate), id: \.id) { day in
                                     Button(action: {
                                         if let newDate = day.date {
+                                            // 禁用自动保存 - 改为手动保存
                                             // 强制保存当前记录（防止内容丢失）
-                                            autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                            // autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
                                             
                                             // 根据记录类型调整新日期到对应的时间维度
                                             currentDate = newDate
@@ -778,8 +793,9 @@ struct RecordView: View {
                             HStack {
                                 Button(action: {
                                     withAnimation {
+                                        // 禁用自动保存 - 改为手动保存
                                         // 强制保存当前记录（防止内容丢失）
-                                        autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                        // autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
                                         
                                         if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) {
                                             currentDate = newDate
@@ -806,8 +822,9 @@ struct RecordView: View {
                                 
                                 Button(action: {
                                     withAnimation {
+                                        // 禁用自动保存 - 改为手动保存
                                         // 强制保存当前记录（防止内容丢失）
-                                        autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                        // autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
                                         
                                         if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) {
                                             currentDate = newDate
@@ -843,8 +860,9 @@ struct RecordView: View {
                                 ForEach(daysInMonth(for: currentDate), id: \.id) { day in
                                     Button(action: {
                                         if let newDate = day.date {
+                                            // 禁用自动保存 - 改为手动保存
                                             // 强制保存当前记录（防止内容丢失）
-                                            autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
+                                            // autoSaveRecord(recordType: selectedRecordType, forceCheck: true)
                                             
                                             // 根据记录类型调整新日期到对应的时间维度
                                             currentDate = newDate
@@ -891,10 +909,11 @@ struct RecordView: View {
                             // 年份选择器
                             HStack {
                                 Button(action: {
+                                    // 禁用自动保存 - 改为手动保存
                                     // 如果内容已修改，先保存当前记录
-                                    if contentModified {
-                                        autoSaveRecord(recordType: selectedRecordType)
-                                    }
+                                    // if contentModified {
+                                    //     autoSaveRecord(recordType: selectedRecordType)
+                                    // }
                                     if let newDate = self.calendar.date(byAdding: .year, value: -1, to: currentDate) {
                                         currentDate = newDate
                                         adjustDateToRecordType(selectedRecordType)
@@ -914,10 +933,11 @@ struct RecordView: View {
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: {
+                                    // 禁用自动保存 - 改为手动保存
                                     // 如果内容已修改，先保存当前记录
-                                    if contentModified {
-                                        autoSaveRecord(recordType: selectedRecordType)
-                                    }
+                                    // if contentModified {
+                                    //     autoSaveRecord(recordType: selectedRecordType)
+                                    // }
                                     if let newDate = self.calendar.date(byAdding: .year, value: 1, to: currentDate) {
                                         currentDate = newDate
                                         adjustDateToRecordType(selectedRecordType)
@@ -984,10 +1004,11 @@ struct RecordView: View {
                             // 年份选择器
                             HStack {
                                 Button(action: {
+                                    // 禁用自动保存 - 改为手动保存
                                     // 如果内容已修改，先保存当前记录
-                                    if contentModified {
-                                        autoSaveRecord(recordType: selectedRecordType)
-                                    }
+                                    // if contentModified {
+                                    //     autoSaveRecord(recordType: selectedRecordType)
+                                    // }
                                     if let newDate = self.calendar.date(byAdding: .year, value: -1, to: currentDate) {
                                         currentDate = newDate
                                         updateDateComponents()
@@ -1008,10 +1029,11 @@ struct RecordView: View {
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: {
+                                    // 禁用自动保存 - 改为手动保存
                                     // 如果内容已修改，先保存当前记录
-                                    if contentModified {
-                                        autoSaveRecord(recordType: selectedRecordType)
-                                    }
+                                    // if contentModified {
+                                    //     autoSaveRecord(recordType: selectedRecordType)
+                                    // }
                                     if let newDate = self.calendar.date(byAdding: .year, value: 1, to: currentDate) {
                                         currentDate = newDate
                                         updateDateComponents()
@@ -1031,10 +1053,11 @@ struct RecordView: View {
                             HStack(spacing: 24) {
                                 ForEach(1...4, id: \.self) { q in
                                     Button(action: {
+                                        // 禁用自动保存 - 改为手动保存
                                         // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
+                                        // if contentModified {
+                                        //     autoSaveRecord(recordType: selectedRecordType)
+                                        // }
                                         let year = self.calendar.component(.year, from: currentDate)
                                         let month = (q - 1) * 3 + 1
                                         var components = self.calendar.dateComponents([.year, .month, .day], from: currentDate)
@@ -1085,10 +1108,11 @@ struct RecordView: View {
                             // 年份选择器 - 横向滚动列表形式，只保留5年跳转箭头
                             HStack {
                                 Button(action: {
+                                        // 禁用自动保存 - 改为手动保存
                                         // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
+                                        // if contentModified {
+                                        //     autoSaveRecord(recordType: selectedRecordType)
+                                        // }
                                         if let newDate = self.calendar.date(byAdding: .year, value: -5, to: currentDate) {
                                             currentDate = newDate
                                             adjustDateToRecordType(selectedRecordType)
@@ -1115,10 +1139,11 @@ struct RecordView: View {
                                 Spacer()
                                 
                                 Button(action: {
+                                        // 禁用自动保存 - 改为手动保存
                                         // 如果内容已修改，先保存当前记录
-                                        if contentModified {
-                                            autoSaveRecord(recordType: selectedRecordType)
-                                        }
+                                        // if contentModified {
+                                        //     autoSaveRecord(recordType: selectedRecordType)
+                                        // }
                                         if let newDate = self.calendar.date(byAdding: .year, value: 5, to: currentDate) {
                                             currentDate = newDate
                                             adjustDateToRecordType(selectedRecordType)
@@ -1144,10 +1169,11 @@ struct RecordView: View {
                                     // 显示更多年份，提供连续的横向滚动体验
                                     ForEach(max(1, yearListBaseYear-10)...(yearListBaseYear+30), id: \.self) { year in
                                         Button(action: {
+                                                // 禁用自动保存 - 改为手动保存
                                                 // 如果内容已修改，先保存当前记录
-                                                if contentModified {
-                                                    autoSaveRecord(recordType: selectedRecordType)
-                                                }
+                                                // if contentModified {
+                                                //     autoSaveRecord(recordType: selectedRecordType)
+                                                // }
                                                 var components = self.calendar.dateComponents([.month, .day], from: currentDate)
                                                 components.year = year
                                                 if let newDate = self.calendar.date(from: components) {
@@ -1297,8 +1323,9 @@ struct RecordView: View {
                                                 },
                                                 onTextChanged: {
                                                     contentModified = true
+                                                    // 禁用自动保存 - 改为手动保存
                                                     // 文本变更时即时自动保存，强制检查避免丢失
-                                                    autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
+                                                    // autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
                                                 }
                                             )
                                             .frame(maxHeight: .infinity)
@@ -1362,10 +1389,11 @@ struct RecordView: View {
                     // 获取新的记录类型
                     let newRecordType = recordTypes[newIndex]
                     
+                    // 禁用自动保存 - 改为手动保存
                     // 如果内容已修改，先保存当前记录（使用当前的记录类型和日期）
-                    if contentModified {
-                        autoSaveRecord(recordType: selectedRecordType)
-                    }
+                    // if contentModified {
+                    //     autoSaveRecord(recordType: selectedRecordType)
+                    // }
                     
                     // 同步更新selectedRecordType
                     selectedRecordType = newRecordType
@@ -1438,30 +1466,7 @@ struct RecordView: View {
                     }
                     // 移除背景与圆角，保持外层列表卡片自身样式
                 
-                    // 保存成功提示
-                    if showSaveSuccessToast {
-                        VStack {
-                            Text("保存成功")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.green.opacity(0.9))
-                                .cornerRadius(10)
-                                .shadow(radius: 3)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                        .background(Color(UIColor.label).opacity(0.2))
-                        .edgesIgnoringSafeArea(.all)
-                        .transition(.opacity)
-                        .onAppear {
-                            // 使用计时器替代异步队列
-                            Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
-                                withAnimation {
-                                    showSaveSuccessToast = false
-                                }
-                            }
-                        }
-                    }
+
                 }
             }
             .safeAreaInset(edge: .top) {
@@ -1583,27 +1588,30 @@ struct RecordView: View {
                 }
             }
             .onDisappear {
+                // 禁用自动保存 - 改为手动保存
                 // 离开页面时自动保存记录
-                if contentModified {
-                    autoSaveRecord(recordType: selectedRecordType)
-                }
+                // if contentModified {
+                //     autoSaveRecord(recordType: selectedRecordType)
+                // }
             }
             .onChange(of: selectedTab) { _, newValue in
+                // 禁用自动保存 - 改为手动保存
                 // 切换标签页时自动保存记录
-                if contentModified {
-                    autoSaveRecord(recordType: selectedRecordType)
-                    // 重置修改状态
-                    contentModified = false
-                }
+                // if contentModified {
+                //     autoSaveRecord(recordType: selectedRecordType)
+                //     // 重置修改状态
+                //     contentModified = false
+                // }
             }
             .onChange(of: selectedRecordType) { oldValue, newValue in
                 // 切换记录类型时收起键盘
                 dismissKeyboard()
                 
+                // 禁用自动保存 - 改为手动保存
                 // 如果内容已修改，先保存当前记录
-                if contentModified {
-                    autoSaveRecord(recordType: oldValue)
-                }
+                // if contentModified {
+                //     autoSaveRecord(recordType: oldValue)
+                // }
                 
                 // 切换记录类型时保持日期选择器收起
                 showDatePicker = false
@@ -1875,13 +1883,9 @@ struct RecordView: View {
             selectedMood = nil
         }
         
-        // 显示保存成功提示
-        withAnimation {
-            showSaveSuccessToast = true
-        }
-        
-        // 重新加载记录，以显示归拢内容
-        loadCurrentRecord()
+        // 保存成功后不再重新加载记录，保持当前显示的内容不变
+        // 这样可以避免保存后内容"消失"的问题
+        contentModified = false
     }
     
     // 查找已存在的同日期记录
@@ -2008,7 +2012,7 @@ struct RecordView: View {
             year: recordYear,
             month: selectedRecordType == .daily || selectedRecordType == .monthly ? recordMonth : nil,
             day: selectedRecordType == .daily ? calendar.component(.day, from: currentDate) : nil,
-            week: selectedRecordType == .weekly ? recordWeek : nil,
+            week: selectedRecordType == .weekly || selectedRecordType == .daily ? recordWeek : nil,
             quarter: selectedRecordType == .quarterly ? recordQuarter : nil,
             mood: selectedRecordType == .daily ? selectedMood : nil,
             weather: nil, // 不再保存天气信息
@@ -2411,24 +2415,61 @@ struct RecordView: View {
     private func navigateToRecord(_ record: Record) {
         // 设置选中的记录类型和日期
         selectedRecordType = record.recordType
+        
+        // 根据记录类型和记录中的日期信息创建正确的Date对象
+        var dateComponents = DateComponents()
+        dateComponents.year = record.year
+        
+        switch record.recordType {
+        case .daily:
+            // 日记：使用完整的年月日
+            dateComponents.month = record.month ?? 1
+            dateComponents.day = record.day ?? 1
+        case .weekly:
+            // 周记：使用年和周数
+            dateComponents.weekOfYear = record.week ?? 1
+            dateComponents.weekday = 1  // 从周日开始
+        case .monthly:
+            // 月记：使用年月，日设为1号
+            dateComponents.month = record.month ?? 1
+            dateComponents.day = 1
+        case .quarterly:
+            // 季记：使用年和季度的第一个月
+            let firstMonthOfQuarter = ((record.quarter ?? 1) - 1) * 3 + 1
+            dateComponents.month = firstMonthOfQuarter
+            dateComponents.day = 1
+        case .yearly:
+            // 年记：使用年份，月日设为1月1日
+            dateComponents.month = 1
+            dateComponents.day = 1
+        default:
+            // 其他情况使用默认值
+            dateComponents.month = record.month ?? 1
+            dateComponents.day = record.day ?? 1
+        }
+        
+        // 更新当前日期
+        if let date = calendar.date(from: dateComponents) {
+            currentDate = date
+        }
+        
+        // 直接设置日期组件为记录的实际值，不依赖updateDateComponents重新计算
         currentYear = record.year
         currentMonth = record.month ?? 1
         currentDay = record.day ?? 1
         currentWeek = record.week ?? 1
         currentQuarter = record.quarter ?? 1
         
-        // 根据记录的日期创建对应的Date对象
-        var dateComponents = DateComponents()
-        dateComponents.year = record.year
-        dateComponents.month = record.month ?? 1
-        dateComponents.day = record.day ?? 1
-        
-        if let date = calendar.date(from: dateComponents) {
-            currentDate = date
-        }
+        // 注意：不调用updateDateComponents()，因为它会根据currentDate重新计算组件
+        // 而我们需要保持记录的原始日期信息
         
         // 同步页签索引，确保TabView内容更新
         syncRecordTypeIndex()
+        
+        // 强制更新TabView的当前索引，确保切换到正确的页签
+        if let index = recordTypes.firstIndex(of: record.recordType) {
+            currentRecordTypeIndex = index
+        }
         
         // 加载对应的记录
         loadCurrentRecord()
@@ -2439,18 +2480,6 @@ struct RecordView: View {
     private func sortRecordsByTime() {
         // 重新加载所有记录数据，确保显示最新的排序
         // 触发SwiftData查询重新执行
-        
-        // 显示排序成功的提示
-        withAnimation {
-            showSaveSuccessToast = true
-        }
-        
-        // 3秒后隐藏提示
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            withAnimation {
-                showSaveSuccessToast = false
-            }
-        }
         
         // 重置显示的记录数量到初始值，重新加载数据
         displayedRecordsCount = recordsPerPage
