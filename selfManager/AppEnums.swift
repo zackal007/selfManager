@@ -26,4 +26,5 @@ enum SortOption {
     case modifyTime // 按修改时间排序
     case visitTime  // 按访问时间排序
     case importance // 按优先级排序
+    case progress   // 按进度排序
 }

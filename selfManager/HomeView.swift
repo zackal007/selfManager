@@ -1327,6 +1327,7 @@ private func tagColor(for tag: String) -> Color {
     @State private var selectedGoalType: GoalType? = nil
     @State private var selectedImportance: GoalImportance? = nil
     @State private var selectedTags: Set<String> = []
+    @State private var selectedYear: Int? = nil
     @State private var savedFilteredGoals: [Goal] = []
     @State private var searchText: String = UserDefaults.standard.string(forKey: "goalSearchText") ?? ""
     
@@ -1341,7 +1342,7 @@ private func tagColor(for tag: String) -> Color {
         let defaults = UserDefaults.standard
         
         // 批量获取所有需要的值，减少UserDefaults访问次数
-        let keys = ["goalFilterExpanded", "goalSearchText", "selectedGoalType", "selectedImportance", "goalFilterTags"]
+        let keys = ["goalFilterExpanded", "goalSearchText", "selectedGoalType", "selectedImportance", "goalFilterTags", "selectedYear"]
         let values = defaults.dictionaryRepresentation().filter { keys.contains($0.key) }
         
         // 加载筛选条件
@@ -1371,6 +1372,13 @@ private func tagColor(for tag: String) -> Color {
             selectedTags = []
         }
         
+        // 加载年份筛选
+        if let year = values["selectedYear"] as? Int {
+            selectedYear = year
+        } else {
+            selectedYear = nil
+        }
+        
         // 应用筛选条件到目标列表
         updateFilteredGoals()
     }
@@ -1378,7 +1386,7 @@ private func tagColor(for tag: String) -> Color {
     // 更新筛选后的目标列表 - 优化版本
     private func updateFilteredGoals() {
         // 如果没有任何筛选条件，直接使用所有目标
-        if selectedGoalType == nil && selectedImportance == nil && searchText.isEmpty && selectedTags.isEmpty {
+        if selectedGoalType == nil && selectedImportance == nil && searchText.isEmpty && selectedTags.isEmpty && selectedYear == nil {
             savedFilteredGoals = goals
             return
         }
@@ -1398,6 +1406,15 @@ private func tagColor(for tag: String) -> Color {
             if !selectedTags.isEmpty {
                 let matchesTag = goal.tags.contains { selectedTags.contains($0) }
                 if !matchesTag { return false }
+            }
+            
+            // 检查年份
+            if let year = selectedYear, let dueDate = goal.dueDate {
+                let calendar = Calendar.current
+                let goalYear = calendar.component(.year, from: dueDate)
+                if goalYear != year {
+                    return false
+                }
             }
             
             // 最后检查搜索文本（计算成本较高）
@@ -1465,7 +1482,8 @@ private func tagColor(for tag: String) -> Color {
                 selectedImportance: $selectedImportance,
                 savedFilteredGoals: $savedFilteredGoals,
                 searchText: $searchText,
-                selectedTags: $selectedTags
+                selectedTags: $selectedTags,
+                selectedYear: $selectedYear
             )
         }
     }

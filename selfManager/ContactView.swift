@@ -148,6 +148,13 @@ struct ContactView: View {
         case .importance:
             // 按重要性排序，从高到低
             return contacts.sorted { $0.importance.rawValue > $1.importance.rawValue }
+        case .progress:
+            // 对于联系人，progress排序可以按照最后联系时间排序
+            return contacts.sorted { (contact1, contact2) in
+                let date1 = contact1.lastContactDate ?? Date.distantPast
+                let date2 = contact2.lastContactDate ?? Date.distantPast
+                return date1 > date2
+            }
         }
     }
     
@@ -296,10 +303,10 @@ struct ContactView: View {
                 .buttonStyle(PlainButtonStyle())
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("  人脉")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(UIColor.label))
-                }
+                            Text("我的人脉")
+                                .font(.system(size: 20, weight: .regular, design: .rounded))
+                                .foregroundColor(Color(UIColor.label))
+                        }
                 
                 Spacer()
                 

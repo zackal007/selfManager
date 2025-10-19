@@ -785,7 +785,6 @@ struct RecordView: View {
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .weekly: // 周记
                         VStack(spacing: 8) {
@@ -902,7 +901,6 @@ struct RecordView: View {
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .monthly: // 月记
                         VStack(spacing: 8) {
@@ -997,7 +995,6 @@ struct RecordView: View {
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .quarterly: // 季记
                         VStack(spacing: 16) {
@@ -1105,62 +1102,6 @@ struct RecordView: View {
                         
                     case .yearly: // 年记
                         VStack(spacing: 16) {
-                            // 年份选择器 - 横向滚动列表形式，只保留5年跳转箭头
-                            HStack {
-                                Button(action: {
-                                        // 禁用自动保存 - 改为手动保存
-                                        // 如果内容已修改，先保存当前记录
-                                        // if contentModified {
-                                        //     autoSaveRecord(recordType: selectedRecordType)
-                                        // }
-                                        if let newDate = self.calendar.date(byAdding: .year, value: -5, to: currentDate) {
-                                            currentDate = newDate
-                                            adjustDateToRecordType(selectedRecordType)
-                                            loadCurrentRecord()
-                                            // 重置修改状态
-                                            contentModified = false
-                                            // 调整年份列表的基准年份
-                                            yearListBaseYear = max(1, yearListBaseYear - 5) // 确保年份不小于1
-                                        }
-                                }) {
-                                    Image(systemName: "chevron.left.2")
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(.primary)
-                                        .padding(8)
-                                }
-                                
-                                Spacer()
-                                
-                                let year = self.calendar.component(.year, from: currentDate)
-                                Text("\(year)年")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.primary)
-                                
-                                Spacer()
-                                
-                                Button(action: {
-                                        // 禁用自动保存 - 改为手动保存
-                                        // 如果内容已修改，先保存当前记录
-                                        // if contentModified {
-                                        //     autoSaveRecord(recordType: selectedRecordType)
-                                        // }
-                                        if let newDate = self.calendar.date(byAdding: .year, value: 5, to: currentDate) {
-                                            currentDate = newDate
-                                            adjustDateToRecordType(selectedRecordType)
-                                            loadCurrentRecord()
-                                            // 重置修改状态
-                                            contentModified = false
-                                            // 调整年份列表的基准年份
-                                            yearListBaseYear += 5
-                                        }
-                                }) {
-                                    Image(systemName: "chevron.right.2")
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(.primary)
-                                        .padding(8)
-                                }
-                            }
-                            .padding(.horizontal, 8)
                             
                             // 年份快速选择器 - 横向滚动列表形式
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -1177,16 +1118,12 @@ struct RecordView: View {
                                                 var components = self.calendar.dateComponents([.month, .day], from: currentDate)
                                                 components.year = year
                                                 if let newDate = self.calendar.date(from: components) {
-                                                    currentDate = newDate
-                                                    adjustDateToRecordType(selectedRecordType)
-                                                    loadCurrentRecord()
-                                                    // 重置修改状态
-                                                    contentModified = false
-                                                    // 调整基准年份，保持当前选中年份在可见范围内
-                                                    if year < yearListBaseYear {
-                                                        yearListBaseYear = max(1, year - 10)
-                                                    } else if year > yearListBaseYear + 20 {
-                                                        yearListBaseYear = year - 10
+                                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                        currentDate = newDate
+                                                        // 不调用adjustDateToRecordType，保持用户选择的年份
+                                                        loadCurrentRecord()
+                                                        // 重置修改状态
+                                                        contentModified = false
                                                     }
                                                 }
                                         }) {
@@ -1227,7 +1164,6 @@ struct RecordView: View {
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     default:
                         EmptyView()

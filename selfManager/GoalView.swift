@@ -153,6 +153,7 @@ struct GoalView: View {
     @State private var popupSelectedGoalType: GoalType? = nil
     @State private var selectedImportance: GoalImportance? = nil
     @State private var selectedTags: Set<String> = []
+    @State private var selectedYear: Int? = nil
     @State private var savedFilteredGoals: [Goal] = []
     
     // 刷新目标数据的状态变量
@@ -172,7 +173,7 @@ struct GoalView: View {
     // “全部”页统一数据源：优先使用弹窗保存的筛选结果；否则按搜索文本回退
     private var allTabDisplayGoals: [Goal] {
         // 若存在筛选条件，则严格使用保存的筛选结果（即便为空）
-        if (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty) {
+        if (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty) || (selectedYear != nil) {
             return savedFilteredGoals
         }
         // 无筛选条件时，根据是否正在搜索选择数据源
@@ -180,131 +181,91 @@ struct GoalView: View {
     }
     
     // MARK: - 菜单组件
-    // 视图模式菜单内容
+    // 视图模式切换按钮 - 直接切换而非菜单
     private var viewModeMenuContent: some View {
-        Group {
-            Button(action: {
-                viewMode = .gallery
-            }) {
-                Label("卡片视图", systemImage: "square.grid.2x2")
-                if viewMode == .gallery {
-                    Image(systemName: "checkmark")
-                }
+        Button(action: {
+            // 直接切换视图模式
+            withAnimation {
+                viewMode = viewMode == .gallery ? .list : .gallery
             }
-            
-            Button(action: {
-                viewMode = .list
-            }) {
-                Label("列表视图", systemImage: "list.bullet")
-                if viewMode == .list {
-                    Image(systemName: "checkmark")
+        }) {
+            Label(viewMode == .gallery ? "列表视图" : "卡片视图", 
+                  systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
+        }
+    }
+    
+    // 排序菜单内容 - 点击字段切换正序/倒序
+    // 排序选项按钮
+    private func sortOptionButton(title: String, option: SortOption) -> some View {
+        Button(action: {
+            if sortOption == option {
+                sortAscending.toggle()
+            } else {
+                sortOption = option
+                sortAscending = true
+            }
+        }) {
+            HStack {
+                Text(title)
+                Spacer()
+                if sortOption == option {
+                    Image(systemName: sortAscending ? "arrow.up" : "arrow.down")
+                        .font(.system(size: 12))
                 }
             }
         }
     }
     
-    // 分类菜单内容
-    private var categoryMenuContent: some View {
-        Menu {
-            Button(action: {
-                categoryOption = .time
-            }) {
-                Text("时间")
-                if categoryOption == .time {
-                    Image(systemName: "checkmark")
-                }
-            }
-            
-            Button(action: {
-                categoryOption = .type
-            }) {
-                Text("类型")
-                if categoryOption == .type {
-                    Image(systemName: "checkmark")
-                }
-            }
-        } label: {
-            Label("分类", systemImage: "folder")
-        }
-    }
-    
-    // 排序菜单内容
     private var sortMenuContent: some View {
         Menu {
-            // 排序选项子菜单
-            Menu {
-                Button(action: {
-                    sortOption = .name
-                }) {
-                    Text("名称")
-                    if sortOption == .name {
-                        Image(systemName: "checkmark")
-                    }
-                }
-                
-                Button(action: {
-                    sortOption = .createTime
-                }) {
-                    Text("创建时间")
-                    if sortOption == .createTime {
-                        Image(systemName: "checkmark")
-                    }
-                }
-                
-                Button(action: {
-                    sortOption = .modifyTime
-                }) {
-                    Text("修改时间")
-                    if sortOption == .modifyTime {
-                        Image(systemName: "checkmark")
-                    }
-                }
-                
-                Button(action: {
-                    sortOption = .visitTime
-                }) {
-                    Text("访问时间")
-                    if sortOption == .visitTime {
-                        Image(systemName: "checkmark")
-                    }
-                }
-                
-                Button(action: {
-                    sortOption = .importance
-                }) {
-                    Text("优先级")
-                    if sortOption == .importance {
-                        Image(systemName: "checkmark")
-                    }
-                }
-            } label: {
-                Text("排序字段")
-            }
-            
-            // 排序方向子菜单
-            Menu {
-                Button(action: {
-                    sortAscending = true
-                }) {
-                    Text("升序")
-                    if sortAscending {
-                        Image(systemName: "checkmark")
-                    }
-                }
-                
-                Button(action: {
-                    sortAscending = false
-                }) {
-                    Text("降序")
-                    if !sortAscending {
-                        Image(systemName: "checkmark")
-                    }
-                }
-            } label: {
-                Text("排序方向")
-            }
+            sortOptionButton(title: "名称", option: .name)
+            sortOptionButton(title: "创建时间", option: .createTime)
+            sortOptionButton(title: "修改时间", option: .modifyTime)
+            sortOptionButton(title: "访问时间", option: .visitTime)
+            sortOptionButton(title: "优先级", option: .importance)
+            sortOptionButton(title: "进度", option: .progress)
         } label: {
             Label("排序", systemImage: "arrow.up.arrow.down")
+        }
+    }
+    
+    // 省略号菜单内容
+    private var ellipsisMenuContent: some View {
+        Menu {
+            // 1. 视图模式切换选项
+            Button(action: {
+                // 直接切换视图模式
+                withAnimation {
+                    viewMode = viewMode == .gallery ? .list : .gallery
+                }
+            }) {
+                Label(viewMode == .gallery ? "列表视图" : "卡片视图", 
+                      systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
+            }
+            
+            Divider()
+            
+            // 2. 排序选项子菜单
+            sortMenuContent
+            
+            Divider()
+            
+            // 3. 回收站按钮
+            Button(action: {
+                showTrashView = true
+            }) {
+                Label("回收站", systemImage: "trash")
+            }
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(Color(UIColor.systemGray5).opacity(0.8))
+                    .frame(width: 34, height: 34)
+                
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+            }
         }
     }
     
@@ -404,6 +365,10 @@ struct GoalView: View {
             return sortAscending ? 
                 goals.sorted { $0.importance < $1.importance } : 
                 goals.sorted { $0.importance > $1.importance }
+        case .progress:
+            return sortAscending ? 
+                goals.sorted { $0.progress < $1.progress } : 
+                goals.sorted { $0.progress > $1.progress }
         }
     }
     
@@ -497,8 +462,8 @@ struct GoalView: View {
                             .buttonStyle(PlainButtonStyle())
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("  目标")
-                                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                                Text("目标/计划")
+                                    .font(.system(size: 20, weight: .regular, design: .rounded))
                                     .foregroundColor(Color(UIColor.label))
                             }
                             
@@ -537,21 +502,21 @@ struct GoalView: View {
                                 }) {
                                     HStack(spacing: 8) {
                                         Text("\(currentYear)年")
-                                            .font(.system(size: 15, weight: .medium))
-                                            .foregroundColor(Color.blue.opacity(0.8))
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(Color.blue)
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.9)
                                         
                                         Image(systemName: showYearPicker ? "chevron.up" : "chevron.down")
-                                            .font(.system(size: 12, weight: .semibold))
+                                            .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(Color.blue.opacity(0.6))
                                             .rotationEffect(.degrees(showYearPicker ? 0 : 0))
                                             .animation(.easeInOut(duration: 0.2), value: showYearPicker)
                                     }
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 16)
+                                        RoundedRectangle(cornerRadius: 12)
                                             .fill(Color.blue.opacity(0.15))
                                     )
                                 }
@@ -576,38 +541,8 @@ struct GoalView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                             
-                            // 使用自定义视图替代复杂的Menu表达式
-                            MenuButton {
-                                // 刷新目标数据按钮
-                                Button(action: {
-                                    // 重新加载目标数据
-                                    // 通过切换一个刷新状态变量强制刷新视图
-                                    refreshGoals.toggle()
-                                }) {
-                                    Label("刷新目标", systemImage: "arrow.clockwise")
-                                }
-                                Divider()
-                                // 回收站选项
-                                Button(action: {
-                                    showTrashView = true
-                                }) {
-                                    Label("回收站", systemImage: "trash")
-                                }
-                                Divider()
-                                // 视图切换选项
-                                Group {
-                                    viewModeMenuContent
-                                }
-                                Divider()
-                                // 分类子菜单
-                                Group {
-                                    categoryMenuContent
-                                }
-                                // 排序子菜单
-                                Group {
-                                    sortMenuContent
-                                }
-                            }
+                            // 省略号菜单按钮，包含所有功能
+                            ellipsisMenuContent
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 4)
@@ -742,68 +677,7 @@ struct GoalView: View {
                                 
                                 // 年度目标页签的年份选择器 - 与记录模块中年记的年份选择保持一致
                                 if selectedSegment == 1 && showYearPicker && goalTypes[index] == .yearly {
-                                    VStack(spacing: 16) {
-                                        // 年份选择器 - 横向滚动列表形式，只保留5年跳转箭头
-                                        HStack {
-                                            Button(action: {
-                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                    yearChangeAnimation = true
-                                                    currentYear -= 5
-                                                    yearChangeDirection = "减少"
-                                                    // 调整年份列表的基准年份
-                                                    yearListBaseYear = max(1, yearListBaseYear - 5) // 确保年份不小于1
-                                                }
-                                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                                    yearChangeAnimation = false
-                                                    showYearChangeToast = true
-                                                    
-                                                    // 嵌套Timer替代第二个DispatchQueue
-                                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                                        showYearChangeToast = false
-                                                    }
-                                                }
-                                            }) {
-                                                Image(systemName: "chevron.left.2")
-                                                    .font(.system(size: 16, weight: .bold))
-                                                    .foregroundColor(.primary)
-                                                    .padding(8)
-                                            }
-                                            
-                                            Spacer()
-                                            
-                                            Text("\(currentYear)年")
-                                                .font(.system(size: 16, weight: .semibold))
-                                                .foregroundColor(.primary)
-                                            
-                                            Spacer()
-                                            
-                                            Button(action: {
-                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                    yearChangeAnimation = true
-                                                    currentYear += 5
-                                                    yearChangeDirection = "增加"
-                                                    // 调整年份列表的基准年份
-                                                    yearListBaseYear += 5
-                                                }
-                                                // 使用Timer替代DispatchQueue以避免多线程问题
-                                                Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
-                                                    yearChangeAnimation = false
-                                                    showYearChangeToast = true
-                                                    
-                                                    // 嵌套Timer替代第二个DispatchQueue
-                                                    Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                                        showYearChangeToast = false
-                                                    }
-                                                }
-                                            }) {
-                                                Image(systemName: "chevron.right.2")
-                                                    .font(.system(size: 16, weight: .bold))
-                                                    .foregroundColor(.primary)
-                                                    .padding(8)
-                                            }
-                                        }
-                                        .padding(.horizontal, 8)
+                                    VStack(spacing: 8) {
                                         
                                         // 年份快速选择器 - 横向滚动列表形式
                                         ScrollView(.horizontal, showsIndicators: false) {
@@ -812,25 +686,19 @@ struct GoalView: View {
                                                 ForEach(max(1, yearListBaseYear-10)...(yearListBaseYear+30), id: \.self) { year in
                                                     Button(action: {
                                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                            yearChangeAnimation = true
+                                                            // 直接设置年份，不使用中间变量
                                                             currentYear = year
-                                                            yearChangeDirection = year > currentYear ? "增加" : "减少"
-                                                            // 调整基准年份，保持当前选中年份在可见范围内
-                                                            if year < yearListBaseYear {
-                                                                yearListBaseYear = max(1, year - 10)
-                                                            } else if year > yearListBaseYear + 20 {
-                                                                yearListBaseYear = year - 10
-                                                            }
+                                                            
+                                                            // 调整基准年份，确保选中年份在可见范围中央位置
+                                                            yearListBaseYear = max(1, year - 5)
+                                                            
+                                                            // 设置动画状态
+                                                            yearChangeAnimation = true
                                                         }
-                                                        // 使用Timer替代DispatchQueue以避免多线程问题
+                                                        
+                                                        // 重置动画状态
                                                         Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
                                                             yearChangeAnimation = false
-                                                            showYearChangeToast = true
-                                                            
-                                                            // 嵌套Timer替代第二个DispatchQueue
-                                                            Timer.scheduledTimer(withTimeInterval: 1.7, repeats: false) { _ in
-                                                                showYearChangeToast = false
-                                                            }
                                                         }
                                                     }) {
                                                         ZStack {
@@ -870,7 +738,6 @@ struct GoalView: View {
                                     .padding(.vertical, 4)
                                     .background(Color(UIColor.systemGroupedBackground))
                                     .cornerRadius(12)
-                                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 16) // 与目标条目之间间隔16px
                                 }
@@ -963,34 +830,8 @@ struct GoalView: View {
                 }
             }
             
-            // 年份变化提示
-            if showYearChangeToast {
-                VStack {
-                    Spacer()
-                    
-                    HStack {
-                        Spacer()
-                        
-                        Text("已\(yearChangeDirection)到\(currentYear)年")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 20)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black.opacity(0.7))
-                            )
-                            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                        
-                        Spacer()
-                    }
-                    
-                    Spacer().frame(height: 100)
-                }
-                .animation(.easeInOut, value: showYearChangeToast)
-                .zIndex(1)
-            }
+            // 移除年份变化提示
+            .zIndex(1)
         }
         .sheet(isPresented: $showAddGoalSheet) {
                 AddGoalView(isPresented: $showAddGoalSheet, selectedSegment: $selectedSegment)
@@ -1006,15 +847,16 @@ struct GoalView: View {
                 selectedImportance: $selectedImportance,
                 savedFilteredGoals: $savedFilteredGoals,
                 searchText: $searchText,
-                selectedTags: $selectedTags
+                selectedTags: $selectedTags,
+                selectedYear: $selectedYear
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
         .onAppear {
             loadSavedGoalFilters()
-            // 初始化年份列表基准年份
-            yearListBaseYear = max(1, currentYear + 10)
+            // 初始化年份列表基准年份，确保当前年份在中间位置
+            yearListBaseYear = max(1, currentYear - 5)
         }
         .onChange(of: popupSelectedGoalType) { _, _ in
             updateFilteredGoals()
@@ -1060,6 +902,14 @@ struct GoalView: View {
         } else {
             selectedTags = []
         }
+        
+        // 加载年份筛选
+        if let year = defaults.object(forKey: "selectedYear") as? Int {
+            selectedYear = year
+        } else {
+            selectedYear = nil
+        }
+        
         updateFilteredGoals()
     }
 
@@ -1067,14 +917,59 @@ struct GoalView: View {
     private func updateFilteredGoals() {
         let goalsSource = allGoals
         let filtered = goalsSource.filter { goal in
+            // 检查类型匹配
             let typeMatches = (popupSelectedGoalType == nil) || (goal.goalType == popupSelectedGoalType)
+            if !typeMatches {
+                return false
+            }
+            
+            // 检查重要性匹配
             let importanceMatches = (selectedImportance == nil) || (goal.goalImportance == selectedImportance)
-            let tagMatches = selectedTags.isEmpty || goal.tags.contains { selectedTags.contains($0) }
-            let searchMatches = searchText.isEmpty ||
-                goal.name.localizedCaseInsensitiveContains(searchText) ||
-                goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
-                goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
-            return typeMatches && importanceMatches && tagMatches && searchMatches
+            if !importanceMatches {
+                return false
+            }
+            
+            // 检查标签匹配
+            let tagMatches = selectedTags.isEmpty || goal.tags.contains { tag in
+                return selectedTags.contains(tag)
+            }
+            if !tagMatches {
+                return false
+            }
+            
+            // 检查年份匹配
+            var yearMatches = true
+            if selectedYear != nil {
+                yearMatches = false
+                if let dueDate = goal.dueDate {
+                    let dueDateYear = Calendar.current.component(.year, from: dueDate)
+                    if dueDateYear == selectedYear {
+                        yearMatches = true
+                    }
+                }
+            }
+            if !yearMatches {
+                return false
+            }
+            
+            // 检查搜索文本匹配
+            let nameMatches = searchText.isEmpty || goal.name.localizedCaseInsensitiveContains(searchText)
+            let descriptionMatches = searchText.isEmpty || goal.goalDescription.localizedCaseInsensitiveContains(searchText)
+            
+            var tagSearchMatches = false
+            if searchText.isEmpty {
+                tagSearchMatches = true
+            } else {
+                for tag in goal.tags {
+                    if tag.localizedCaseInsensitiveContains(searchText) {
+                        tagSearchMatches = true
+                        break
+                    }
+                }
+            }
+            
+            let searchMatches = nameMatches || descriptionMatches || tagSearchMatches
+            return searchMatches
         }
         savedFilteredGoals = filtered
     }

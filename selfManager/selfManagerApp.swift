@@ -215,7 +215,7 @@ struct selfManagerApp: App {
                         
                         ContactView(selectedTab: $selectedTab)
                             .tabItem {
-                                Image(systemName: "person.3.fill")
+                                Image(systemName: "network")
                                 Text("人脉")
                             }
                             .tag(3)

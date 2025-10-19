@@ -25,6 +25,7 @@ struct GoalPopupView: View {
     @Binding var savedFilteredGoals: [Goal]
     @Binding var searchText: String
     @Binding var selectedTags: Set<String>
+    @Binding var selectedYear: Int?
     
     // 保存筛选设置
     func saveFilterSettings() {
@@ -37,6 +38,7 @@ struct GoalPopupView: View {
         defaults.set(selectedImportance?.rawValue as Int?, forKey: "selectedImportance")
         defaults.set(searchText, forKey: "goalSearchText")
         defaults.set(Array(selectedTags), forKey: "goalFilterTags")
+        defaults.set(selectedYear, forKey: "goalFilterYear")
     }
     
     // 计算筛选后的目标
@@ -57,13 +59,39 @@ struct GoalPopupView: View {
                 goal.goalDescription.localizedCaseInsensitiveContains(searchText) ||
                 goal.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
             
-            return typeMatches && importanceMatches && tagMatches && searchMatches
+            // 应用年份筛选
+            let yearMatches: Bool
+            if let selectedYear = selectedYear {
+                if let dueDate = goal.dueDate {
+                    let calendar = Calendar.current
+                    let goalYear = calendar.component(.year, from: dueDate)
+                    yearMatches = goalYear == selectedYear
+                } else {
+                    yearMatches = false // 如果目标没有截止日期，则不匹配任何年份筛选
+                }
+            } else {
+                yearMatches = true
+            }
+            
+            return typeMatches && importanceMatches && tagMatches && searchMatches && yearMatches
         }
     }
 
     // 可选标签列表（去重后按字母排序）
     private var availableTags: [String] {
         Array(Set(allGoals.flatMap { $0.tags })).sorted()
+    }
+    
+    // 可选年份列表（从目标的截止日期中提取年份，去重后排序）
+    private var availableYears: [Int] {
+        let calendar = Calendar.current
+        let years = Set(allGoals.compactMap { goal in
+            if let dueDate = goal.dueDate {
+                return calendar.component(.year, from: dueDate)
+            }
+            return nil
+        })
+        return Array(years).sorted()
     }
     
     var body: some View {
@@ -173,6 +201,26 @@ struct GoalPopupView: View {
                                         } else {
                                             selectedTags.insert(tag)
                                         }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    .padding(.top, 8)
+                    
+                    // 年份筛选
+                    VStack(alignment: .leading, spacing: 8) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                // 全部选项
+                                FilterChip(title: "全部", isSelected: selectedYear == nil) {
+                                    selectedYear = nil
+                                }
+                                
+                                ForEach(availableYears, id: \.self) { year in
+                                    FilterChip(title: "\(year)年", isSelected: selectedYear == year) {
+                                        selectedYear = year
                                     }
                                 }
                             }
@@ -290,7 +338,8 @@ struct GoalRowView: View {
         selectedImportance: .constant(nil),
         savedFilteredGoals: .constant([]),
         searchText: .constant(""),
-        selectedTags: .constant([])
+        selectedTags: .constant([]),
+        selectedYear: .constant(nil)
     )
     .modelContainer(for: Goal.self, inMemory: true)
 }
