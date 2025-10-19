@@ -57,6 +57,12 @@ struct HomeView: View {
     @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
     @Query(sort: \Record.createTime, order: .reverse) private var records: [Record]
     
+    // 卡片显示控制
+    @AppStorage("showAssetCard") private var showAssetCard = true
+    @AppStorage("showHabitCard") private var showHabitCard = true
+    @AppStorage("showAchievementCard") private var showAchievementCard = true
+    @AppStorage("showAnxietyCard") private var showAnxietyCard = true
+    
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
     // 被Ping目标管理器
@@ -74,6 +80,7 @@ struct HomeView: View {
     enum HomeCardType: String, Codable, CaseIterable, Hashable {
         case profile
         case asset
+        case habit     // 习惯卡片
         case pingedGoals // 旧分组卡片（不再使用）
         case goals
         case mood      // 心情卡片（独立模块）
@@ -692,18 +699,29 @@ private func renderCard(_ type: HomeCardType) -> some View {
                 UserEditView(user: user)
             }
     case .asset:
-        withMoveGesture(
-            assetSection
-                .frame(height: heightForCard(id))
-                .background(cardFrameReader(for: type))
-                .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-                .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-                .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
-            , for: type)
+        if showAssetCard {
+            withMoveGesture(
+                assetSection
+                    .frame(height: heightForCard(id))
+                    .background(cardFrameReader(for: type))
+                    .offset(isDragging ? dragOffset : .zero)
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(isDragging ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .contentShape(Rectangle())
+                    .contextMenu { cardContextMenu(for: type) }
+                , for: type)
+        } else {
+            EmptyView()
+        }
+    case .habit:
+        if showHabitCard {
+            // 习惯卡片的实现（如果有的话）
+            EmptyView()
+        } else {
+            EmptyView()
+        }
     case .pingedGoals:
         // 旧的“被Ping目标分组卡片”不再使用，避免重复渲染
         EmptyView()
@@ -714,31 +732,41 @@ private func renderCard(_ type: HomeCardType) -> some View {
         // 心情卡片已删除，保持占位为空视图以兼容历史枚举
         EmptyView()
     case .achievement:
-        withMoveGesture(
-            achievementSection
-                .frame(height: heightForCard(id))
-                .background(cardFrameReader(for: type))
-                .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-                .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-                .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
-        , for: type)
-    case .improvement:
-        withMoveGesture(
-            improvementSection
-                .frame(height: heightForCard(id))
-                .background(cardFrameReader(for: type))
-                .offset(isDragging ? dragOffset : .zero)
-                .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
-                .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
-                .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
-                .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
+        if showAchievementCard {
+            withMoveGesture(
+                achievementSection
+                    .frame(height: heightForCard(id))
+                    .background(cardFrameReader(for: type))
+                    .offset(isDragging ? dragOffset : .zero)
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(isDragging ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .contentShape(Rectangle())
+                    .contextMenu { cardContextMenu(for: type) }
             , for: type)
+        } else {
+            EmptyView()
+        }
+    case .improvement:
+        if showAnxietyCard {
+            withMoveGesture(
+                improvementSection
+                    .frame(height: heightForCard(id))
+                    .background(cardFrameReader(for: type))
+                    .offset(isDragging ? dragOffset : .zero)
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(isDragging ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .contentShape(Rectangle())
+                    .contextMenu { cardContextMenu(for: type) }
+                , for: type)
+        } else {
+            EmptyView()
+        }
+    default:
+        EmptyView()
     }
 }
 

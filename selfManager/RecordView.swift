@@ -127,6 +127,19 @@ struct RecordView: View {
                     }
                 }
                 
+                // 近期页签：显示排序按钮
+                if selectedRecordType == .recent {
+                    Button(action: {
+                        dismissKeyboard()
+                        sortRecordsByTime()
+                    }) {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 20))
+                            .foregroundColor(Color.blue)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+                
                 // 手动保存按钮 - 仅在非"近期"页签显示
                 if selectedRecordType != .recent {
                     Button(action: {
@@ -149,30 +162,10 @@ struct RecordView: View {
                     .opacity(contentModified ? 1.0 : 0.6)
                 }
                 
-                // 菜单按钮
-                MenuButton {
-                    // 近期页签：显示排序和清理功能
-                    if selectedRecordType == .recent {
-                        Button(action: {
-                            dismissKeyboard()
-                            sortRecordsByTime()
-                        }) {
-                            Label("按时间排序", systemImage: "arrow.up.arrow.down")
-                        }
-                        
-                        Button(action: {
-                            dismissKeyboard()
-                            cleanDuplicateRecords()
-                            sortRecordsByTime()
-                        }) {
-                            Label("清理重复记录", systemImage: "trash.slash")
-                        }
-                        
-                        Divider()
-                    }
-                    
-                    // 非近期页签：显示日期选择器相关按钮
-                    if selectedRecordType != .recent {
+                // 菜单按钮（仅在非近期页签显示）
+                if selectedRecordType != .recent {
+                    MenuButton {
+                        // 非近期页签：显示日期选择器相关按钮
                         // 跳转到今天/本周/本月/本季/本年
                         Button(action: {
                             dismissKeyboard()
@@ -196,39 +189,37 @@ struct RecordView: View {
                                 systemImage: "arrow.uturn.backward.circle"
                             )
                         }
-                    }
 
-                    // 仅在"日记"页签显示：汇总今日目标完成情况
-                    if selectedRecordType == .daily {
-                        Divider()
-                        Button(action: {
-                            dismissKeyboard()
-                            GoalActivityManager.shared.syncDailyCompletionSummaryToDiary(for: currentDate, modelContext: modelContext)
-                            // 重新加载当日记录以展示汇总内容
-                            loadCurrentRecord()
-                        }) {
-                            Label("汇总今日目标完成情况", systemImage: "doc.on.doc")
+                        // 仅在"日记"页签显示：汇总今日目标完成情况
+                        if selectedRecordType == .daily {
+                            Divider()
+                            Button(action: {
+                                dismissKeyboard()
+                                GoalActivityManager.shared.syncDailyCompletionSummaryToDiary(for: currentDate, modelContext: modelContext)
+                                // 重新加载当日记录以展示汇总内容
+                                loadCurrentRecord()
+                            }) {
+                                Label("汇总今日目标完成情况", systemImage: "doc.on.doc")
+                            }
                         }
-                    }
 
-                    // 根据当前记录类型，提供汇总按钮
-                    if selectedRecordType == .weekly || selectedRecordType == .monthly || selectedRecordType == .quarterly || selectedRecordType == .yearly {
-                        Divider()
-                        Button(action: {
-                            dismissKeyboard()
-                            refreshAggregationForCurrentPeriod()
-                        }) {
-                            Label(
-                                selectedRecordType == .weekly ? "汇总本周" :
-                                selectedRecordType == .monthly ? "汇总本月" :
-                                selectedRecordType == .quarterly ? "汇总本季" : "汇总本年",
-                                systemImage: "text.append"
-                            )
+                        // 根据当前记录类型，提供汇总按钮
+                        if selectedRecordType == .weekly || selectedRecordType == .monthly || selectedRecordType == .quarterly || selectedRecordType == .yearly {
+                            Divider()
+                            Button(action: {
+                                dismissKeyboard()
+                                refreshAggregationForCurrentPeriod()
+                            }) {
+                                Label(
+                                    selectedRecordType == .weekly ? "汇总本周" :
+                                    selectedRecordType == .monthly ? "汇总本月" :
+                                    selectedRecordType == .quarterly ? "汇总本季" : "汇总本年",
+                                    systemImage: "text.append"
+                                )
+                            }
                         }
-                    }
-                    
-                    // 根据当前记录类型，提供清空按钮
-                    if selectedRecordType != .recent {
+                        
+                        // 根据当前记录类型，提供清空按钮
                         Divider()
                         Button(action: {
                             dismissKeyboard()

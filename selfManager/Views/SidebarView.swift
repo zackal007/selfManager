@@ -9,6 +9,180 @@ import SwiftUI
 import SwiftData
 import selfManager
 
+// 设置项卡片视图
+struct SettingsCardView: View {
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    // 首页卡片显示控制
+    @AppStorage("showAssetCard") private var showAssetCard = true
+    @AppStorage("showHabitCard") private var showHabitCard = true
+    @AppStorage("showAchievementCard") private var showAchievementCard = true
+    @AppStorage("showAnxietyCard") private var showAnxietyCard = true
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // 卡片标题
+            HStack {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                
+                Text("设置")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color(UIColor.label))
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+            
+            VStack(spacing: 12) {
+                // 外观设置
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("外观")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 深色模式
+                    HStack(spacing: 12) {
+                        Image(systemName: "moon.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.purple)
+                            .frame(width: 20)
+                        
+                        Text("深色模式")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(UIColor.label))
+                        
+                        Spacer()
+                        
+                        Toggle("", isOn: $isDarkMode)
+                            .labelsHidden()
+                            .scaleEffect(0.8)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.systemGray6).opacity(0.5))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 16)
+                }
+                
+                // 首页卡片显示设置
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("首页卡片显示")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    VStack(spacing: 6) {
+                        // 资产卡片
+                        HStack(spacing: 12) {
+                            Image(systemName: "creditcard.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.green)
+                                .frame(width: 20)
+                            
+                            Text("资产卡片")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $showAssetCard)
+                                .labelsHidden()
+                                .scaleEffect(0.8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemGray6).opacity(0.5))
+                        .cornerRadius(8)
+                        
+                        // 习惯卡片
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.blue)
+                                .frame(width: 20)
+                            
+                            Text("习惯卡片")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $showHabitCard)
+                                .labelsHidden()
+                                .scaleEffect(0.8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemGray6).opacity(0.5))
+                        .cornerRadius(8)
+                        
+                        // 成就卡片
+                        HStack(spacing: 12) {
+                            Image(systemName: "trophy.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.orange)
+                                .frame(width: 20)
+                            
+                            Text("成就卡片")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $showAchievementCard)
+                                .labelsHidden()
+                                .scaleEffect(0.8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemGray6).opacity(0.5))
+                        .cornerRadius(8)
+                        
+                        // 焦虑卡片
+                        HStack(spacing: 12) {
+                            Image(systemName: "brain.head.profile")
+                                .font(.system(size: 16))
+                                .foregroundColor(.purple)
+                                .frame(width: 20)
+                            
+                            Text("焦虑卡片")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $showAnxietyCard)
+                                .labelsHidden()
+                                .scaleEffect(0.8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemGray6).opacity(0.5))
+                        .cornerRadius(8)
+                    }
+                    .padding(.horizontal, 16)
+                }
+            }
+            .padding(.bottom, 16)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+    }
+}
+
 // 侧边栏菜单项数据模型
 struct SidebarMenuItem {
     let id = UUID()
@@ -240,28 +414,8 @@ struct SidebarView: View {
                         
                         Spacer()
                         
-                        // 设置按钮
-                        Button(action: {
-                            // 将“设置”推入当前选中标签页的导航栈
-                            switch selectedTab {
-                            case 0:
-                                navigationManager.homeNavigationPath.append(AppRoute.settings)
-                            case 1:
-                                navigationManager.goalNavigationPath.append(AppRoute.settings)
-                            case 2:
-                                navigationManager.recordNavigationPath.append(AppRoute.settings)
-                            case 3:
-                                navigationManager.contactNavigationPath.append(AppRoute.settings)
-                            default:
-                                navigationManager.homeNavigationPath.append(AppRoute.settings)
-                            }
-                            closeSidebar()
-                        }) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                        }
-                        .buttonStyle(PlainButtonStyle())
+                        // 移除设置按钮，因为设置项已经直接在侧边栏中显示
+                        EmptyView()
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 60)
@@ -274,6 +428,9 @@ struct SidebarView: View {
                              
                              // 所有标签卡片
                              AllTagsCardView(showingTagsView: $showingTagsView)
+                             
+                             // 设置项卡片
+                             SettingsCardView()
                          }
                          .padding(.horizontal, 16)
                          .padding(.bottom, 16)

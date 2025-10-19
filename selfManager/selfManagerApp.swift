@@ -70,6 +70,8 @@ struct selfManagerApp: App {
     // 添加状态变量来控制欢迎页面的显示
     @State private var isShowingWelcome = true
     @State private var isLoading = true
+    // 添加深色模式支持
+    @AppStorage("isDarkMode") private var isDarkMode = false
     
     /// 收起键盘的方法
     private func dismissKeyboard() {
@@ -239,6 +241,7 @@ struct selfManagerApp: App {
                         }
                         .modelContainer(container)
                         .enableSwipeBackGesture()
+                        .preferredColorScheme(isDarkMode ? .dark : .light) // 应用深色模式设置
                     } else {
                         // 空视图，当欢迎页面显示时作为占位符
                         Color.clear
