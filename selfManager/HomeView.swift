@@ -460,6 +460,7 @@ private func defaultCardOrderIDs() -> [HomeCardID] {
     }
     // 追加其他静态卡片（不包含旧的 .pingedGoals 分组卡片）
     ids.append(contentsOf: [
+        .type(.habit),
         .type(.achievement),
         .type(.improvement)
     ])
@@ -536,7 +537,7 @@ private func loadCardOrderIDs() {
                 return false
             }
             // 确保静态卡片存在
-            let requiredStatics: [HomeCardType] = [.profile, .asset, .achievement, .improvement]
+            let requiredStatics: [HomeCardType] = [.profile, .asset, .habit, .achievement, .improvement]
             for t in requiredStatics {
                 let tid = HomeCardID.type(t)
                 if !decoded.contains(tid) {
@@ -717,8 +718,18 @@ private func renderCard(_ type: HomeCardType) -> some View {
         }
     case .habit:
         if showHabitCard {
-            // 习惯卡片的实现（如果有的话）
-            EmptyView()
+            withMoveGesture(
+                HabitCardView(cardSizesByID: cardSizesByID, defaultSizeForID: defaultSizeForID)
+                    .frame(height: heightForCard(id))
+                    .background(cardFrameReader(for: type))
+                    .offset(isDragging ? dragOffset : .zero)
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(isDragging ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .contentShape(Rectangle())
+                    .contextMenu { cardContextMenu(for: type) }
+                , for: type)
         } else {
             EmptyView()
         }

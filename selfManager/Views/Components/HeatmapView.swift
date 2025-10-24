@@ -37,9 +37,9 @@ struct HeatmapView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var goals: [Goal]
     
-    private let cellSize: CGFloat = 12
-    private let cellSpacing: CGFloat = 2
-    private let weeksToShow = 20 // 显示20周的数据
+    private let cellSize: CGFloat = 8
+    private let cellSpacing: CGFloat = 1.5
+    private let weeksToShow = 12 // 显示12周的数据以适应固定宽度
     
     // 获取热力图数据
     private func getHeatmapData() -> [HeatmapData] {
@@ -144,69 +144,66 @@ struct HeatmapView: View {
             }
             
             // 热力图网格
-            ScrollView(.horizontal, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    // 月份标签
-                    HStack(spacing: 0) {
-                        let weeks = groupDataByWeeks(getHeatmapData())
-                        ForEach(Array(weeks.enumerated()), id: \.offset) { weekIndex, week in
-                            if let firstDay = week.first?.date {
-                                let calendar = Calendar.current
-                                let isFirstWeekOfMonth = calendar.component(.weekOfMonth, from: firstDay) == 1
-                                
-                                VStack {
-                                    if isFirstWeekOfMonth {
-                                        Text(DateFormatter.monthFormatter.string(from: firstDay))
-                                            .font(.system(size: 10, weight: .medium))
-                                            .foregroundColor(Color(UIColor.secondaryLabel))
-                                    } else {
-                                        Text("")
-                                            .font(.system(size: 10))
-                                    }
+            VStack(alignment: .leading, spacing: 0) {
+                // 月份标签
+                HStack(spacing: 0) {
+                    let weeks = groupDataByWeeks(getHeatmapData())
+                    ForEach(Array(weeks.enumerated()), id: \.offset) { weekIndex, week in
+                        if let firstDay = week.first?.date {
+                            let calendar = Calendar.current
+                            let isFirstWeekOfMonth = calendar.component(.weekOfMonth, from: firstDay) == 1
+                            
+                            VStack {
+                                if isFirstWeekOfMonth {
+                                    Text(DateFormatter.monthFormatter.string(from: firstDay))
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundColor(Color(UIColor.secondaryLabel))
+                                } else {
+                                    Text("")
+                                        .font(.system(size: 10))
                                 }
-                                .frame(width: cellSize + cellSpacing)
                             }
+                            .frame(width: cellSize + cellSpacing)
                         }
                     }
-                    .padding(.bottom, 4)
-                    
-                    // 热力图主体
-                    HStack(alignment: .top, spacing: 0) {
-                        // 星期标签
-                        VStack(spacing: cellSpacing) {
-                            ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { day in
-                                Text(day)
-                                    .font(.system(size: 9, weight: .medium))
-                                    .foregroundColor(Color(UIColor.tertiaryLabel))
-                                    .frame(width: 16, height: cellSize)
-                            }
+                }
+                .padding(.bottom, 4)
+                
+                // 热力图主体
+                HStack(alignment: .top, spacing: 0) {
+                    // 星期标签
+                    VStack(spacing: cellSpacing) {
+                        ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { day in
+                            Text(day)
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(Color(UIColor.tertiaryLabel))
+                                .frame(width: 16, height: cellSize)
                         }
-                        .padding(.trailing, 8)
-                        
-                        // 热力图网格
-                        HStack(spacing: cellSpacing) {
-                            let weeks = groupDataByWeeks(getHeatmapData())
-                            ForEach(Array(weeks.enumerated()), id: \.offset) { weekIndex, week in
-                                VStack(spacing: cellSpacing) {
-                                    // 确保每周都有7天的数据
-                                    ForEach(0..<7) { dayIndex in
-                                        if dayIndex < week.count {
-                                            let data = week[dayIndex]
-                                            RoundedRectangle(cornerRadius: 2)
-                                                .fill(getColor(for: data.level))
-                                                .frame(width: cellSize, height: cellSize)
-                                        } else {
-                                            RoundedRectangle(cornerRadius: 2)
-                                                .fill(Color.clear)
-                                                .frame(width: cellSize, height: cellSize)
-                                        }
+                    }
+                    .padding(.trailing, 8)
+                    
+                    // 热力图网格
+                    HStack(spacing: cellSpacing) {
+                        let weeks = groupDataByWeeks(getHeatmapData())
+                        ForEach(Array(weeks.enumerated()), id: \.offset) { weekIndex, week in
+                            VStack(spacing: cellSpacing) {
+                                // 确保每周都有7天的数据
+                                ForEach(0..<7) { dayIndex in
+                                    if dayIndex < week.count {
+                                        let data = week[dayIndex]
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(getColor(for: data.level))
+                                            .frame(width: cellSize, height: cellSize)
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(Color.clear)
+                                            .frame(width: cellSize, height: cellSize)
                                     }
                                 }
                             }
                         }
                     }
                 }
-                .padding(.horizontal, 16)
             }
         }
         .padding(16)
