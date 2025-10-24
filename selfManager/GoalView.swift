@@ -624,7 +624,7 @@ struct GoalView: View {
                                     Spacer().frame(height: 8)
                                     // “全部”页签顶部筛选提示（页面上方，而非整个模块顶部）
                                     if goalTypes[index] == nil {
-                                        let filtersActive = (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty)
+                                        let filtersActive = (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty) || (selectedYear != nil)
                                         if filtersActive {
                                             HStack(spacing: 10) {
                                                 Text("当前为筛选结果")
@@ -641,6 +641,7 @@ struct GoalView: View {
                                                     selectedImportance = nil
                                                     searchText = ""
                                                     selectedTags.removeAll()
+                                                    selectedYear = nil
                                                     savedFilteredGoals = []
 
                                                     // 同步移除持久化的筛选条件
@@ -649,6 +650,7 @@ struct GoalView: View {
                                                     defaults.removeObject(forKey: "selectedImportance")
                                                     defaults.removeObject(forKey: "goalSearchText")
                                                     defaults.removeObject(forKey: "goalFilterTags")
+                                                    defaults.removeObject(forKey: "selectedYear")
 
                                                     updateFilteredGoals()
                                                 }) {
