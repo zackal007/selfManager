@@ -1230,53 +1230,55 @@ struct RecordView: View {
                                     }
                                 }
                             } else {
-                                // 其他页签使用固定尺寸不可滚动的VStack
-                                VStack(spacing: 0) {
-                                    // 移除页签顶部的下拉标题栏占位，避免与悬浮顶栏产生视觉叠层
-                                    
-                                    VStack(alignment: .leading, spacing: 16) {
-                                        // 其他页签显示正常记录内容
-                                        VStack(alignment: .leading, spacing: 12) {
-                                            // 移除记录标题
-                                            
-                                            // 记录正文编辑器（富文本与图片），绑定到 recordContent
-                                            NotesStyleRecordEditor(
-                                                text: $recordContent,
-                                                images: $selectedImages,
-                                                minHeight: 120,
-                                                onImagesChanged: { images in
-                                                    selectedImages = images
-                                                    contentModified = true
-                                                },
-                                                onTextChanged: {
-                                                    contentModified = true
-                                                    // 禁用自动保存 - 改为手动保存
-                                                    // 文本变更时即时自动保存，强制检查避免丢失
-                                                    // autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
-                                                }
-                                            )
-                                            .frame(maxHeight: .infinity)
-                                            .padding(.horizontal)
-                                            .onChange(of: recordContent) { _, _ in
-                                                // 标记内容已修改
-                                                contentModified = true
-                                            }
-                                            .onAppear {
-                                                // 加载当前选择日期的记录
-                                                loadCurrentRecord()
-                                                // 重置修改状态
-                                                contentModified = false
-                                            }
-                                        }
+                                // 其他页签使用ScrollView包装，支持键盘适应
+                                ScrollView {
+                                    VStack(spacing: 0) {
+                                        // 移除页签顶部的下拉标题栏占位，避免与悬浮顶栏产生视觉叠层
                                         
-                                        // 占位空间，确保工具栏悬浮效果
-                                        Spacer()
-                                            .frame(height: 100)
+                                        VStack(alignment: .leading, spacing: 16) {
+                                            // 其他页签显示正常记录内容
+                                            VStack(alignment: .leading, spacing: 12) {
+                                                // 移除记录标题
+                                                
+                                                // 记录正文编辑器（富文本与图片），绑定到 recordContent
+                                                NotesStyleRecordEditor(
+                                                    text: $recordContent,
+                                                    images: $selectedImages,
+                                                    minHeight: 120,
+                                                    onImagesChanged: { images in
+                                                        selectedImages = images
+                                                        contentModified = true
+                                                    },
+                                                    onTextChanged: {
+                                                        contentModified = true
+                                                        // 禁用自动保存 - 改为手动保存
+                                                        // 文本变更时即时自动保存，强制检查避免丢失
+                                                        // autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
+                                                    }
+                                                )
+                                                .frame(minHeight: 120)
+                                                .padding(.horizontal)
+                                                .onChange(of: recordContent) { _, _ in
+                                                    // 标记内容已修改
+                                                    contentModified = true
+                                                }
+                                                .onAppear {
+                                                    // 加载当前选择日期的记录
+                                                    loadCurrentRecord()
+                                                    // 重置修改状态
+                                                    contentModified = false
+                                                }
+                                            }
+                                            
+                                            // 占位空间，确保工具栏悬浮效果
+                                            Spacer()
+                                                .frame(height: 100)
+                                        }
+                                        .padding(.top, 0)
+                                        .padding(.bottom, 30)
                                     }
-                                    .padding(.top, 0)
-                                    .padding(.bottom, 30)
                                 }
-                                .frame(maxHeight: .infinity)
+                                .ignoresSafeArea(.keyboard, edges: .bottom)
                             }
                             
                             // 工具栏 - 整合添加图片、字数统计和心情选择功能

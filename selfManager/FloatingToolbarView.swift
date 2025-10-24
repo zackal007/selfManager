@@ -172,21 +172,6 @@ struct FloatingToolbarView: View {
                             .stroke(Color(UIColor.separator).opacity(0.2), lineWidth: 0.5)
                     )
             )
-            
-            // 图片预览（如果有图片的话）
-            if !images.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(Array(images.enumerated()), id: \.offset) { index, imageData in
-                            imageThumbnailView(imageData: imageData, index: index)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                }
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
-            }
         }
         .padding(.horizontal)
         .padding(.bottom, 20)
