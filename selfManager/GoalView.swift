@@ -461,10 +461,13 @@ struct GoalView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                             
-                            VStack(alignment: .leading, spacing: 2) {
+                            HStack {
                                 Text("目标/计划")
-                                    .font(.system(size: 20, weight: .regular, design: .rounded))
+                                    .font(.system(size: 20, weight: .light, design: .rounded))
                                     .foregroundColor(Color(UIColor.label))
+                                    .padding(.leading, 16)
+                                
+                                Spacer()
                             }
                             
                             Spacer()
@@ -478,12 +481,12 @@ struct GoalView: View {
                                 }) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                            .fill(Color(UIColor.systemGray5).opacity(0.8))
                                             .frame(width: 34, height: 34)
                                         
-                                        Image(systemName: "magnifyingglass")
+                                        Image(systemName: "line.3.horizontal.decrease.circle")
                                             .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(Color(UIColor.systemBlue))
+                                            .foregroundColor(Color(UIColor.label))
                                     }
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -502,22 +505,22 @@ struct GoalView: View {
                                 }) {
                                     HStack(spacing: 8) {
                                         Text("\(currentYear)年")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(Color.blue)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(Color(UIColor.label))
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.9)
                                         
                                         Image(systemName: showYearPicker ? "chevron.up" : "chevron.down")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(Color.blue.opacity(0.6))
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundColor(Color(UIColor.label))
                                             .rotationEffect(.degrees(showYearPicker ? 0 : 0))
                                             .animation(.easeInOut(duration: 0.2), value: showYearPicker)
                                     }
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color.blue.opacity(0.15))
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(Color(UIColor.systemGray5).opacity(0.8))
                                     )
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -531,12 +534,12 @@ struct GoalView: View {
                             }) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                        .fill(Color(UIColor.systemGray5).opacity(0.8))
                                         .frame(width: 34, height: 34)
                                     
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(Color(UIColor.systemBlue))
+                                        .foregroundColor(Color(UIColor.label))
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())

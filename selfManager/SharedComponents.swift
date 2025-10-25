@@ -146,10 +146,16 @@ struct MenuButton<Content: View>: View {
         Menu {
             content()
         } label: {
-            Image(systemName: "ellipsis.circle.fill")
-                .font(.system(size: 24))
-                .foregroundColor(.blue)
+            ZStack {
+                Circle()
+                    .fill(Color(UIColor.systemGray5).opacity(0.8))
+                    .frame(width: 34, height: 34)
+                
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+            }
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(PlainButtonStyle())
     }
 }

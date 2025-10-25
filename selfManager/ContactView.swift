@@ -302,11 +302,10 @@ struct ContactView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 
-                VStack(alignment: .leading, spacing: 2) {
-                            Text("我的人脉")
-                                .font(.system(size: 20, weight: .regular, design: .rounded))
-                                .foregroundColor(Color(UIColor.label))
-                        }
+                Text("我的人脉")
+                    .font(.system(size: 20, weight: .light, design: .rounded))
+                    .foregroundColor(Color(UIColor.label))
+                    .padding(.leading, 16)
                 
                 Spacer()
                 
@@ -321,12 +320,12 @@ struct ContactView: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.systemBlue).opacity(0.1))
+                            .fill(Color(UIColor.systemGray5).opacity(0.8))
                             .frame(width: 34, height: 34)
                         
                         Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.systemBlue))
+                            .foregroundColor(Color(UIColor.label))
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -337,12 +336,12 @@ struct ContactView: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.systemBlue).opacity(0.1))
+                            .fill(Color(UIColor.systemGray5).opacity(0.8))
                             .frame(width: 34, height: 34)
                         
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.systemBlue))
+                            .foregroundColor(Color(UIColor.label))
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -351,7 +350,6 @@ struct ContactView: View {
                 MenuButton {
                     viewModeMenuContent
                     Divider()
-                    categoryMenuContent
                     sortMenuContent
                 }
             }

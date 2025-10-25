@@ -72,11 +72,10 @@ struct RecordView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("  记录")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(UIColor.label))
-                }
+                Text("记录")
+                    .font(.system(size: 20, weight: .light, design: .rounded))
+                    .foregroundColor(Color(UIColor.label))
+                    .padding(.leading, 16)
 
                 Spacer()
                 // 左侧增加：日期选择器显示/隐藏按钮 + 当前时间文案（仅非“近期”显示）
@@ -95,14 +94,14 @@ struct RecordView: View {
                                 // 显示具体时间文本
                                 Text(headerInlineDateText)
                                     .font(.system(size: 15, weight: .medium))
-                                    .foregroundColor(Color.blue.opacity(0.8))
+                                    .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.9)
                                 
                                 // 下拉箭头图标
                                 Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
                                     .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(Color.blue.opacity(0.6))
+                                    .foregroundColor(Color(UIColor.label))
                                     .rotationEffect(.degrees(showDatePicker ? 0 : 0))
                                     .animation(.easeInOut(duration: 0.2), value: showDatePicker)
                             }
@@ -110,7 +109,7 @@ struct RecordView: View {
                             .padding(.vertical, 6)
                             .background(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .fill(Color("AppBlue").opacity(0.15))
+                                        .fill(Color(UIColor.systemGray5).opacity(0.8))
                                 )
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -133,11 +132,17 @@ struct RecordView: View {
                         dismissKeyboard()
                         sortRecordsByTime()
                     }) {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .font(.system(size: 20))
-                            .foregroundColor(Color.blue)
+                        ZStack {
+                            Circle()
+                                .fill(Color(UIColor.systemGray5).opacity(0.8))
+                                .frame(width: 34, height: 34)
+                            
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                        }
                     }
-                    .buttonStyle(ScaleButtonStyle())
+                    .buttonStyle(PlainButtonStyle())
                 }
                 
                 // 手动保存按钮 - 仅在非"近期"页签显示
