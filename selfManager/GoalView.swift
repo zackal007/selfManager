@@ -687,15 +687,12 @@ struct GoalView: View {
                                         // 年份快速选择器 - 横向滚动列表形式
                                         ScrollView(.horizontal, showsIndicators: false) {
                                             HStack(spacing: 12) {
-                                                // 显示更多年份，提供连续的横向滚动体验
-                                                ForEach(max(1, yearListBaseYear-10)...(yearListBaseYear+30), id: \.self) { year in
+                                                // 显示前20年和后20年，总共41年，当前年份在第21个位置
+                                                ForEach(max(1, yearListBaseYear-20)...(yearListBaseYear+20), id: \.self) { year in
                                                     Button(action: {
                                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                            // 直接设置年份，不使用中间变量
+                                                            // 只更新选中年份，不调整基准年份，保持滚动位置不变
                                                             currentYear = year
-                                                            
-                                                            // 调整基准年份，确保选中年份在可见范围中央位置
-                                                            yearListBaseYear = max(1, year - 5)
                                                             
                                                             // 设置动画状态
                                                             yearChangeAnimation = true
@@ -860,8 +857,14 @@ struct GoalView: View {
         }
         .onAppear {
             loadSavedGoalFilters()
-            // 初始化年份列表基准年份，确保当前年份在中间位置
-            yearListBaseYear = max(1, currentYear - 5)
+            // 初始化年份列表基准年份，实现前20年+后20年的显示
+            // 显示范围是 max(1, yearListBaseYear-20)...(yearListBaseYear+20)
+            // 总共显示41年：从(yearListBaseYear-20)到(yearListBaseYear+20)
+            // 
+            // 要让当前年份在第21个位置（居中），yearListBaseYear应该等于currentYear
+            // 这样显示范围是：max(1, currentYear-20)...(currentYear+20)
+            // 当前年份会在第21个位置，用户可以看到前20年和后20年
+            yearListBaseYear = max(21, currentYear)
         }
         .onChange(of: popupSelectedGoalType) { _, _ in
             updateFilteredGoals()

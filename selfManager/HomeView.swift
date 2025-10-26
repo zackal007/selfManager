@@ -301,12 +301,29 @@ struct HomeView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         
+                        Spacer()
+                        
                         Text("我")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
-                            .padding(.leading, 12)
                         
                         Spacer()
+                        
+                        Spacer()
+                        
+                        // 通知按钮
+                        Button(action: {}) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemBlue).opacity(0.1))
+                                    .frame(width: 38, height: 38)
+                                
+                                Image(systemName: "bell")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
