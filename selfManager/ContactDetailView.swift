@@ -815,7 +815,7 @@ struct ContactDetailView: View {
     }
     
     private func deleteContact() {
-        modelContext.delete(contact)
+        contact.moveToTrash()
         try? modelContext.save()
         presentationMode.wrappedValue.dismiss()
     }

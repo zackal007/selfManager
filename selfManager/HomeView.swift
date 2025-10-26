@@ -302,9 +302,9 @@ struct HomeView: View {
                         .buttonStyle(PlainButtonStyle())
                         
                         Text("我")
-                            .font(.system(size: 20, weight: .regular, design: .rounded))
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
-                            .padding(.leading, 16)
+                            .padding(.leading, 12)
                         
                         Spacer()
                     }

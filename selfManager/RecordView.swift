@@ -73,7 +73,7 @@ struct RecordView: View {
                 .buttonStyle(PlainButtonStyle())
 
                 Text("记录")
-                    .font(.system(size: 20, weight: .light, design: .rounded))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(Color(UIColor.label))
                     .padding(.leading, 16)
 

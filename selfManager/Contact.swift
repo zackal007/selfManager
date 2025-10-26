@@ -140,6 +140,10 @@ final class Contact {
     var relatedGoalIdsString: String = ""  // 关联目标ID字符串
     var isExample: Bool = false  // 是否为榜样联系人
     
+    // 回收站相关字段
+    var isDeleted: Bool = false
+    var deletedDate: Date?
+    
     // 计算属性，用于获取和设置关联目标ID数组
     var relatedGoalIds: [UUID] {
         get {
@@ -169,6 +173,8 @@ final class Contact {
         self.modifyTime = Date()
         self.avatar = avatar
         self.relatedGoalIdsString = relatedGoalIds.map { $0.uuidString }.joined(separator: ",")
+        self.isDeleted = false
+        self.deletedDate = nil
     }
     
     // 计算下次联系提醒时间
@@ -203,5 +209,19 @@ final class Contact {
         lastContactDate = date
         nextContactDate = calculateNextContactDate()
         modifyTime = Date()
+    }
+    
+    // 软删除方法
+    func moveToTrash() {
+        self.isDeleted = true
+        self.deletedDate = Date()
+        self.modifyTime = Date()
+    }
+    
+    // 从回收站恢复
+    func restoreFromTrash() {
+        self.isDeleted = false
+        self.deletedDate = nil
+        self.modifyTime = Date()
     }
 }
