@@ -5,6 +5,49 @@
 	<key>logFormatVersion</key>
 	<integer>11</integer>
 	<key>logs</key>
-	<dict/>
+	<dict>
+		<key>D720C250-725C-4F57-AD05-554FE8B81720</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>D720C250-725C-4F57-AD05-554FE8B81720.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>31</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>selfManager project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>selfManager</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Archiving project selfManager with scheme selfManager</string>
+			<key>timeStartedRecording</key>
+			<real>783265258.90479898</real>
+			<key>timeStoppedRecording</key>
+			<real>783265741.49282706</real>
+			<key>title</key>
+			<string>Archiving project selfManager with scheme selfManager</string>
+			<key>uniqueIdentifier</key>
+			<string>D720C250-725C-4F57-AD05-554FE8B81720</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

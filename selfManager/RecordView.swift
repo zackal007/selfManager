@@ -242,10 +242,10 @@ struct RecordView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 4)
+            .padding(.vertical, 2)
 
             // 第二行：记录类型筛选器（页签选择器）
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         // 自定义页签顺序：近期、日记、周记、月记、季记、年记
@@ -291,8 +291,8 @@ struct RecordView: View {
                     .padding(.horizontal, 16)
                 }
             }
-            .padding(.top, 8)
-            .padding(.bottom, 8)
+            .padding(.top, 4)
+            .padding(.bottom, 7)
         }
         .frame(maxWidth: .infinity)
         .background(

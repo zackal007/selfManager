@@ -548,10 +548,10 @@ struct GoalView: View {
                             ellipsisMenuContent
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 2)
                         
                         // 导航标签：目标类型筛选页签（切换视图内容）
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
                            ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 10) {
                                     // 全部选项
@@ -583,8 +583,8 @@ struct GoalView: View {
                                 .padding(.horizontal, 16)
                             }
                         }
-                        .padding(.top, 6)
-                        .padding(.bottom, 10)
+                        .padding(.top, 4)
+                        .padding(.bottom, 7)
                     }
                     .frame(maxWidth: .infinity)
                     .safeAreaPadding(.top)

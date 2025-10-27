@@ -354,10 +354,10 @@ struct ContactView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 4)
+            .padding(.vertical, 2)
             
             // 第二行：联系人类型筛选器
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         // 全部选项
@@ -398,8 +398,8 @@ struct ContactView: View {
                     .padding(.horizontal, 16)
                 }
             }
-            .padding(.top, 8)
-            .padding(.bottom, 8)
+            .padding(.top, 4)
+            .padding(.bottom, 7)
         }
         .frame(maxWidth: .infinity)
         .safeAreaPadding(.top)
