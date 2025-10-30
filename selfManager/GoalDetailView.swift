@@ -35,7 +35,6 @@ struct GoalDetailView: View {
     
     // 状态变量
     @State private var selectedDate = Date()
-    @State private var showingDatePicker = false
     @State private var showUpperGoalSelector = false
     @State private var showSubGoalSelector = false
     @State private var showDeleteAlert = false
@@ -251,33 +250,78 @@ struct GoalDetailView: View {
     
     // 截止日期视图
     private var dueDateView: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "calendar")
-                .font(.system(size: 16))
-                .foregroundColor(Color(UIColor.systemBlue))
-                .frame(width: 24, height: 24)
-            
-            Text("截止日期")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(UIColor.label))
-            
-            Spacer()
-            
-            Button(action: {
-                // 打开日期选择器
-                editingField = .dueDate
-                selectedDate = goal.dueDate ?? Date()
-                showingDatePicker = true
-            }) {
-                Text(formattedDueDate)
-                    .font(.system(size: 15))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 16))
                     .foregroundColor(Color(UIColor.systemBlue))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(15)
+                    .frame(width: 24, height: 24)
+                
+                Text("截止日期")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+                
+                Spacer()
+                
+                Toggle("", isOn: Binding(
+                    get: { goal.dueDate != nil },
+                    set: { hasDate in
+                        if hasDate {
+                            // 如果开启，设置为当前日期
+                            let oldDueDate = goal.dueDate
+                            goal.dueDate = Date()
+                            goal.modifyTime = Date()
+                            
+                            // 记录截止日期修改
+                            GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate, modelContext: modelContext)
+                            
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                print("Failed to save due date: \(error)")
+                            }
+                        } else {
+                            // 如果关闭，清除截止日期
+                            let oldDueDate = goal.dueDate
+                            goal.dueDate = nil
+                            goal.modifyTime = Date()
+                            
+                            // 记录截止日期修改
+                            GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate, modelContext: modelContext)
+                            
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                print("Failed to save due date: \(error)")
+                            }
+                        }
+                    }
+                ))
+                .toggleStyle(SwitchToggleStyle())
             }
-            .buttonStyle(PlainButtonStyle())
+            
+            // 如果有截止日期，显示日期选择器
+            if goal.dueDate != nil {
+                DatePicker("", selection: Binding(
+                    get: { goal.dueDate ?? Date() },
+                    set: { newDate in
+                        let oldDueDate = goal.dueDate
+                        goal.dueDate = newDate
+                        goal.modifyTime = Date()
+                        
+                        // 记录截止日期修改
+                        GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate, modelContext: modelContext)
+                        
+                        do {
+                            try modelContext.save()
+                        } catch {
+                            print("Failed to save due date: \(error)")
+                        }
+                    }
+                ), displayedComponents: [.date])
+                .datePickerStyle(CompactDatePickerStyle())
+                .padding(.leading, 32) // 与图标和文字对齐
+            }
         }
         .padding(.horizontal, 16)
     }
@@ -1800,9 +1844,6 @@ struct GoalDetailView: View {
         .sheet(isPresented: $showEditSheet) {
             EditFormView(editingField: $editingField, editingValue: $editingValue, editingProgress: $editingProgress, onSave: handleSaveGoalEdit)
         }
-        .sheet(isPresented: $showingDatePicker) {
-            DatePickerView(selectedDate: $selectedDate, isPresented: $showingDatePicker, goal: goal)
-        }
         .sheet(isPresented: $showAddTaskSheet) {
             AddTaskView(goalId: goal.id.uuidString)
         }
@@ -2191,52 +2232,6 @@ struct AddTaskView: View {
 }
 
 // 日期选择器视图
-struct DatePickerView: View {
-    @Binding var selectedDate: Date
-    @Binding var isPresented: Bool
-    let goal: Goal
-    @Environment(\.modelContext) private var modelContext
-    
-    var body: some View {
-        NavigationView {
-            VStack {
-                DatePicker(
-                    "选择日期",
-                    selection: $selectedDate,
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(GraphicalDatePickerStyle())
-                .padding()
-            }
-            .navigationBarTitle("选择截止日期", displayMode: .inline)
-            .navigationBarItems(
-                leading: Button("取消") {
-                    isPresented = false
-                },
-                trailing: Button("确定") {
-                    saveDueDate()
-                    isPresented = false
-                }
-            )
-        }
-    }
-    
-    private func saveDueDate() {
-        let oldDueDate = goal.dueDate
-        goal.dueDate = selectedDate
-        goal.modifyTime = Date()
-        
-        // 记录截止日期修改
-        GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate, modelContext: modelContext)
-        
-        do {
-            try modelContext.save()
-        } catch {
-            print("Failed to save due date: \(error)")
-        }
-    }
-}
-
 struct GoalSelectorView: View {
     var availableGoals: [String] // 目标ID列表
     @Binding var selectedGoals: [String] // 选中的目标ID列表

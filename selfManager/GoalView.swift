@@ -1320,10 +1320,7 @@ struct GoalCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 
-                // 卡片阴影
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.clear)
-                    .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
+                // 卡片阴影已移除
                 
                 // 内容容器 - 所有元素放在同一图层，向左上角对齐
                 VStack(alignment: .leading, spacing: elementSpacing) {
@@ -1556,7 +1553,6 @@ struct GoalListItem: View {
             .padding(12)
             .background(Color(UIColor.systemBackground))
             .cornerRadius(12)
-            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
@@ -1877,7 +1873,6 @@ struct SimplifiedGoalListItem: View {
             .padding(12)
             .background(Color(UIColor.systemBackground))
             .cornerRadius(12)
-            .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }

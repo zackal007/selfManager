@@ -12,7 +12,7 @@ import SwiftData
 
 struct ContactView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Contact.modifyTime, order: .reverse) private var allContacts: [Contact]
+    @Query(filter: #Predicate<Contact> { $0.isDeleted == false }, sort: \Contact.modifyTime, order: .reverse) private var allContacts: [Contact]
     @Query private var allGoals: [Goal]
     @Query private var allRecords: [Record]
     @Query private var allUsers: [User]
@@ -47,6 +47,7 @@ struct ContactView: View {
     @State private var showGoalDetail = false
     @State private var showContactDetail = false
     @State private var showRecordDetail = false
+    @State private var showContactTrashView = false
     // 顶栏动态高度（用于透明占位，避免内容被遮挡）
     @State private var headerHeight: CGFloat = 120
     
@@ -239,6 +240,7 @@ struct ContactView: View {
                                 EmptyView()
                             }
                         }
+
                     default:
                         EmptyView()
                     }
@@ -246,6 +248,10 @@ struct ContactView: View {
                 // 弹窗：添加联系人表单
                 .sheet(isPresented: $showAddContactSheet) {
                     AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)
+                }
+                // 弹窗：回收站视图
+                .sheet(isPresented: $showContactTrashView) {
+                    ContactTrashView()
                 }
                 .safeAreaInset(edge: .top) {
                     headerView
@@ -351,6 +357,12 @@ struct ContactView: View {
                     viewModeMenuContent
                     Divider()
                     sortMenuContent
+                    Divider()
+                    Button(action: {
+                        showContactTrashView = true
+                    }) {
+                        Label("回收站", systemImage: "trash")
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -572,26 +584,16 @@ struct ContactView: View {
         .padding(.top, 60)
     }
     
-    // 视图模式菜单内容
+    // 视图模式菜单内容 - 直接切换而非菜单
     private var viewModeMenuContent: some View {
-        Group {
-            Button(action: {
-                viewMode = .gallery
-            }) {
-                Label("卡片视图", systemImage: "square.grid.2x2")
-                if viewMode == .gallery {
-                    Image(systemName: "checkmark")
-                }
+        Button(action: {
+            // 直接切换视图模式
+            withAnimation {
+                viewMode = viewMode == .gallery ? .list : .gallery
             }
-            
-            Button(action: {
-                viewMode = .list
-            }) {
-                Label("列表视图", systemImage: "list.bullet")
-                if viewMode == .list {
-                    Image(systemName: "checkmark")
-                }
-            }
+        }) {
+            Label(viewMode == .gallery ? "列表视图" : "卡片视图", 
+                  systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
         }
     }
     

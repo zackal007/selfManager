@@ -156,6 +156,25 @@ class NavigationManager: ObservableObject {
     func pushToHome(_ route: AppRoute) {
         homeNavigationPath.append(route)
     }
+    
+    /// 推送路由到指定模块的导航栈
+    /// - Parameters:
+    ///   - route: 要推送的路由
+    ///   - tabIndex: 目标模块索引
+    func push(_ route: AppRoute, for tabIndex: Int) {
+        switch tabIndex {
+        case 0:
+            homeNavigationPath.append(route)
+        case 1:
+            goalNavigationPath.append(route)
+        case 2:
+            recordNavigationPath.append(route)
+        case 3:
+            contactNavigationPath.append(route)
+        default:
+            homeNavigationPath.append(route)
+        }
+    }
 }
 
 /// 导航路径扩展，提供便捷方法

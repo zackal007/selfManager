@@ -337,90 +337,6 @@ struct SidebarView: View {
             HStack(spacing: 0) {
                 // 侧边栏主体
                 VStack(spacing: 0) {
-                    // 顶部用户信息区域
-                    HStack(spacing: 12) {
-                        // 隐藏用户名
-                        EmptyView()
-                        
-                        // 用户头像
-                        if let user = users.first, !user.avatar.isEmpty, let uiImage = ImageUtility.loadImageFromAppDirectory(fileName: user.avatar) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 50, height: 50)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            ),
-                                            lineWidth: 2
-                                        )
-                                )
-                                .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
-                                .onTapGesture {
-                                    switch selectedTab {
-                                    case 0:
-                                        navigationManager.homeNavigationPath.append(AppRoute.userEdit)
-                                    case 1:
-                                        navigationManager.goalNavigationPath.append(AppRoute.userEdit)
-                                    case 2:
-                                        navigationManager.recordNavigationPath.append(AppRoute.userEdit)
-                                    case 3:
-                                        navigationManager.contactNavigationPath.append(AppRoute.userEdit)
-                                    default:
-                                        navigationManager.homeNavigationPath.append(AppRoute.userEdit)
-                                    }
-                                    closeSidebar()
-                                }
-                        } else {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 50, height: 50)
-                                .clipShape(Circle())
-                                .foregroundColor(.gray)
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color(UIColor.systemBlue).opacity(0.3), Color(UIColor.systemBlue).opacity(0.1)]),
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            ),
-                                            lineWidth: 2
-                                        )
-                                )
-                                .shadow(color: Color(UIColor.systemBlue).opacity(0.15), radius: 8, x: 0, y: 4)
-                                .onTapGesture {
-                                    switch selectedTab {
-                                    case 0:
-                                        navigationManager.homeNavigationPath.append(AppRoute.userEdit)
-                                    case 1:
-                                        navigationManager.goalNavigationPath.append(AppRoute.userEdit)
-                                    case 2:
-                                        navigationManager.recordNavigationPath.append(AppRoute.userEdit)
-                                    case 3:
-                                        navigationManager.contactNavigationPath.append(AppRoute.userEdit)
-                                    default:
-                                        navigationManager.homeNavigationPath.append(AppRoute.userEdit)
-                                    }
-                                    closeSidebar()
-                                }
-                        }
-                        
-                        Spacer()
-                        
-                        // 移除设置按钮，因为设置项已经直接在侧边栏中显示
-                        EmptyView()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 60)
-                    .padding(.bottom, 16)
-                    
                     ScrollView {
                          VStack(spacing: 16) {
                              // 记录热力图卡片
@@ -433,6 +349,7 @@ struct SidebarView: View {
                              SettingsCardView()
                          }
                          .padding(.horizontal, 16)
+                         .padding(.top, 60) // 将顶部内边距从16改为60，替代原来头像行的空间
                          .padding(.bottom, 16)
                      }
                     

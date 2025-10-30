@@ -10,4 +10,5 @@ enum AppRoute: Hashable {
     case anxieties
     case userEdit
     case tagDetail(String)
+    case contactTrash
 }

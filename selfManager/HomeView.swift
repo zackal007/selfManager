@@ -381,7 +381,7 @@ struct HomeView: View {
                 case .anxieties:
                     TagDetailView(tag: BuiltInTags.anxiety, tagType: .goal)
                 case .tagDetail(let tagName):
-                    TagDetailView(tag: tagName, tagType: .goal)
+                    TagDetailView(tag: tagName, tagType: .all)
                         .navigationBarBackButtonHidden(true)
                         .navigationTitle("标签详情")
                         .toolbar {
@@ -391,6 +391,8 @@ struct HomeView: View {
                                 }
                             }
                         }
+                case .contactTrash:
+                    EmptyView() // HomeView不处理contactTrash路由，这个路由只在ContactView中处理
                 }
             }
         }
