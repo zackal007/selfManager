@@ -1125,16 +1125,41 @@ struct GoalDetailView: View {
     // 目标名称和进度视图
     var goalNameProgressView: some View {
         HStack {
-            Button(action: {
-                editingField = .name
-                editingValue = goal.name
-                showEditSheet = true
-            }) {
+            if editingField == .name {
+                TextField(
+                    "目标名称",
+                    text: $editingValue,
+                    onCommit: {
+                        // 保存修改
+                        let oldName = goal.name
+                        goal.name = editingValue
+                        goal.modifyTime = Date()
+                        try? modelContext.save()
+                        
+                        // 记录活动
+                        GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName, modelContext: modelContext)
+                        
+                        // 退出编辑模式
+                        editingField = nil
+                    }
+                )
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(Color(UIColor.label))
+                .onAppear {
+                    // 自动聚焦
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            } else {
                 Text(goal.name)
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(Color(UIColor.label))
+                    .onTapGesture {
+                        editingField = .name
+                        editingValue = goal.name
+                    }
             }
-            .buttonStyle(PlainButtonStyle())
 
             // “钉子”按钮：钉住/取消钉住当前目标
             Button(action: {
@@ -1216,26 +1241,88 @@ struct GoalDetailView: View {
     
     // 目标描述视图
     var goalDescriptionView: some View {
-        Button(action: {
-            editingField = .goalDescription
-            editingValue = goal.goalDescription
-            showEditSheet = true
-        }) {
-            HStack {
+        VStack(alignment: .leading) {
+            if editingField == .goalDescription {
+                TextEditor(text: $editingValue)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.darkGray))
+                    .frame(minHeight: 100)
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color(UIColor.systemGray6)))
+                    .onAppear {
+                        // 自动聚焦
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                    }
+                
+                HStack {
+                    Spacer()
+                    Button("完成") {
+                        // 保存修改
+                        let oldDescription = goal.goalDescription
+                        goal.goalDescription = editingValue
+                        goal.modifyTime = Date()
+                        try? modelContext.save()
+                        
+                        // 记录活动
+                        GoalActivityManager.shared.logDescriptionChange(goal: goal, oldDescription: oldDescription, modelContext: modelContext)
+                        
+                        // 退出编辑模式
+                        editingField = nil
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(8)
+                }
+                .padding(.top, 4)
+            } else {
                 Text(goal.goalDescription)
-                    .lineLimit(3) // 设置为3行高度
-                    .fixedSize(horizontal: false, vertical: true) // 确保显示完整的3行
                     .font(.system(size: 16))
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
+                    .onTapGesture {
+                        editingField = .goalDescription
+                        editingValue = goal.goalDescription
+                    }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 4)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    // 保存当前编辑的内容
+    private func saveCurrentEditing() {
+        guard let field = editingField else { return }
+        
+        switch field {
+        case .name:
+            let oldName = goal.name
+            if !editingValue.isEmpty {
+                goal.name = editingValue
+                goal.modifyTime = Date()
+                try? modelContext.save()
+                GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName, modelContext: modelContext)
+            }
+            
+        case .goalDescription:
+            let oldDescription = goal.goalDescription
+            goal.goalDescription = editingValue
+            goal.modifyTime = Date()
+            try? modelContext.save()
+            GoalActivityManager.shared.logDescriptionChange(goal: goal, oldDescription: oldDescription, modelContext: modelContext)
+            
+        default:
+            break
+        }
+        
+        // 退出编辑模式
+        editingField = nil
     }
     
     var body: some View {
@@ -2015,6 +2102,7 @@ struct EditFormView: View {
     @Binding var editingValue: String
     @Binding var editingProgress: Double
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     
     // 添加回调函数
     var onSave: ((GoalDetailView.EditableField?, String, Double) -> Void)? = nil
@@ -2026,86 +2114,201 @@ struct EditFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                switch editingField {
-                case .name:
-                    TextField("目标名称", text: $editingValue)
-                        .font(.system(size: 18))
-                
-                case .goalDescription:
-                    TextEditor(text: $editingValue)
-                        .frame(minHeight: 100)
-                
-                case .progress:
-                    VStack {
-                        Text("\(Int(editingProgress * 100))%")
-                            .font(.title)
-                            .bold()
-                            .padding()
-                        
-                        Slider(value: $editingProgress, in: 0...1, step: 0.01)
-                            .padding(.horizontal)
-                    }
-                
-                case .tag:
-                    TextField("标签", text: $editingValue)
-                        .font(.system(size: 16))
-                
-                case .upperProject:
-                    TextField("上级目标", text: $editingValue)
-                        .font(.system(size: 16))
-                
-                case .subProject:
-                    TextField("子目标", text: $editingValue)
-                        .font(.system(size: 16))
-                
-                case .task:
-                    VStack(alignment: .leading, spacing: 16) {
-                        TextField("任务", text: $editingValue)
-                            .font(.system(size: 16))
-                        
-                        // 导入到提醒事项按钮
-                        Button(action: {
-                            importToReminders()
-                        }) {
-                            HStack {
-                                Image(systemName: "bell.fill")
-                                    .foregroundColor(.white)
-                                Text("导入到提醒事项")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 16, weight: .medium))
+            VStack(spacing: 0) {
+                // 内容区域
+                ScrollView {
+                    VStack(spacing: 16) {
+                        switch editingField {
+                        case .name:
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("目标名称")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                TextField("请输入目标名称", text: $editingValue)
+                                    .font(.system(size: 16))
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                    .padding(.horizontal, 16)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.orange)
-                            .cornerRadius(10)
+                        
+                        case .goalDescription:
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("目标描述")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                TextEditor(text: $editingValue)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color(UIColor.darkGray))
+                                    .padding(4)
+                                    .frame(minHeight: 150)
+                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                    .padding(.horizontal, 16)
+                            }
+                        
+                        case .progress:
+                            VStack(spacing: 16) {
+                                Text("\(Int(editingProgress * 100))%")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .foregroundColor(.primary)
+                                
+                                Slider(value: $editingProgress, in: 0...1, step: 0.01)
+                                    .padding(.horizontal, 16)
+                                    .accentColor(Color.blue)
+                            }
+                            .padding(.vertical, 16)
+                            .padding(.horizontal, 16)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                            .padding(.horizontal, 16)
+                        
+                        case .tag:
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("标签")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                HStack {
+                                    Image(systemName: "tag")
+                                        .foregroundColor(.secondary)
+                                    TextField("请输入标签", text: $editingValue)
+                                        .font(.system(size: 16))
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                .padding(.horizontal, 16)
+                            }
+                        
+                        case .upperProject:
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("上级目标")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                HStack {
+                                    Image(systemName: "arrow.up.circle")
+                                        .foregroundColor(.secondary)
+                                    TextField("请输入上级目标", text: $editingValue)
+                                        .font(.system(size: 16))
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                .padding(.horizontal, 16)
+                            }
+                        
+                        case .subProject:
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("子目标")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                HStack {
+                                    Image(systemName: "arrow.down.circle")
+                                        .foregroundColor(.secondary)
+                                    TextField("请输入子目标", text: $editingValue)
+                                        .font(.system(size: 16))
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                .padding(.horizontal, 16)
+                            }
+                        
+                        case .task:
+                            VStack(alignment: .leading, spacing: 16) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("任务")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 16)
+                                    
+                                    HStack {
+                                        Image(systemName: "checkmark.circle")
+                                            .foregroundColor(.secondary)
+                                        TextField("请输入任务", text: $editingValue)
+                                            .font(.system(size: 16))
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                    .padding(.horizontal, 16)
+                                }
+                                
+                                // 导入到提醒事项按钮
+                                Button(action: {
+                                    importToReminders()
+                                }) {
+                                    HStack {
+                                        Image(systemName: "bell.fill")
+                                        Text("导入到提醒事项")
+                                            .font(.system(size: 16, weight: .medium))
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .foregroundColor(.white)
+                                    .background(Color.orange)
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 16)
+                            }
+                        
+                        case .dueDate:
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("截止日期")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                HStack {
+                                    Image(systemName: "calendar")
+                                        .foregroundColor(.secondary)
+                                    Text("请使用日期选择器设置截止日期")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                .padding(.horizontal, 16)
+                            }
+                        
+                        case .none:
+                            Text("请选择要编辑的内容")
+                                .font(.system(size: 16))
+                                .foregroundColor(.secondary)
+                                .padding()
+                            
+                        @unknown default:
+                            Text("未知编辑类型")
+                                .font(.system(size: 16))
+                                .foregroundColor(.secondary)
+                                .padding()
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
-                
-                case .dueDate:
-                    Text("请使用日期选择器设置截止日期")
-                        .font(.system(size: 16))
-                        .foregroundColor(.gray)
-                
-                case .none:
-                    Text("请选择要编辑的内容")
-                    
-                @unknown default:
-                    Text("未知编辑类型")
+                    .padding(.vertical, 20)
                 }
+                .background(Color(UIColor.systemBackground))
             }
             .navigationBarTitle(getNavigationTitle(), displayMode: .inline)
             .navigationBarItems(
                 leading: Button("取消") {
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 },
                 trailing: Button("保存") {
                     // 直接调用回调函数而不是发送通知
                     if let onSave = onSave {
                         onSave(editingField, editingValue, editingProgress)
                     }
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 }
             )
         }
@@ -2178,7 +2381,7 @@ struct EditFormView: View {
 struct AddTaskView: View {
     let goalId: String
     @State private var taskTitle = ""
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
     
@@ -2188,24 +2391,41 @@ struct AddTaskView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("任务信息")) {
-                    TextField("任务标题", text: $taskTitle)
+            VStack(spacing: 16) {
+                // 任务标题输入框
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("任务标题")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                    
+                    HStack {
+                        Image(systemName: "checkmark.circle")
+                            .foregroundColor(.gray)
+                        
+                        TextField("请输入任务标题", text: $taskTitle)
+                            .autocapitalization(.none)
+                            .disableAutocorrection(true)
+                    }
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal, 16)
                 }
+                
+                Spacer()
             }
+            .padding(.top, 16)
+            .background(Color(.systemBackground))
             .navigationBarTitle("添加任务", displayMode: .inline)
             .navigationBarBackButtonHidden(true)
             .navigationBarItems(
-                leading: Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("取消")
+                leading: Button("取消") {
+                    dismiss()
                 },
-                trailing: Button(action: {
+                trailing: Button("添加") {
                     addTask()
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("添加")
+                    dismiss()
                 }
                 .disabled(taskTitle.isEmpty)
             )
@@ -2231,7 +2451,7 @@ struct AddTaskView: View {
     }
 }
 
-// 日期选择器视图
+// 目标选择器视图
 struct GoalSelectorView: View {
     var availableGoals: [String] // 目标ID列表
     @Binding var selectedGoals: [String] // 选中的目标ID列表
@@ -2240,6 +2460,7 @@ struct GoalSelectorView: View {
     var selectorType: String // 用于区分上级目标和子目标
     let goal: Goal
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Query(filter: #Predicate<Goal> { $0.isDeleted == false }) private var allGoals: [Goal] // 添加查询未删除的目标
     
     // 根据ID获取目标名称的方法
@@ -2264,61 +2485,107 @@ struct GoalSelectorView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
+            VStack(spacing: 0) {
                 // 搜索栏
-                TextField("搜索目标", text: $searchText)
-                    .padding(7)
-                    .padding(.horizontal, 25)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-                    .padding(.horizontal, 10)
-                    .overlay(
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-                                .padding(.leading, 15)
-                            
-                            if !searchText.isEmpty {
-                                Button(action: {
-                                    searchText = ""
-                                }) {
-                                    Image(systemName: "multiply.circle.fill")
-                                        .foregroundColor(.gray)
-                                        .padding(.trailing, 15)
-                                }
-                            }
-                        }
-                    )
-                    .padding(.top, 10)
-                
-                List {
-                    ForEach(filteredGoals, id: \.self) { goalId in
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    
+                    TextField("搜索目标", text: $searchText)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                    
+                    if !searchText.isEmpty {
                         Button(action: {
-                            toggleGoalSelection(goalId)
+                            searchText = ""
                         }) {
-                            HStack {
-                                Text(getGoalName(id: goalId))
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                if selectedGoals.contains(goalId) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
-                                }
-                            }
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
                         }
                     }
                 }
-                .listStyle(InsetGroupedListStyle())
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                .padding(.horizontal)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+                
+                // 已选目标
+                if !selectedGoals.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("已选目标")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(selectedGoals, id: \.self) { goalId in
+                                    HStack {
+                                        Text(getGoalName(id: goalId))
+                                            .font(.system(size: 14))
+                                        
+                                        Button(action: {
+                                            toggleGoalSelection(goalId)
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.system(size: 12))
+                                        }
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.blue.opacity(0.1))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(15)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding(.bottom, 8)
+                    }
+                }
+                
+                // 目标列表
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(filteredGoals, id: \.self) { goalId in
+                            Button(action: {
+                                toggleGoalSelection(goalId)
+                            }) {
+                                HStack {
+                                    Text(getGoalName(id: goalId))
+                                        .foregroundColor(.primary)
+                                        .font(.system(size: 16))
+                                    Spacer()
+                                    if selectedGoals.contains(goalId) {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                            }
+                            .background(Color(.systemBackground))
+                            
+                            Divider()
+                                .padding(.leading, 16)
+                        }
+                    }
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
             }
-            .navigationBarTitle("选择目标", displayMode: .inline)
+            .background(Color(.systemBackground))
+            .navigationBarTitle(selectorType == "upperProject" ? "选择上级目标" : "选择子目标", displayMode: .inline)
             .navigationBarItems(
                 leading: Button("取消") {
-                    isPresented = false
+                    dismiss()
                 },
-                trailing: Button("保存") {
+                trailing: Button("添加") {
                     saveGoalRelation()
-                    isPresented = false
+                    dismiss()
                 }
             )
         }
