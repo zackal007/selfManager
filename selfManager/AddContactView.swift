@@ -41,52 +41,25 @@ struct AddContactView: View {
     var body: some View {
         ZStack {
             NavigationView {
-                Form {
-                    Section(header: Text("基本信息")) {
-                        TextField("姓名", text: $name)
-                            .overlay(
-                                name.isEmpty ? 
-                                Text("姓名不能为空").foregroundColor(.red).font(.caption) : nil,
-                                alignment: .trailing
-                            )
-
-                        Picker("分类", selection: $selectedContactType) {
-                            ForEach(ContactType.allCases, id: \.self) { type in
-                                HStack {
-                                    Image(systemName: type.iconName)
-                                    Text(type.displayName)
-                                }
-                                .tag(type)
-                            }
-                        }
-
-                        TextField("备注", text: $notes, axis: .vertical)
-                            .lineLimit(3...6)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        headerSection
+                        formFieldsSection
+                        Spacer(minLength: 100)
                     }
-                    
-                    Section(header: Text("联系方式")) {
-                        TextField("电话", text: $phone)
-                            .keyboardType(.phonePad)
-                        
-                        TextField("邮箱", text: $email)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                        
-                        TextField("地址", text: $address)
-                    }
-                    
-                    
                 }
-                .navigationBarTitle("添加联系人", displayMode: .inline)
-                .navigationBarItems(
-                    leading: Button("取消") {
-                        isPresented = false
-                    },
-                    trailing: Button("保存") {
-                        validateAndSaveContact()
+                .background(Color(UIColor.systemBackground))
+                .navigationTitle("添加联系人")
+                .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        cancelButton
                     }
-                    .disabled(name.isEmpty)
-                )
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        saveButton
+                    }
+                }
                 .alert(isPresented: $showAlert) {
                     Alert(
                         title: Text("提示"),
@@ -96,7 +69,446 @@ struct AddContactView: View {
                 }
             }
             
-            // 成功提示Toast
+            successToast
+        }
+    }
+    
+    // MARK: - Header Section
+    private var headerSection: some View {
+        VStack(spacing: 24) {
+            // 图标
+            VStack(spacing: 12) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.blue)
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: "person.fill.badge.plus")
+                            .font(.system(size: 26, weight: .medium))
+                            .foregroundColor(.white)
+                    )
+                    .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
+            }
+            .padding(.top, 32)
+        }
+    }
+    
+    // MARK: - Form Fields Section
+    private var formFieldsSection: some View {
+        VStack(spacing: 16) {
+            basicInfoFields
+            categoryFields
+            contactInfoFields
+            additionalFields
+        }
+        .padding(.horizontal, 24)
+    }
+    
+    // MARK: - Basic Info Fields
+    private var basicInfoFields: some View {
+        VStack(spacing: 16) {
+            nameField
+            companyField
+            positionField
+        }
+    }
+    
+    // MARK: - Category Fields
+    private var categoryFields: some View {
+        VStack(spacing: 16) {
+            contactTypeField
+            importanceField
+            frequencyField
+            tagsField
+            lastContactDateField
+        }
+    }
+    
+    // MARK: - Contact Info Fields
+    private var contactInfoFields: some View {
+        VStack(spacing: 16) {
+            phoneField
+            emailField
+            addressField
+        }
+    }
+    
+    // MARK: - Additional Fields
+    private var additionalFields: some View {
+        VStack(spacing: 16) {
+            notesField
+        }
+    }
+    
+    // MARK: - Individual Field Views
+    private var nameField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("姓名")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入姓名", text: $name)
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(name.isEmpty ? Color.clear : Color.blue, lineWidth: 2)
+                        )
+                )
+        }
+    }
+    
+    private var companyField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("公司")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入公司名称", text: $company)
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(company.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: company.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    private var positionField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("职位")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入职位", text: $position)
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(position.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: position.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    private var contactTypeField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("分类")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            Menu {
+                ForEach(ContactType.allCases, id: \.self) { type in
+                    Button(action: {
+                        selectedContactType = type
+                    }) {
+                        HStack {
+                            Image(systemName: type.iconName)
+                            Text(type.displayName)
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: selectedContactType.iconName)
+                        .foregroundColor(.blue)
+                    Text(selectedContactType.displayName)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                )
+            }
+        }
+    }
+    
+    private var importanceField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("重要性")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.primary)
+            
+            Menu {
+                ForEach(ContactImportance.allCases, id: \.self) { importance in
+                    Button(action: {
+                        selectedImportance = importance
+                    }) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                            Text(importance.displayName)
+                            if selectedImportance == importance {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.blue)
+                    Text(selectedImportance.displayName)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 12))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+            }
+        }
+    }
+    
+    private var frequencyField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("联系频率")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            Menu {
+                ForEach(ContactFrequency.allCases, id: \.self) { frequency in
+                    Button(action: {
+                        selectedFrequency = frequency
+                    }) {
+                        HStack {
+                            Image(systemName: "clock")
+                            Text(frequency.displayName)
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "clock")
+                        .foregroundColor(.blue)
+                    Text(selectedFrequency.displayName)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                )
+            }
+        }
+    }
+    
+    private var tagsField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("标签")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入标签，用逗号分隔", text: $tags)
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(tags.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: tags.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    private var lastContactDateField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("最后联系日期")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Toggle("", isOn: $hasLastContactDate)
+                    .labelsHidden()
+            }
+            
+            if hasLastContactDate {
+                DatePicker("选择日期", selection: $lastContactDate, displayedComponents: .date)
+                    .datePickerStyle(CompactDatePickerStyle())
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(UIColor.systemGray6))
+                    )
+            }
+        }
+    }
+    
+    private var phoneField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("电话")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入电话号码", text: $phone)
+                .font(.system(size: 16))
+                .keyboardType(.phonePad)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(phone.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: phone.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    private var emailField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("邮箱")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入邮箱地址", text: $email)
+                .font(.system(size: 16))
+                .keyboardType(.emailAddress)
+                .autocapitalization(.none)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(email.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: email.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    private var addressField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("地址")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入地址", text: $address)
+                .font(.system(size: 16))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(address.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: address.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    private var notesField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("备注（可选）")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            TextField("请输入备注信息", text: $notes, axis: .vertical)
+                .font(.system(size: 16))
+                .lineLimit(3...6)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(notes.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: notes.isEmpty ? 0 : 2)
+                        )
+                )
+        }
+    }
+    
+    // MARK: - Toolbar Buttons
+    private var cancelButton: some View {
+        Button(action: {
+            isPresented = false
+        }) {
+            HStack(spacing: 4) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .semibold))
+                Text("取消")
+                    .font(.system(size: 17, weight: .medium))
+            }
+            .foregroundColor(Color(UIColor.systemBlue))
+        }
+    }
+    
+    private var saveButton: some View {
+        Button(action: {
+            validateAndSaveContact()
+        }) {
+            HStack(spacing: 4) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("保存")
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(
+                        name.isEmpty ? 
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ) :
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(UIColor.systemBlue),
+                                Color(UIColor.systemBlue).opacity(0.8)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+        }
+        .disabled(name.isEmpty)
+    }
+    
+    // MARK: - Success Toast
+    private var successToast: some View {
+        Group {
             if showSuccessToast {
                 VStack {
                     Spacer()

@@ -555,7 +555,7 @@ struct GoalView: View {
                            ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 10) {
                                     // 全部选项
-                                    FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
+                                    FilterChip(title: "所有", isSelected: selectedGoalType == nil) {
                                         selectedGoalType = nil
                                         selectedSegment = 0
                                         syncGoalTypeIndex()
@@ -1565,12 +1565,12 @@ struct AddGoalView: View {
     @Binding var isPresented: Bool
     @Binding var selectedSegment: Int
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     
     // 表单字段
     @State private var goalName = ""
     @State private var goalDescription = ""
     @State private var selectedCategory = "短期目标"
-    @State private var tags = ""
     @State private var hasDueDate = false
     @State private var dueDate = Date()
     
@@ -1578,61 +1578,215 @@ struct AddGoalView: View {
     @State private var showAlert = false
     @State private var errorMessage = ""
     
-    // 成功提示
-    @State private var showSuccessToast = false
-    @State private var successMessage = ""
-    
     // 可选类别
     private let categories = ["人生目标", "年度目标", "短期目标", "习惯"]
     
+    // 为不同类别提供图标
+    private func categoryIcon(for category: String) -> String {
+        switch category {
+        case "人生目标":
+            return "star.fill"
+        case "年度目标":
+            return "calendar"
+        case "短期目标":
+            return "target"
+        case "习惯":
+            return "repeat"
+        default:
+            return "circle"
+        }
+    }
+    
     var body: some View {
         ZStack {
-            // 页面导航容器：添加目标表单的导航栈（顶部标题与按钮）
             NavigationView {
-                // 页面框：添加目标的表单主体（包含各类输入控件）
-                Form {
-                    Section(header: Text("目标信息")) {
-                        // 输入框：目标名称（必填）
-                        TextField("目标名称", text: $goalName)
-                            .overlay(
-                                goalName.isEmpty ? 
-                                Text("目标名称不能为空").foregroundColor(.red).font(.caption) : nil,
-                                alignment: .trailing
-                            )
+                VStack(spacing: 0) {
+                    // 顶部图标区域
+                    VStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.blue.opacity(0.8),
+                                            Color.purple.opacity(0.8)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 60, height: 60)
+                            
+                            Image(systemName: "target")
+                                .font(.system(size: 28, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
                         
-                        // 输入框：目标描述（可选，支持长文本）
-                        TextField("目标描述", text: $goalDescription)
-                            .frame(height: 80)
-                        
-                        // 选择控件：目标类别（影响展示与分类）
-                        Picker("类别", selection: $selectedCategory) {
-                            ForEach(categories, id: \.self) { category in
-                                Text(category).tag(category)
+                        Text("添加新目标")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.top, 20)
+                    .padding(.bottom, 24)
+                    
+                    // 目标信息输入区域
+                    VStack(alignment: .leading, spacing: 16) {
+                        // 目标名称输入框
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("目标名称")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            HStack(spacing: 8) {
+                                Image(systemName: "target")
+                                    .foregroundColor(.secondary)
+                                TextField("请输入目标名称", text: $goalName)
+                                    .textFieldStyle(PlainTextFieldStyle())
+                                if !goalName.isEmpty {
+                                    Button(action: { goalName = "" }) {
+                                        Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                            
+                            if goalName.isEmpty {
+                                Text("目标名称不能为空")
+                                    .font(.footnote)
+                                    .foregroundColor(.red)
                             }
                         }
                         
-                        // 输入框：标签（逗号分隔，用于筛选与标注）
-                        TextField("标签 (用逗号分隔)", text: $tags)
+                        // 目标描述输入框
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("目标描述")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "text.alignleft")
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 2)
+                                TextField("请输入目标描述（可选）", text: $goalDescription, axis: .vertical)
+                                    .textFieldStyle(PlainTextFieldStyle())
+                                    .lineLimit(3...6)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                        }
                         
-                        // 开关控件：是否设置截止日期
-                        Toggle("设置截止日期", isOn: $hasDueDate)
+                        // 目标类别选择
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("目标类别")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(categories, id: \.self) { category in
+                                        Button(action: {
+                                            selectedCategory = category
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Image(systemName: categoryIcon(for: category))
+                                                    .font(.system(size: 12))
+                                                Text(category)
+                                                    .font(.system(size: 13))
+                                            }
+                                            .foregroundColor(selectedCategory == category ? .white : .primary)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 8)
+                                            .background(
+                                                Capsule()
+                                                    .fill(selectedCategory == category ? Color.blue : Color(UIColor.systemGray5))
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                            }
+                        }
                         
-                        if hasDueDate {
-                            // 日期选择器：目标截止日期
-                            DatePicker("截止日期", selection: $dueDate, displayedComponents: [.date])
+
+                        
+                        // 截止日期设置
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("截止日期")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Toggle("", isOn: $hasDueDate)
+                                    .labelsHidden()
+                            }
+                            
+                            if hasDueDate {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "calendar")
+                                        .foregroundColor(.secondary)
+                                    DatePicker("", selection: $dueDate, displayedComponents: [.date])
+                                        .labelsHidden()
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                            }
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    
+                    Spacer()
                 }
                 .navigationBarTitle("添加目标", displayMode: .inline)
-                // 顶栏：添加目标页的取消/保存按钮（右侧保存，左侧取消）
                 .navigationBarItems(
-                    leading: Button("取消") {
+                    leading: Button(action: {
                         isPresented = false
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("取消")
+                                .font(.system(size: 17, weight: .medium))
+                        }
+                        .foregroundColor(Color(UIColor.systemBlue))
                     },
-                    trailing: Button("保存") {
+                    trailing: Button(action: {
                         validateAndSaveGoal()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("保存")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.blue,
+                                            Color.blue.opacity(0.8)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
                     }
                     .disabled(goalName.isEmpty)
+                    .opacity(goalName.isEmpty ? 0.6 : 1.0)
                 )
                 .alert(isPresented: $showAlert) {
                     Alert(
@@ -1641,18 +1795,6 @@ struct AddGoalView: View {
                         dismissButton: .default(Text("确定"))
                     )
                 }
-            }
-            
-            // 成功提示Toast
-            if showSuccessToast {
-                VStack {
-                    Spacer()
-                    ToastView(message: successMessage, isSuccess: true)
-                        .padding(.bottom, 20)
-                }
-                .transition(.move(edge: .bottom))
-                .animation(.easeInOut, value: showSuccessToast)
-                .zIndex(1)
             }
         }
     }
@@ -1684,7 +1826,7 @@ struct AddGoalView: View {
             description: goalDescription,
             progress: 0.0,
             backgroundImage: nil,
-            tags: tags.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
+            tags: [], // 不再使用标签功能
             upperProject: [],
             subProject: [],
             recordNum: 0,
@@ -1711,15 +1853,8 @@ struct AddGoalView: View {
                 selectedSegment = 3
             }
             
-            // 显示成功提示
-            successMessage = "目标「\(goalName)」添加成功！"
-            showSuccessToast = true
-            
-            // 延迟1.5秒后关闭表单，让用户有时间看到成功提示
-            // 使用Timer替代DispatchQueue以避免多线程问题
-            Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
-                isPresented = false
-            }
+            // 直接关闭表单，不显示成功提示
+            isPresented = false
         } catch {
             errorMessage = "保存失败: \(error.localizedDescription)"
             showAlert = true
@@ -1789,10 +1924,7 @@ struct SimplifiedGoalCard: View {
                     .frame(width: cardWidth)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 
-                // 卡片阴影
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.clear)
-                    .shadow(color: Color(UIColor.label).opacity(0.15), radius: 8, x: 0, y: 4)
+
                 
                 // 内容容器 - 只显示目标名称和类型
                 // 优化顶部内边距和间距
