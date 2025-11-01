@@ -339,8 +339,8 @@ struct SidebarView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                          VStack(spacing: 16) {
-                             // 记录热力图卡片
-                             HeatmapView()
+                             // 记录热力图卡片 - 暂时隐藏，下一版本推出
+                             // HeatmapView()
                              
                              // 所有标签卡片
                              AllTagsCardView(showingTagsView: $showingTagsView)

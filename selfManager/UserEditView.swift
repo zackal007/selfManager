@@ -169,7 +169,19 @@ struct UserEditView: View {
         }
         .navigationTitle("我的信息")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("返回")
+                    }
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("保存") {
                     // 保存更改

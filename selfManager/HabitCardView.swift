@@ -161,9 +161,10 @@ struct HabitDetailView: View {
         }
     }
     
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
-        NavigationView {
-            ScrollView {
+        ScrollView {
                 LazyVStack(spacing: 16) {
                     // 习惯统计卡片
                     HabitStatsCard(habits: habits, habitGoals: habitGoals)
@@ -231,10 +232,30 @@ struct HabitDetailView: View {
                 .padding(.vertical)
             }
             .navigationTitle("习惯中心")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                            Text("返回")
+                        }
+                    }
+                }
+            }
+            .gesture(
+                DragGesture().onEnded { gesture in
+                    if gesture.translation.width > 100 {
+                        dismiss()
+                    }
+                }
+            )
         }
     }
-}
 
 // 习惯统计卡片
 struct HabitStatsCard: View {
