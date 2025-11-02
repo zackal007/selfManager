@@ -343,17 +343,13 @@ struct ContactDetailView: View {
                 pingManager.ping(contactID: contact.id)
             }
         }) {
-            HStack(spacing: 6) {
-                Image(systemName: isPinned ? "pin.slash.fill" : "pin.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                Text(isPinned ? "取消Ping" : "Ping到主页")
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .foregroundColor(Color(UIColor.systemBlue))
-            .background(Color(UIColor.systemBlue).opacity(0.12))
-            .clipShape(Capsule())
+            Image(systemName: isPinned ? "pin.slash.fill" : "pin.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color(UIColor.systemBlue))
+                .frame(width: 32, height: 32)
+                .background(Color(UIColor.systemBlue).opacity(0.12))
+                .clipShape(Circle())
+                .accessibilityLabel(isPinned ? "取消钉住" : "钉住")
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -773,26 +769,6 @@ struct ContactDetailView: View {
     // 操作按钮 - 现代设计
     private var actionButtonsView: some View {
         VStack(spacing: 16) {
-            if let address = contact.address, !address.isEmpty {
-                Button(action: {
-                    let encodedAddress = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                    guard let url = URL(string: "https://maps.apple.com/?q=\(encodedAddress)") else { return }
-                    UIApplication.shared.open(url)
-                }) {
-                    HStack {
-                        Image(systemName: "map.fill")
-                            .font(.system(size: 18))
-                        Text("导航地址")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color("Purple"))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
             Button(action: {
                 showDeleteAlert = true
             }) {

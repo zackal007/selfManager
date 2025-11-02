@@ -1169,13 +1169,18 @@ struct GoalDetailView: View {
                 pingManager.ping(goalID: goal.id)
             }
             }) {
-                Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.fill" : "pin")
-                    .font(.system(size: 18))
-                    .foregroundColor(pingManager.isPinged(goalID: goal.id) ? Color(UIColor.systemBlue) : Color(UIColor.systemGray))
-                    .frame(width: 32, height: 32)
-                    .background(Color(UIColor.systemGray6))
-                    .clipShape(Circle())
-                    .accessibilityLabel(pingManager.isPinged(goalID: goal.id) ? "取消钉住" : "钉住")
+                HStack(spacing: 6) {
+                    Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.slash.fill" : "pin.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text(pingManager.isPinged(goalID: goal.id) ? "取消Ping" : "Ping到主页")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .foregroundColor(Color(UIColor.systemBlue))
+                .background(Color(UIColor.systemBlue).opacity(0.12))
+                .clipShape(Capsule())
+                .accessibilityLabel(pingManager.isPinged(goalID: goal.id) ? "取消钉住" : "钉住")
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -1330,8 +1335,115 @@ struct GoalDetailView: View {
             VStack(spacing: 20) {
                 // 目标信息卡片
                 VStack(alignment: .leading, spacing: 16) {
-                    // 目标名称和进度
-                    goalNameProgressView
+                    // 目标信息卡片顶部
+                    ZStack(alignment: .trailing) {
+                        // "钉子"按钮：钉住/取消钉住当前目标 - 放在右上角
+                        Button(action: {
+                            if pingManager.isPinged(goalID: goal.id) {
+                                pingManager.unping(goalID: goal.id)
+                            } else {
+                                pingManager.ping(goalID: goal.id)
+                            }
+                        }) {
+                            Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.slash.fill" : "pin.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .frame(width: 32, height: 32)
+                                .background(Color(UIColor.systemBlue).opacity(0.12))
+                                .clipShape(Circle())
+                                .accessibilityLabel(pingManager.isPinged(goalID: goal.id) ? "取消钉住" : "钉住")
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .padding(.top, 12)
+                        .padding(.trailing, 16)
+                        .zIndex(1)
+                        
+                        // 目标名称
+                        HStack {
+                            if editingField == .name {
+                                TextField(
+                                    "目标名称",
+                                    text: $editingValue,
+                                    onCommit: {
+                                        // 保存修改
+                                        let oldName = goal.name
+                                        goal.name = editingValue
+                                        goal.modifyTime = Date()
+                                        try? modelContext.save()
+                                        
+                                        // 记录活动
+                                        GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName, modelContext: modelContext)
+                                        
+                                        // 退出编辑模式
+                                        editingField = nil
+                                    }
+                                )
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(Color(UIColor.label))
+                                .onAppear {
+                                    // 自动聚焦
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                        UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
+                                    }
+                                }
+                            } else {
+                                Text(goal.name)
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundColor(Color(UIColor.label))
+                                    .onTapGesture {
+                                        editingField = .name
+                                        editingValue = goal.name
+                                    }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                    }
+                    
+                    // 进度条 - 放置在标题下方
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("进度")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                            Spacer()
+                            Button(action: {
+                                editingField = .progress
+                                editingProgress = goal.progress
+                                showEditSheet = true
+                            }) {
+                                Text("\(Int(goal.progress * 100))%")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(
+                                        goal.progress > 0.7 ? Color(UIColor.systemGreen) : 
+                                        (goal.progress > 0.3 ? Color(UIColor.systemOrange) : Color(UIColor.systemRed))
+                                    )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                // 背景轨道
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color(UIColor.systemGray5))
+                                    .frame(height: 8)
+                                
+                                // 进度条
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(
+                                        goal.progress > 0.7 ? Color(UIColor.systemGreen) : 
+                                        (goal.progress > 0.3 ? Color(UIColor.systemOrange) : Color(UIColor.systemRed))
+                                    )
+                                    .frame(width: max(4, geometry.size.width * CGFloat(goal.progress)), height: 8)
+                                    .animation(.easeOut(duration: 0.3), value: goal.progress)
+                            }
+                        }
+                        .frame(height: 8)
+                    }
+                    .padding(.horizontal, 16)
                                                            
                     // 目标类型
                     HStack {
@@ -2137,17 +2249,33 @@ struct EditFormView: View {
                         case .goalDescription:
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("目标描述")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
                                     .padding(.horizontal, 16)
                                 
-                                TextEditor(text: $editingValue)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.darkGray))
-                                    .padding(4)
-                                    .frame(minHeight: 150)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                    .padding(.horizontal, 16)
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "text.alignleft")
+                                        .foregroundColor(.secondary)
+                                        .padding(.top, 12)
+                                        .padding(.leading, 12)
+                                    
+                                    TextEditor(text: $editingValue)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(Color(UIColor.label))
+                                        .padding(.vertical, 8)
+                                        .padding(.trailing, 12)
+                                        .frame(minHeight: 150)
+                                        .background(Color.clear)
+                                }
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.systemGray6))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color(UIColor.systemBlue).opacity(0.2), lineWidth: 1)
+                                        )
+                                )
+                                .padding(.horizontal, 16)
                             }
                         
                         case .progress:
