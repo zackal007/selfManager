@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -16,6 +17,10 @@ struct SettingsView: View {
     @AppStorage("showHabitCard") private var showHabitCard = true
     @AppStorage("showAchievementCard") private var showAchievementCard = true
     @AppStorage("showAnxietyCard") private var showAnxietyCard = true
+    
+    // 语言设置
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    @State private var showLanguageSelector = false
     
     var body: some View {
         NavigationView {
@@ -33,14 +38,33 @@ struct SettingsView: View {
                     }
                 }
                 
+                // 语言设置
+                Section(header: Text("语言设置")) {
+                    HStack {
+                        Image(systemName: "globe")
+                            .font(.system(size: 18))
+                            .foregroundColor(.blue)
+                        Text("语言")
+                        Spacer()
+                        Button(LocalizationManager.shared.currentLanguage.displayName) {
+                            showLanguageSelector = true
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
+                .sheet(isPresented: $showLanguageSelector) {
+                    LanguageSelectorView(isPresented: $showLanguageSelector)
+                        .environmentObject(LocalizationManager.shared)
+                }
+                
                 // 首页卡片显示设置
-                Section(header: Text("首页卡片显示")) {
+                Section(header: Text("home_cards".localized)) {
                     // 资产卡片
                     HStack {
                         Image(systemName: "creditcard.fill")
                             .font(.system(size: 18))
                             .foregroundColor(.green)
-                        Text("资产卡片")
+                        Text("asset_card".localized)
                         Spacer()
                         Toggle("", isOn: $showAssetCard)
                             .labelsHidden()
@@ -51,7 +75,7 @@ struct SettingsView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 18))
                             .foregroundColor(.blue)
-                        Text("习惯卡片")
+                        Text("habit_card".localized)
                         Spacer()
                         Toggle("", isOn: $showHabitCard)
                             .labelsHidden()
@@ -62,7 +86,7 @@ struct SettingsView: View {
                         Image(systemName: "trophy.fill")
                             .font(.system(size: 18))
                             .foregroundColor(.orange)
-                        Text("成就卡片")
+                        Text("achievement_card".localized)
                         Spacer()
                         Toggle("", isOn: $showAchievementCard)
                             .labelsHidden()
@@ -73,7 +97,7 @@ struct SettingsView: View {
                         Image(systemName: "brain.head.profile")
                             .font(.system(size: 18))
                             .foregroundColor(.purple)
-                        Text("焦虑卡片")
+                        Text("anxiety_card".localized)
                         Spacer()
                         Toggle("", isOn: $showAnxietyCard)
                             .labelsHidden()
@@ -81,10 +105,14 @@ struct SettingsView: View {
                 }
             }
             .listStyle(InsetGroupedListStyle())
-            .navigationTitle("设置")
-            .navigationBarItems(trailing: Button("完成") {
+            .navigationTitle("settings".localized)
+            .navigationBarItems(trailing: Button("done".localized) {
                 dismiss()
             })
+            .onLanguageChange {
+                // 强制视图刷新以响应语言变化
+                // 视图会自动刷新，不需要手动触发
+            }
         }
     }
 

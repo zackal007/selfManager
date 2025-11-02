@@ -18,6 +18,11 @@ struct SettingsCardView: View {
     @AppStorage("showAchievementCard") private var showAchievementCard = true
     @AppStorage("showAnxietyCard") private var showAnxietyCard = true
     
+    // 语言设置
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    @State private var showLanguageSelector = false
+    @State private var refreshView = UUID()
+    
     var body: some View {
         VStack(spacing: 0) {
             // 卡片标题
@@ -69,6 +74,52 @@ struct SettingsCardView: View {
                     .background(Color(UIColor.systemGray6).opacity(0.5))
                     .cornerRadius(8)
                     .padding(.horizontal, 16)
+                }
+                
+                // 语言设置
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("语言设置")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // 语言选择
+                    HStack(spacing: 12) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 16))
+                            .foregroundColor(.blue)
+                            .frame(width: 20)
+                        
+                        Text("语言")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(UIColor.label))
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showLanguageSelector = true
+                        }) {
+                            Text(localizationManager.currentLanguage.displayName)
+                                .font(.system(size: 14))
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.systemGray6).opacity(0.5))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 16)
+                    .sheet(isPresented: $showLanguageSelector) {
+                        LanguageSelectorView(isPresented: $showLanguageSelector)
+                            .environmentObject(LocalizationManager.shared)
+                    }
+                    .onLanguageChange {
+                        // 强制视图刷新
+                        refreshView = UUID()
+                    }
                 }
                 
                 // 首页卡片显示设置
@@ -172,10 +223,12 @@ struct SettingsCardView: View {
                     }
                     .padding(.horizontal, 16)
                 }
-            }
-            .padding(.bottom, 16)
+            .padding(.horizontal, 16)
         }
-        .background(
+        .padding(.bottom, 16)
+        .id(refreshView) // 使用id强制视图在语言变化时刷新
+    }
+    .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(UIColor.systemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)

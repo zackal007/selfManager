@@ -10,6 +10,8 @@ import SwiftData
 // 确保ModelMigrations和ModelVersion可用
 import Foundation
 import UIKit
+// 导入语言本地化管理器
+import Combine
 
 // 设置UITabBar的外观
 class AppAppearance {
@@ -72,6 +74,10 @@ struct selfManagerApp: App {
     @State private var isLoading = true
     // 添加深色模式支持
     @AppStorage("isDarkMode") private var isDarkMode = false
+    // 添加语言设置支持
+    @StateObject private var localizationManager = LocalizationManager.shared
+    // 用于强制刷新整个应用的ID
+    @State private var refreshApp = UUID()
     
     /// 收起键盘的方法
     private func dismissKeyboard() {
@@ -242,6 +248,12 @@ struct selfManagerApp: App {
                         .modelContainer(container)
                         .enableSwipeBackGesture()
                         .preferredColorScheme(isDarkMode ? .dark : .light) // 应用深色模式设置
+                        .environmentObject(localizationManager)
+                        .id(refreshApp) // 强制整个应用在语言变化时刷新
+                        .onReceive(localizationManager.$currentLanguage) { _ in
+                            // 强制整个应用刷新
+                            refreshApp = UUID()
+                        }
                     } else {
                         // 空视图，当欢迎页面显示时作为占位符
                         Color.clear
