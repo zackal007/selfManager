@@ -37,7 +37,8 @@ struct RecordCardView: View {
             return "\(record.year)年\(record.month ?? 1)月"
         case .quarterly:
             // 季记显示为季模式
-            let quarter = ((record.month ?? 1) - 1) / 3 + 1
+            // 直接使用记录中存储的季度信息，而不是从月份计算
+            let quarter = record.quarter ?? 1
             return "\(record.year)年第\(quarter)季度"
         case .yearly:
             // 年记显示为年模式

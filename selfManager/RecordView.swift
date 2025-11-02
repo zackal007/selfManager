@@ -1534,65 +1534,75 @@ struct RecordView: View {
                 // 切换记录类型时保持日期选择器收起
                 showDatePicker = false
                 
-                // 根据记录类型跳转到今天对应的时间段
-                let today = Date()
-                let calendar = self.calendar
-                
-                switch newValue {
-                case .daily:
-                    // 日记：跳转到今天
-                    currentDate = today
-                case .weekly:
-                    // 周记：跳转到本周（周日作为周起始）
-                    let weekday = calendar.component(.weekday, from: today)
-                    let daysToSubtract = weekday - 1 // 周日是第1天
-                    if let weekStartDate = calendar.date(byAdding: .day, value: -daysToSubtract, to: today) {
-                        currentDate = weekStartDate
-                    }
-                case .monthly:
-                    // 月记：跳转到本月第一天
-                    let year = calendar.component(.year, from: today)
-                    let month = calendar.component(.month, from: today)
-                    var components = DateComponents()
-                    components.year = year
-                    components.month = month
-                    components.day = 1
-                    if let monthStartDate = calendar.date(from: components) {
-                        currentDate = monthStartDate
-                    }
-                case .quarterly:
-                    // 季记：跳转到本季度第一天
-                    let year = calendar.component(.year, from: today)
-                    let month = calendar.component(.month, from: today)
-                    let quarter = (month - 1) / 3 + 1
-                    let firstMonthOfQuarter = (quarter - 1) * 3 + 1
+                // 检查是否是从"全部"页签点击记录导致的记录类型切换
+                // 如果是通过navigateToRecord函数设置的记录类型，则不自动跳转到今天
+                if !UserDefaults.standard.bool(forKey: "isNavigatingFromRecordCard") {
+                    print("📅 记录类型切换 - 从: \(oldValue) 到: \(newValue) - 自动跳转到今天")
                     
-                    var components = DateComponents()
-                    components.year = year
-                    components.month = firstMonthOfQuarter
-                    components.day = 1
-                    if let quarterStartDate = calendar.date(from: components) {
-                        currentDate = quarterStartDate
+                    // 根据记录类型跳转到今天对应的时间段
+                    let today = Date()
+                    let calendar = self.calendar
+                    
+                    switch newValue {
+                    case .daily:
+                        // 日记：跳转到今天
+                        currentDate = today
+                    case .weekly:
+                        // 周记：跳转到本周（周日作为周起始）
+                        let weekday = calendar.component(.weekday, from: today)
+                        let daysToSubtract = weekday - 1 // 周日是第1天
+                        if let weekStartDate = calendar.date(byAdding: .day, value: -daysToSubtract, to: today) {
+                            currentDate = weekStartDate
+                        }
+                    case .monthly:
+                        // 月记：跳转到本月第一天
+                        let year = calendar.component(.year, from: today)
+                        let month = calendar.component(.month, from: today)
+                        var components = DateComponents()
+                        components.year = year
+                        components.month = month
+                        components.day = 1
+                        if let monthStartDate = calendar.date(from: components) {
+                            currentDate = monthStartDate
+                        }
+                    case .quarterly:
+                        // 季记：跳转到本季度第一天
+                        let year = calendar.component(.year, from: today)
+                        let month = calendar.component(.month, from: today)
+                        let quarter = (month - 1) / 3 + 1
+                        let firstMonthOfQuarter = (quarter - 1) * 3 + 1
+                        
+                        var components = DateComponents()
+                        components.year = year
+                        components.month = firstMonthOfQuarter
+                        components.day = 1
+                        if let quarterStartDate = calendar.date(from: components) {
+                            currentDate = quarterStartDate
+                        }
+                    case .yearly:
+                        // 年记：跳转到本年第一天
+                        let year = calendar.component(.year, from: today)
+                        var components = DateComponents()
+                        components.year = year
+                        components.month = 1
+                        components.day = 1
+                        if let yearStartDate = calendar.date(from: components) {
+                            currentDate = yearStartDate
+                        }
+                        // 设置年份列表基准年份
+                        yearListBaseYear = max(1, year + 10)
+                    case .recent:
+                        // 近期：保持当前日期不变
+                        break
                     }
-                case .yearly:
-                    // 年记：跳转到本年第一天
-                    let year = calendar.component(.year, from: today)
-                    var components = DateComponents()
-                    components.year = year
-                    components.month = 1
-                    components.day = 1
-                    if let yearStartDate = calendar.date(from: components) {
-                        currentDate = yearStartDate
-                    }
-                    // 设置年份列表基准年份
-                    yearListBaseYear = max(1, year + 10)
-                case .recent:
-                    // 近期：保持当前日期不变
-                    break
+                    
+                    // 更新日期组件
+                    updateDateComponents()
+                } else {
+                    print("📅 记录类型切换 - 从: \(oldValue) 到: \(newValue) - 跳过自动跳转到今天（从记录卡片导航）")
+                    // 重置标志
+                    UserDefaults.standard.set(false, forKey: "isNavigatingFromRecordCard")
                 }
-                
-                // 更新日期组件
-                updateDateComponents()
                 
                 // 同步页签索引
                 syncRecordTypeIndex()
@@ -2331,29 +2341,43 @@ struct RecordView: View {
     
     // 导航到记录详情
     private func navigateToRecord(_ record: Record) {
-        // 设置选中的记录类型和日期
+        print("⏱️ 记录跳转开始 - ID: \(record.id), 类型: \(record.recordType), 年: \(record.year), 月: \(record.month ?? 0), 日: \(record.day ?? 0), 周: \(record.week ?? 0), 季度: \(record.quarter ?? 0)")
+        
+        // 设置标志，表示正在从记录卡片导航，防止记录类型切换时自动跳转到今天
+        UserDefaults.standard.set(true, forKey: "isNavigatingFromRecordCard")
+        
+        // 1. 设置选中的记录类型 - 确保先设置记录类型，避免被其他onChange事件覆盖
         selectedRecordType = record.recordType
         
-        // 根据记录类型和记录中的日期信息创建正确的Date对象
+        // 2. 验证日期参数有效性
+        let validYear = record.year > 0 ? record.year : calendar.component(.year, from: Date())
+        let validMonth = (record.month ?? 0) > 0 && (record.month ?? 0) <= 12 ? record.month : 1
+        let validDay = (record.day ?? 0) > 0 && (record.day ?? 0) <= 31 ? record.day : 1
+        let validWeek = (record.week ?? 0) > 0 && (record.week ?? 0) <= 53 ? record.week : 1
+        let validQuarter = (record.quarter ?? 0) > 0 && (record.quarter ?? 0) <= 4 ? record.quarter : 1
+        
+        print("⏱️ 记录跳转 - 验证后参数: 年: \(validYear), 月: \(validMonth ?? 0), 日: \(validDay ?? 0), 周: \(validWeek ?? 0), 季度: \(validQuarter ?? 0)")
+        
+        // 3. 根据记录类型和记录中的日期信息创建正确的Date对象
         var dateComponents = DateComponents()
-        dateComponents.year = record.year
+        dateComponents.year = validYear
         
         switch record.recordType {
         case .daily:
             // 日记：使用完整的年月日
-            dateComponents.month = record.month ?? 1
-            dateComponents.day = record.day ?? 1
+            dateComponents.month = validMonth
+            dateComponents.day = validDay
         case .weekly:
             // 周记：使用年和周数
-            dateComponents.weekOfYear = record.week ?? 1
+            dateComponents.weekOfYear = validWeek
             dateComponents.weekday = 1  // 从周日开始
         case .monthly:
             // 月记：使用年月，日设为1号
-            dateComponents.month = record.month ?? 1
+            dateComponents.month = validMonth
             dateComponents.day = 1
         case .quarterly:
             // 季记：使用年和季度的第一个月
-            let firstMonthOfQuarter = ((record.quarter ?? 1) - 1) * 3 + 1
+            let firstMonthOfQuarter = ((validQuarter ?? 1) - 1) * 3 + 1
             dateComponents.month = firstMonthOfQuarter
             dateComponents.day = 1
         case .yearly:
@@ -2362,21 +2386,32 @@ struct RecordView: View {
             dateComponents.day = 1
         default:
             // 其他情况使用默认值
-            dateComponents.month = record.month ?? 1
-            dateComponents.day = record.day ?? 1
+            dateComponents.month = validMonth
+            dateComponents.day = validDay
         }
         
-        // 更新当前日期
+        // 4. 更新当前日期 - 确保日期有效
         if let date = calendar.date(from: dateComponents) {
-            currentDate = date
+            // 禁用自动跳转到今天的逻辑
+            DispatchQueue.main.async {
+                self.currentDate = date
+                print("⏱️ 记录跳转 - 设置日期成功: \(date)")
+                
+                // 5. 直接设置日期组件为记录的实际值，不依赖updateDateComponents重新计算
+                self.currentYear = validYear
+                self.currentMonth = validMonth ?? 1
+                self.currentDay = validDay ?? 1
+                self.currentWeek = validWeek ?? 1
+                self.currentQuarter = validQuarter ?? 1
+                
+                // 6. 强制更新UI
+                self.updateDateComponents()
+                
+                print("⏱️ 记录跳转完成 - 当前日期组件: 年: \(self.currentYear), 月: \(self.currentMonth), 日: \(self.currentDay), 周: \(self.currentWeek), 季度: \(self.currentQuarter)")
+            }
+        } else {
+            print("⚠️ 记录跳转失败 - 无法创建有效日期")
         }
-        
-        // 直接设置日期组件为记录的实际值，不依赖updateDateComponents重新计算
-        currentYear = record.year
-        currentMonth = record.month ?? 1
-        currentDay = record.day ?? 1
-        currentWeek = record.week ?? 1
-        currentQuarter = record.quarter ?? 1
         
         // 注意：不调用updateDateComponents()，因为它会根据currentDate重新计算组件
         // 而我们需要保持记录的原始日期信息
