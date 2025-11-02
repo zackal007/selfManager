@@ -392,18 +392,18 @@ struct SidebarView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                          VStack(spacing: 16) {
-                             // 记录热力图卡片 - 暂时隐藏，下一版本推出
-                             // HeatmapView()
-                             
-                             // 所有标签卡片
-                             AllTagsCardView(showingTagsView: $showingTagsView)
-                             
-                             // 设置项卡片
-                             SettingsCardView()
-                         }
-                         .padding(.horizontal, 16)
-                         .padding(.top, 60) // 将顶部内边距从16改为60，替代原来头像行的空间
-                         .padding(.bottom, 16)
+                     // 记录热力图卡片 - 暂时隐藏，下一版本推出
+                     // HeatmapView()
+                     
+                     // 所有标签卡片
+                     AllTagsCardView(showingTagsView: $showingTagsView)
+                     
+                     // 设置项卡片
+                     SettingsCardView()
+                 }
+                 .padding(.horizontal, 16)
+                 .padding(.top, 30) // 减小顶部内边距，使内容整体向上移动
+                          .padding(.bottom, 16)
                      }
                     
                     Spacer()

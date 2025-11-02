@@ -274,8 +274,11 @@ struct HomeView: View {
                     .padding(.bottom, 30)
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
                         // 为实现拖拽过程中动态让位，需要在拖拽时也更新快照
-                        if shouldUpdateCardFrames(frames, comparedTo: cardFramesByID) {
-                            cardFramesByID = frames
+                        // 使用DispatchQueue.main.async避免在同一帧内多次更新
+                        DispatchQueue.main.async {
+                            if shouldUpdateCardFrames(frames, comparedTo: cardFramesByID) {
+                                cardFramesByID = frames
+                            }
                         }
                     }
                 }
@@ -285,7 +288,7 @@ struct HomeView: View {
                 // 悬浮的顶部标题栏
                 VStack(spacing: 0) {
                     HStack(alignment: .center) {
-                        // 侧边栏按钮
+                        // 侧边栏按钮 - 只在主页显示
                         Button(action: {
                             sidebarManager.toggleSidebar()
                         }) {

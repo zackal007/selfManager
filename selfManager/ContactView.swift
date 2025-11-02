@@ -292,26 +292,11 @@ struct ContactView: View {
         VStack(spacing: 0) {
             // 第一行：标题和按钮
             HStack(alignment: .center) {
-                // 侧边栏按钮
-                Button(action: {
-                    SidebarManager.shared.showSidebar()
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(UIColor.systemGray5).opacity(0.8))
-                            .frame(width: 34, height: 34)
-                        
-                        Image(systemName: "line.3.horizontal")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.label))
-                    }
-                }
-                .buttonStyle(PlainButtonStyle())
-                
+                // 移除侧边栏按钮，只保留标题
                 Text("我的人脉")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(Color(UIColor.label))
-                    .padding(.leading, 16)
+                    .padding(.leading, 8)
                 
                 Spacer()
                 
