@@ -277,16 +277,11 @@ struct RecordView: View {
             .padding(.bottom, 7)
         }
         .frame(maxWidth: .infinity)
+        .safeAreaPadding(.top)
         .background(
-            ZStack {
-                // 使用更轻的系统材质以获得更明显的半透明效果
-                BlurView(style: .systemThinMaterial)
-                    .ignoresSafeArea(.all, edges: .top)
-                // 叠加一层半透明的系统背景，提高可读性同时保持通透感
-                Color(UIColor.systemBackground)
-                    .opacity(0.35)
-                    .ignoresSafeArea(.all, edges: .top)
-            }
+            // 更通透的顶栏材质
+            BlurView(style: .systemUltraThinMaterial)
+                .ignoresSafeArea(.all, edges: .top)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
         .zIndex(10)
@@ -653,7 +648,7 @@ struct RecordView: View {
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: headerHeight)
+                        .frame(height: max(0, headerHeight - 30))
 
                     // 内部内容容器：移除背景与圆角，避免灰色块延伸至顶栏下方
                     VStack(spacing: 0) {
@@ -1409,6 +1404,7 @@ struct RecordView: View {
             // 顶栏改为覆盖层，保持与目标模块一致的布局关系
             .overlay(alignment: .top) {
                 headerView
+                    .offset(y: -20)
             }
             .navigationBarHidden(true)
             .navigationDestination(for: AppRoute.self) { route in

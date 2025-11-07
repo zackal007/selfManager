@@ -577,6 +577,7 @@ struct GoalView: View {
                     )
                     .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
                     .zIndex(10)
+                    .offset(y: -20)
                     .overlay(
                         GeometryReader { proxy in
                             Color.clear
@@ -590,7 +591,7 @@ struct GoalView: View {
                     // 顶栏已迁移为覆盖层，这里加入透明占位以避免初始内容被遮挡
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: headerHeight)
+                        .frame(height: max(0, headerHeight - 30))
                     
                     // 输入框：目标搜索栏（控制关键词与筛选状态）
                     if showSearchBar {

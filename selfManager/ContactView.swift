@@ -170,7 +170,7 @@ struct ContactView: View {
                     // 顶栏悬浮覆盖层的透明占位，避免内容被遮挡
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: headerHeight)
+                        .frame(height: max(0, headerHeight - 30 + 8))
 
                     // 搜索输入框：用于搜索联系人
                     if showSearchBar {
@@ -261,6 +261,7 @@ struct ContactView: View {
                 // 顶栏统一为悬浮覆盖层，与目标模块一致
                 .overlay(alignment: .top) {
                     headerView
+                        .offset(y: -20)
                 }
                 
                 // 侧边栏移至应用根层，由全局 SidebarManager 控制
@@ -407,7 +408,7 @@ struct ContactView: View {
         .frame(maxWidth: .infinity)
         .safeAreaPadding(.top)
         .background(
-            BlurView(style: .systemMaterial)
+            BlurView(style: .systemUltraThinMaterial)
                 .ignoresSafeArea(.all, edges: .top)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
