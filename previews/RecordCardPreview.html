@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>记录卡片预览</title>
+  <style>
+    :root {
+      --bg: #f2f2f7; /* iOS systemGroupedBackground 近似 */
+      --separator: rgba(60,60,67,0.29);
+    }
+    body {
+      background: var(--bg);
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1c1c1e;
+    }
+    .page {
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--bg); /* 与页面背景一致 */
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid rgba(60,60,67,0.2);
+      margin-bottom: 12px;
+    }
+    .top-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .date {
+      font-size: 12px;
+      color: #6c6c70;
+    }
+    .title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-top: 12px;
+      line-height: 1.35;
+    }
+    .preview {
+      font-size: 15px;
+      color: #6c6c70;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 12px;
+    }
+    .spacer { flex: 1; }
+    .badge { display: none; } /* 右上角标签已移除 */
+  </style>
+  </head>
+<body>
+  <div class="page">
+    <h3 style="margin:0 0 12px; font-weight:700;">近期 - 记录卡片预览</h3>
+
+    <div class="card">
+      <div class="top-row">
+        <span class="date">2025年11月07日</span>
+        <span class="spacer"></span>
+        <!-- 右上角标签已移除 -->
+      </div>
+      <div class="title">示例记录标题：统一卡片背景并移除右上角标签</div>
+      <div class="preview">这里是记录内容的预览部分，用于展示在卡片中。背景与页面一致，不再显示类型小标签。</div>
+      <div class="meta">
+        <span>😊 心情不错</span>
+        <span>☀️ 晴</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="top-row">
+        <span class="date">2025年第45周</span>
+        <span class="spacer"></span>
+      </div>
+      <div class="title">另一条记录卡片</div>
+      <div class="preview">预览文案…不显示右上角小标签，统一为页面背景色。</div>
+    </div>
+  </div>
+</body>
+</html>

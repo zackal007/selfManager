@@ -55,14 +55,7 @@ struct RecordView: View {
         VStack(spacing: 0) {
             // 第一行：标题和按钮
             HStack(alignment: .center) {
-                // 移除侧边栏按钮，只保留标题
-                Text("记录")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(UIColor.label))
-                    .padding(.leading, 8)
-
-                Spacer()
-                // 左侧增加：日期选择器显示/隐藏按钮 + 当前时间文案（仅非“近期”显示）
+                // 替换标题为：日期选择器显示/隐藏按钮（仅非“近期”显示）
                 if selectedRecordType != .recent {
                     HStack(spacing: 8) {
                         Button(action: {
@@ -77,7 +70,7 @@ struct RecordView: View {
                             HStack(spacing: 8) {
                                 // 显示具体时间文本
                                 Text(headerInlineDateText)
-                                    .font(.system(size: 15, weight: .medium))
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
                                     .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.9)
@@ -91,10 +84,6 @@ struct RecordView: View {
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                )
                         }
                         .buttonStyle(PlainButtonStyle())
                         .scaleEffect(showDatePicker ? 0.98 : 1.0)
@@ -108,7 +97,16 @@ struct RecordView: View {
                             }
                         }
                     }
+                    .padding(.leading, 8)
+                } else {
+                    // 近期页签：显示静态标题“最近记录”
+                    Text("最近记录")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(UIColor.label))
+                        .padding(.leading, 8)
                 }
+                
+                Spacer()
                 
                 // 近期页签：显示排序按钮
                 if selectedRecordType == .recent {
@@ -392,8 +390,9 @@ struct RecordView: View {
     // 近期页签相关状态
     @State private var displayedRecordsCount = 20 // 初始显示的记录数量
     private let recordsPerPage = 20 // 每次加载的记录数量
+    @State private var isRecentSortAscending: Bool = false // 近期排序：默认按时间倒序
     
-    // 过滤后的非空记录（按创建时间降序排列）
+    // 过滤后的非空记录（近期页签使用，按创建时间升/降序排列）
     private var filteredRecords: [Record] {
         // 只显示特定类型的记录：日记、周记、月记、季记、年记
         let allowedTypes: Set<RecordType> = [.daily, .weekly, .monthly, .quarterly, .yearly]
@@ -405,7 +404,14 @@ struct RecordView: View {
         }
         
         // 近期页签显示所有记录，不进行去重，让用户看到完整的历史记录
-        return filtered.sorted { $0.createTime > $1.createTime }
+        // 根据 isRecentSortAscending 动态切换升/降序
+        return filtered.sorted { lhs, rhs in
+            if isRecentSortAscending {
+                return lhs.createTime < rhs.createTime
+            } else {
+                return lhs.createTime > rhs.createTime
+            }
+        }
     }
     
     // 清理重复记录
@@ -1276,23 +1282,28 @@ struct RecordView: View {
                             if recordTypes[index] != .recent {
                                 VStack {
                                     Spacer()
-                                    FloatingToolbarView(
-                                        text: $recordContent,
-                                        images: $selectedImages,
-                                        selectedMood: $selectedMood,
-                                        showMoodSelector: recordTypes[index] == .daily,
-                                        goals: allGoals,
-                                        contacts: allContacts,
-                                        onImagesChanged: { images in
-                                            selectedImages = images
-                                            contentModified = true
-                                        },
-                                        onMoodChanged: { mood in
-                                            selectedMood = mood
-                                            contentModified = true
-                                        }
-                                    )
-                                    .padding(.bottom, 8) // 调整底部间距，与底部导航栏保持20px距离
+                                    HStack {
+                                        Spacer()
+                                        FloatingToolbarView(
+                                            text: $recordContent,
+                                            images: $selectedImages,
+                                            selectedMood: $selectedMood,
+                                            showMoodSelector: recordTypes[index] == .daily,
+                                            goals: allGoals,
+                                            contacts: allContacts,
+                                            onImagesChanged: { images in
+                                                selectedImages = images
+                                                contentModified = true
+                                            },
+                                            onMoodChanged: { mood in
+                                                selectedMood = mood
+                                                contentModified = true
+                                            }
+                                        )
+                                        .frame(width: recordTypes[index] == .daily ? 340 : 300) // 日记页签加宽，避免字数换行
+                                    }
+                                    .padding(.trailing, 12) // 贴近屏幕右侧，对齐
+                                    .padding(.bottom, 8) // 与底部保持合适间距
                                 }
                             }
                         }
@@ -1639,23 +1650,24 @@ struct RecordView: View {
             return ""
         case .daily:
             let formatter = DateFormatter()
-            formatter.dateFormat = "MM月dd日"
+            formatter.dateFormat = "yyyy年MM月dd日"
             return formatter.string(from: currentDate)
         case .weekly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
-            return "第\(week)周"
+            return "\(year)年第\(week)周"
         case .monthly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
-            return "\(month)月"
+            return "\(year)年\(month)月"
         case .quarterly:
             let calendar = self.calendar
+            let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
-            return "Q\(quarter)"
+            return "\(year)年Q\(quarter)"
         case .yearly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
@@ -2431,14 +2443,14 @@ struct RecordView: View {
     // MARK: - 记录排序功能
     
     private func sortRecordsByTime() {
-        // 重新加载所有记录数据，确保显示最新的排序
-        // 触发SwiftData查询重新执行
-        
-        // 重置显示的记录数量到初始值，重新加载数据
-        displayedRecordsCount = recordsPerPage
-        
-        // 强制重新查询数据，确保排序是最新的
-        // objectWillChange.send() // 注释掉这行，因为没有可用的objectWillChange
+        // 切换近期页签的排序方向（时间升/降序）
+        withAnimation(.easeInOut(duration: 0.2)) {
+            isRecentSortAscending.toggle()
+            // 重置分页计数，避免旧的分页限制导致列表不刷新完整
+            displayedRecordsCount = recordsPerPage
+        }
+        // 日志输出，便于调试
+        print("🗂️ 切换近期排序：\(isRecentSortAscending ? "升序" : "降序")，当前显示数量：\(displayedRecordsCount)")
     }
     
     // MARK: - 清空当前记录

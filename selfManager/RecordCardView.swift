@@ -112,15 +112,6 @@ struct RecordCardView: View {
                         .foregroundColor(.secondary)
                     
                     Spacer()
-                    
-                    Text(record.recordType.displayName)
-                        .font(.caption2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(recordTypeColor)
-                        .cornerRadius(8)
                 }
                 
                 // 标题
@@ -158,7 +149,7 @@ struct RecordCardView: View {
                 }
             }
             .padding(16)
-            .background(Color(UIColor.systemBackground))
+            .background(Color(UIColor.systemGroupedBackground))
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
             .overlay(
