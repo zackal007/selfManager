@@ -827,12 +827,15 @@ private func renderCard(for id: HomeCardID) -> some View {
                                 // 右上角类型角标：人脉（保持当前样式不变）
                                 .overlay(alignment: .topTrailing) {
                                     Text("人脉")
-                                        .font(.system(size: 11, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color(UIColor.systemPurple).opacity(0.85))
-                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundColor(Color(UIColor.secondaryLabel))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 3)
+                                        .background(Color.clear)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 1)
+                                        )
                                         .padding(8)
                                 }
                                 .background(cardFrameReader(for: id))
@@ -2095,16 +2098,19 @@ struct HomeGoalCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16))
 
                     VStack(alignment: .leading, spacing: st.spacing) {
-                        HStack {
-                            Spacer()
+                         HStack {
+                             Spacer()
                             Text("目标")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(UIColor.systemBlue))
-                                .cornerRadius(6)
-                        }
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(Color.clear)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 1)
+                                )
+                         }
 
                         Spacer(minLength: st.spacing)
 

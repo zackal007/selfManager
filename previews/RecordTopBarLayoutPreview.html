@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>记录模块顶栏布局预览</title>
+  <style>
+    :root {
+      --header-height: 120px; /* 对应 SwiftUI headerHeight 初值 */
+      --content-top-padding: 8px; /* 记录页签内容起始位置：顶栏下方约 8px */
+      --bg: #f2f2f7; /* systemGroupedBackground 近似 */
+      --card-bg: #fff; /* systemBackground */
+      --label: #111; /* label 近似 */
+      --secondary: #6e6e73; /* secondaryLabel 近似 */
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--label);
+    }
+    /* 顶栏覆盖层，与目标模块一致的悬浮效果 */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-height);
+      /* 模拟更轻的系统材质，增强半透明感 */
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      background: rgba(255,255,255,0.35);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 10;
+    }
+    .header-inner {
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .chip-row {
+      padding: 2px 16px 8px;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+    }
+    .chip { 
+      background: #e5e5ea; 
+      border-radius: 16px; 
+      padding: 6px 10px; 
+      font-size: 13px; 
+      white-space: nowrap;
+    }
+    /* 透明占位：与 SwiftUI Rectangle().frame(height: headerHeight) 对齐 */
+    .spacer { height: var(--header-height); }
+    /* 内容区域：与目标模块一样的额外顶部内边距 */
+    .content {
+      padding-top: var(--content-top-padding);
+      padding-bottom: 16px;
+    }
+    .list { 
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 12px; 
+      padding: 0 16px; 
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 16px; }
+    .card p { margin: 0; color: var(--secondary); font-size: 13px; }
+  </style>
+  </head>
+  <body>
+    <!-- 悬浮顶栏覆盖层 -->
+    <div class="header">
+      <div class="header-inner">
+        <div class="title">最近记录</div>
+        <div style="flex:1"></div>
+        <button aria-label="排序" style="width:34px;height:34px;border-radius:50%;background:#e5e5ea;border:none;">⇅</button>
+      </div>
+      <div class="chip-row">
+        <div class="chip">近期</div>
+        <div class="chip">日记</div>
+        <div class="chip">周记</div>
+        <div class="chip">月记</div>
+        <div class="chip">季记</div>
+        <div class="chip">年记</div>
+      </div>
+    </div>
+
+    <!-- 透明占位：避免内容被覆盖层遮挡 -->
+    <div class="spacer"></div>
+
+    <!-- 内容区域，按目标模块的额外顶部内边距预览 -->
+    <main class="content">
+      <section class="list">
+        <article class="card">
+          <h3>今日随记</h3>
+          <p>记录一点点灵感和生活片段。</p>
+        </article>
+        <article class="card">
+          <h3>周总结</h3>
+          <p>本周目标推进情况与心得。</p>
+        </article>
+        <article class="card">
+          <h3>月度回顾</h3>
+          <p>产出与成长复盘，规划下月目标。</p>
+        </article>
+      </section>
+    </main>
+  </body>
+  </html>

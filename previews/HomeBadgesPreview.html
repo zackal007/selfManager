@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home Corner Badges — Weak Hint Preview</title>
+  <style>
+    :root {
+      --bg: #f2f2f7; /* iOS systemGroupedBackground */
+      --card: #ffffff; /* iOS systemBackground */
+      --text: #1c1c1e; /* iOS label */
+      --secondary: #6d6d72; /* iOS secondaryLabel */
+      --separator: rgba(60,60,67,0.36); /* iOS separator */
+    }
+    body {
+      margin: 0; padding: 24px; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+    }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      position: relative; background: var(--card); border-radius: 16px; box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      padding: 16px; min-height: 160px;
+    }
+    .badge {
+      position: absolute; top: 8px; right: 8px;
+      color: var(--secondary); font-size: 12px; font-weight: 600;
+      padding: 3px 6px; border-radius: 6px; background: transparent;
+      border: 1px solid var(--separator);
+    }
+    h3 { margin: 28px 0 6px; font-size: 18px; }
+    p { margin: 0; color: var(--secondary); font-size: 14px; }
+  </style>
+  </head>
+  <body>
+    <h2>主页角标弱提示样式预览</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="badge">目标</span>
+        <h3>减脂计划</h3>
+        <p>每周运动 4 次，控制饮食。</p>
+      </div>
+      <div class="card">
+        <span class="badge">人脉</span>
+        <h3>王小明</h3>
+        <p>产品经理｜上次交流：上周</p>
+      </div>
+    </div>
+  </body>
+  </html>
