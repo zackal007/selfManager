@@ -167,6 +167,11 @@ struct ContactView: View {
                 // 主内容
                 // 顶栏：页面标题与操作菜单（侧边栏、搜索、添加、筛选）
                 VStack(spacing: 0) {
+                    // 顶栏悬浮覆盖层的透明占位，避免内容被遮挡
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: headerHeight)
+
                     // 搜索输入框：用于搜索联系人
                     if showSearchBar {
                         searchBarView
@@ -253,7 +258,8 @@ struct ContactView: View {
                 .sheet(isPresented: $showContactTrashView) {
                     ContactTrashView()
                 }
-                .safeAreaInset(edge: .top) {
+                // 顶栏统一为悬浮覆盖层，与目标模块一致
+                .overlay(alignment: .top) {
                     headerView
                 }
                 
@@ -488,6 +494,7 @@ struct ContactView: View {
                     emptyStateView
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
                 .padding(.bottom, 20)
             } else if viewMode == .gallery {
                 GeometryReader { geometry in
@@ -519,6 +526,7 @@ struct ContactView: View {
                     .padding(.horizontal, spacing)
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.top, 12)
                 .padding(.bottom, 20)
             } else {
                 LazyVStack(spacing: 12) {
@@ -530,6 +538,7 @@ struct ContactView: View {
                     }
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 12)
                 .padding(.bottom, 20)
             }
         }
