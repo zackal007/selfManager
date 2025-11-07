@@ -1155,13 +1155,8 @@ struct GoalCard: View {
     }
     // 获取进度颜色
     private var progressColor: Color {
-        if goal.progress > 0.7 {
-            return Color(UIColor.systemGreen)
-        } else if goal.progress > 0.3 {
-            return Color(UIColor.systemOrange)
-        } else {
-            return Color(UIColor.systemRed)
-        }
+        // 统一为系统蓝色，覆盖原有按进度动态变色逻辑
+        return Color(UIColor.systemBlue)
     }
     // 优先级竖线颜色
     private var priorityLineColor: Color {
@@ -1476,23 +1471,7 @@ struct GoalListItem: View {
                 }
                 .frame(width: 28, height: 28)
                 
-                // 左侧进度环
-                ZStack {
-                    Circle()
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 4)
-                        .frame(width: 50, height: 50)
-                    
-                    Circle()
-                        .trim(from: 0, to: CGFloat(goal.progress))
-                        .stroke(Color.blue, lineWidth: 4)
-                        .frame(width: 50, height: 50)
-                        .rotationEffect(Angle(degrees: -90))
-                    
-                    Text("\(Int(goal.progress * 100))%")
-                        .font(.caption)
-                        .fontWeight(.heavy)
-                }
-                .frame(width: 50, height: 50)
+                
                 
                 // 右侧内容
                 VStack(alignment: .leading, spacing: 4) {
@@ -1528,6 +1507,25 @@ struct GoalListItem: View {
                 }
                 
                 Spacer()
+
+                // 右侧进度环（移至最右侧）
+                ZStack {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 4)
+                        .frame(width: 50, height: 50)
+                    
+                    Circle()
+                        .trim(from: 0, to: CGFloat(goal.progress))
+                        .stroke(Color(UIColor.systemBlue), lineWidth: 4)
+                        .frame(width: 50, height: 50)
+                        .rotationEffect(Angle(degrees: -90))
+                    
+                    Text("\(Int(goal.progress * 100))%")
+                        .font(.caption)
+                        .fontWeight(.heavy)
+                        .foregroundColor(Color(UIColor.systemBlue))
+                }
+                .frame(width: 50, height: 50)
                 
                 // 右侧箭头
                 Image(systemName: "chevron.right")

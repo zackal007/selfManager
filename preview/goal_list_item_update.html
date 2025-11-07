@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>目标列表视图更新说明</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 24px; color: #111; }
+    h1 { font-size: 20px; margin-bottom: 12px; }
+    p { line-height: 1.6; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fff; }
+    .row { display: flex; align-items: center; gap: 16px; }
+    .priority { width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center; font-size:12px; }
+    .content { flex: 1; }
+    .ring { width: 50px; height: 50px; border-radius: 50%; border: 4px solid #e5e7eb; position: relative; }
+    .ring::after { content: ""; position: absolute; top: -4px; left: -4px; width: 50px; height: 50px; border-radius: 50%; border: 4px solid #0a84ff; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: rotate(-90deg); }
+    .chevron { color: #9aa0a6; }
+    .desc { color: #666; font-size: 13px; }
+    .blue { color: #0a84ff; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>目标模块列表视图更新</h1>
+  <p>本次更新将「进度环」从左侧移动到最右侧（导航箭头左侧），并统一进度颜色为系统蓝色 <span class="blue">systemBlue</span>，与模块整体规范保持一致。</p>
+  <div class="card">
+    <div class="row">
+      <div class="priority">! </div>
+      <div class="content">
+        <div><strong>目标名称</strong></div>
+        <div class="desc">这里是目标描述和标签展示区域</div>
+      </div>
+      <div class="ring" title="右侧进度环"></div>
+      <div class="chevron">›</div>
+    </div>
+  </div>
+  <p style="margin-top:12px;" class="desc">说明：示例为静态预览，实际进度百分比文本与环形进度在 App 中由 SwiftUI 渲染并与数据联动。</p>
+</body>
+</html>

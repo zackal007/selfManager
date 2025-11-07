@@ -1416,10 +1416,7 @@ struct GoalDetailView: View {
                             }) {
                                 Text("\(Int(goal.progress * 100))%")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(
-                                        goal.progress > 0.7 ? Color(UIColor.systemGreen) : 
-                                        (goal.progress > 0.3 ? Color(UIColor.systemOrange) : Color(UIColor.systemRed))
-                                    )
+                                    .foregroundColor(Color(UIColor.systemBlue))
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -1433,10 +1430,7 @@ struct GoalDetailView: View {
                                 
                                 // 进度条
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(
-                                        goal.progress > 0.7 ? Color(UIColor.systemGreen) : 
-                                        (goal.progress > 0.3 ? Color(UIColor.systemOrange) : Color(UIColor.systemRed))
-                                    )
+                                    .fill(Color(UIColor.systemBlue))
                                     .frame(width: max(4, geometry.size.width * CGFloat(goal.progress)), height: 8)
                                     .animation(.easeOut(duration: 0.3), value: goal.progress)
                             }

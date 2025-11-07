@@ -2001,9 +2001,8 @@ struct HomeGoalCard: View {
     }
 
     private var progressColor: Color {
-        if goal.progress > 0.7 { return Color(UIColor.systemGreen) }
-        else if goal.progress > 0.3 { return Color(UIColor.systemOrange) }
-        else { return Color(UIColor.systemRed) }
+        // 统一为系统蓝色，覆盖原有按进度动态变色逻辑
+        return Color(UIColor.systemBlue)
     }
 
     // Masonry 网格的高度规范（与 HomeView 中保持一致）
