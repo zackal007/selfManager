@@ -12,6 +12,25 @@ import selfManager
 // 设置项卡片视图
 struct SettingsCardView: View {
     @AppStorage("isDarkMode") private var isDarkMode = false
+    // 外观模式：浅色、深色、跟随系统（三选项）
+    enum AppearanceMode: String, CaseIterable {
+        case light
+        case dark
+        case system
+        var title: String {
+            switch self {
+            case .light: return "浅色"
+            case .dark: return "深色"
+            case .system: return "跟随系统"
+            }
+        }
+    }
+    @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.system.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+    private var appearanceMode: AppearanceMode {
+        get { AppearanceMode(rawValue: appearanceModeRaw) ?? .system }
+        set { appearanceModeRaw = newValue.rawValue }
+    }
     // 首页卡片显示控制
     @AppStorage("showAssetCard") private var showAssetCard = true
     @AppStorage("showHabitCard") private var showHabitCard = true
@@ -52,22 +71,51 @@ struct SettingsCardView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // 深色模式
-                    HStack(spacing: 12) {
-                        Image(systemName: "moon.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.purple)
-                            .frame(width: 20)
-                        
-                        Text("深色模式")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(UIColor.label))
-                        
-                        Spacer()
-                        
-                        Toggle("", isOn: $isDarkMode)
-                            .labelsHidden()
-                            .scaleEffect(0.8)
+                    // 深色模式（三选项分段式）
+                    VStack(spacing: 8) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "moon.circle.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.purple)
+                                .frame(width: 20)
+                            
+                            Text("深色模式")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                        }
+                        Picker("深色模式", selection: $appearanceModeRaw) {
+                            Text(AppearanceMode.light.title).tag(AppearanceMode.light.rawValue)
+                            Text(AppearanceMode.dark.title).tag(AppearanceMode.dark.rawValue)
+                            Text(AppearanceMode.system.title).tag(AppearanceMode.system.rawValue)
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: appearanceModeRaw) { _ in
+                            switch appearanceMode {
+                            case .light:
+                                isDarkMode = false
+                            case .dark:
+                                isDarkMode = true
+                            case .system:
+                                isDarkMode = (colorScheme == .dark)
+                            }
+                        }
+                        .onAppear {
+                            switch appearanceMode {
+                            case .light:
+                                isDarkMode = false
+                            case .dark:
+                                isDarkMode = true
+                            case .system:
+                                isDarkMode = (colorScheme == .dark)
+                            }
+                        }
+                        .onChange(of: colorScheme) { newScheme in
+                            if appearanceMode == .system {
+                                isDarkMode = (newScheme == .dark)
+                            }
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)

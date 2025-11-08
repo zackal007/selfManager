@@ -74,6 +74,10 @@ struct selfManagerApp: App {
     @State private var isLoading = true
     // 添加深色模式支持
     @AppStorage("isDarkMode") private var isDarkMode = false
+    // 三段式外观设置：light / dark / system
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+    // 监听系统颜色方案以便在“跟随系统”时实时同步
+    @Environment(\.colorScheme) private var colorScheme
     // 添加语言设置支持
     @StateObject private var localizationManager = LocalizationManager.shared
     // 用于强制刷新整个应用的ID
@@ -249,7 +253,10 @@ struct selfManagerApp: App {
                         }
                         .modelContainer(container)
                         .enableSwipeBackGesture()
-                        .preferredColorScheme(isDarkMode ? .dark : .light) // 应用深色模式设置
+                        // 外观模式：当为 system 时不强制颜色方案，交由系统管理
+                        .preferredColorScheme(
+                            appearanceMode == "system" ? nil : (appearanceMode == "dark" ? .dark : .light)
+                        )
                         // 系统可读性粗细（无障碍“粗体文本”）自动响应
                         .applySystemLegibilityWeight()
                         .environmentObject(localizationManager)
@@ -257,6 +264,25 @@ struct selfManagerApp: App {
                         .onReceive(localizationManager.$currentLanguage) { _ in
                             // 强制整个应用刷新
                             refreshApp = UUID()
+                        }
+                        // 当选择“跟随系统”时，实时同步系统的深色/浅色
+                        .onAppear {
+                            if appearanceMode == "system" {
+                                isDarkMode = (colorScheme == .dark)
+                            }
+                        }
+                        .onChange(of: colorScheme) { newScheme in
+                            if appearanceMode == "system" {
+                                isDarkMode = (newScheme == .dark)
+                            }
+                        }
+                        // 当用户切换三段式外观选项时，保持 isDarkMode 与之同步
+                        .onChange(of: appearanceMode) { newMode in
+                            if newMode == "system" {
+                                isDarkMode = (colorScheme == .dark)
+                            } else {
+                                isDarkMode = (newMode == "dark")
+                            }
                         }
                     } else {
                         // 空视图，当欢迎页面显示时作为占位符

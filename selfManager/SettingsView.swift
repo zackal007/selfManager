@@ -12,6 +12,25 @@ import Combine
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("isDarkMode") private var isDarkMode = false
+    // 外观模式：浅色、深色、跟随系统（三选项）
+    enum AppearanceMode: String, CaseIterable {
+        case light
+        case dark
+        case system
+        var title: String {
+            switch self {
+            case .light: return "浅色"
+            case .dark: return "深色"
+            case .system: return "跟随系统"
+            }
+        }
+    }
+    @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.system.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+    private var appearanceMode: AppearanceMode {
+        get { AppearanceMode(rawValue: appearanceModeRaw) ?? .system }
+        set { appearanceModeRaw = newValue.rawValue }
+    }
     // 首页卡片显示控制
     @AppStorage("showAssetCard") private var showAssetCard = true
     @AppStorage("showHabitCard") private var showHabitCard = true
@@ -27,14 +46,46 @@ struct SettingsView: View {
             Form {
                 // 外观设置
                 Section(header: Text("外观")) {
-                    HStack {
+                    HStack(spacing: 12) {
                         Image(systemName: "moon.circle.fill")
                             .font(.system(size: 18))
                             .foregroundColor(.purple)
                         Text("深色模式")
                         Spacer()
-                        Toggle("", isOn: $isDarkMode)
-                            .labelsHidden()
+                    }
+                    Picker("深色模式", selection: $appearanceModeRaw) {
+                        Text(AppearanceMode.light.title).tag(AppearanceMode.light.rawValue)
+                        Text(AppearanceMode.dark.title).tag(AppearanceMode.dark.rawValue)
+                        Text(AppearanceMode.system.title).tag(AppearanceMode.system.rawValue)
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: appearanceModeRaw) { _ in
+                        switch appearanceMode {
+                        case .light:
+                            isDarkMode = false
+                        case .dark:
+                            isDarkMode = true
+                        case .system:
+                            // 跟随系统：将 isDarkMode 与当前系统外观保持一致
+                            isDarkMode = (colorScheme == .dark)
+                        }
+                    }
+                    .onAppear {
+                        // 初次进入设置页时，根据当前选择同步 isDarkMode
+                        switch appearanceMode {
+                        case .light:
+                            isDarkMode = false
+                        case .dark:
+                            isDarkMode = true
+                        case .system:
+                            isDarkMode = (colorScheme == .dark)
+                        }
+                    }
+                    .onChange(of: colorScheme) { newScheme in
+                        // 仅在选择“跟随系统”时，系统外观变化同步 isDarkMode
+                        if appearanceMode == .system {
+                            isDarkMode = (newScheme == .dark)
+                        }
                     }
                 }
                 

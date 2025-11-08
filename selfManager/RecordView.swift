@@ -127,26 +127,26 @@ struct RecordView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
                 
-                // 手动保存按钮 - 仅在非"近期"页签显示
+                // 手动保存按钮 - 仅在非"近期"页签且内容已修改时显示
                 if selectedRecordType != .recent {
-                    Button(action: {
-                        dismissKeyboard()
-                        // 添加触觉反馈
-                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                        impactFeedback.impactOccurred()
-                        
-                        // 执行手动保存
-                        saveRecord()
-                    }) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(contentModified ? Color.blue : Color.gray)
-                            .scaleEffect(contentModified ? 1.0 : 0.9)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: contentModified)
+                    if contentModified {
+                        Button(action: {
+                            dismissKeyboard()
+                            // 添加触觉反馈
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
+                            
+                            // 执行手动保存
+                            saveRecord()
+                        }) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(Color.blue)
+                                .scaleEffect(1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: contentModified)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
                     }
-                    .buttonStyle(ScaleButtonStyle())
-                    .disabled(!contentModified)
-                    .opacity(contentModified ? 1.0 : 0.6)
                 }
                 
                 // 菜单按钮（仅在非近期页签显示）
