@@ -648,7 +648,7 @@ struct RecordView: View {
                 VStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: max(0, headerHeight - 30))
+                        .frame(height: max(0, headerHeight - 30 + 8))
 
                     // 内部内容容器：移除背景与圆角，避免灰色块延伸至顶栏下方
                     VStack(spacing: 0) {

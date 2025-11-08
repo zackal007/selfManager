@@ -151,11 +151,8 @@ struct RecordCardView: View {
             .padding(16)
             .background(Color(UIColor.systemGroupedBackground))
             .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(UIColor.separator).opacity(0.2), lineWidth: 1)
-            )
+            // 统一卡片与页面背景色：移除阴影以避免视觉差异
+            // 移除边框以与页面背景视觉统一
         }
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(1.0)

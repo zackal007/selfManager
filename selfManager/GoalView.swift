@@ -591,7 +591,7 @@ struct GoalView: View {
                     // 顶栏已迁移为覆盖层，这里加入透明占位以避免初始内容被遮挡
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: max(0, headerHeight - 30))
+                        .frame(height: max(0, headerHeight-50))
                     
                     // 输入框：目标搜索栏（控制关键词与筛选状态）
                     if showSearchBar {
@@ -767,6 +767,22 @@ struct GoalView: View {
                     .onChange(of: currentGoalTypeIndex) { _, newIndex in
                         // 同步更新selectedGoalType
                         selectedGoalType = goalTypes[newIndex]
+                        // 同步更新selectedSegment，确保年份选择器显示条件一致
+                        if let type = selectedGoalType {
+                            switch type {
+                            case .life:
+                                selectedSegment = 0
+                            case .yearly:
+                                selectedSegment = 1
+                            case .shortTerm:
+                                selectedSegment = 2
+                            case .habit:
+                                selectedSegment = 3
+                            }
+                        } else {
+                            // 当选择“所有”时，默认回到第一个分段
+                            selectedSegment = 0
+                        }
                     }
                 }
             }

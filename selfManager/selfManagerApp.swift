@@ -178,7 +178,7 @@ struct selfManagerApp: App {
                     if let container = sharedModelContainer {
                         ZStack {
             // 顶栏/入口导航：应用主 TabBar（修改标签或顺序从这里入手）
-            TabView(selection: $selectedTab) {
+                    TabView(selection: $selectedTab) {
                         HomeView(selectedTab: $selectedTab)
                             .tabItem {
                                 Image(systemName: "person.fill")
@@ -235,6 +235,8 @@ struct selfManagerApp: App {
                                 }
                             }
                     }
+                            // 应用全局系统字体修饰符，使文本默认使用系统动态字体
+                            .useGlobalSystemTypography()
                             .onAppear {
                                 // 启动垃圾清理服务
                 TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
@@ -248,6 +250,8 @@ struct selfManagerApp: App {
                         .modelContainer(container)
                         .enableSwipeBackGesture()
                         .preferredColorScheme(isDarkMode ? .dark : .light) // 应用深色模式设置
+                        // 系统可读性粗细（无障碍“粗体文本”）自动响应
+                        .applySystemLegibilityWeight()
                         .environmentObject(localizationManager)
                         .id(refreshApp) // 强制整个应用在语言变化时刷新
                         .onReceive(localizationManager.$currentLanguage) { _ in
