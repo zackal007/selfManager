@@ -620,14 +620,8 @@ struct AddContactView: View {
                 selectedSegment = 6
             }
             
-            // 显示成功提示
-            successMessage = "联系人「\(name)」添加成功！"
-            showSuccessToast = true
-            
-            // 延迟1.5秒后关闭表单，让用户有时间看到成功提示
-            Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
-                isPresented = false
-            }
+            // 直接关闭表单，不显示成功提示
+            isPresented = false
         } catch {
             errorMessage = "保存失败: \(error.localizedDescription)"
             showAlert = true

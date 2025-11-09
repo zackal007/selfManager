@@ -389,15 +389,15 @@ struct TagCategoryEditView: View {
                 VStack(spacing: 24) {
                     // 分类预览
                     VStack(spacing: 16) {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.blue)
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(selectedColor)
                             .frame(width: 56, height: 56)
                             .overlay(
                                 Image(systemName: "folder.fill")
                                     .font(.system(size: 26, weight: .medium))
                                     .foregroundColor(.white)
                             )
-                            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .shadow(color: selectedColor.opacity(0.25), radius: 8, x: 0, y: 4)
                         
                         // 删除重复的预览内容，只保留图标
                     }
@@ -444,7 +444,7 @@ struct TagCategoryEditView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 16)
                 
                 // 删除按钮区域
                 VStack(spacing: 16) {
@@ -465,11 +465,8 @@ struct TagCategoryEditView: View {
                         .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(UIColor.systemGray6))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                                )
+                                .fill(Color(UIColor.systemBackground))
+                                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                         )
                     }
                     .padding(.horizontal, 24)
@@ -478,7 +475,7 @@ struct TagCategoryEditView: View {
                 .padding(.top, 32)
             }
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color(UIColor.systemGroupedBackground))
         .navigationTitle(category.name)
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)

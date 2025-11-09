@@ -449,10 +449,10 @@ struct SidebarView: View {
                      // 设置项卡片
                      SettingsCardView()
                  }
-                 .padding(.horizontal, 16)
-                 .padding(.top, 30) // 减小顶部内边距，使内容整体向上移动
-                          .padding(.bottom, 16)
-                     }
+                  .padding(.horizontal, 16)
+                  .padding(.top, 30) // 减小顶部内边距，使内容整体向上移动
+                          .padding(.bottom, 28)
+                      }
                     
                     Spacer()
                 }

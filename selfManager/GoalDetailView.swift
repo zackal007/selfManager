@@ -1330,6 +1330,64 @@ struct GoalDetailView: View {
         editingField = nil
     }
     
+    // 顶部钉住按钮视图，拆分以降低类型检查复杂度
+    private var pinButtonView: some View {
+        let isPinned = pingManager.isPinged(goalID: goal.id)
+        return Button(action: {
+            if isPinned {
+                pingManager.unping(goalID: goal.id)
+            } else {
+                pingManager.ping(goalID: goal.id)
+            }
+        }) {
+            Image(systemName: isPinned ? "pin.slash.fill" : "pin.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color(UIColor.systemBlue))
+                .frame(width: 32, height: 32)
+                .background(Color(UIColor.systemBlue).opacity(0.12))
+                .clipShape(Circle())
+                .accessibilityLabel(Text(isPinned ? "取消钉住" : "钉住"))
+        }
+    }
+
+    // 目标名称区域内容，拆分以降低类型检查复杂度
+    private var goalNameHeaderContent: some View {
+        HStack {
+            if editingField == .name {
+                TextField(
+                    "目标名称",
+                    text: $editingValue,
+                    onCommit: {
+                        let oldName = goal.name
+                        if !editingValue.isEmpty {
+                            goal.name = editingValue
+                            goal.modifyTime = Date()
+                            try? modelContext.save()
+                            GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName, modelContext: modelContext)
+                        }
+                        editingField = nil
+                    }
+                )
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(Color(UIColor.label))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            } else {
+                Text(goal.name)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+                    .onTapGesture {
+                        editingField = .name
+                        editingValue = goal.name
+                    }
+            }
+            Spacer()
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -1338,66 +1396,14 @@ struct GoalDetailView: View {
                     // 目标信息卡片顶部
                     ZStack(alignment: .trailing) {
                         // "钉子"按钮：钉住/取消钉住当前目标 - 放在右上角
-                        Button(action: {
-                            if pingManager.isPinged(goalID: goal.id) {
-                                pingManager.unping(goalID: goal.id)
-                            } else {
-                                pingManager.ping(goalID: goal.id)
-                            }
-                        }) {
-                            Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.slash.fill" : "pin.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 32, height: 32)
-                                .background(Color(UIColor.systemBlue).opacity(0.12))
-                                .clipShape(Circle())
-                                .accessibilityLabel(pingManager.isPinged(goalID: goal.id) ? "取消钉住" : "钉住")
-                        }
+                        pinButtonView
                         .buttonStyle(PlainButtonStyle())
                         .padding(.top, 12)
                         .padding(.trailing, 16)
                         .zIndex(1)
                         
                         // 目标名称
-                        HStack {
-                            if editingField == .name {
-                                TextField(
-                                    "目标名称",
-                                    text: $editingValue,
-                                    onCommit: {
-                                        // 保存修改
-                                        let oldName = goal.name
-                                        goal.name = editingValue
-                                        goal.modifyTime = Date()
-                                        try? modelContext.save()
-                                        
-                                        // 记录活动
-                                        GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName, modelContext: modelContext)
-                                        
-                                        // 退出编辑模式
-                                        editingField = nil
-                                    }
-                                )
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(Color(UIColor.label))
-                                .onAppear {
-                                    // 自动聚焦
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
-                                    }
-                                }
-                            } else {
-                                Text(goal.name)
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .onTapGesture {
-                                        editingField = .name
-                                        editingValue = goal.name
-                                    }
-                            }
-                            
-                            Spacer()
-                        }
+                        goalNameHeaderContent
                         .padding(.horizontal, 16)
                         .padding(.top, 16)
                     }
@@ -1489,11 +1495,32 @@ struct GoalDetailView: View {
                             Spacer()
                         }
                         
-                        Button(action: {
-                            editingField = .goalDescription
-                            editingValue = goal.goalDescription
-                            showEditSheet = true
-                        }) {
+                        if editingField == .goalDescription {
+                            VStack(alignment: .leading, spacing: 8) {
+                                TextEditor(text: $editingValue)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color(UIColor.darkGray))
+                                    .frame(minHeight: 100)
+                                    .padding(12)
+                                    .background(Color(UIColor.systemGray6))
+                                    .cornerRadius(8)
+
+                                HStack {
+                                    Spacer()
+                                    Button("完成") {
+                                        // 统一使用已有保存逻辑
+                                        saveCurrentEditing()
+                                        editingField = nil
+                                    }
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                                    .cornerRadius(8)
+                                }
+                            }
+                        } else {
                             HStack {
                                 Text(goal.goalDescription)
                                     .font(.system(size: 16))
@@ -1508,6 +1535,11 @@ struct GoalDetailView: View {
                             .padding(12)
                             .background(Color(UIColor.systemGray6))
                             .cornerRadius(8)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                editingField = .goalDescription
+                                editingValue = goal.goalDescription
+                            }
                         }
                     }
                     .padding(.horizontal, 16)
