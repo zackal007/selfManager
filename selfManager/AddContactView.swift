@@ -48,18 +48,17 @@ struct AddContactView: View {
                         Spacer(minLength: 100)
                     }
                 }
-                .background(Color(UIColor.systemBackground))
-                .navigationTitle("添加联系人")
-                .navigationBarTitleDisplayMode(.large)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        cancelButton
-                    }
-                    
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        saveButton
-                    }
+                // 点击非输入区域时收起键盘，不影响布局
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissKeyboard()
                 }
+                .background(Color(UIColor.systemBackground))
+                .navigationBarTitle("添加联系人", displayMode: .inline)
+                .navigationBarItems(
+                    leading: cancelButton,
+                    trailing: saveButton
+                )
                 .alert(isPresented: $showAlert) {
                     Alert(
                         title: Text("提示"),
@@ -71,6 +70,11 @@ struct AddContactView: View {
             
             successToast
         }
+    }
+
+    // MARK: - 键盘控制
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
     // MARK: - Header Section
@@ -95,10 +99,10 @@ struct AddContactView: View {
     // MARK: - Form Fields Section
     private var formFieldsSection: some View {
         VStack(spacing: 16) {
-            basicInfoFields
-            categoryFields
-            contactInfoFields
-            additionalFields
+            // 仅保留：姓名、分类（横向列表）、备注
+            nameField
+            contactTypeHorizontalField
+            notesField
         }
         .padding(.horizontal, 24)
     }
@@ -112,14 +116,38 @@ struct AddContactView: View {
         }
     }
     
-    // MARK: - Category Fields
-    private var categoryFields: some View {
-        VStack(spacing: 16) {
-            contactTypeField
-            importanceField
-            frequencyField
-            tagsField
-            lastContactDateField
+    // MARK: - Category Field (Horizontal)
+    private var contactTypeHorizontalField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("分类")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(ContactType.allCases, id: \.self) { type in
+                        Button(action: {
+                            selectedContactType = type
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: type.iconName)
+                                    .font(.system(size: 12))
+                                Text(type.displayName)
+                                    .font(.system(size: 13))
+                            }
+                            .foregroundColor(selectedContactType == type ? .white : .primary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(selectedContactType == type ? Color.blue : Color(UIColor.systemGray5))
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
         }
     }
     

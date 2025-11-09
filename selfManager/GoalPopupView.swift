@@ -97,6 +97,19 @@ struct GoalPopupView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                // 顶部图标（与“添加人脉”一致的方形蓝色样式）
+                VStack(spacing: 12) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(UIColor.systemBlue))
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Image(systemName: "flag.fill")
+                                .font(.system(size: 26, weight: .medium))
+                                .foregroundColor(.white)
+                        )
+                        .shadow(color: Color(UIColor.systemBlue).opacity(0.3), radius: 8, x: 0, y: 4)
+                }
+                .padding(.top, 24)
                 // 筛选器部分（移除“筛选器”标签与展开/收起按钮，默认展开）
                 VStack {
                     // 默认展开内容
@@ -239,6 +252,11 @@ struct GoalPopupView: View {
                 // 移除筛选结果展示区域，保留弹窗仅用于筛选条件设定
                 Spacer()
             }
+            // 点击非输入区域时收起键盘，不影响布局
+            .contentShape(Rectangle())
+            .onTapGesture {
+                dismissKeyboard()
+            }
             .navigationTitle("目标筛选")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -265,6 +283,11 @@ struct GoalPopupView: View {
             // 弹窗背景色统一
             .background(Color(UIColor.systemBackground))
         }
+    }
+
+    // MARK: - 键盘控制
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 

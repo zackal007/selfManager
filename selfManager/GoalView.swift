@@ -1599,27 +1599,18 @@ struct AddGoalView: View {
         ZStack {
             NavigationView {
                 VStack(spacing: 0) {
-                    // 顶部图标区域
+                    // 顶部图标区域（方形蓝色，与添加联系人风格一致）
                     VStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.blue.opacity(0.8),
-                                            Color.purple.opacity(0.8)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 60, height: 60)
-                            
-                            Image(systemName: "target")
-                                .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
-                        
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.blue)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "flag.fill")
+                                    .font(.system(size: 26, weight: .medium))
+                                    .foregroundColor(.white)
+                            )
+                            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
+
                         Text("添加新目标")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.primary)
@@ -1739,10 +1730,18 @@ struct AddGoalView: View {
                             }
                         }
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        dismissKeyboard()
+                    }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     
                     Spacer()
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissKeyboard()
                 }
                 .navigationBarTitle("添加目标", displayMode: .inline)
                 .navigationBarItems(
