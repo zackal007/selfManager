@@ -1610,10 +1610,6 @@ struct AddGoalView: View {
                                     .foregroundColor(.white)
                             )
                             .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
-
-                        Text("添加新目标")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
                     }
                     .padding(.top, 20)
                     .padding(.bottom, 24)

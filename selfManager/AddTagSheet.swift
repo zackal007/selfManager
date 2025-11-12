@@ -303,32 +303,12 @@ struct AddTagSheet: View {
                     Divider()
                         .padding(.horizontal, 16)
                     
-                    // 分类管理标题和按钮（始终显示）
+                    // 分类管理标题（移除右上角“管理”按钮）
                     HStack {
                         Text("标签分类管理")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
-                        
                         Spacer()
-                        
-                        Button(action: {
-                            showingCategoryManagement = true
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "folder.circle")
-                                    .font(.system(size: 14))
-                                Text("管理")
-                                    .font(.system(size: 14, weight: .medium))
-                            }
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(Color.blue.opacity(0.1))
-                            )
-                        }
-                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 16)
                     

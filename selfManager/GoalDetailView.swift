@@ -45,6 +45,8 @@ struct GoalDetailView: View {
     @State private var editingImportance: Int = 1
     @State private var showImagePicker = false
     @State private var selectedImage: UIImage? = nil
+    // 防止重复写入当天日记的开场动态
+    @State private var didLogHabitOpen = false
     
     // 打卡按钮状态变量
     @State private var isPressed = false
@@ -1391,6 +1393,20 @@ struct GoalDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // 不影响布局的钩子：页面首次出现时写入当天日记动态（仅限习惯目标）
+                EmptyView()
+                    .onAppear {
+                        if goal.goalType == .habit && !didLogHabitOpen {
+                            GoalActivityManager.shared.addActivityLogWithDiary(
+                                goalId: goal.id,
+                                goalName: goal.name,
+                                type: "habit_open",
+                                message: "查看了习惯目标",
+                                modelContext: modelContext
+                            )
+                            didLogHabitOpen = true
+                        }
+                    }
                 // 目标信息卡片
                 VStack(alignment: .leading, spacing: 16) {
                     // 目标信息卡片顶部
@@ -2067,7 +2083,14 @@ struct GoalDetailView: View {
             }
         )
         .sheet(isPresented: $showEditSheet) {
-            EditFormView(editingField: $editingField, editingValue: $editingValue, editingProgress: $editingProgress, onSave: handleSaveGoalEdit)
+            EditFormView(
+                editingField: $editingField,
+                editingValue: $editingValue,
+                editingProgress: $editingProgress,
+                onSave: handleSaveGoalEdit
+            )
+            .presentationDetents(editingField == .progress ? [.medium] : [.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showAddTaskSheet) {
             AddTaskView(goalId: goal.id.uuidString)
