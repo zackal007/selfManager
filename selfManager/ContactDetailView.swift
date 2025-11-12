@@ -130,7 +130,7 @@ struct ContactDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.triangle.branch")
                     .font(.system(size: 18))
-                    .foregroundColor(Color(UIColor.systemRed))
+                    .foregroundColor(Color(UIColor.systemBlue))
                 Text("关联目标")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
@@ -147,7 +147,7 @@ struct ContactDetailView: View {
                         Text("添加")
                             .font(.system(size: 14, weight: .medium))
                     }
-                    .foregroundColor(Color(UIColor.systemRed))
+                    .foregroundColor(Color(UIColor.systemBlue))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -361,7 +361,7 @@ struct ContactDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: "phone.fill")
                     .font(.system(size: 18))
-                    .foregroundColor(Color(UIColor.systemRed))
+                    .foregroundColor(Color(UIColor.systemBlue))
                 Text("联系方式")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
@@ -568,7 +568,7 @@ struct ContactDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: "tag.fill")
                     .font(.system(size: 18))
-                    .foregroundColor(Color(UIColor.systemRed))
+                    .foregroundColor(Color(UIColor.systemBlue))
                 Text("标签")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
@@ -590,8 +590,8 @@ struct ContactDetailView: View {
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .foregroundColor(Color(UIColor.systemRed))
-                            .background(Color(UIColor.systemRed).opacity(0.12))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .background(Color(UIColor.systemBlue).opacity(0.12))
                             .clipShape(Capsule())
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -647,9 +647,9 @@ struct ContactDetailView: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 12))
-                                .foregroundColor(Color(UIColor.systemRed))
+                                .foregroundColor(Color(UIColor.systemBlue))
                                 .frame(width: 24, height: 24)
-                                .background(Color(UIColor.systemRed).opacity(0.1))
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
                                 .clipShape(Circle())
                         }
                     }
@@ -841,7 +841,7 @@ struct ContactInfoRow: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(UIColor.systemRed))
+                    .foregroundColor(Color(UIColor.systemBlue))
                     .frame(width: 24, height: 24)
                 
                 VStack(alignment: .leading, spacing: 2) {
