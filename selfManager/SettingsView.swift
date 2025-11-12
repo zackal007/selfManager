@@ -10,6 +10,7 @@ import SwiftData
 import Combine
 
 struct SettingsView: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @AppStorage("isDarkMode") private var isDarkMode = false
     // 外观模式：浅色、深色、跟随系统（三选项）
@@ -40,6 +41,10 @@ struct SettingsView: View {
     // 语言设置
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showLanguageSelector = false
+    // 删除所有记录提示与状态
+    @State private var showDeleteAllAlert = false
+    @State private var isDeletingAll = false
+    @State private var deleteAllErrorMessage: String?
     
     var body: some View {
         NavigationView {
@@ -152,6 +157,51 @@ struct SettingsView: View {
                         Spacer()
                         Toggle("", isOn: $showAnxietyCard)
                             .labelsHidden()
+                    }
+                }
+                // 数据管理
+                Section(header: Text("数据管理")) {
+                    Button(role: .destructive) {
+                        showDeleteAllAlert = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(.red)
+                            Text("删除所有记录")
+                                .foregroundColor(.red)
+                            Spacer()
+                        }
+                    }
+                    .disabled(isDeletingAll)
+                    .alert("确认删除所有记录？", isPresented: $showDeleteAllAlert) {
+                        Button("删除", role: .destructive) {
+                            isDeletingAll = true
+                            deleteAllErrorMessage = nil
+                            do {
+                                let descriptor = FetchDescriptor<Record>()
+                                let records = try modelContext.fetch(descriptor)
+                                for rec in records {
+                                    modelContext.delete(rec)
+                                }
+                                if !records.isEmpty {
+                                    try modelContext.save()
+                                }
+                                print("已删除 \(records.count) 条记录")
+                            } catch {
+                                deleteAllErrorMessage = error.localizedDescription
+                                print("删除所有记录失败: \(error)")
+                            }
+                            isDeletingAll = false
+                        }
+                        Button("取消", role: .cancel) {}
+                    } message: {
+                        Text("此操作不可恢复，将删除所有日记/周记/月记/季记/年记记录。")
+                    }
+
+                    if let errorMsg = deleteAllErrorMessage {
+                        Text("删除失败：\(errorMsg)")
+                            .foregroundColor(.red)
                     }
                 }
             }

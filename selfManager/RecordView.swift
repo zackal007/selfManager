@@ -1188,7 +1188,7 @@ private struct TopTabChip: View {
                         // 记录内容区域 - 使用TabView实现左右滑动
                         TabView(selection: $currentRecordTypeIndex) {
                     ForEach(recordTypes.indices, id: \.self) { index in
-                        ZStack {
+                        ZStack(alignment: .top) {
                             // "近期"页签使用可滚动的ScrollView，其他页签使用固定尺寸不可滚动的VStack
                             if recordTypes[index] == .recent {
                                 ScrollView {
@@ -1245,7 +1245,7 @@ private struct TopTabChip: View {
                                                 }
                                             }
                                             .padding(.horizontal)
-                                            .frame(minHeight: UIScreen.main.bounds.height * 0.5)
+                                            .frame(minHeight: UIScreen.main.bounds.height * 0.5, alignment: .top)
                                         }
                                         .padding(.top, 8)
                                         .padding(.bottom, 30)
@@ -1334,6 +1334,7 @@ private struct TopTabChip: View {
                                 }
                             }
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .tag(index)
                     }
                     }
@@ -1682,7 +1683,7 @@ private struct TopTabChip: View {
             return formatter.string(from: currentDate)
         case .weekly:
             let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
+            let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
             return "\(year)年第\(week)周"
         case .monthly:
@@ -1714,7 +1715,7 @@ private struct TopTabChip: View {
             return formatter.string(from: currentDate)
         case .weekly:
             let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
+            let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
             return "\(year)年第\(week)周"
         case .monthly:
@@ -1740,7 +1741,7 @@ private struct TopTabChip: View {
     // 更新日期组件
     private func updateDateComponents() {
         let calendar = self.calendar
-        currentYear = calendar.component(.year, from: currentDate)
+        currentYear = selectedRecordType == .weekly ? calendar.component(.yearForWeekOfYear, from: currentDate) : calendar.component(.year, from: currentDate)
         currentMonth = calendar.component(.month, from: currentDate)
         currentDay = calendar.component(.day, from: currentDate)
         currentWeek = calendar.component(.weekOfYear, from: currentDate)
@@ -1762,17 +1763,17 @@ private struct TopTabChip: View {
             return "\(formattedDate) 日记"
         case .weekly:
             let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
+            let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
             return "\(year)年第\(week)周 周记"
         case .monthly:
             let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
+            let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             return "\(year)年\(month)月 月记"
         case .quarterly:
             let calendar = self.calendar
-            let year = calendar.component(.year, from: currentDate)
+            let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
             return "\(year)年第\(quarter)季度 季记"
@@ -1875,7 +1876,7 @@ private struct TopTabChip: View {
             let weekOfYear = calendar.component(.weekOfYear, from: date)
             return allRecords.first { record in
                 record.recordType == .weekly &&
-                record.year == year &&
+                record.year == calendar.component(.yearForWeekOfYear, from: date) &&
                 record.week == weekOfYear
             }
         case .monthly:
@@ -1968,7 +1969,10 @@ private struct TopTabChip: View {
         
         // 创建新记录
         let calendar = self.calendar
-        let recordYear = calendar.component(.year, from: currentDate)
+        // 周记需要使用 ISO 周基年（yearForWeekOfYear），避免跨年周显示错误
+        let recordYear = selectedRecordType == .weekly
+            ? calendar.component(.yearForWeekOfYear, from: currentDate)
+            : calendar.component(.year, from: currentDate)
         let recordMonth = calendar.component(.month, from: currentDate)
         let recordWeek = calendar.component(.weekOfYear, from: currentDate)
         let recordQuarter = getCurrentQuarter(currentDate)
@@ -2075,7 +2079,10 @@ private struct TopTabChip: View {
     private func createNewRecordForAutoSave(userContent: String, recordType: RecordType) {
         // 创建新记录
         let calendar = self.calendar
-        let recordYear = calendar.component(.year, from: currentDate)
+        // 周记需要使用 ISO 周基年（yearForWeekOfYear），避免跨年周显示错误
+        let recordYear = recordType == .weekly
+            ? calendar.component(.yearForWeekOfYear, from: currentDate)
+            : calendar.component(.year, from: currentDate)
         let recordMonth = calendar.component(.month, from: currentDate)
         let recordWeek = calendar.component(.weekOfYear, from: currentDate)
         let recordQuarter = getCurrentQuarter(currentDate)
@@ -2304,6 +2311,8 @@ private struct TopTabChip: View {
         var filteredRecords: [Record] = []
         let calendar = self.calendar
         let year = calendar.component(.year, from: currentDate)
+        // 周视图需要使用 ISO 周基年，避免跨年周无法匹配
+        let weekBasedYear = calendar.component(.yearForWeekOfYear, from: currentDate)
         let month = calendar.component(.month, from: currentDate)
         let day = calendar.component(.day, from: currentDate)
         let week = calendar.component(.weekOfYear, from: currentDate)
@@ -2323,10 +2332,10 @@ private struct TopTabChip: View {
             }
             
         case .weekly: // 周记
-            // 查找当前日期所在周的周记
+            // 查找当前日期所在周的周记（使用周基年）
             filteredRecords = allRecords.filter { record in
                 record.recordType == .weekly &&
-                record.year == year &&
+                record.year == weekBasedYear &&
                 record.week == week
             }
             
@@ -2391,12 +2400,12 @@ private struct TopTabChip: View {
         
         // 2. 验证日期参数有效性
         let validYear = record.year > 0 ? record.year : calendar.component(.year, from: Date())
-        let validMonth = (record.month ?? 0) > 0 && (record.month ?? 0) <= 12 ? record.month : 1
-        let validDay = (record.day ?? 0) > 0 && (record.day ?? 0) <= 31 ? record.day : 1
-        let validWeek = (record.week ?? 0) > 0 && (record.week ?? 0) <= 53 ? record.week : 1
-        let validQuarter = (record.quarter ?? 0) > 0 && (record.quarter ?? 0) <= 4 ? record.quarter : 1
+        let validMonth = max(1, min(record.month ?? 1, 12))
+        let validDay = max(1, min(record.day ?? 1, 31))
+        let validWeek = max(1, min(record.week ?? 1, 53))
+        let validQuarter = max(1, min(record.quarter ?? 1, 4))
         
-        print("⏱️ 记录跳转 - 验证后参数: 年: \(validYear), 月: \(validMonth ?? 0), 日: \(validDay ?? 0), 周: \(validWeek ?? 0), 季度: \(validQuarter ?? 0)")
+        print("⏱️ 记录跳转 - 验证后参数: 年: \(validYear), 月: \(validMonth), 日: \(validDay), 周: \(validWeek), 季度: \(validQuarter)")
         
         // 3. 根据记录类型和记录中的日期信息创建正确的Date对象
         var dateComponents = DateComponents()
@@ -2411,13 +2420,15 @@ private struct TopTabChip: View {
             // 周记：使用年和周数
             dateComponents.weekOfYear = validWeek
             dateComponents.weekday = 1  // 从周日开始
+            // 使用基于周的年份，避免周数跨年导致的日期计算错误
+            dateComponents.yearForWeekOfYear = validYear
         case .monthly:
             // 月记：使用年月，日设为1号
             dateComponents.month = validMonth
             dateComponents.day = 1
         case .quarterly:
             // 季记：使用年和季度的第一个月
-            let firstMonthOfQuarter = ((validQuarter ?? 1) - 1) * 3 + 1
+            let firstMonthOfQuarter = (validQuarter - 1) * 3 + 1
             dateComponents.month = firstMonthOfQuarter
             dateComponents.day = 1
         case .yearly:
@@ -2439,10 +2450,10 @@ private struct TopTabChip: View {
                 
                 // 5. 直接设置日期组件为记录的实际值，不依赖updateDateComponents重新计算
                 self.currentYear = validYear
-                self.currentMonth = validMonth ?? 1
-                self.currentDay = validDay ?? 1
-                self.currentWeek = validWeek ?? 1
-                self.currentQuarter = validQuarter ?? 1
+                self.currentMonth = validMonth
+                self.currentDay = validDay
+                self.currentWeek = validWeek
+                self.currentQuarter = validQuarter
                 
                 // 6. 强制更新UI
                 self.updateDateComponents()

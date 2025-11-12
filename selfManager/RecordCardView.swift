@@ -12,25 +12,27 @@ struct RecordCardView: View {
     let record: Record
     let onTap: () -> Void
     
+    // ISO 8601 周显示辅助：按指定时区计算 week/year（周基年）
+    static func isoWeekDisplay(for date: Date, timeZone: TimeZone = .current) -> String {
+        var isoCalendar = Calendar(identifier: .iso8601)
+        isoCalendar.timeZone = timeZone
+        let yearForWeek = isoCalendar.component(.yearForWeekOfYear, from: date)
+        let weekOfYear = isoCalendar.component(.weekOfYear, from: date)
+        return "\(yearForWeek)年第\(weekOfYear)周"
+    }
+    
     private var formattedDate: String {
         // 根据记录类型决定日期显示格式
         switch record.recordType {
         case .weekly:
-            // 周记显示为周模式
-            let calendar = Calendar.current
-            var dateComponents = DateComponents()
-            dateComponents.year = record.year
-            dateComponents.month = record.month
-            dateComponents.day = record.day
-            
-            if let actualDate = calendar.date(from: dateComponents) {
-                let weekOfYear = calendar.component(.weekOfYear, from: actualDate)
-                return "\(record.year)年第\(weekOfYear)周"
+            if let wk = record.week {
+                return "\(record.year)年第\(wk)周"
             } else {
-                // 如果无法构建日期，则回退到创建时间
-                let weekOfYear = calendar.component(.weekOfYear, from: record.createTime)
-                let year = calendar.component(.year, from: record.createTime)
-                return "\(year)年第\(weekOfYear)周"
+                var cal = Calendar.current
+                cal.firstWeekday = 1
+                let year = cal.component(.year, from: record.createTime)
+                let week = cal.component(.weekOfYear, from: record.createTime)
+                return "\(year)年第\(week)周"
             }
         case .monthly:
             // 月记显示为月模式
