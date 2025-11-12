@@ -233,7 +233,7 @@ struct RecordView: View {
                         // 自定义页签顺序：近期、日记、周记、月记、季记、年记
                         let orderedTypes: [RecordType] = [.recent, .daily, .weekly, .monthly, .quarterly, .yearly]
                         ForEach(orderedTypes, id: \.self) { type in
-                            FilterChip(title: type.displayName, isSelected: selectedRecordType == type) {
+                            TopTabChip(title: type.displayName, isSelected: selectedRecordType == type) {
                                 dismissKeyboard()
                                 // 禁用自动保存 - 改为手动保存
                                 // 如果内容已修改，先保存当前记录
@@ -241,12 +241,12 @@ struct RecordView: View {
                                 //     autoSaveRecord(recordType: selectedRecordType)
                                 // }
                                 selectedRecordType = type
-                                
+
                                 // 如果切换到年记页签，确保默认展示今年
                                 if type == .yearly {
                                     let currentYear = self.calendar.component(.year, from: Date())
                                     let selectedYear = self.calendar.component(.year, from: currentDate)
-                                    
+
                                     // 如果当前选中的不是今年，则切换到今年
                                     if currentYear != selectedYear {
                                         var components = self.calendar.dateComponents([.month, .day], from: currentDate)
@@ -265,7 +265,7 @@ struct RecordView: View {
                                         yearListBaseYear = max(1, currentYear + 10)
                                     }
                                 }
-                                
+
                                 syncRecordTypeIndex()
                             }
                         }
@@ -295,6 +295,30 @@ struct RecordView: View {
             headerHeight = height
         }
     }
+
+    // 顶栏页签按钮（仅用于本文件顶部页签）：选中加粗，未选中灰色
+private struct TopTabChip: View {
+        let title: String
+        let isSelected: Bool
+        let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
+                .foregroundColor(isSelected ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isSelected
+                              ? Color(UIColor.systemBlue).opacity(0.15)
+                              : Color.clear)
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
     
     // 同步记录类型索引
     private func syncRecordTypeIndex() {

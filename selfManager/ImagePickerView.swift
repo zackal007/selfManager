@@ -17,7 +17,14 @@ struct ImagePickerView: View {
     @Environment(\.presentationMode) var presentationMode
     
     // 预设的背景图片
-    private let presetImages = ["GoalBackground", "GoalBackground2", "GoalBackground3", "GoalBackground4", "GoalBackground5", "GoalBackground6"]
+    private let presetImages = [
+        "GoalGradientBlue",
+        "GoalGradientGreen",
+        "GoalGradientOrange",
+        "GoalGradientPink",
+        "GoalGradientBlack",
+        "GoalGradientRed"
+    ]
     
     // 用于从相册选择图片
     @State private var selectedPhotoItem: PhotosPickerItem? = nil

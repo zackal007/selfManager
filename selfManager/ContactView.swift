@@ -365,37 +365,37 @@ struct ContactView: View {
                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         // 全部选项
-                        FilterChip(title: "全部", isSelected: selectedSegment == 0) {
+                        TopTabChip(title: "全部", isSelected: selectedSegment == 0) {
                             selectedSegment = 0
                         }
-                        
+
                         // 家人选项
-                        FilterChip(title: "家人", isSelected: selectedSegment == 1) {
+                        TopTabChip(title: "家人", isSelected: selectedSegment == 1) {
                             selectedSegment = 1
                         }
-                        
+
                         // 挚友选项
-                        FilterChip(title: "挚友", isSelected: selectedSegment == 2) {
+                        TopTabChip(title: "挚友", isSelected: selectedSegment == 2) {
                             selectedSegment = 2
                         }
-                        
+
                         // 职场选项
-                        FilterChip(title: "职场", isSelected: selectedSegment == 3) {
+                        TopTabChip(title: "职场", isSelected: selectedSegment == 3) {
                             selectedSegment = 3
                         }
-                        
+
                         // 榜样选项
-                        FilterChip(title: "榜样", isSelected: selectedSegment == 4) {
+                        TopTabChip(title: "榜样", isSelected: selectedSegment == 4) {
                             selectedSegment = 4
                         }
 
                         // 其他选项
-                        FilterChip(title: "其他", isSelected: selectedSegment == 5) {
+                        TopTabChip(title: "其他", isSelected: selectedSegment == 5) {
                             selectedSegment = 5
                         }
 
                         // 有用选项（医生/律师/富人/官员/混混）
-                        FilterChip(title: "有用", isSelected: selectedSegment == 6) {
+                        TopTabChip(title: "有用", isSelected: selectedSegment == 6) {
                             selectedSegment = 6
                         }
                     }
@@ -430,37 +430,37 @@ struct ContactView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     // 全部选项
-                    FilterChip(title: "全部", isSelected: selectedSegment == 0) {
+                    TopTabChip(title: "全部", isSelected: selectedSegment == 0) {
                         selectedSegment = 0
                     }
                     
                     // 家人选项
-                    FilterChip(title: "家人", isSelected: selectedSegment == 1) {
+                    TopTabChip(title: "家人", isSelected: selectedSegment == 1) {
                         selectedSegment = 1
                     }
                     
                     // 挚友选项
-                    FilterChip(title: "挚友", isSelected: selectedSegment == 2) {
+                    TopTabChip(title: "挚友", isSelected: selectedSegment == 2) {
                         selectedSegment = 2
                     }
                     
                     // 职场选项
-                    FilterChip(title: "职场", isSelected: selectedSegment == 3) {
+                    TopTabChip(title: "职场", isSelected: selectedSegment == 3) {
                         selectedSegment = 3
                     }
                     
                     // 榜样选项
-                    FilterChip(title: "榜样", isSelected: selectedSegment == 4) {
+                    TopTabChip(title: "榜样", isSelected: selectedSegment == 4) {
                         selectedSegment = 4
                     }
 
                     // 其他选项
-                    FilterChip(title: "其他", isSelected: selectedSegment == 5) {
+                    TopTabChip(title: "其他", isSelected: selectedSegment == 5) {
                         selectedSegment = 5
                     }
 
                     // 有用选项（医生/律师/富人/官员/混混）
-                    FilterChip(title: "有用", isSelected: selectedSegment == 6) {
+                    TopTabChip(title: "有用", isSelected: selectedSegment == 6) {
                         selectedSegment = 6
                     }
                 }
@@ -545,6 +545,29 @@ struct ContactView: View {
         }
     }
 
+    // 顶栏页签按钮（仅用于本文件顶部页签/分段控件）：选中加粗，未选中灰色
+private struct TopTabChip: View {
+        let title: String
+        let isSelected: Bool
+        let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
+                .foregroundColor(isSelected ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isSelected
+                              ? Color(UIColor.systemBlue).opacity(0.15)
+                              : Color.clear)
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
     // 拆分左右列（参考目标模块的瀑布流样式）
     private func leftColumnItems(_ items: [Contact]) -> [Contact] {
         items.enumerated().compactMap { index, item in

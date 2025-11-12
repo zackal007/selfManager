@@ -18,6 +18,30 @@ struct HeaderHeightPreferenceKey: PreferenceKey {
 }
 // 导入共享组件，包含FilterChip
 
+// 顶栏页签按钮（仅用于本文件顶部页签）：选中加粗，未选中灰色
+private struct TopTabChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
+                .foregroundColor(isSelected ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isSelected
+                              ? Color(UIColor.systemBlue).opacity(0.15)
+                              : Color.clear)
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
 // 目标优先级枚举
 enum GoalImportance: Int, CaseIterable {
     case low = 1      // 低
@@ -538,15 +562,15 @@ struct GoalView: View {
                            ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 10) {
                                     // 全部选项
-                                    FilterChip(title: "所有", isSelected: selectedGoalType == nil) {
+                                    TopTabChip(title: "所有", isSelected: selectedGoalType == nil) {
                                         selectedGoalType = nil
                                         selectedSegment = 0
                                         syncGoalTypeIndex()
                                     }
-                                    
+
                                     // 各种目标类型
                                     ForEach(GoalType.allCases, id: \.self) { type in
-                                        FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
+                                        TopTabChip(title: type.rawValue, isSelected: selectedGoalType == type) {
                                             selectedGoalType = type
                                             syncGoalTypeIndex()
                                             // 根据选择的目标类型设置selectedSegment

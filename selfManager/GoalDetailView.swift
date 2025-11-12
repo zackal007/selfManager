@@ -168,7 +168,15 @@ struct GoalDetailView: View {
     
     // 常量
     private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
-    private let backgroundImages = ["GoalBackground", "GoalBackground2", nil]
+    private let backgroundImages = [
+        "GoalGradientBlue",
+        "GoalGradientGreen",
+        "GoalGradientOrange",
+        "GoalGradientPink",
+        "GoalGradientBlack",
+        "GoalGradientRed",
+        nil
+    ]
     private var availableUpperGoals: [String] {
         // 过滤掉当前目标、已经是子目标的目标、回收站中的目标、以及会造成循环引用的目标
         allGoals.filter { otherGoal in
