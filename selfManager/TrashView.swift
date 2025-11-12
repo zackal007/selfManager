@@ -17,10 +17,20 @@ struct TrashView: View {
            sort: \Goal.deletedDate, order: .reverse) 
     private var deletedGoals: [Goal]
     
-    @State private var showingRestoreAlert = false
-    @State private var showingPermanentDeleteAlert = false
+    enum ActiveAlert: Identifiable {
+        case restore
+        case permanentDelete
+        case emptyTrash
+        var id: Int {
+            switch self {
+            case .restore: return 1
+            case .permanentDelete: return 2
+            case .emptyTrash: return 3
+            }
+        }
+    }
+    @State private var activeAlert: ActiveAlert?
     @State private var selectedGoal: Goal?
-    @State private var showingEmptyTrashAlert = false
     
     var body: some View {
         NavigationView {
@@ -49,14 +59,16 @@ struct TrashView: View {
                         ForEach(deletedGoals) { goal in
                             TrashGoalRow(goal: goal) {
                                 selectedGoal = goal
-                                showingRestoreAlert = true
+                                activeAlert = .restore
                             } onPermanentDelete: {
                                 selectedGoal = goal
-                                showingPermanentDeleteAlert = true
+                                activeAlert = .permanentDelete
                             }
                         }
                     }
                     .listStyle(PlainListStyle())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
             }
             .navigationTitle("回收站")
@@ -71,40 +83,53 @@ struct TrashView: View {
                 if !deletedGoals.isEmpty {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("清空回收站") {
-                            showingEmptyTrashAlert = true
+                            activeAlert = .emptyTrash
                         }
                         .foregroundColor(.red)
                     }
                 }
             }
         }
-        .alert("恢复目标", isPresented: $showingRestoreAlert) {
-            Button("取消", role: .cancel) { }
-            Button("恢复") {
-                if let goal = selectedGoal {
-                    restoreGoal(goal)
-                }
+        .alert(item: $activeAlert) { alert in
+            switch alert {
+            case .restore:
+                return Alert(
+                    title: Text("恢复目标"),
+                    message: Text("确定要恢复目标「\(selectedGoal?.name ?? "")」吗？"),
+                    primaryButton: .cancel(Text("取消")),
+                    secondaryButton: .default(Text("恢复"), action: {
+                        if let goal = selectedGoal {
+                            restoreGoal(goal)
+                        }
+                        selectedGoal = nil
+                        activeAlert = nil
+                    })
+                )
+            case .permanentDelete:
+                return Alert(
+                    title: Text("永久删除"),
+                    message: Text("确定要永久删除目标「\(selectedGoal?.name ?? "")」吗？此操作无法撤销。"),
+                    primaryButton: .cancel(Text("取消")),
+                    secondaryButton: .destructive(Text("删除"), action: {
+                        if let goal = selectedGoal {
+                            permanentlyDeleteGoal(goal)
+                        }
+                        selectedGoal = nil
+                        activeAlert = nil
+                    })
+                )
+            case .emptyTrash:
+                return Alert(
+                    title: Text("清空回收站"),
+                    message: Text("确定要清空回收站吗？这将永久删除所有已删除的目标，此操作无法撤销。"),
+                    primaryButton: .cancel(Text("取消")),
+                    secondaryButton: .destructive(Text("清空"), action: {
+                        emptyTrash()
+                        selectedGoal = nil
+                        activeAlert = nil
+                    })
+                )
             }
-        } message: {
-            Text("确定要恢复目标「\(selectedGoal?.name ?? "")」吗？")
-        }
-        .alert("永久删除", isPresented: $showingPermanentDeleteAlert) {
-            Button("取消", role: .cancel) { }
-            Button("删除", role: .destructive) {
-                if let goal = selectedGoal {
-                    permanentlyDeleteGoal(goal)
-                }
-            }
-        } message: {
-            Text("确定要永久删除目标「\(selectedGoal?.name ?? "")」吗？此操作无法撤销。")
-        }
-        .alert("清空回收站", isPresented: $showingEmptyTrashAlert) {
-            Button("取消", role: .cancel) { }
-            Button("清空", role: .destructive) {
-                emptyTrash()
-            }
-        } message: {
-            Text("确定要清空回收站吗？这将永久删除所有已删除的目标，此操作无法撤销。")
         }
     }
     
@@ -177,28 +202,24 @@ struct TrashGoalRow: View {
             // 目标信息
             VStack(alignment: .leading, spacing: 4) {
                 Text(goal.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
                 
                 Text(goal.goalDescription)
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
                     .lineLimit(2)
                 
                 // 删除时间和剩余天数
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(deletedTimeText)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
                     if daysUntilPermanentDeletion > 0 {
                         Text("\(daysUntilPermanentDeletion)天后永久删除")
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(UIColor.systemOrange))
                     } else {
                         Text("即将永久删除")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(UIColor.systemRed))
                     }
                 }
             }
@@ -206,35 +227,35 @@ struct TrashGoalRow: View {
             // 操作按钮
             HStack(spacing: 12) {
                 Button(action: onRestore) {
-                    HStack {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("恢复")
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(8)
+                    Text("恢复")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(10)
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 Button(action: onPermanentDelete) {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("永久删除")
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(8)
+                    Text("永久删除")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(UIColor.systemRed))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(UIColor.systemRed).opacity(0.1))
+                    .cornerRadius(10)
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 Spacer()
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 

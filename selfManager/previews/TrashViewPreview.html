@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>回收站卡片样式预览</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --secondary: #6b7280;
+      --blue: #1e66ff;
+      --red: #ef4444;
+      --orange: #f97316;
+      --shadow: rgba(17, 24, 39, 0.05);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif; margin: 24px; background: #f7f7f7; }
+    h2 { margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .card { background: var(--bg); border-radius: 12px; box-shadow: 0 1px 3px var(--shadow); padding: 16px; }
+    .title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .desc { font-size: 14px; color: var(--secondary); margin-top: 6px; }
+    .meta { font-size: 12px; color: var(--secondary); margin-top: 8px; }
+    .warning { font-size: 12px; color: var(--orange); }
+    .danger { font-size: 12px; color: var(--red); }
+    .actions { display: flex; gap: 12px; margin-top: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 10px; text-decoration: none; }
+    .btn-blue { color: var(--blue); background: rgba(30,102,255,0.1); }
+    .btn-red { color: var(--red); background: rgba(239,68,68,0.1); }
+  </style>
+</head>
+<body>
+  <h2>回收站卡片样式预览（示意）</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="title">年度目标：健身计划</div>
+      <div class="desc">每周运动 4 次，目标体脂 18%</div>
+      <div class="meta">删除于 2 天前</div>
+      <div class="warning">28 天后永久删除</div>
+      <div class="actions">
+            <a href="#" class="btn btn-blue">恢复</a>
+            <a href="#" class="btn btn-red">永久删除</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="title">联系人：张三</div>
+      <div class="desc">ACME · 产品经理</div>
+      <div class="meta">删除于 5 天前</div>
+      <div class="danger">即将永久删除</div>
+      <div class="actions">
+            <a href="#" class="btn btn-blue">恢复</a>
+            <a href="#" class="btn btn-red">永久删除</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

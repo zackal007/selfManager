@@ -41,6 +41,9 @@ struct SettingsCardView: View {
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showLanguageSelector = false
     @State private var refreshView = UUID()
+    @Environment(\.modelContext) private var modelContext
+    @Query private var users: [User]
+    @State private var trashDays: Int = 30
     
     var body: some View {
         VStack(spacing: 0) {
@@ -169,6 +172,8 @@ struct SettingsCardView: View {
                         refreshView = UUID()
                     }
                 }
+
+                
                 
                 // 首页卡片显示设置
                 VStack(spacing: 8) {
@@ -271,6 +276,58 @@ struct SettingsCardView: View {
                     }
                     .padding(.horizontal, 16)
                 }
+            .padding(.horizontal, 16)
+
+            // 回收站设置（移至末尾，单行展示）
+            VStack(spacing: 8) {
+                HStack {
+                    Text("回收站")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16))
+                        .foregroundColor(.red)
+                        .frame(width: 20)
+
+                    Text("过期时间")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.label))
+                        .lineLimit(1)
+                        .layoutPriority(1)
+
+                    Spacer(minLength: 12)
+
+                    Text("\(trashDays) 天")
+                        .font(.system(size: 14))
+                        .foregroundColor(.blue)
+                        .lineLimit(1)
+
+                    Stepper("", value: $trashDays, in: 7...365, step: 1)
+                        .labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color(UIColor.systemGray6).opacity(0.5))
+                .cornerRadius(8)
+                .onAppear {
+                    let current = users.first?.trashExpirationDays ?? 30
+                    trashDays = current
+                }
+                .onChange(of: trashDays) { newValue in
+                    guard let user = users.first else { return }
+                    user.trashExpirationDays = newValue
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("保存回收站过期时间失败: \(error)")
+                    }
+                }
+            }
             .padding(.horizontal, 16)
         }
         .padding(.bottom, 16)

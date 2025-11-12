@@ -17,10 +17,20 @@ struct ContactTrashView: View {
            sort: \Contact.deletedDate, order: .reverse) 
     private var deletedContacts: [Contact]
     
-    @State private var showingRestoreAlert = false
-    @State private var showingPermanentDeleteAlert = false
+    enum ActiveAlert: Identifiable {
+        case restore
+        case permanentDelete
+        case emptyTrash
+        var id: Int {
+            switch self {
+            case .restore: return 1
+            case .permanentDelete: return 2
+            case .emptyTrash: return 3
+            }
+        }
+    }
+    @State private var activeAlert: ActiveAlert?
     @State private var selectedContact: Contact?
-    @State private var showingEmptyTrashAlert = false
     
     var body: some View {
         NavigationView {
@@ -49,14 +59,16 @@ struct ContactTrashView: View {
                     ForEach(deletedContacts) { contact in
                         TrashContactRow(contact: contact) {
                             selectedContact = contact
-                            showingRestoreAlert = true
+                            activeAlert = .restore
                         } onPermanentDelete: {
                             selectedContact = contact
-                            showingPermanentDeleteAlert = true
+                            activeAlert = .permanentDelete
                         }
                     }
                 }
                 .listStyle(PlainListStyle())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
         }
         .navigationTitle("回收站")
@@ -71,39 +83,52 @@ struct ContactTrashView: View {
             if !deletedContacts.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("清空回收站") {
-                        showingEmptyTrashAlert = true
+                        activeAlert = .emptyTrash
                     }
                     .foregroundColor(.red)
                 }
             }
         }
-        .alert("恢复联系人", isPresented: $showingRestoreAlert) {
-            Button("取消", role: .cancel) { }
-            Button("恢复") {
-                if let contact = selectedContact {
-                    restoreContact(contact)
-                }
+        .alert(item: $activeAlert) { alert in
+            switch alert {
+            case .restore:
+                return Alert(
+                    title: Text("恢复联系人"),
+                    message: Text("确定要恢复联系人「\(selectedContact?.name ?? "")」吗？"),
+                    primaryButton: .cancel(Text("取消")),
+                    secondaryButton: .default(Text("恢复"), action: {
+                        if let contact = selectedContact {
+                            restoreContact(contact)
+                        }
+                        selectedContact = nil
+                        activeAlert = nil
+                    })
+                )
+            case .permanentDelete:
+                return Alert(
+                    title: Text("永久删除"),
+                    message: Text("确定要永久删除联系人「\(selectedContact?.name ?? "")」吗？此操作无法撤销。"),
+                    primaryButton: .cancel(Text("取消")),
+                    secondaryButton: .destructive(Text("删除"), action: {
+                        if let contact = selectedContact {
+                            permanentlyDeleteContact(contact)
+                        }
+                        selectedContact = nil
+                        activeAlert = nil
+                    })
+                )
+            case .emptyTrash:
+                return Alert(
+                    title: Text("清空回收站"),
+                    message: Text("确定要清空回收站吗？这将永久删除所有已删除的联系人，此操作无法撤销。"),
+                    primaryButton: .cancel(Text("取消")),
+                    secondaryButton: .destructive(Text("清空"), action: {
+                        emptyTrash()
+                        selectedContact = nil
+                        activeAlert = nil
+                    })
+                )
             }
-        } message: {
-            Text("确定要恢复联系人「\(selectedContact?.name ?? "")」吗？")
-        }
-        .alert("永久删除", isPresented: $showingPermanentDeleteAlert) {
-            Button("取消", role: .cancel) { }
-            Button("删除", role: .destructive) {
-                if let contact = selectedContact {
-                    permanentlyDeleteContact(contact)
-                }
-            }
-        } message: {
-            Text("确定要永久删除联系人「\(selectedContact?.name ?? "")」吗？此操作无法撤销。")
-        }
-        .alert("清空回收站", isPresented: $showingEmptyTrashAlert) {
-            Button("取消", role: .cancel) { }
-            Button("清空", role: .destructive) {
-                emptyTrash()
-            }
-        } message: {
-            Text("确定要清空回收站吗？这将永久删除所有已删除的联系人，此操作无法撤销。")
         }
         }
     }
@@ -178,47 +203,43 @@ struct TrashContactRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(contact.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(UIColor.label))
                     
                     // 联系人类型标签
                     Text(contact.contactType.displayName)
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(4)
+                        .font(.system(size: 12))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(10)
                 }
                 
                 // 公司和职位
                 if let company = contact.company, !company.isEmpty {
                     Text(company)
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
                         .lineLimit(1)
                 }
                 
                 if let position = contact.position, !position.isEmpty {
                     Text(position)
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
                         .lineLimit(1)
                 }
                 
                 // 删除时间和剩余天数
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(deletedTimeText)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
                     if daysUntilPermanentDeletion > 0 {
                         Text("\(daysUntilPermanentDeletion)天后永久删除")
-                            .font(.caption)
-                            .foregroundColor(.orange)
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(UIColor.systemOrange))
                     } else {
                         Text("即将永久删除")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(UIColor.systemRed))
                     }
                 }
             }
@@ -226,30 +247,26 @@ struct TrashContactRow: View {
             // 操作按钮
             HStack(spacing: 12) {
                 Button(action: onRestore) {
-                    HStack {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("恢复")
-                    }
+                    Text("恢复")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.blue)
+                    .foregroundColor(Color(UIColor.systemBlue))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(6)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(10)
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 Button(action: onPermanentDelete) {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("永久删除")
-                    }
+                    Text("永久删除")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.red)
+                    .foregroundColor(Color(UIColor.systemRed))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(6)
+                    .background(Color(UIColor.systemRed).opacity(0.1))
+                    .cornerRadius(10)
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 Spacer()
             }
