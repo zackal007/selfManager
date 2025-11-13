@@ -122,9 +122,6 @@ struct SettingsCardView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Color(UIColor.systemGray6).opacity(0.5))
-                    .cornerRadius(8)
-                    .padding(.horizontal, 16)
                 }
                 
                 // 语言设置
@@ -160,9 +157,6 @@ struct SettingsCardView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Color(UIColor.systemGray6).opacity(0.5))
-                    .cornerRadius(8)
-                    .padding(.horizontal, 16)
                     .sheet(isPresented: $showLanguageSelector) {
                         LanguageSelectorView(isPresented: $showLanguageSelector)
                             .environmentObject(LocalizationManager.shared)
@@ -185,7 +179,7 @@ struct SettingsCardView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    VStack(spacing: 6) {
+                    VStack(spacing: 0) {
                         // 资产卡片
                         HStack(spacing: 12) {
                             Image(systemName: "creditcard.fill")
@@ -204,9 +198,8 @@ struct SettingsCardView: View {
                                 .scaleEffect(0.8)
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color(UIColor.systemGray6).opacity(0.5))
-                        .cornerRadius(8)
+                        .padding(.vertical, 10)
+                        Divider().padding(.leading, 48)
                         
                         // 习惯卡片
                         HStack(spacing: 12) {
@@ -226,9 +219,8 @@ struct SettingsCardView: View {
                                 .scaleEffect(0.8)
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color(UIColor.systemGray6).opacity(0.5))
-                        .cornerRadius(8)
+                        .padding(.vertical, 10)
+                        Divider().padding(.leading, 48)
                         
                         // 成就卡片
                         HStack(spacing: 12) {
@@ -248,9 +240,8 @@ struct SettingsCardView: View {
                                 .scaleEffect(0.8)
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color(UIColor.systemGray6).opacity(0.5))
-                        .cornerRadius(8)
+                        .padding(.vertical, 10)
+                        Divider().padding(.leading, 48)
                         
                         // 焦虑卡片
                         HStack(spacing: 12) {
@@ -270,13 +261,10 @@ struct SettingsCardView: View {
                                 .scaleEffect(0.8)
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color(UIColor.systemGray6).opacity(0.5))
-                        .cornerRadius(8)
+                        .padding(.vertical, 10)
                     }
-                    .padding(.horizontal, 16)
                 }
-            .padding(.horizontal, 16)
+            
 
             // 回收站设置（移至末尾，单行展示）
             VStack(spacing: 8) {
@@ -312,8 +300,6 @@ struct SettingsCardView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color(UIColor.systemGray6).opacity(0.5))
-                .cornerRadius(8)
                 .onAppear {
                     let current = users.first?.trashExpirationDays ?? 30
                     trashDays = current
@@ -328,7 +314,6 @@ struct SettingsCardView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
         }
         .padding(.bottom, 16)
         .id(refreshView) // 使用id强制视图在语言变化时刷新
@@ -508,7 +493,6 @@ struct SidebarView: View {
                  }
                   .padding(.horizontal, 16)
                   .padding(.top, 30) // 减小顶部内边距，使内容整体向上移动
-                          .padding(.bottom, 28)
                       }
                     
                     Spacer()

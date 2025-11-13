@@ -10,6 +10,7 @@ import SwiftData
 
 struct AssetDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     
     // 使用 SwiftData 查询资产数据
     @Query(sort: \Asset.lastUpdateDate, order: .reverse) private var assets: [Asset]
@@ -115,7 +116,21 @@ struct AssetDetailView: View {
             }
             .navigationTitle("我的资产")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("back".localized)
+                                .font(.system(size: 17, weight: .medium))
+                        }
+                        .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(isEditing ? "保存" : "编辑") {
                         if isEditing {

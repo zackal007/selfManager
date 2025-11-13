@@ -62,7 +62,12 @@ struct AllTagsCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // 标题和查看全部按钮
-            HStack {
+            HStack(spacing: 12) {
+                Image(systemName: "tag.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .frame(width: 20)
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("全部标签")
                         .font(.system(size: 16, weight: .semibold))

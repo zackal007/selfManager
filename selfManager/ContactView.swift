@@ -554,7 +554,7 @@ private struct TopTabChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
+                .font(.system(size: isSelected ? 14 * 1.15 : 14, weight: isSelected ? .bold : .regular))
                 .foregroundColor(isSelected ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)

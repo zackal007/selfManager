@@ -111,10 +111,34 @@ struct ContactSelectorView: View {
                 leading: Button("取消") {
                     dismiss()
                 },
-                trailing: Button("完成") {
+                trailing: Button(action: {
                     onSelect(selectedIds)
                     dismiss()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("添加")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule().fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.blue,
+                                    Color.blue.opacity(0.8)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                    )
                 }
+                .disabled(selectedIds.isEmpty)
+                .opacity(selectedIds.isEmpty ? 0.6 : 1.0)
             )
         }
     }

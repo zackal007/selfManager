@@ -300,8 +300,7 @@ struct AddTagSheet: View {
                 
                 // 标签分类管理区域
                 VStack(spacing: 12) {
-                    Divider()
-                        .padding(.horizontal, 16)
+                    // 移除顶部分隔线，保持界面简洁
                     
                     // 分类管理标题（移除右上角“管理”按钮）
                     HStack {

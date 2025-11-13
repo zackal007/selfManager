@@ -360,8 +360,16 @@ struct HomeView: View {
                         .navigationTitle("设置")
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button(action: {
                                     navigationManager.pop(for: selectedTab)
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 16, weight: .semibold))
+                                        Text("返回")
+                                            .font(.system(size: 17, weight: .medium))
+                                    }
+                                    .foregroundColor(Color(UIColor.systemBlue))
                                 }
                             }
                         }

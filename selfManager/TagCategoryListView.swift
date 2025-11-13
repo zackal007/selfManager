@@ -448,9 +448,6 @@ struct TagCategoryEditView: View {
                 
                 // 删除按钮区域
                 VStack(spacing: 16) {
-                    Divider()
-                        .padding(.horizontal, 24)
-                    
                     Button(action: {
                         showingDeleteAlert = true
                     }) {
@@ -460,14 +457,11 @@ struct TagCategoryEditView: View {
                             Text("删除分类")
                                 .font(.system(size: 16, weight: .semibold))
                         }
-                        .foregroundColor(.red)
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(UIColor.systemBackground))
-                                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-                        )
+                        .background(Color.red)
+                        .cornerRadius(12)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
