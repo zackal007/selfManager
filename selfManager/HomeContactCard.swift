@@ -105,8 +105,14 @@ struct HomeContactCard: View {
         .frame(maxWidth: .infinity)
         .frame(height: containerHeight, alignment: .top)
         .padding(12)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.secondarySystemBackground))
+                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.18), lineWidth: 1)
+                )
+        )
     }
 }

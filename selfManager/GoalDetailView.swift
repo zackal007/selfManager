@@ -550,8 +550,15 @@ struct GoalDetailView: View {
                                 .buttonStyle(PlainButtonStyle())
                             }
                             .padding(10)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(UIColor.secondarySystemBackground))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                            )
+                            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                         }
                     }
                 }
@@ -738,8 +745,15 @@ struct GoalDetailView: View {
                                 .buttonStyle(PlainButtonStyle())
                             }
                             .padding(10)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(UIColor.secondarySystemBackground))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                            )
+                            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                         }
                     }
                 }
@@ -1228,6 +1242,59 @@ struct GoalDetailView: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
+
+    // 页面出现时记录习惯打开日志，拆分以降低类型检查复杂度
+    private func logHabitOpenIfNeeded() {
+        if goal.goalType == .habit && !didLogHabitOpen {
+            GoalActivityManager.shared.addActivityLogWithDiary(
+                goalId: goal.id,
+                goalName: goal.name,
+                type: "habit_open",
+                message: "查看了习惯目标",
+                modelContext: modelContext
+            )
+            didLogHabitOpen = true
+        }
+    }
+
+    // 进度条区域，拆分以降低类型检查复杂度
+    private var progressBarSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("进度")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                Spacer()
+                Button(action: {
+                    editingField = .progress
+                    editingProgress = goal.progress
+                    showEditSheet = true
+                }) {
+                    Text("\(Int(goal.progress * 100))%")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // 背景轨道
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(UIColor.systemGray5))
+                        .frame(height: 8)
+
+                    // 进度条
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(UIColor.systemBlue))
+                        .frame(width: max(4, geometry.size.width * CGFloat(goal.progress)), height: 8)
+                        .animation(.easeOut(duration: 0.3), value: goal.progress)
+                }
+            }
+            .frame(height: 8)
+        }
+        .padding(.horizontal, 16)
+    }
     
     // 目标类型菜单视图
     var goalTypeMenuView: some View {
@@ -1398,22 +1465,123 @@ struct GoalDetailView: View {
         }
     }
 
+    // 目标类型选择区域，拆分以降低类型检查复杂度
+    private var goalTypeSection: some View {
+        HStack {
+            Image(systemName: "tag")
+                .font(.system(size: 16))
+                .foregroundColor(Color(UIColor.systemBlue))
+                .frame(width: 24, height: 24)
+
+            Text("目标类型")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(UIColor.label))
+
+            Spacer()
+
+            Menu {
+                ForEach(0..<goalTypes.count, id: \.self) { index in
+                    Button(action: {
+                        // 只更新selectedGoalType，不直接修改goal对象
+                        // 这样可以避免SwiftData自动保存导致页面跳转
+                        selectedGoalType = index
+                    }) {
+                        Text(goalTypes[index])
+                    }
+                }
+            } label: {
+                Text(goalTypes[selectedGoalType])
+                    .font(.system(size: 15))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                    .cornerRadius(15)
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+
+    // 标签区域，拆分以降低类型检查复杂度
+    private var tagsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "tag.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .frame(width: 24, height: 24)
+
+                Text("标签")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(goal.tags, id: \.self) { tag in
+                        HStack(spacing: 4) {
+                            Text(tag)
+                                .foregroundColor(.white)
+
+                            // 删除标签按钮
+                            Button(action: {
+                                // 删除标签
+                                if let index = goal.tags.firstIndex(of: tag) {
+                                    goal.tags.remove(at: index)
+                                    // 更新修改时间
+                                    goal.modifyTime = Date()
+                                    // 记录标签删除
+                                    GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
+                                    // 保存更改
+                                    do {
+                                        try modelContext.save()
+                                    } catch {
+                                        print("Failed to save tag deletion: \(error)")
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .font(.system(size: 14, weight: .medium))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(tagColor(for: tag))
+                        .cornerRadius(12)
+                    }
+
+                    // 添加标签按钮（使用可复用的 AddTagSheet）
+                    Button(action: {
+                        showAddTagSheet = true
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                            .frame(width: 24, height: 24)
+                            .background(Color(UIColor.systemBlue).opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 5)
+            }
+            .frame(height: 40)
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 // 不影响布局的钩子：页面首次出现时写入当天日记动态（仅限习惯目标）
                 EmptyView()
                     .onAppear {
-                        if goal.goalType == .habit && !didLogHabitOpen {
-                            GoalActivityManager.shared.addActivityLogWithDiary(
-                                goalId: goal.id,
-                                goalName: goal.name,
-                                type: "habit_open",
-                                message: "查看了习惯目标",
-                                modelContext: modelContext
-                            )
-                            didLogHabitOpen = true
-                        }
+                        logHabitOpenIfNeeded()
                     }
                 // 目标信息卡片
                 VStack(alignment: .leading, spacing: 16) {
@@ -1433,140 +1601,28 @@ struct GoalDetailView: View {
                     }
                     
                     // 进度条 - 放置在标题下方
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("进度")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
-                            Spacer()
-                            Button(action: {
-                                editingField = .progress
-                                editingProgress = goal.progress
-                                showEditSheet = true
-                            }) {
-                                Text("\(Int(goal.progress * 100))%")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                // 背景轨道
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color(UIColor.systemGray5))
-                                    .frame(height: 8)
-                                
-                                // 进度条
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color(UIColor.systemBlue))
-                                    .frame(width: max(4, geometry.size.width * CGFloat(goal.progress)), height: 8)
-                                    .animation(.easeOut(duration: 0.3), value: goal.progress)
-                            }
-                        }
-                        .frame(height: 8)
-                    }
-                    .padding(.horizontal, 16)
+                    progressBarSection
                                                            
                     // 目标类型
+                    goalTypeSection
+                    
+                    // 目标描述
                     HStack {
-                        Image(systemName: "tag")
+                        Image(systemName: "text.alignleft")
                             .font(.system(size: 16))
                             .foregroundColor(Color(UIColor.systemBlue))
                             .frame(width: 24, height: 24)
                         
-                        Text("目标类型")
+                        Text("目标描述")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(Color(UIColor.label))
                         
                         Spacer()
-                        
-                        Menu {
-                            ForEach(0..<goalTypes.count, id: \.self) { index in
-                                Button(action: {
-                                    // 只更新selectedGoalType，不直接修改goal对象
-                                    // 这样可以避免SwiftData自动保存导致页面跳转
-                                    selectedGoalType = index
-                                }) {
-                                    Text(goalTypes[index])
-                                }
-                            }
-                        } label: {
-                            Text(goalTypes[selectedGoalType])
-                                .font(.system(size: 15))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(15)
-                        }
                     }
                     .padding(.horizontal, 16)
-                    
-                    // 目标描述
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "text.alignleft")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            
-                            Text("目标描述")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            
-                            Spacer()
-                        }
-                        
-                        if editingField == .goalDescription {
-                            VStack(alignment: .leading, spacing: 8) {
-                                TextEditor(text: $editingValue)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.darkGray))
-                                    .frame(minHeight: 100)
-                                    .padding(12)
-                                    .background(Color(UIColor.systemGray6))
-                                    .cornerRadius(8)
 
-                                HStack {
-                                    Spacer()
-                                    Button("完成") {
-                                        // 统一使用已有保存逻辑
-                                        saveCurrentEditing()
-                                        editingField = nil
-                                    }
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(8)
-                                }
-                            }
-                        } else {
-                            HStack {
-                                Text(goal.goalDescription)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .multilineTextAlignment(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .lineLimit(3) // 设置为3行高度
-                                    .fixedSize(horizontal: false, vertical: true) // 确保显示完整的3行
-                                Spacer()
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(12)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(8)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                editingField = .goalDescription
-                                editingValue = goal.goalDescription
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
+                    // 使用拆分的子视图以降低类型检查复杂度
+                    goalDescriptionView
                                          
                     // 优先级选择器
                     HStack {
@@ -1609,80 +1665,18 @@ struct GoalDetailView: View {
                     dueDateView
                                         
                     // 标签
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "tag.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .frame(width: 24, height: 24)
-                            
-                            Text("标签")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal, 16)
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(goal.tags, id: \.self) { tag in
-                                    HStack(spacing: 4) {
-                                        Text(tag)
-                                            .foregroundColor(.white)
-                                        
-                                        // 删除标签按钮
-                                        Button(action: {
-                                            // 删除标签
-                                            if let index = goal.tags.firstIndex(of: tag) {
-                                                goal.tags.remove(at: index)
-                                                // 更新修改时间
-                                                goal.modifyTime = Date()
-                                                // 记录标签删除
-                                                GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
-                                                // 保存更改
-                                                do {
-                                                    try modelContext.save()
-                                                } catch {
-                                                    print("Failed to save tag deletion: \(error)")
-                                                }
-                                            }
-                                        }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.white.opacity(0.7))
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
-                                    .font(.system(size: 14, weight: .medium))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(tagColor(for: tag))
-                                    .cornerRadius(12)
-                                }
-                                
-                                // 添加标签按钮（使用可复用的 AddTagSheet）
-                                Button(action: {
-                                    showAddTagSheet = true
-                                }) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(Color(UIColor.systemBlue))
-                                        .frame(width: 24, height: 24)
-                                        .background(Color(UIColor.systemBlue).opacity(0.1))
-                                        .clipShape(Circle())
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 5)
-                        }
-                        .frame(height: 40)
-                    }
+                    tagsSection
                 }
                 .padding(.vertical, 16)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.secondarySystemBackground))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                                )
+                                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 
@@ -1702,9 +1696,15 @@ struct GoalDetailView: View {
                     projectsView
                 }
                 .padding(.vertical, 16)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.secondarySystemBackground))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                                )
+                                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                 .padding(.horizontal, 16)
                 
                 // 子任务卡片

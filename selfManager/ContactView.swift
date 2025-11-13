@@ -778,9 +778,15 @@ struct ContactCard: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.secondarySystemBackground))
+                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.18), lineWidth: 1)
+                )
+        )
     }
     
     private let dateFormatter: DateFormatter = {
@@ -864,9 +870,15 @@ struct ContactListItem: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(8)
-        .shadow(color: Color(UIColor.label).opacity(0.05), radius: 1, x: 0, y: 1)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.secondarySystemBackground))
+                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.18), lineWidth: 1)
+                )
+        )
     }
 }
 
@@ -952,9 +964,15 @@ struct ContactGalleryCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .center)
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.secondarySystemBackground))
+                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.18), lineWidth: 1)
+                )
+        )
     }
 }
 

@@ -781,7 +781,7 @@ struct GoalView: View {
                                         }
                                     }
                                 }
-                                .padding(.top, 110)
+                                .padding(.top, 56)
                                 .padding(.bottom, 16)
                             }
                             .tag(index)
