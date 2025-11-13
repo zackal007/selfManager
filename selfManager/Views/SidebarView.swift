@@ -45,6 +45,10 @@ struct SettingsCardView: View {
     @Query private var users: [User]
     @State private var trashDays: Int = 30
     
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(UIColor.secondarySystemGroupedBackground) : Color(UIColor.systemBackground)
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // 卡片标题
@@ -320,7 +324,7 @@ struct SettingsCardView: View {
     }
     .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.systemBackground))
+                .fill(cardBackground)
                 .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
     }

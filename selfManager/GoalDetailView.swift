@@ -14,6 +14,7 @@ import EventKit
 
 struct GoalDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Query private var allGoals: [Goal]
     @Query private var allContacts: [Contact]
     
@@ -1575,6 +1576,452 @@ struct GoalDetailView: View {
         }
     }
 
+    private func taskRow(_ task: GoalTask) -> some View {
+        HStack(spacing: 12) {
+            Button(action: {
+                let oldStatus = task.isCompleted
+                task.isCompleted.toggle()
+                goal.modifyTime = Date()
+                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
+                do { try modelContext.save() } catch { print("Failed to save task update: \(error)") }
+            }) {
+                ZStack {
+                    Circle()
+                        .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                        .frame(width: 22, height: 22)
+                    if task.isCompleted {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 22, height: 22)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
+            Text(task.title)
+                .font(.system(size: 16))
+                .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
+                .strikethrough(task.isCompleted)
+                .onTapGesture {
+                    editingField = .task
+                    editingTask = task
+                    editingValue = task.title
+                    showEditSheet = true
+                }
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+
+    private var overviewCardView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ZStack(alignment: .trailing) {
+                pinButtonView
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.top, 12)
+                    .padding(.trailing, 16)
+                    .zIndex(1)
+                goalNameHeaderContent
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+            }
+            progressBarSection
+            goalTypeSection
+            HStack {
+                Image(systemName: "text.alignleft")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .frame(width: 24, height: 24)
+                Text("目标描述")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            goalDescriptionView
+            HStack {
+                Image(systemName: "flag.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(UIColor.systemRed))
+                    .frame(width: 24, height: 24)
+                Text("优先级")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+                Picker("优先级", selection: $editingImportance) {
+                    Text("低").tag(1)
+                    Text("中").tag(2)
+                    Text("高").tag(3)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .frame(width: 160)
+                .onChange(of: editingImportance) { oldValue, newValue in
+                    let oldImportance = goal.importance
+                    goal.importance = newValue
+                    goal.modifyTime = Date()
+                    GoalActivityManager.shared.logImportanceChange(goal: goal, oldImportance: oldImportance)
+                    do { try modelContext.save() } catch { print("Failed to save importance: \(error)") }
+                }
+            }
+            .padding(.horizontal, 16)
+            dueDateView
+            tagsSection
+        }
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
+        )
+        .overlay(
+            Group {
+                if colorScheme == .dark {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                }
+            }
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+    }
+
+    private var projectRelationsCardView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.triangle.branch")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                Text("目标关联")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            projectsView
+        }
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
+        )
+        .overlay(
+            Group {
+                if colorScheme == .dark {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                }
+            }
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+    }
+
+    private var subTasksCardView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Image(systemName: "checklist")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                Text("子任务")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            VStack(alignment: .leading, spacing: 12) {
+                if goal.tasks.isEmpty {
+                    Text("暂无子任务")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                        .padding(.horizontal, 16)
+                } else {
+                    List {
+                        ForEach(goal.tasks) { task in
+                            taskRow(task)
+                        }
+                        .onDelete(perform: deleteTask)
+                    }
+                    .listStyle(.plain)
+                    .frame(height: CGFloat(goal.tasks.count) * 70)
+                }
+                Button(action: { showAddTaskSheet = true }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 16))
+                        Text("添加任务")
+                            .font(.system(size: 16))
+                    }
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
+        )
+        .overlay(
+            Group {
+                if colorScheme == .dark {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                }
+            }
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+    }
+
+    private var relatedContactsCardView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .center, spacing: 6) {
+                Image(systemName: "person.2.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                Text("关联人")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+                Button(action: { showContactSelector = true }) {
+                    Text("选择")
+                        .font(.system(size: 15))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(15)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(.horizontal, 16)
+            VStack(alignment: .leading, spacing: 8) {
+                if goal.relatedContactIds.isEmpty {
+                    Text("未关联联系人")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(goal.relatedContactIds, id: \.self) { id in
+                                if let contact = allContacts.first(where: { $0.id == id }) {
+                                    HStack(spacing: 4) {
+                                        Text(contact.name)
+                                            .foregroundColor(Color(UIColor.systemBlue))
+                                        Button(action: {
+                                            if let idx = goal.relatedContactIds.firstIndex(of: id) {
+                                                goal.relatedContactIds.remove(at: idx)
+                                                goal.modifyTime = Date()
+                                                if let contact = allContacts.first(where: { $0.id == id }) {
+                                                    var contactGoalIds = contact.relatedGoalIds
+                                                    if let goalIdx = contactGoalIds.firstIndex(of: goal.id) {
+                                                        contactGoalIds.remove(at: goalIdx)
+                                                        contact.relatedGoalIds = contactGoalIds
+                                                        GoalActivityManager.shared.logContactRemove(goal: goal, contactId: id, contactName: contact.name)
+                                                    }
+                                                }
+                                                do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
+                                            }
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color(UIColor.systemGray3))
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                    .font(.system(size: 14, weight: .medium))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color(UIColor.systemBlue).opacity(0.1))
+                                    .cornerRadius(12)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 5)
+                    }
+                    .frame(height: 40)
+                }
+            }
+        }
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
+        )
+        .overlay(
+            Group {
+                if colorScheme == .dark {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                }
+            }
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+    }
+
+    private var backgroundImageCardView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .center, spacing: 6) {
+                Image(systemName: "photo.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.systemBlue))
+                Text("背景图片")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+                Button(action: {
+                    editingField = .backgroundImage
+                    selectedBackgroundImage = goal.backgroundImage
+                    showImagePicker = true
+                }) {
+                    Text("选择")
+                        .font(.system(size: 15))
+                        .foregroundColor(Color(UIColor.systemBlue))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color(UIColor.systemBlue).opacity(0.1))
+                        .cornerRadius(15)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(.horizontal, 16)
+            VStack(alignment: .leading, spacing: 8) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            goal.backgroundImage = nil
+                            goal.modifyTime = Date()
+                            do { try modelContext.save() } catch { print("Failed to save background image: \(error)") }
+                        }) {
+                            ZStack {
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                .frame(width: 80, height: 60)
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
+                                )
+                                Text("默认")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        let userUploadedImages = UserDefaults.standard.stringArray(forKey: "UserUploadedImages") ?? []
+                        let hiddenImages = UserDefaults.standard.stringArray(forKey: "UserHiddenImages") ?? []
+                        let visibleUserImages = userUploadedImages.filter { !hiddenImages.contains($0) }
+                        ForEach(visibleUserImages, id: \.self) { imageName in
+                            Button(action: {
+                                goal.backgroundImage = imageName
+                                goal.modifyTime = Date()
+                                do { try modelContext.save() } catch { print("Failed to save background image: \(error)") }
+                            }) {
+                                if let uiImage = loadImageFromDocuments(imageName) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 80, height: 60)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
+                                        )
+                                }
+                            }
+                        }
+                        ForEach(backgroundImages.compactMap { $0 }, id: \.self) { imageName in
+                            Button(action: {
+                                goal.backgroundImage = imageName
+                                goal.modifyTime = Date()
+                                do { try modelContext.save() } catch { print("Failed to save background image: \(error)") }
+                            }) {
+                                if let uiImage = UIImage(named: imageName) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 80, height: 60)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
+                                        )
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 5)
+                }
+                .frame(height: 70)
+            }
+        }
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
+        )
+        .overlay(
+            Group {
+                if colorScheme == .dark {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
+                }
+            }
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
+    }
+
+    private var bottomButtonsView: some View {
+        HStack(spacing: 12) {
+            Button(action: { showActivityLog = true }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 16))
+                    Text("查看动态")
+                        .font(.system(size: 17, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.blue)
+                .cornerRadius(12)
+            }
+            Button(action: { showDeleteAlert = true }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16))
+                    Text("删除目标")
+                        .font(.system(size: 17, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.red)
+                .cornerRadius(12)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 24)
+    }
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -1583,490 +2030,17 @@ struct GoalDetailView: View {
                     .onAppear {
                         logHabitOpenIfNeeded()
                     }
-                // 目标信息卡片
-                VStack(alignment: .leading, spacing: 16) {
-                    // 目标信息卡片顶部
-                    ZStack(alignment: .trailing) {
-                        // "钉子"按钮：钉住/取消钉住当前目标 - 放在右上角
-                        pinButtonView
-                        .buttonStyle(PlainButtonStyle())
-                        .padding(.top, 12)
-                        .padding(.trailing, 16)
-                        .zIndex(1)
-                        
-                        // 目标名称
-                        goalNameHeaderContent
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
-                    }
-                    
-                    // 进度条 - 放置在标题下方
-                    progressBarSection
-                                                           
-                    // 目标类型
-                    goalTypeSection
-                    
-                    // 目标描述
-                    HStack {
-                        Image(systemName: "text.alignleft")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .frame(width: 24, height: 24)
-                        
-                        Text("目标描述")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.label))
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-
-                    // 使用拆分的子视图以降低类型检查复杂度
-                    goalDescriptionView
-                                         
-                    // 优先级选择器
-                    HStack {
-                        Image(systemName: "flag.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(UIColor.systemRed))
-                            .frame(width: 24, height: 24)
-                        
-                        Text("优先级")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.label))
-                        
-                        Spacer()
-                        
-                        Picker("优先级", selection: $editingImportance) {
-                            Text("低").tag(1)
-                            Text("中").tag(2)
-                            Text("高").tag(3)
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 160)
-                        .onChange(of: editingImportance) { oldValue, newValue in
-                            let oldImportance = goal.importance
-                            goal.importance = newValue
-                            goal.modifyTime = Date()
-                            
-                            // 记录重要性修改
-                            GoalActivityManager.shared.logImportanceChange(goal: goal, oldImportance: oldImportance)
-                            
-                            do {
-                                try modelContext.save()
-                            } catch {
-                                print("Failed to save importance: \(error)")
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    // 截止日期
-                    dueDateView
-                                        
-                    // 标签
-                    tagsSection
-                }
-                .padding(.vertical, 16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(UIColor.secondarySystemBackground))
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
-                                )
-                                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
+                overviewCardView
                 
-                // 上级目标和子目标卡片
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.triangle.branch")
-                            .font(.system(size: 18))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        Text("目标关联")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color(UIColor.label))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    projectsView
-                }
-                .padding(.vertical, 16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(UIColor.secondarySystemBackground))
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color(UIColor.separator).opacity(0.5), lineWidth: 0.5)
-                                )
-                                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
-                .padding(.horizontal, 16)
+                projectRelationsCardView
                 
-                // 子任务卡片
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "checklist")
-                            .font(.system(size: 18))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        Text("子任务")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color(UIColor.label))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    // 子任务列表
-                    VStack(alignment: .leading, spacing: 12) {
-                        if goal.tasks.isEmpty {
-                            Text("暂无子任务")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.vertical, 20)
-                                .padding(.horizontal, 16)
-                        } else {
-                            List {
-                                ForEach(goal.tasks) { task in
-                                    HStack(spacing: 12) {
-                                        // 复选框
-                                        Button(action: {
-                                            let oldStatus = task.isCompleted
-                                            task.isCompleted.toggle()
-                                            goal.modifyTime = Date()
-                                            
-                                            // 记录任务完成状态变更
-                                            GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
-                                            
-                                            do {
-                                                try modelContext.save()
-                                            } catch {
-                                                print("Failed to save task update: \(error)")
-                                            }
-                                        }) {
-                                            ZStack {
-                                                Circle()
-                                                    .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
-                                                    .frame(width: 22, height: 22)
-                                                
-                                                if task.isCompleted {
-                                                    Circle()
-                                                        .fill(Color.blue)
-                                                        .frame(width: 22, height: 22)
-                                                    
-                                                    Image(systemName: "checkmark")
-                                                        .font(.system(size: 10, weight: .bold))
-                                                        .foregroundColor(.white)
-                                                }
-                                            }
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                        
-                                        // 任务名称
-                            Text(task.title)
-                                .font(.system(size: 16))
-                                .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                                .strikethrough(task.isCompleted)
-                                .onTapGesture {
-                                    editingField = .task
-                                    editingTask = task
-                                    editingValue = task.title
-                                    showEditSheet = true
-                                }
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                }
-                                .onDelete(perform: deleteTask)
-                            }
-                            .listStyle(.plain)
-                            .frame(height: CGFloat(goal.tasks.count) * 70) // 动态调整高度
-                        }
-                        
-                        // 添加任务按钮
-                        Button(action: {
-                            showAddTaskSheet = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 16))
-                                
-                                Text("添加任务")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(Color(UIColor.systemBlue))
-                            .padding(.horizontal, 16)
-                            .padding(.top, 8)
-                            .padding(.bottom, 8)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .padding(.vertical, 16)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
-                .padding(.horizontal, 16)
+                subTasksCardView
                 
-                // 关联人卡片
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(alignment: .center, spacing: 6) {
-                        Image(systemName: "person.2.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        Text("关联人")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color(UIColor.label))
-                        Spacer()
-                        Button(action: { showContactSelector = true }) {
-                            Text("选择")
-                                .font(.system(size: 15))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(15)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .padding(.horizontal, 16)
-                    VStack(alignment: .leading, spacing: 8) {
-                        // 已选联系人列表
-                        if goal.relatedContactIds.isEmpty {
-                            Text("未关联联系人")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                        } else {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(goal.relatedContactIds, id: \ .self) { id in
-                                        if let contact = allContacts.first(where: { $0.id == id }) {
-                                            HStack(spacing: 4) {
-                                                Text(contact.name)
-                                                    .foregroundColor(Color(UIColor.systemBlue))
-                                                Button(action: {
-                                                    if let idx = goal.relatedContactIds.firstIndex(of: id) {
-                                                        goal.relatedContactIds.remove(at: idx)
-                                                        goal.modifyTime = Date()
-                                                        
-                                                        // 双向关联：从联系人的关联目标列表中移除当前目标
-                                                        if let contact = allContacts.first(where: { $0.id == id }) {
-                                                            var contactGoalIds = contact.relatedGoalIds
-                                                            if let goalIdx = contactGoalIds.firstIndex(of: goal.id) {
-                                                                contactGoalIds.remove(at: goalIdx)
-                                                                contact.relatedGoalIds = contactGoalIds
-                                                                
-                                                                // 记录关联联系人删除
-                                                                GoalActivityManager.shared.logContactRemove(goal: goal, contactId: id, contactName: contact.name)
-                                                            }
-                                                        }
-                                                        
-                                                        do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
-                                                    }
-                                                }) {
-                                                    Image(systemName: "xmark.circle.fill")
-                                                        .font(.system(size: 12))
-                                                        .foregroundColor(Color(UIColor.systemGray3))
-                                                }
-                                                .buttonStyle(PlainButtonStyle())
-                                            }
-                                            .font(.system(size: 14, weight: .medium))
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 5)
-                                            .background(Color(UIColor.systemBlue).opacity(0.1))
-                                            .cornerRadius(12)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 5)
-                            }
-                            .frame(height: 40)
-                        }
-                    }
-                }
-                .padding(.vertical, 16)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
-                .padding(.horizontal, 16)
+                relatedContactsCardView
                 
-                // 背景图片卡片
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(alignment: .center, spacing: 6) {
-                        Image(systemName: "photo.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(Color(UIColor.systemBlue))
-                        Text("背景图片")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color(UIColor.label))
-                        Spacer()
-                        Button(action: {
-                            editingField = .backgroundImage
-                            selectedBackgroundImage = goal.backgroundImage
-                            showImagePicker = true
-                        }) {
-                            Text("选择")
-                                .font(.system(size: 15))
-                                .foregroundColor(Color(UIColor.systemBlue))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(UIColor.systemBlue).opacity(0.1))
-                                .cornerRadius(15)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    .padding(.horizontal, 16)
-                    // 背景图片内容区域
-                    VStack(alignment: .leading, spacing: 8) {
-                        // 显示当前背景图片预览
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                // 默认选项
-                                Button(action: {
-                                    goal.backgroundImage = nil
-                                    goal.modifyTime = Date()
-                                    do {
-                                        try modelContext.save()
-                                    } catch {
-                                        print("Failed to save background image: \(error)")
-                                    }
-                                }) {
-                                    ZStack {
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                        .frame(width: 80, height: 60)
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
-                                        )
-                                        
-                                        Text("默认")
-                                            .font(.system(size: 12, weight: .medium))
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                                
-                                // 获取用户上传的图片
-                                let userUploadedImages = UserDefaults.standard.stringArray(forKey: "UserUploadedImages") ?? []
-                                let hiddenImages = UserDefaults.standard.stringArray(forKey: "UserHiddenImages") ?? []
-                                let visibleUserImages = userUploadedImages.filter { !hiddenImages.contains($0) }
-                                
-                                // 显示用户上传的图片
-                                ForEach(visibleUserImages, id: \.self) { imageName in
-                                    Button(action: {
-                                        goal.backgroundImage = imageName
-                                        goal.modifyTime = Date()
-                                        do {
-                                            try modelContext.save()
-                                        } catch {
-                                            print("Failed to save background image: \(error)")
-                                        }
-                                    }) {
-                                        if let uiImage = loadImageFromDocuments(imageName) {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 80, height: 60)
-                                                .cornerRadius(8)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
-                                                )
-                                        }
-                                    }
-                                }
-                                
-                                // 显示系统预设图片
-                                ForEach(backgroundImages.compactMap { $0 }, id: \.self) { imageName in
-                                    Button(action: {
-                                        goal.backgroundImage = imageName
-                                        goal.modifyTime = Date()
-                                        do {
-                                            try modelContext.save()
-                                        } catch {
-                                            print("Failed to save background image: \(error)")
-                                        }
-                                    }) {
-                                        if let uiImage = UIImage(named: imageName) {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 80, height: 60)
-                                                .cornerRadius(8)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
-                                                )
-                                        }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 5)
-                        }
-                        .frame(height: 70)
-                    }
-                }
-                .padding(.vertical, 16)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                backgroundImageCardView
                 
-                // 底部按钮区域
-                HStack(spacing: 12) {
-                    // 查看动态按钮
-                    Button(action: {
-                        showActivityLog = true
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "clock.arrow.circlepath")
-                                .font(.system(size: 16))
-                            Text("查看动态")
-                                .font(.system(size: 17, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.blue)
-                        .cornerRadius(12)
-                    }
-                    
-                    // 删除按钮
-                    Button(action: {
-                        showDeleteAlert = true
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 16))
-                            Text("删除目标")
-                                .font(.system(size: 17, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.red)
-                        .cornerRadius(12)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
+                bottomButtonsView
             }
         }
         .background(Color(UIColor.systemGroupedBackground))

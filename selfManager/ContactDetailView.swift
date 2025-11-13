@@ -12,6 +12,7 @@ import SwiftData
 struct ContactDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) var colorScheme
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
@@ -44,6 +45,10 @@ struct ContactDetailView: View {
     
     enum EditingField {
         case name, company, position, phone, email, address, notes, tag
+    }
+    
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground)
     }
     
     var body: some View {
@@ -208,8 +213,13 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
+        .background(cardBackground)
         .cornerRadius(16)
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: 16).stroke(Color(UIColor.separator), lineWidth: 0.5)
+            }
+        }
         .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
     }
     
@@ -328,8 +338,13 @@ struct ContactDetailView: View {
             .padding(.horizontal, 16)
         }
         .frame(maxWidth: .infinity)
-        .background(Color(UIColor.systemBackground))
+        .background(cardBackground)
         .cornerRadius(12)
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
+            }
+        }
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 
@@ -435,8 +450,13 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
+        .background(cardBackground)
         .cornerRadius(12)
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
+            }
+        }
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
@@ -555,8 +575,13 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
+        .background(cardBackground)
         .cornerRadius(12)
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
+            }
+        }
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
@@ -660,8 +685,13 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
+        .background(cardBackground)
         .cornerRadius(12)
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
+            }
+        }
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 
@@ -759,8 +789,13 @@ struct ContactDetailView: View {
             }
         }
         .padding(16)
-        .background(Color(UIColor.systemBackground))
+        .background(cardBackground)
         .cornerRadius(12)
+        .overlay {
+            if colorScheme == .dark {
+                RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
+            }
+        }
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
     
