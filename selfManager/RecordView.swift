@@ -1266,7 +1266,7 @@ private struct TopTabChip: View {
                                                 NotesStyleRecordEditor(
                                                     text: $recordContent,
                                                     images: $selectedImages,
-                                                    minHeight: 120,
+                                                    minHeight: UIScreen.main.bounds.height,
                                                     onImagesChanged: { images in
                                                         selectedImages = images
                                                         contentModified = true
@@ -1278,7 +1278,7 @@ private struct TopTabChip: View {
                                                         // autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
                                                     }
                                                 )
-                                                .frame(minHeight: 120)
+                                                .frame(minHeight: UIScreen.main.bounds.height)
                                                 .padding(.horizontal)
                                                 .onChange(of: recordContent) { _, _ in
                                                     // 标记内容已修改

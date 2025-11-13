@@ -94,33 +94,18 @@ struct NotesStyleRecordEditor: View {
         let desiredMinHeight = max(minHeight, lineHeight * 12) // 显示约 12 行文本高度
 
         return ZStack(alignment: .topLeading) {
-            // 文本编辑器
-            TextEditor(text: $text)
-                .focused($isTextFieldFocused)
-                .padding(8) // 适当减少内边距以增加有效编辑宽度
-                .font(.body)
-                .lineSpacing(4)
-                .scrollContentBackground(.hidden) // 隐藏默认背景
-                .background(Color(UIColor.systemGroupedBackground)) // 设置自定义背景色
-                .cornerRadius(12) // 改为更明显的圆角设计，仅作用于可编辑区域
-                .frame(maxWidth: .infinity) // 在不改变外部容器的前提下尽量占满可用宽度
+            HiddenIndicatorTextView(text: $text)
+                .frame(maxWidth: .infinity)
                 .onTapGesture {
-                    // 点击文本编辑器时获取焦点
-                    isTextFieldFocused = true
                     isTextEditorFocused = true
                 }
                 .simultaneousGesture(
-                    // 防止点击TextEditor时触发外部的onTapGesture
-                    TapGesture().onEnded { _ in
-                        // 空实现，用于阻止事件冒泡
-                    }
+                    TapGesture().onEnded { _ in }
                 )
-                .onSubmit {
-                    // 当用户完成输入时（如按下Done按钮）收起键盘
-                    dismissKeyboard()
-                }
+
             
-            // 占位符文本
+            
+            
             if text.isEmpty {
                 Text("记录你的想法...")
                     .font(.body)
@@ -238,6 +223,43 @@ struct NotesStyleRecordEditor: View {
                 }
                 selectedPhotos.removeAll()
             }
+        }
+    }
+}
+
+private struct HiddenIndicatorTextView: UIViewRepresentable {
+    @Binding var text: String
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text)
+    }
+
+    func makeUIView(context: Context) -> UITextView {
+        let v = UITextView()
+        v.text = text
+        v.font = UIFont.preferredFont(forTextStyle: .body)
+        v.isScrollEnabled = true
+        v.showsVerticalScrollIndicator = false
+        v.showsHorizontalScrollIndicator = false
+        v.backgroundColor = UIColor.systemGroupedBackground
+        v.layer.cornerRadius = 12
+        v.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        v.delegate = context.coordinator
+        v.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        return v
+    }
+
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        if uiView.text != text {
+            uiView.text = text
+        }
+    }
+
+    class Coordinator: NSObject, UITextViewDelegate {
+        var text: Binding<String>
+        init(text: Binding<String>) { self.text = text }
+        func textViewDidChange(_ textView: UITextView) {
+            text.wrappedValue = textView.text
         }
     }
 }
