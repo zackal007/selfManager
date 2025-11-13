@@ -189,13 +189,6 @@ struct selfManagerApp: App {
                                 Text("我")
                             }
                             .tag(0)
-                            .onTapGesture {
-                                dismissKeyboard()
-                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 0, currentTab: selectedTab)
-                                if !shouldPopToRoot {
-                                    selectedTab = 0
-                                }
-                            }
                         
                         GoalView(selectedTab: $selectedTab)
                             .tabItem {
@@ -203,13 +196,6 @@ struct selfManagerApp: App {
                                 Text("目标")
                             }
                             .tag(1)
-                            .onTapGesture {
-                                dismissKeyboard()
-                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 1, currentTab: selectedTab)
-                                if !shouldPopToRoot {
-                                    selectedTab = 1
-                                }
-                            }
                         
                         RecordView(selectedTab: $selectedTab)
                             .tabItem {
@@ -217,13 +203,6 @@ struct selfManagerApp: App {
                                 Text("记录")
                             }
                             .tag(2)
-                            .onTapGesture {
-                                dismissKeyboard()
-                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 2, currentTab: selectedTab)
-                                if !shouldPopToRoot {
-                                    selectedTab = 2
-                                }
-                            }
                         
                         ContactView(selectedTab: $selectedTab)
                             .tabItem {
@@ -231,13 +210,6 @@ struct selfManagerApp: App {
                                 Text("人脉")
                             }
                             .tag(3)
-                            .onTapGesture {
-                                dismissKeyboard()
-                                let shouldPopToRoot = navigationManager.handleTabTap(tabIndex: 3, currentTab: selectedTab)
-                                if !shouldPopToRoot {
-                                    selectedTab = 3
-                                }
-                            }
                     }
                             // 应用全局系统字体修饰符，使文本默认使用系统动态字体
                             .useGlobalSystemTypography()
