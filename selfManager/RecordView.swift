@@ -47,6 +47,7 @@ struct RecordView: View {
     
     // 添加键盘失焦状态管理
     @FocusState private var isAnyFieldFocused: Bool
+    @Namespace private var headerAnim
     
     // 顶栏动态高度（用于同步透明占位的高度，防止内容被遮挡）
     @State private var headerHeight: CGFloat = 120
@@ -55,173 +56,157 @@ struct RecordView: View {
         VStack(spacing: 0) {
             // 第一行：标题和按钮
             HStack(alignment: .center) {
-                // 替换标题为：日期选择器显示/隐藏按钮（仅非“近期”显示）
-                if selectedRecordType != .recent {
-                    HStack(spacing: 8) {
-                        Button(action: {
-                            dismissKeyboard()
-                            // 添加触觉反馈
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                            impactFeedback.impactOccurred()
-                            withAnimation {
-                                showDatePicker.toggle()
-                            }
-                        }) {
-                            HStack(spacing: 8) {
-                                // 显示具体时间文本
-                                Text(headerInlineDateText)
-                                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.9)
-                                
-                                // 下拉箭头图标
-                                Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(Color(UIColor.label))
-                                    .rotationEffect(.degrees(showDatePicker ? 0 : 0))
-                                    .animation(.easeInOut(duration: 0.2), value: showDatePicker)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .scaleEffect(showDatePicker ? 0.98 : 1.0)
-                        .animation(.easeInOut(duration: 0.1), value: showDatePicker)
-                        .contextMenu {
-                            if !headerFullDateText.isEmpty {
-                                Button(action: {}) {
-                                    Label(headerFullDateText, systemImage: "calendar")
+                ZStack(alignment: .leading) {
+                    if selectedRecordType != .recent {
+                        HStack(spacing: 8) {
+                            Button(action: {
+                                dismissKeyboard()
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                impactFeedback.impactOccurred()
+                                withAnimation {
+                                    showDatePicker.toggle()
                                 }
-                                .disabled(true)
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text(headerInlineDateText)
+                                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                                        .foregroundColor(Color(UIColor.label))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.9)
+                                        .contentTransition(.opacity)
+                                    Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundColor(Color(UIColor.label))
+                                        .rotationEffect(.degrees(showDatePicker ? 0 : 0))
+                                        .animation(.easeInOut(duration: 0.2), value: showDatePicker)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .scaleEffect(showDatePicker ? 0.98 : 1.0)
+                            .animation(.easeInOut(duration: 0.1), value: showDatePicker)
+                            .contextMenu {
+                                if !headerFullDateText.isEmpty {
+                                    Button(action: {}) {
+                                        Label(headerFullDateText, systemImage: "calendar")
+                                    }
+                                    .disabled(true)
+                                }
                             }
                         }
-                    }
-                    .padding(.leading, 8)
-                } else {
-                    // 近期页签：显示静态标题“最近记录”
-                    Text("最近记录")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(UIColor.label))
                         .padding(.leading, 8)
+                        .transition(.opacity)
+                    }
+                    if selectedRecordType == .recent {
+                        Text("最近记录")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundColor(Color(UIColor.label))
+                            .padding(.leading, 8)
+                            .contentTransition(.opacity)
+                            
+                            .transition(.opacity)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Spacer()
                 
-                // 近期页签：显示排序按钮
-                if selectedRecordType == .recent {
-                    Button(action: {
-                        dismissKeyboard()
-                        sortRecordsByTime()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                .frame(width: 34, height: 34)
-                            
-                            Image(systemName: "arrow.up.arrow.down")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(UIColor.label))
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                // 手动保存按钮 - 仅在非"近期"页签且内容已修改时显示
-                if selectedRecordType != .recent {
-                    if contentModified {
+                ZStack(alignment: .trailing) {
+                    if selectedRecordType == .recent {
                         Button(action: {
                             dismissKeyboard()
-                            // 添加触觉反馈
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                            impactFeedback.impactOccurred()
-                            
-                            // 执行手动保存
-                            saveRecord()
+                            sortRecordsByTime()
                         }) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(Color.blue)
-                                .scaleEffect(1.0)
-                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: contentModified)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                    }
-                }
-                
-                // 菜单按钮（仅在非近期页签显示）
-                if selectedRecordType != .recent {
-                    MenuButton {
-                        // 非近期页签：显示日期选择器相关按钮
-                        // 跳转到今天/本周/本月/本季/本年
-                        Button(action: {
-                            dismissKeyboard()
-                            // 禁用自动保存 - 改为手动保存
-                            // 如果内容已修改，先保存当前记录
-                            // if contentModified {
-                            //     autoSaveRecord(recordType: selectedRecordType)
-                            // }
-                            // 重置为当前日期
-                            currentDate = Date()
-                            updateDateComponents()
-                            loadCurrentRecord()
-                            // 重置修改状态
-                            contentModified = false
-                        }) {
-                            Label(
-                                selectedRecordType == .daily ? "跳转到今天" :
-                                selectedRecordType == .weekly ? "跳转到本周" :
-                                selectedRecordType == .monthly ? "跳转到本月" :
-                                selectedRecordType == .quarterly ? "跳转到本季" : "跳转到本年",
-                                systemImage: "arrow.uturn.backward.circle"
-                            )
-                        }
-
-                        // 仅在"日记"页签显示：汇总今日目标完成情况
-                        if selectedRecordType == .daily {
-                            Divider()
-                            Button(action: {
-                                dismissKeyboard()
-                                GoalActivityManager.shared.syncDailyCompletionSummaryToDiary(for: currentDate, modelContext: modelContext)
-                                // 重新加载当日记录以展示汇总内容
-                                loadCurrentRecord()
-                            }) {
-                                Label("汇总今日目标完成情况", systemImage: "doc.on.doc")
+                            ZStack {
+                                Circle()
+                                    .fill(Color(UIColor.systemGray5).opacity(0.8))
+                                    .frame(width: 34, height: 34)
+                                Image(systemName: "arrow.up.arrow.down")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color(UIColor.label))
                             }
                         }
-
-                        // 根据当前记录类型，提供汇总按钮
-                        if selectedRecordType == .weekly || selectedRecordType == .monthly || selectedRecordType == .quarterly || selectedRecordType == .yearly {
-                            Divider()
-                            Button(action: {
-                                dismissKeyboard()
-                                refreshAggregationForCurrentPeriod()
-                            }) {
-                                Label(
-                                    selectedRecordType == .weekly ? "汇总本周" :
-                                    selectedRecordType == .monthly ? "汇总本月" :
-                                    selectedRecordType == .quarterly ? "汇总本季" : "汇总本年",
-                                    systemImage: "text.append"
-                                )
+                        .buttonStyle(PlainButtonStyle())
+                        .transition(.opacity)
+                    }
+                    if selectedRecordType != .recent {
+                        HStack {
+                            if contentModified && !isLoadingRecordContent && !isSwitchingTab {
+                                Button(action: {
+                                    dismissKeyboard()
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                    impactFeedback.impactOccurred()
+                                    saveRecord()
+                                }) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(Color.blue)
+                                        .scaleEffect(1.0)
+                                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: contentModified)
+                                }
+                                .buttonStyle(ScaleButtonStyle())
+                            }
+                            MenuButton {
+                                Button(action: {
+                                    dismissKeyboard()
+                                    currentDate = Date()
+                                    updateDateComponents()
+                                    loadCurrentRecord()
+                                    contentModified = false
+                                }) {
+                                    Label(
+                                        selectedRecordType == .daily ? "跳转到今天" :
+                                        selectedRecordType == .weekly ? "跳转到本周" :
+                                        selectedRecordType == .monthly ? "跳转到本月" :
+                                        selectedRecordType == .quarterly ? "跳转到本季" : "跳转到本年",
+                                        systemImage: "arrow.uturn.backward.circle"
+                                    )
+                                }
+                                if selectedRecordType == .daily {
+                                    Divider()
+                                    Button(action: {
+                                        dismissKeyboard()
+                                        GoalActivityManager.shared.syncDailyCompletionSummaryToDiary(for: currentDate, modelContext: modelContext)
+                                        loadCurrentRecord()
+                                    }) {
+                                        Label("汇总今日目标完成情况", systemImage: "doc.on.doc")
+                                    }
+                                }
+                                if selectedRecordType == .weekly || selectedRecordType == .monthly || selectedRecordType == .quarterly || selectedRecordType == .yearly {
+                                    Divider()
+                                    Button(action: {
+                                        dismissKeyboard()
+                                        refreshAggregationForCurrentPeriod()
+                                    }) {
+                                        Label(
+                                            selectedRecordType == .weekly ? "汇总本周" :
+                                            selectedRecordType == .monthly ? "汇总本月" :
+                                            selectedRecordType == .quarterly ? "汇总本季" : "汇总本年",
+                                            systemImage: "text.append"
+                                        )
+                                    }
+                                }
+                                Divider()
+                                Button(action: {
+                                    dismissKeyboard()
+                                    clearCurrentRecord()
+                                }) {
+                                    Label(
+                                        selectedRecordType == .daily ? "清空日记" :
+                                        selectedRecordType == .weekly ? "清空周记" :
+                                        selectedRecordType == .monthly ? "清空月记" :
+                                        selectedRecordType == .quarterly ? "清空季记" : "清空年记",
+                                        systemImage: "trash"
+                                    )
+                                }
                             }
                         }
-                        
-                        // 根据当前记录类型，提供清空按钮
-                        Divider()
-                        Button(action: {
-                            dismissKeyboard()
-                            clearCurrentRecord()
-                        }) {
-                            Label(
-                                selectedRecordType == .daily ? "清空日记" :
-                                selectedRecordType == .weekly ? "清空周记" :
-                                selectedRecordType == .monthly ? "清空月记" :
-                                selectedRecordType == .quarterly ? "清空季记" : "清空年记",
-                                systemImage: "trash"
-                            )
-                        }
+                        .transition(.opacity)
                     }
                 }
+                
+                
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 2)
@@ -240,7 +225,9 @@ struct RecordView: View {
                                 // if contentModified {
                                 //     autoSaveRecord(recordType: selectedRecordType)
                                 // }
-                                selectedRecordType = type
+                                withAnimation(.interactiveSpring(response: 0.32, dampingFraction: 0.85, blendDuration: 0.25)) {
+                                    selectedRecordType = type
+                                }
 
                                 // 如果切换到年记页签，确保默认展示今年
                                 if type == .yearly {
@@ -266,7 +253,9 @@ struct RecordView: View {
                                     }
                                 }
 
-                                syncRecordTypeIndex()
+                                withAnimation(.interactiveSpring(response: 0.32, dampingFraction: 0.85, blendDuration: 0.25)) {
+                                    syncRecordTypeIndex()
+                                }
                             }
                         }
                     }
@@ -401,6 +390,8 @@ private struct TopTabChip: View {
     
     // 用于跟踪内容是否已修改
     @State private var contentModified = false
+    @State private var isLoadingRecordContent = false
+    @State private var isSwitchingTab = false
     
     // 显示保存成功提示
     @State private var showSaveSuccessToast = false
@@ -1272,7 +1263,9 @@ private struct TopTabChip: View {
                                                         contentModified = true
                                                     },
                                                     onTextChanged: {
-                                                        contentModified = true
+                                                        if !isLoadingRecordContent && !isSwitchingTab {
+                                                            contentModified = true
+                                                        }
                                                         // 禁用自动保存 - 改为手动保存
                                                         // 文本变更时即时自动保存，强制检查避免丢失
                                                         // autoSaveRecord(recordType: recordTypes[index], forceCheck: true)
@@ -1281,8 +1274,9 @@ private struct TopTabChip: View {
                                                 .frame(minHeight: UIScreen.main.bounds.height)
                                                 .padding(.horizontal)
                                                 .onChange(of: recordContent) { _, _ in
-                                                    // 标记内容已修改
-                                                    contentModified = true
+                                                    if !isLoadingRecordContent && !isSwitchingTab {
+                                                        contentModified = true
+                                                    }
                                                 }
                                                 .onAppear {
                                                     // 加载当前选择日期的记录
@@ -1352,8 +1346,11 @@ private struct TopTabChip: View {
                     //     autoSaveRecord(recordType: selectedRecordType)
                     // }
                     
-                    // 同步更新selectedRecordType
-                    selectedRecordType = newRecordType
+                        isSwitchingTab = true
+                        // 同步更新selectedRecordType
+                        withAnimation(.interactiveSpring(response: 0.32, dampingFraction: 0.85, blendDuration: 0.25)) {
+                            selectedRecordType = newRecordType
+                        }
                     
                     // 根据记录类型跳转到今天对应的时间段
                     let today = Date()
@@ -1417,9 +1414,10 @@ private struct TopTabChip: View {
                     
                     // 加载对应的记录内容
                     loadCurrentRecord()
-                    // 重置修改状态
                     contentModified = false
+                    isSwitchingTab = false
                         }
+                        .animation(.interactiveSpring(response: 0.32, dampingFraction: 0.85, blendDuration: 0.25), value: currentRecordTypeIndex)
                     }
                     // 移除背景与圆角，保持外层列表卡片自身样式
                 
@@ -2309,8 +2307,10 @@ private struct TopTabChip: View {
     
     // 加载当前选择日期的记录
     private func loadCurrentRecord() {
+        isLoadingRecordContent = true
         // 如果正在清空记录，跳过加载以防止内容重新出现
         if isClearingRecord {
+            isLoadingRecordContent = false
             return
         }
         
@@ -2327,6 +2327,7 @@ private struct TopTabChip: View {
         
         switch selectedRecordType {
         case .recent: // 近期 - 不执行任何数据加载操作
+            isLoadingRecordContent = false
             return
             
         case .daily: // 日记
@@ -2388,6 +2389,7 @@ private struct TopTabChip: View {
             
             // 关闭自动汇总功能 - 不再自动添加下级记录内容作为参考
         }
+        isLoadingRecordContent = false
     }
     
     // 加载更多记录
