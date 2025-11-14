@@ -19,6 +19,9 @@ class NavigationManager: ObservableObject {
     @Published var goalNavigationPath = NavigationPath()
     @Published var recordNavigationPath = NavigationPath()
     @Published var contactNavigationPath = NavigationPath()
+
+    @Published var goalDetailActive: Bool = false
+    @Published var contactDetailActive: Bool = false
     
     /// 记录上次点击标签的时间
     private var lastTabTapTimes: [Int: Date] = [:]

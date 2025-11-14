@@ -35,6 +35,7 @@ struct ContactView: View {
     
     // 添加联系人的状态变量
     @State private var showAddContactSheet = false
+    @State private var addButtonPressed = false
     
     // 搜索相关
     @State private var searchText = ""
@@ -258,11 +259,58 @@ struct ContactView: View {
                 .sheet(isPresented: $showContactTrashView) {
                     ContactTrashView()
                 }
-                // 顶栏统一为悬浮覆盖层，与目标模块一致
                 .overlay(alignment: .top) {
                     headerView
                         .offset(y: -20)
                 }
+                .overlay(
+                    Group {
+                        if !navigationManager.contactDetailActive {
+                            VStack {
+                                Spacer()
+                                HStack {
+                                    Spacer()
+                                    Button(action: {
+                                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                        impactFeedback.impactOccurred()
+                                        showAddContactSheet = true
+                                    }) {
+                                        VStack(spacing: 2) {
+                                            Image(systemName: "plus")
+                                                .font(.system(size: 14.4, weight: .black))
+                                                .foregroundColor(.white)
+                                        }
+                                        .frame(width: 39.6, height: 39.6)
+                                        .background(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.blue.opacity(0.9),
+                                                    Color.blue
+                                                ]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .clipShape(Circle())
+                                        .shadow(color: Color.blue.opacity(0.3), radius: 12, x: 0, y: 6)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                                        )
+                                        .scaleEffect(addButtonPressed ? 0.95 : 1.0)
+                                        .animation(.easeInOut(duration: 0.1), value: addButtonPressed)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+                                        addButtonPressed = pressing
+                                    }, perform: {})
+                                    .padding(.trailing, 24)
+                                    .padding(.bottom, 32)
+                                }
+                            }
+                        }
+                    }
+                )
                 
                 // 侧边栏移至应用根层，由全局 SidebarManager 控制
             }
@@ -328,21 +376,7 @@ struct ContactView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 
-                // 添加联系人按钮
-                Button(action: {
-                    showAddContactSheet = true
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(UIColor.systemGray5).opacity(0.8))
-                            .frame(width: 34, height: 34)
-                        
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.label))
-                    }
-                }
-                .buttonStyle(PlainButtonStyle())
+                
                 
                 // 使用自定义视图替代复杂的Menu表达式
                 MenuButton {

@@ -383,33 +383,39 @@ struct GoalDetailView: View {
                 List {
                     ForEach(goal.tasks) { task in
                         HStack(spacing: 12) {
-                            // 复选框（参考备忘录样式）
                             Button(action: {
-                                // 切换任务完成状态
-                                let oldStatus = task.isCompleted
-                                task.isCompleted.toggle()
-                                goal.modifyTime = Date()
-                                
-                                // 记录任务完成状态变更
-                                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus, modelContext: modelContext)
-                                
-                                do {
-                                    try modelContext.save()
-                                } catch {
-                                    print("Failed to save task update: \(error)")
+                                let wasDone = task.isCompleted
+                                switch task.status {
+                                case .todo:
+                                    task.status = .inProgress
+                                case .inProgress:
+                                    task.status = .done
+                                case .done:
+                                    task.status = .todo
                                 }
+                                task.isCompleted = (task.status == .done)
+                                goal.modifyTime = Date()
+                                if wasDone != task.isCompleted {
+                                    GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: wasDone, modelContext: modelContext)
+                                }
+                                do { try modelContext.save() } catch { print("Failed to save task update: \(error)") }
                             }) {
                                 ZStack {
                                     Circle()
-                                        .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                                        .stroke((task.status == .done || task.status == .inProgress) ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
                                         .frame(width: 22, height: 22)
-                                    
-                                    if task.isCompleted {
+                                    if task.status == .done {
                                         Circle()
                                             .fill(Color.blue)
                                             .frame(width: 22, height: 22)
-                                        
                                         Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.white)
+                                    } else if task.status == .inProgress {
+                                        Circle()
+                                            .fill(Color.blue)
+                                            .frame(width: 22, height: 22)
+                                        Image(systemName: "minus")
                                             .font(.system(size: 10, weight: .bold))
                                             .foregroundColor(.white)
                                     }
@@ -420,8 +426,8 @@ struct GoalDetailView: View {
                             // 任务名称
                             Text(task.title)
                                 .font(.system(size: 15))
-                                .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                                .strikethrough(task.isCompleted)
+                                .foregroundColor(task.status == .done ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                .strikethrough(task.status == .done)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .onTapGesture {
                                     editingField = .task
@@ -1579,21 +1585,35 @@ struct GoalDetailView: View {
     private func taskRow(_ task: GoalTask) -> some View {
         HStack(spacing: 12) {
             Button(action: {
-                let oldStatus = task.isCompleted
-                task.isCompleted.toggle()
+                let wasDone = task.isCompleted
+                switch task.status {
+                case .todo: task.status = .inProgress
+                case .inProgress: task.status = .done
+                case .done: task.status = .todo
+                }
+                task.isCompleted = (task.status == .done)
                 goal.modifyTime = Date()
-                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
+                if wasDone != task.isCompleted {
+                    GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: wasDone)
+                }
                 do { try modelContext.save() } catch { print("Failed to save task update: \(error)") }
             }) {
                 ZStack {
                     Circle()
-                        .stroke(task.isCompleted ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                        .stroke((task.status == .done || task.status == .inProgress) ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
                         .frame(width: 22, height: 22)
-                    if task.isCompleted {
+                    if task.status == .done {
                         Circle()
                             .fill(Color.blue)
                             .frame(width: 22, height: 22)
                         Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                    } else if task.status == .inProgress {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 22, height: 22)
+                        Image(systemName: "minus")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.white)
                     }
@@ -1602,8 +1622,8 @@ struct GoalDetailView: View {
             .buttonStyle(PlainButtonStyle())
             Text(task.title)
                 .font(.system(size: 16))
-                .foregroundColor(task.isCompleted ? Color(UIColor.systemGray) : Color(UIColor.label))
-                .strikethrough(task.isCompleted)
+                .foregroundColor(task.status == .done ? Color(UIColor.systemGray) : Color(UIColor.label))
+                .strikethrough(task.status == .done)
                 .onTapGesture {
                     editingField = .task
                     editingTask = task
@@ -2064,6 +2084,8 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.systemBlue))
             }
         )
+        .onAppear { NavigationManager.shared.goalDetailActive = true }
+        .onDisappear { NavigationManager.shared.goalDetailActive = false }
         .sheet(isPresented: $showEditSheet) {
             EditFormView(
                 editingField: $editingField,
@@ -2187,18 +2209,14 @@ struct GoalDetailView: View {
                         // 打卡按钮点击操作
                         handleCheckIn()
                     }) {
-                        VStack(spacing: 2) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 24, weight: .bold))
+                        VStack(spacing: 0) {
+                            Image(systemName: "flame.fill")
+                                .font(.system(size: 14.4, weight: .black))
                                 .foregroundColor(.white)
                                 .scaleEffect(isCheckInAnimating ? 1.2 : 1.0)
                                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isCheckInAnimating)
-                            
-                            Text("打卡")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.white)
                         }
-                        .frame(width: 66, height: 66)
+                        .frame(width: 39.6, height: 39.6)
                         .background(
                             LinearGradient(
                                 gradient: Gradient(colors: [

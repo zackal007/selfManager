@@ -86,6 +86,8 @@ struct ContactDetailView: View {
                 }
             }
         )
+        .onAppear { NavigationManager.shared.contactDetailActive = true }
+        .onDisappear { NavigationManager.shared.contactDetailActive = false }
         .sheet(isPresented: $showAvatarPicker) {
             ImagePickerView(
                 selectedImage: .init(

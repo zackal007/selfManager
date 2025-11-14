@@ -161,6 +161,8 @@ struct GoalView: View {
     
     // 添加目标的状态变量
     @State private var showAddGoalSheet = false
+    // 悬浮添加按钮按压状态
+    @State private var addButtonPressed = false
     
     // 回收站相关状态变量
     @State private var showTrashView = false
@@ -535,21 +537,7 @@ struct GoalView: View {
                                 .animation(.easeInOut(duration: 0.1), value: showYearPicker)
                             }
                             
-                            // 添加目标按钮
-                            Button(action: {
-                                showAddGoalSheet = true
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                        .frame(width: 34, height: 34)
-                                    
-                                    Image(systemName: "plus.circle.fill")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(Color(UIColor.label))
-                                }
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                            // 移除顶部添加按钮（改为右下角悬浮按钮）
                             
                             // 省略号菜单按钮，包含所有功能
                             ellipsisMenuContent
@@ -862,6 +850,56 @@ struct GoalView: View {
         .sheet(isPresented: $showAddGoalSheet) {
                 AddGoalView(isPresented: $showAddGoalSheet, selectedSegment: $selectedSegment)
             }
+        // 页签页面右下角蓝色悬浮添加按钮（安全区域内）
+        .overlay(
+            Group {
+                if !navigationManager.goalDetailActive {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                        // 触觉反馈与弹窗
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
+                        showAddGoalSheet = true
+                    }) {
+                        VStack(spacing: 2) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 14.4, weight: .black))
+                                .foregroundColor(.white)
+                        }
+                        .frame(width: 39.6, height: 39.6)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.blue.opacity(0.9),
+                                    Color.blue
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .clipShape(Circle())
+                        .shadow(color: Color.blue.opacity(0.3), radius: 12, x: 0, y: 6)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                        )
+                        .scaleEffect(addButtonPressed ? 0.95 : 1.0)
+                        .animation(.easeInOut(duration: 0.1), value: addButtonPressed)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+                        addButtonPressed = pressing
+                    }, perform: {})
+                    .padding(.trailing, 24)
+                    .padding(.bottom, 32)
+                        }
+                    }
+                }
+            }
+        )
         .sheet(isPresented: $showTrashView) {
             TrashView()
         }
@@ -1417,7 +1455,7 @@ struct GoalCard: View {
                         .frame(height: 24)
                     }
                     
-                    // 子任务区域
+                    // 子任务区域（进行中状态的子任务不显示状态图标，但仍展示标题）
                     if !goal.tasks.isEmpty {
                         VStack(alignment: .leading, spacing: 6) {
                             // 子任务列表 - 最多显示2个，高度固定
@@ -1429,43 +1467,47 @@ struct GoalCard: View {
                                         // 实际应用中需要通过ViewModel或状态管理来更新
                                     }) {
                                         HStack(spacing: 10) {
-                                            // 圆形复选框 - 现代风格
+                                            // 圆形复选框 - 完成/未开始显示状态；进行中不显示状态图标
                                             ZStack {
-                                                if task.isCompleted {
-                                                    // 已完成的任务显示灰色背景和白色勾选标记
+                                                if task.status == .done {
                                                     Circle()
                                                         .fill(Color(UIColor.systemGray4))
                                                         .frame(width: 18, height: 18)
-                                                    
                                                     Image(systemName: "checkmark")
                                                         .font(.system(size: 9, weight: .bold))
                                                         .foregroundColor(.white)
-                                                } else {
-                                                    // 未完成的任务显示外圈
+                                                } else if task.status == .todo {
                                                     Circle()
                                                         .stroke(Color(UIColor.systemGray3), lineWidth: 1.5)
                                                         .frame(width: 18, height: 18)
+                                                } else {
+                                                    // 进行中：蓝色圆底减号（与详情页风格一致）
+                                                    Circle()
+                                                        .fill(Color(UIColor.systemBlue))
+                                                        .frame(width: 18, height: 18)
+                                                    Image(systemName: "minus")
+                                                        .font(.system(size: 9, weight: .bold))
+                                                        .foregroundColor(.white)
                                                 }
                                             }
-                                            
                                             // 任务标题
                                             Text(task.title)
                                                 .font(.system(size: 13, design: .rounded))
-                                                .foregroundColor(task.isCompleted ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
-                                                .strikethrough(task.isCompleted)
+                                                .foregroundColor(task.status == .done ? Color(UIColor.tertiaryLabel) : Color(UIColor.label))
+                                                .strikethrough(task.status == .done)
                                                 .lineLimit(1)
-                                                .truncationMode(.tail) // 确保文本过长时正确截断
+                                                .truncationMode(.tail)
                                         }
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
                             }
-                            .frame(height: goal.tasks.count == 1 ? 24 : 52)
+                            .frame(height: goal.tasks.count <= 1 ? 24 : 52)
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, 6)
-                        .padding(.bottom, 20)
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
                         .background(Color(UIColor.secondarySystemBackground).opacity(0.7))
                         .cornerRadius(12)
                         .padding(.horizontal, 8)

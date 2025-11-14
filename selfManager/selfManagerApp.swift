@@ -105,10 +105,10 @@ struct selfManagerApp: App {
         
         // 在主线程上创建ModelContainer
         do {
-            // 使用简化的方式创建模型容器，只包含当前版本的模型
+            // 使用当前版本模型并启用迁移计划
             let schema = Schema([
-                ModelSchemaV4.Goal.self,
-                ModelSchemaV4.GoalTask.self,
+                Goal.self,
+                GoalTask.self,
                 Item.self,
                 Record.self,
                 Contact.self,
@@ -117,7 +117,6 @@ struct selfManagerApp: App {
                 Tag.self,
                 TagCategory.self
             ])
-            // 不使用迁移计划，避免未知模型版本的问题
             self.sharedModelContainer = try ModelContainer(for: schema)
             
             // 优化动画效果，使其更丝滑
@@ -173,6 +172,24 @@ struct selfManagerApp: App {
             print("初始化示例数据失败: \(error)")
         }
     }
+
+    // 一次性规范化旧数据的子任务状态：将已完成的任务标记为done
+    private func normalizeTaskStatus(modelContext: ModelContext) {
+        let descriptor = FetchDescriptor<GoalTask>()
+        if let tasks = try? modelContext.fetch(descriptor) {
+            var changed = false
+            for task in tasks {
+                // 如果旧数据中 isCompleted 为 true，但状态尚未同步，则设置为 done
+                if task.isCompleted && task.status != .done {
+                    task.status = .done
+                    changed = true
+                }
+            }
+            if changed {
+                try? modelContext.save()
+            }
+        }
+    }
     
     var body: some Scene {
         WindowGroup {
@@ -217,6 +234,7 @@ struct selfManagerApp: App {
                                 // 启动垃圾清理服务
                 TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
                 initializeSampleData(modelContext: container.mainContext)
+                normalizeTaskStatus(modelContext: container.mainContext)
             }
                             
                             // 侧边栏覆盖层（提升层级，覆盖底部导航栏）
