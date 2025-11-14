@@ -6,5 +6,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSRemindersUsageDescription</key>
+	<string>需要访问“提醒事项”以同步和管理您的子任务。</string>
 </dict>
 </plist>

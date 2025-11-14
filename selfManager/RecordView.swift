@@ -2114,14 +2114,19 @@ private struct TopTabChip: View {
         var contentBuilder = ""
         
         switch recordType {
-        case .weekly: // 周记：仅汇总本周所有日记内已记录的内容
+        case .weekly: // 周记：仅汇总本周所有日记内已记录的内容（基于 ISO 周）
             guard let week = week else { return "" }
             
-            // 获取该周的所有日记
+            // 获取该周的所有日记（以日期重建计算 week/yearForWeekOfYear，避免跨年周误匹配）
             lowerLevelRecords = allRecords.filter { record in
-                record.recordType == .daily &&
-                record.year == year &&
-                record.week == week
+                guard record.recordType == .daily,
+                      let rMonth = record.month,
+                      let rDay = record.day,
+                      let date = calendar.date(from: DateComponents(year: record.year, month: rMonth, day: rDay))
+                else { return false }
+                let w = calendar.component(.weekOfYear, from: date)
+                let wy = calendar.component(.yearForWeekOfYear, from: date)
+                return (w == week) && (wy == year)
             }
             
             if !lowerLevelRecords.isEmpty {
@@ -2142,14 +2147,16 @@ private struct TopTabChip: View {
                 }
             }
             
-        case .monthly: // 月记：仅汇总本月所有周记内已记录的内容
+        case .monthly: // 月记：仅汇总本月所有周记内已记录的内容（周记按 ISO 周定位到该月）
             guard let month = month else { return "" }
             
             // 获取该月的所有周记
             lowerLevelRecords = allRecords.filter { record in
-                record.recordType == .weekly &&
-                record.year == year &&
-                calendar.component(.month, from: calendar.date(from: DateComponents(year: year, weekday: 1, weekOfYear: record.week)) ?? Date()) == month
+                guard record.recordType == .weekly,
+                      let rWeek = record.week,
+                      let weekDate = calendar.date(from: DateComponents(weekday: 1, weekOfYear: rWeek, yearForWeekOfYear: record.year))
+                else { return false }
+                return calendar.component(.month, from: weekDate) == month && record.year == year
             }
             
             if !lowerLevelRecords.isEmpty {

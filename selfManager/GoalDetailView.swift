@@ -2425,7 +2425,7 @@ struct EditFormView: View {
                                 }) {
                                     HStack {
                                         Image(systemName: "bell.fill")
-                                        Text("导入到提醒事项")
+                                        Text("同步至“提醒事项”")
                                             .font(.system(size: 16, weight: .medium))
                                     }
                                     .frame(maxWidth: .infinity)
@@ -2490,7 +2490,11 @@ struct EditFormView: View {
             )
         }
         .alert(isPresented: $showingAlert) {
-            Alert(title: Text("提醒事项"), message: Text(alertMessage), dismissButton: .default(Text("确定")))
+            if alertMessage == "需要访问提醒事项权限才能导入任务" {
+                Alert(title: Text("提醒事项"), message: Text(alertMessage), primaryButton: .default(Text("去设置"), action: { openSettings() }), secondaryButton: .cancel(Text("取消")))
+            } else {
+                Alert(title: Text("提醒事项"), message: Text(alertMessage), dismissButton: .default(Text("确定")))
+            }
         }
     }
     
@@ -2550,6 +2554,12 @@ struct EditFormView: View {
         } catch {
             alertMessage = "导入失败：\(error.localizedDescription)"
             showingAlert = true
+        }
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
         }
     }
 }
