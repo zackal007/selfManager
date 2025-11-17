@@ -361,6 +361,7 @@ var body: some View {
         .onAppear {
             isModelContextReady = true
         }
+        .toolbar(.hidden, for: .tabBar)
     }
     
     // 添加标签视图 - 优化设计
@@ -1022,6 +1023,7 @@ struct TagDetailView: View {
                 secondaryButton: .cancel()
             )
         }
+        .toolbar(.hidden, for: .tabBar)
     }
     
     // 删除标签方法

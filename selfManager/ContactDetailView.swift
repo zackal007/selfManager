@@ -86,6 +86,7 @@ struct ContactDetailView: View {
                 }
             }
         )
+        .toolbar(.hidden, for: .tabBar)
         .onAppear { NavigationManager.shared.contactDetailActive = true }
         .onDisappear { NavigationManager.shared.contactDetailActive = false }
         .sheet(isPresented: $showAvatarPicker) {

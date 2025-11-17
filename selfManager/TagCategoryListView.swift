@@ -73,6 +73,7 @@ struct TagCategoryListView: View {
         .sheet(isPresented: $showingAddCategory) {
             addCategoryView
         }
+        .toolbar(.hidden, for: .tabBar)
     }
     
     // 分离出来的分类行视图
@@ -539,6 +540,7 @@ struct TagCategoryEditView: View {
                 secondaryButton: .cancel(Text("取消"))
             )
         }
+        .toolbar(.hidden, for: .tabBar)
     }
     
     // 保存分类方法

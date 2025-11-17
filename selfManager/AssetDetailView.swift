@@ -146,6 +146,7 @@ struct AssetDetailView: View {
             } message: {
                 Text("您的资产信息已成功保存")
             }
+            .toolbar(.hidden, for: .tabBar)
         }
     }
     

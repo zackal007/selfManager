@@ -15,6 +15,7 @@ import EventKit
 struct GoalDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Query private var allGoals: [Goal]
     @Query private var allContacts: [Contact]
     
@@ -331,6 +332,7 @@ struct GoalDetailView: View {
                     }
                 ), displayedComponents: [.date])
                 .datePickerStyle(CompactDatePickerStyle())
+                .environment(\.locale, localizationManager.currentLanguage.locale)
                 .padding(.leading, 32) // 与图标和文字对齐
             }
         }
@@ -2084,6 +2086,7 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.systemBlue))
             }
         )
+        .toolbar(.hidden, for: .tabBar)
         .onAppear { NavigationManager.shared.goalDetailActive = true }
         .onDisappear { NavigationManager.shared.goalDetailActive = false }
         .sheet(isPresented: $showEditSheet) {

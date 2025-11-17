@@ -247,6 +247,7 @@ struct HabitDetailView: View {
                     }
                 }
             }
+            .toolbar(.hidden, for: .tabBar)
             .gesture(
                 DragGesture().onEnded { gesture in
                     if gesture.translation.width > 100 {

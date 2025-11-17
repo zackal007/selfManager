@@ -1630,6 +1630,7 @@ struct AddGoalView: View {
     @Binding var selectedSegment: Int
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     // 表单字段
     @State private var goalName = ""
@@ -1784,6 +1785,7 @@ struct AddGoalView: View {
                                         .foregroundColor(.secondary)
                                     DatePicker("", selection: $dueDate, displayedComponents: [.date])
                                         .labelsHidden()
+                                        .environment(\.locale, localizationManager.currentLanguage.locale)
                                     Spacer()
                                 }
                                 .padding(.horizontal, 12)

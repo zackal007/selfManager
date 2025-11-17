@@ -54,6 +54,7 @@ struct AchievementDetailView: View {
                 }
             }
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
