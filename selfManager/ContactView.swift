@@ -327,14 +327,8 @@ struct ContactView: View {
     // 内容视图
     private var contentView: some View {
         TabView(selection: $selectedSegment) {
-            /*
-            ForEach(0..<5, id: \.self) { index in
-                contactListView
-                    .tag(index)
-            }
-            */
             ForEach(0..<7) { index in
-                contactListView
+                segmentContentView(index: index)
                     .tag(index)
             }
         }
@@ -521,10 +515,10 @@ struct ContactView: View {
         .transition(.move(edge: .top).combined(with: .opacity))
     }
     
-    // 联系人列表视图
-    private var contactListView: some View {
+    private func segmentContentView(index: Int) -> some View {
         ScrollView {
-            if filteredContacts.isEmpty {
+            let contacts = filteredContacts(for: index)
+            if contacts.isEmpty {
                 LazyVStack(spacing: 12) {
                     emptyStateView
                 }
@@ -537,9 +531,8 @@ struct ContactView: View {
                     let spacing: CGFloat = 12
                     let cardWidth = (geometry.size.width - CGFloat(columns + 1) * spacing) / CGFloat(columns)
                     HStack(alignment: .top, spacing: spacing) {
-                        // 左列
                         LazyVStack(spacing: spacing) {
-                            ForEach(leftColumnItems(filteredContacts), id: \.id) { contact in
+                            ForEach(leftColumnItems(contacts), id: \.id) { contact in
                                 NavigationLink(destination: ContactDetailView(contact: contact)) {
                                     ContactGalleryCard(contact: contact)
                                         .frame(width: cardWidth)
@@ -547,9 +540,8 @@ struct ContactView: View {
                                 .buttonStyle(PlainButtonStyle())
                             }
                         }
-                        // 右列
                         LazyVStack(spacing: spacing) {
-                            ForEach(rightColumnItems(filteredContacts), id: \.id) { contact in
+                            ForEach(rightColumnItems(contacts), id: \.id) { contact in
                                 NavigationLink(destination: ContactDetailView(contact: contact)) {
                                     ContactGalleryCard(contact: contact)
                                         .frame(width: cardWidth)
@@ -565,7 +557,7 @@ struct ContactView: View {
                 .padding(.bottom, 20)
             } else {
                 LazyVStack(spacing: 12) {
-                    ForEach(filteredContacts, id: \.id) { contact in
+                    ForEach(contacts, id: \.id) { contact in
                         NavigationLink(destination: ContactDetailView(contact: contact)) {
                             ContactListItem(contact: contact)
                         }
@@ -577,6 +569,43 @@ struct ContactView: View {
                 .padding(.bottom, 20)
             }
         }
+    }
+
+    private func filteredContacts(for index: Int) -> [Contact] {
+        let contacts = contactsForSegmentIndex(index)
+        if searchText.isEmpty {
+            return contacts
+        } else {
+            return contacts.filter { contact in
+                contact.name.localizedCaseInsensitiveContains(searchText) ||
+                (contact.company?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (contact.position?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                contact.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
+    }
+
+    private func contactsForSegmentIndex(_ index: Int) -> [Contact] {
+        let base: [Contact]
+        switch index {
+        case 0:
+            base = allContacts
+        case 1:
+            base = allContacts.filter { $0.contactType == .family }
+        case 2:
+            base = allContacts.filter { $0.contactType == .intimateFriend }
+        case 3:
+            base = allContacts.filter { $0.contactType == .workplace }
+        case 4:
+            base = allContacts.filter { $0.contactType == .roleModel }
+        case 5:
+            base = allContacts.filter { $0.contactType == .other }
+        case 6:
+            base = allContacts.filter { [.doctor, .lawyer, .rich, .official, .gangster].contains($0.contactType) }
+        default:
+            base = allContacts
+        }
+        return sortContacts(categorizeContacts(base))
     }
 
     // 顶栏页签按钮（仅用于本文件顶部页签/分段控件）：选中加粗，未选中灰色
