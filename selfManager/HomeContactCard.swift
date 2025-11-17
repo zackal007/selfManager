@@ -3,6 +3,7 @@ import UIKit
 
 // 主页专用的人脉卡片：仅展示头像、名字、标签、联系人类型
 struct HomeContactCard: View {
+    @Environment(\.colorScheme) private var colorScheme
     let contact: Contact
     let size: HomeView.HomeCardSize
     let containerHeight: CGFloat
@@ -107,7 +108,7 @@ struct HomeContactCard: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.secondarySystemBackground))
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

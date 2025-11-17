@@ -833,6 +833,7 @@ struct ContactCard: View {
 // MARK: - 联系人列表项视图
 struct ContactListItem: View {
     let contact: Contact
+    @Environment(\.colorScheme) private var colorScheme
     
     // 从文档目录加载头像图片（当不在资产库时）
     private func loadAvatarUIImage(_ name: String) -> UIImage? {
@@ -906,7 +907,7 @@ struct ContactListItem: View {
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.secondarySystemBackground))
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
@@ -919,6 +920,7 @@ struct ContactListItem: View {
 // MARK: - 画廊卡片（样式对齐主页人脉卡片）
 struct ContactGalleryCard: View {
     let contact: Contact
+    @Environment(\.colorScheme) private var colorScheme
     
     // 从文档目录加载头像图片（当不在资产库时）
     private func loadAvatarUIImage(_ name: String) -> UIImage? {
@@ -1000,7 +1002,7 @@ struct ContactGalleryCard: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.secondarySystemBackground))
+                .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

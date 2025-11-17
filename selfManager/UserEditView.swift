@@ -218,6 +218,7 @@ struct UserEditView: View {
                     }
                 }
         }
+        .toolbar(.hidden, for: .tabBar)
         .onAppear {
                 // 加载已保存的头像
                 if !user.avatar.isEmpty {
