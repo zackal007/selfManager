@@ -151,15 +151,24 @@ struct SettingsCardView: View {
                         
                         Spacer()
                         
-                        Picker("language".localized, selection: Binding(get: { localizationManager.currentLanguage }, set: { newLang in
+                        Picker(selection: Binding(get: { localizationManager.currentLanguage }, set: { newLang in
                             localizationManager.switchLanguage(to: newLang)
                         })) {
                             ForEach(AppLanguage.allCases) { lang in
                                 Text(lang.displayName).tag(lang)
                             }
+                        } label: {
+                            Text(localizationManager.currentLanguage == .english ? "EN" : "中文")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule().fill(Color(UIColor.systemBlue).opacity(0.1))
+                                )
+                                .lineLimit(1)
                         }
                         .pickerStyle(.menu)
-                        .tint(Color(UIColor.systemBlue))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)

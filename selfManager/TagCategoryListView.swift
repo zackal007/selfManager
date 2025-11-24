@@ -472,7 +472,7 @@ struct TagCategoryEditView: View {
         }
         .background(Color(UIColor.systemGroupedBackground))
                     .navigationTitle(category.name)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {

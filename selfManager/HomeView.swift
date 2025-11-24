@@ -395,13 +395,6 @@ struct HomeView: View {
                     TagDetailView(tag: tagName, tagType: .all)
                         .navigationBarBackButtonHidden(true)
                         .navigationTitle("标签详情")
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button("back".localized) {
-                                    navigationManager.pop(for: selectedTab)
-                                }
-                            }
-                        }
                 case .contactTrash:
                     EmptyView() // HomeView不处理contactTrash路由，这个路由只在ContactView中处理
                 }

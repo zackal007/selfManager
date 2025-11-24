@@ -1010,6 +1010,20 @@ struct TagDetailView: View {
         )
         // 移除导航标题，让下面的元素上移
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("back".localized)
+                            .font(.system(size: 17, weight: .medium))
+                    }
+                }
+                .foregroundColor(Color(UIColor.systemBlue))
+            }
+        }
         .onAppear {
             initializeTagObject()
         }

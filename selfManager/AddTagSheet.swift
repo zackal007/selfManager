@@ -344,7 +344,7 @@ struct AddTagSheet: View {
                                             Circle()
                                                 .fill(Color(hex: category.color) ?? .gray)
                                                 .frame(width: 8, height: 8)
-                                            Text(category.name)
+                                            Text(category.id == BuiltInTags.systemCategoryID ? BuiltInTags.systemCategoryLocalizedName : category.name)
                                                 .font(.system(size: 13))
                                         }
                                         .foregroundColor(selectedCategory?.id == category.id ? .white : .primary)

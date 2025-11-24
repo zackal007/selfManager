@@ -1067,12 +1067,12 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
                 Picker("priority".localized, selection: $editingImportance) {
-                    Text("low".localized).tag(1)
-                    Text("medium".localized).tag(2)
-                    Text("high".localized).tag(3)
+                    Text("low_short".localized).tag(1)
+                    Text("medium_short".localized).tag(2)
+                    Text("high_short".localized).tag(3)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .frame(width: 160)
+                .frame(width: 200)
                 .onChange(of: editingImportance) { oldValue, newValue in
                     let oldImportance = goal.importance
                     goal.importance = newValue
@@ -1679,12 +1679,12 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
                 Picker("优先级", selection: $editingImportance) {
-                    Text("low".localized).tag(1)
-                    Text("medium".localized).tag(2)
-                    Text("high".localized).tag(3)
+                    Text("low_short".localized).tag(1)
+                    Text("medium_short".localized).tag(2)
+                    Text("high_short".localized).tag(3)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .frame(width: 160)
+                .frame(width: 200)
                 .onChange(of: editingImportance) { oldValue, newValue in
                     let oldImportance = goal.importance
                     goal.importance = newValue

@@ -1336,7 +1336,7 @@ private struct TopTabChip: View {
                                                 contentModified = true
                                             }
                                         )
-                                        .frame(width: recordTypes[index] == .daily ? 340 : 300) // 日记页签加宽，避免字数换行
+                                        .frame(width: recordTypes[index] == .daily ? 360 : 300) // 日记页签加宽，避免字数换行
                                     }
                                     .padding(.trailing, 12) // 贴近屏幕右侧，对齐
                                     .padding(.bottom, 8) // 与底部保持合适间距
