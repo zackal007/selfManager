@@ -68,7 +68,7 @@ struct GoalActivityLogView: View {
         VStack(spacing: 0) {
             // 顶部标题栏
             HStack {
-                Text("目标动态")
+                Text("goal_activity".localized)
                     .font(.system(size: 17, weight: .semibold))
                 
                 Spacer()
@@ -94,7 +94,7 @@ struct GoalActivityLogView: View {
                         .font(.system(size: 50))
                         .foregroundColor(Color(UIColor.systemGray3))
                     
-                    Text("暂无活动记录")
+                    Text("no_activity_logs".localized)
                         .font(.system(size: 16))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
@@ -150,7 +150,7 @@ struct GoalActivityLogView: View {
                                         .foregroundColor(Color(UIColor.label))
                                         .multilineTextAlignment(.leading)
                                     
-                                    // 如果有旧值和新值，显示变更详情
+                                    // 变更详情：同时支持“旧值→新值”和单值
                                     if let oldValue = log.oldValue, let newValue = log.newValue {
                                         HStack(spacing: 8) {
                                             Text(oldValue)
@@ -159,11 +159,9 @@ struct GoalActivityLogView: View {
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
                                                 .cornerRadius(4)
-                                            
                                             Image(systemName: "arrow.right")
                                                 .font(.system(size: 10))
                                                 .foregroundColor(Color(UIColor.tertiaryLabel))
-                                            
                                             Text(newValue)
                                                 .font(.system(size: 13))
                                                 .foregroundColor(Color(UIColor.label))
@@ -171,6 +169,20 @@ struct GoalActivityLogView: View {
                                                 .padding(.vertical, 2)
                                                 .cornerRadius(4)
                                         }
+                                    } else if let onlyNew = log.newValue, !onlyNew.isEmpty {
+                                        Text(onlyNew)
+                                            .font(.system(size: 13))
+                                            .foregroundColor(Color(UIColor.label))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .cornerRadius(4)
+                                    } else if let onlyOld = log.oldValue, !onlyOld.isEmpty {
+                                        Text(onlyOld)
+                                            .font(.system(size: 13))
+                                            .foregroundColor(Color(UIColor.label))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .cornerRadius(4)
                                     }
                                 }
                                 .padding(.vertical, 12)
@@ -191,7 +203,7 @@ struct GoalActivityLogView: View {
                                 logToDelete = log.id
                                 showingDeleteAlert = true
                             } label: {
-                                Label("删除", systemImage: "trash")
+                                Label("delete".localized, systemImage: "trash")
                             }
                         }
                     }
@@ -205,9 +217,9 @@ struct GoalActivityLogView: View {
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .alert("确认删除", isPresented: $showingDeleteAlert) {
-                Button("取消", role: .cancel) {}
-                Button("删除", role: .destructive) {
+        .alert("confirm_delete".localized, isPresented: $showingDeleteAlert) {
+                Button("cancel".localized, role: .cancel) {}
+                Button("delete".localized, role: .destructive) {
                     if let logId = logToDelete {
                         GoalActivityManager.shared.deleteActivityLog(logId: logId)
                         // 强制视图刷新
@@ -215,7 +227,7 @@ struct GoalActivityLogView: View {
                     }
                 }
             } message: {
-                Text("确定要删除这条日志记录吗？此操作无法撤销。")
+                Text("delete_log_confirm".localized)
             }
     }
     
@@ -226,7 +238,7 @@ struct GoalActivityLogView: View {
             return Color.blue
         case "task_add", "task_complete":
             return Color.green
-        case "name_change", "description_change", "progress_change", "type_change", "importance_change", "duedate_change":
+        case "name_change", "description_change", "progress_change", "type_change", "importance_change", "due_date_change":
             return Color.orange
         case "tag_add", "tag_remove":
             return Color.purple
@@ -248,7 +260,9 @@ struct GoalActivityLogView: View {
     // 格式化日期头部
     private func formatDateHeader(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年MM月dd日"
+        formatter.locale = LocalizationManager.shared.currentLanguage.locale
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
         return formatter.string(from: date)
     }
     

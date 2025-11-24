@@ -118,7 +118,7 @@ struct GoalPopupView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(Color(UIColor.systemGray))
                         
-                        TextField("搜索目标", text: $searchText)
+                        TextField("search_goal".localized, text: $searchText)
                             .autocapitalization(.none)
                             .disableAutocorrection(true)
                         
@@ -139,7 +139,7 @@ struct GoalPopupView: View {
                     
                     // 目标类型筛选
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("目标类型")
+                        Text("goal_type".localized)
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                             .padding(.horizontal)
@@ -147,13 +147,13 @@ struct GoalPopupView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 // 全部选项
-                                FilterChip(title: "全部", isSelected: selectedGoalType == nil) {
+                                FilterChip(title: "all".localized, isSelected: selectedGoalType == nil) {
                                     selectedGoalType = nil
                                 }
                                 
                                 // 各种目标类型
                                 ForEach(GoalType.allCases, id: \.self) { type in
-                                    FilterChip(title: type.rawValue, isSelected: selectedGoalType == type) {
+                                    FilterChip(title: type.localizedTitle, isSelected: selectedGoalType == type) {
                                         selectedGoalType = type
                                     }
                                 }
@@ -165,7 +165,7 @@ struct GoalPopupView: View {
                     
                     // 优先级筛选
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("优先级")
+                        Text("priority".localized)
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                             .padding(.horizontal)
@@ -173,14 +173,14 @@ struct GoalPopupView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 // 全部选项
-                                FilterChip(title: "全部", isSelected: selectedImportance == nil) {
+                                FilterChip(title: "all".localized, isSelected: selectedImportance == nil) {
                                     selectedImportance = nil
                                 }
                                 
                                 // 各种优先级
                                 ForEach(GoalImportance.allCases.filter { $0 != .critical }, id: \.self) { importance in
                                     FilterChip(
-                                        title: importance.displayName,
+                                        title: localizedImportance(importance),
                                         isSelected: selectedImportance == importance,
                                         color: importance.color
                                     ) {
@@ -195,7 +195,7 @@ struct GoalPopupView: View {
                     
                     // 标签筛选
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("标签")
+                        Text("tags".localized)
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                             .padding(.horizontal)
@@ -203,7 +203,7 @@ struct GoalPopupView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 // 全部选项
-                                FilterChip(title: "全部", isSelected: selectedTags.isEmpty) {
+                                FilterChip(title: "all".localized, isSelected: selectedTags.isEmpty) {
                                     selectedTags.removeAll()
                                 }
                                 
@@ -227,12 +227,12 @@ struct GoalPopupView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 // 全部选项
-                                FilterChip(title: "全部", isSelected: selectedYear == nil) {
+                                FilterChip(title: "all".localized, isSelected: selectedYear == nil) {
                                     selectedYear = nil
                                 }
                                 
                                 ForEach(availableYears, id: \.self) { year in
-                                    FilterChip(title: "\(year)年", isSelected: selectedYear == year) {
+                                    FilterChip(title: String(year) + "year_suffix".localized, isSelected: selectedYear == year) {
                                         selectedYear = year
                                     }
                                 }
@@ -257,7 +257,7 @@ struct GoalPopupView: View {
             .onTapGesture {
                 dismissKeyboard()
             }
-            .navigationTitle("目标筛选")
+            .navigationTitle("goal_filter".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -266,7 +266,7 @@ struct GoalPopupView: View {
                         saveFilterSettings()
                         dismiss()
                     }) {
-                        Text("确认")
+                        Text("ok".localized)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(Color(UIColor.systemBlue))
                     }
@@ -282,6 +282,15 @@ struct GoalPopupView: View {
             }
             // 弹窗背景色统一
             .background(Color(UIColor.systemBackground))
+        }
+    }
+
+    private func localizedImportance(_ importance: GoalImportance) -> String {
+        switch importance {
+        case .low: return "low".localized
+        case .medium: return "medium".localized
+        case .high: return "high".localized
+        case .critical: return "critical".localized
         }
     }
 

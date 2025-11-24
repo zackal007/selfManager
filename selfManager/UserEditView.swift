@@ -23,17 +23,17 @@ struct UserEditView: View {
     
     var body: some View {
         Form {
-                Section(header: Text("我的信息")) {
+                Section(header: Text("my_info".localized)) {
                     HStack {
-                        Text("用户名:")
+                        Text("username_label".localized)
                             .foregroundColor(.secondary)
                         Spacer()
-                        TextField("请输入用户名", text: $user.name)
+                        TextField("username_placeholder".localized, text: $user.name)
                             .multilineTextAlignment(.trailing)
                     }
                     
                     HStack {
-                        Text("头像:")
+                        Text("avatar_label".localized)
                             .foregroundColor(.secondary)
                         Spacer()
                         
@@ -48,15 +48,15 @@ struct UserEditView: View {
                     }
                     
                     HStack {
-                        Text("个人描述:")
+                        Text("personal_description_label".localized)
                             .foregroundColor(.secondary)
                         Spacer()
-                        TextField("请输入个人描述", text: $user.userDescription)
+                        TextField("personal_description_placeholder".localized, text: $user.userDescription)
                             .multilineTextAlignment(.trailing)
                     }
                 }
                 
-                Section(header: Text("标签")) {
+                Section(header: Text("tags".localized)) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(user.tags, id: \.self) { tag in
@@ -96,7 +96,7 @@ struct UserEditView: View {
                 }
 
                 if !latestDailyMoods.isEmpty {
-                    Section(header: Text("最近心情")) {
+                    Section(header: Text("recent_moods".localized)) {
                         HStack(spacing: 8) {
                             ForEach(latestDailyMoods.indices, id: \.self) { i in
                                 Text(latestDailyMoods[i])
@@ -111,11 +111,11 @@ struct UserEditView: View {
                     }
                 }
                 
-                Section(header: Text("自定义信息"), footer: Text("可添加任意名称-信息键值对。主页将于 2×2 信息卡片中部分显示，超出内容自动隐藏。")) {
+                Section(header: Text("custom_info".localized), footer: Text("custom_info_footer".localized)) {
                     VStack(spacing: 8) {
                         ForEach(user.customInfos, id: \.id) { info in
                             HStack(spacing: 8) {
-                                TextField("名称", text: Binding(
+                                TextField("name_label".localized, text: Binding(
                                     get: { info.key },
                                     set: { newKey in
                                         var arr = user.customInfos
@@ -127,7 +127,7 @@ struct UserEditView: View {
                                 ))
                                 .textFieldStyle(.roundedBorder)
 
-                                TextField("信息", text: Binding(
+                                TextField("info_label".localized, text: Binding(
                                     get: { info.value },
                                     set: { newVal in
                                         var arr = user.customInfos
@@ -159,7 +159,7 @@ struct UserEditView: View {
                             arr.append(UserCustomInfo(key: "", value: ""))
                             user.customInfos = arr
                         }) {
-                            Label("添加字段", systemImage: "plus")
+                            Label("add_field".localized, systemImage: "plus")
                                 .foregroundColor(Color(UIColor.systemBlue))
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -167,7 +167,7 @@ struct UserEditView: View {
                     .padding(.vertical, 4)
                 }
         }
-        .navigationTitle("我的信息")
+        .navigationTitle("user_info".localized)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -178,12 +178,12 @@ struct UserEditView: View {
                     HStack(spacing: 5) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 17, weight: .semibold))
-                        Text("返回")
+                        Text("back".localized)
                     }
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("保存") {
+                Button("save".localized) {
                     // 保存更改
                     try? modelContext.save()
                     dismiss()

@@ -82,7 +82,7 @@ struct ContactDetailView: View {
             leading: Button(action: { presentationMode.wrappedValue.dismiss() }) {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
-                    Text("返回")
+                    Text("back".localized)
                 }
             }
         )
@@ -127,7 +127,7 @@ struct ContactDetailView: View {
                 deleteContact()
             }
         } message: {
-            Text("确定要删除联系人「\(contact.name)」吗？此操作无法撤销。")
+            Text("delete_contact_confirm_before".localized + contact.name + "delete_contact_confirm_after".localized)
         }
     }
     
@@ -139,7 +139,7 @@ struct ContactDetailView: View {
                 Image(systemName: "arrow.triangle.branch")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("关联目标")
+                Text("related_goals".localized)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                 
@@ -152,7 +152,7 @@ struct ContactDetailView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 16))
-                        Text("添加")
+                        Text("add".localized)
                             .font(.system(size: 14, weight: .medium))
                     }
                     .foregroundColor(Color(UIColor.systemBlue))
@@ -168,7 +168,7 @@ struct ContactDetailView: View {
                         Image(systemName: "target")
                             .font(.system(size: 24))
                             .foregroundColor(.secondary.opacity(0.5))
-                        Text("暂无关联目标")
+                        Text("no_related_goals".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -285,7 +285,7 @@ struct ContactDetailView: View {
                     // 基本信息（就地编辑，仅姓名）
                     VStack(alignment: .leading, spacing: 8) {
                         TextField(
-                            "姓名",
+                            "name_placeholder".localized,
                             text: Binding(
                                 get: { contact.name },
                                 set: { newValue in
@@ -327,7 +327,7 @@ struct ContactDetailView: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color(UIColor.systemGray))
                                 .frame(width: 24, height: 24)
-                            TextField("备注", text: optionalBinding(\.notes))
+                            TextField("note_placeholder".localized, text: optionalBinding(\.notes))
                                 .autocapitalization(.none)
                         }
                     }
@@ -367,7 +367,7 @@ struct ContactDetailView: View {
                 .frame(width: 32, height: 32)
                 .background(Color(UIColor.systemBlue).opacity(0.12))
                 .clipShape(Circle())
-                .accessibilityLabel(isPinned ? "取消钉住" : "钉住")
+                .accessibilityLabel(Text(isPinned ? "unpin_label".localized : "pin_label".localized))
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -380,7 +380,7 @@ struct ContactDetailView: View {
                 Image(systemName: "phone.fill")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("联系方式")
+                Text("contact_info".localized)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
 
@@ -429,7 +429,7 @@ struct ContactDetailView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.systemBlue))
                         .frame(width: 24, height: 24)
-                    TextField("电话", text: optionalBinding(\.phone))
+                    TextField("phone".localized, text: optionalBinding(\.phone))
                         .keyboardType(.phonePad)
                 }
                 
@@ -438,7 +438,7 @@ struct ContactDetailView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.systemBlue))
                         .frame(width: 24, height: 24)
-                    TextField("邮箱", text: optionalBinding(\.email))
+                    TextField("email".localized, text: optionalBinding(\.email))
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                 }
@@ -448,7 +448,7 @@ struct ContactDetailView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.systemBlue))
                         .frame(width: 24, height: 24)
-                    TextField("地址", text: optionalBinding(\.address))
+                    TextField("address".localized, text: optionalBinding(\.address))
                 }
             }
         }
@@ -466,7 +466,7 @@ struct ContactDetailView: View {
     // 分类信息 - 现代卡片设计
     private var categoryInfoView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("分类信息")
+            Text("classification_info".localized)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
             
@@ -479,7 +479,7 @@ struct ContactDetailView: View {
                         Image(systemName: "person.2.fill")
                             .font(.system(size: 16))
                             .foregroundColor(Color(UIColor.systemBlue))
-                        Text("联系人类型")
+                        Text("contact_type".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -508,7 +508,7 @@ struct ContactDetailView: View {
                         Image(systemName: "calendar.badge.clock")
                             .font(.system(size: 16))
                             .foregroundColor(Color(UIColor.systemRed))
-                        Text("联系频率")
+                        Text("contact_frequency".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -534,7 +534,7 @@ struct ContactDetailView: View {
                         Image(systemName: "star.fill")
                             .font(.system(size: 16))
                             .foregroundColor(Color(UIColor.systemRed))
-                        Text("重要程度")
+                        Text("importance".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -560,7 +560,7 @@ struct ContactDetailView: View {
                         Image(systemName: "note.text")
                             .font(.system(size: 18))
                             .foregroundColor(Color(UIColor.systemBlue))
-                        Text("备注")
+                        Text("note".localized)
                             .font(.system(size: 18, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                     }
@@ -597,7 +597,7 @@ struct ContactDetailView: View {
                 Image(systemName: "tag.fill")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("标签")
+                Text("tags".localized)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                 
@@ -613,7 +613,7 @@ struct ContactDetailView: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.system(size: 16))
-                                Text("添加标签")
+                                Text("add_tag".localized)
                                     .font(.system(size: 14, weight: .medium))
                             }
                             .padding(.horizontal, 12)
@@ -623,7 +623,7 @@ struct ContactDetailView: View {
                             .clipShape(Capsule())
                         }
                         .buttonStyle(PlainButtonStyle())
-                        Text("暂无标签")
+                        Text("no_tags".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -708,7 +708,7 @@ struct ContactDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             // 标题栏
             HStack {
-                Text("联系记录")
+                Text("contact_records".localized)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                 
@@ -718,7 +718,7 @@ struct ContactDetailView: View {
                     showContactLogSheet = true
                 }) {
                     HStack(spacing: 4) {
-                        Text("查看全部")
+                        Text("view_all".localized)
                             .font(.system(size: 14, weight: .medium))
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12))
@@ -736,7 +736,7 @@ struct ContactDetailView: View {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.system(size: 16))
                             .foregroundColor(Color("Teal"))
-                        Text("最后联系")
+                        Text("last_contact".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -746,7 +746,7 @@ struct ContactDetailView: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                     } else {
-                        Text("尚未联系")
+                        Text("not_contacted".localized)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -762,7 +762,7 @@ struct ContactDetailView: View {
                         Image(systemName: "calendar")
                             .font(.system(size: 16))
                             .foregroundColor(Color("AppBlue"))
-                        Text("下次联系")
+                        Text("next_contact".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -780,7 +780,7 @@ struct ContactDetailView: View {
                             }
                         }
                     } else {
-                        Text("未设置")
+                        Text("not_set".localized)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -813,7 +813,7 @@ struct ContactDetailView: View {
                 HStack {
                     Image(systemName: "trash.fill")
                         .font(.system(size: 18))
-                    Text("删除联系人")
+                    Text("delete_contact".localized)
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .frame(maxWidth: .infinity)
@@ -942,22 +942,22 @@ struct EditContactView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("基本信息")) {
+                Section(header: Text("basic_info".localized)) {
                     TextField("姓名", text: $name)
                     TextField("公司", text: $company)
                     TextField("职位", text: $position)
                 }
                 
-                Section(header: Text("联系方式")) {
-                    TextField("电话", text: $phone)
+                Section(header: Text("contact_info".localized)) {
+                    TextField("phone".localized, text: $phone)
                         .keyboardType(.phonePad)
-                    TextField("邮箱", text: $email)
+                    TextField("email".localized, text: $email)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
-                    TextField("地址", text: $address)
+                    TextField("address".localized, text: $address)
                 }
                 
-                Section(header: Text("分类信息")) {
+                Section(header: Text("classification_info".localized)) {
                     Picker("联系人类型", selection: $selectedContactType) {
                         ForEach(ContactType.allCases, id: \.self) { type in
                             HStack {
@@ -981,9 +981,9 @@ struct EditContactView: View {
                     }
                 }
                 
-                Section(header: Text("其他信息")) {
+                Section(header: Text("other_info".localized)) {
                     TextField("标签 (用逗号分隔)", text: $tags)
-                    TextField("备注", text: $notes, axis: .vertical)
+                    TextField("note_placeholder".localized, text: $notes, axis: .vertical)
                         .lineLimit(3...6)
                     
                     Toggle("设为榜样联系人", isOn: $isExample)
@@ -991,10 +991,10 @@ struct EditContactView: View {
             }
             .navigationBarTitle("编辑联系人", displayMode: .inline)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button("cancel".localized) {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button("保存") {
+                trailing: Button("save".localized) {
                     saveChanges()
                 }
                 .disabled(name.isEmpty)
@@ -1035,11 +1035,11 @@ struct ContactLogView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("联系记录功能")
+                Text("contact_log_feature".localized)
                     .font(.title2)
                     .padding()
                 
-                Text("此功能可以记录与\(contact.name)的联系历史")
+                Text("contact_log_description_before".localized + contact.name + "contact_log_description_after".localized)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -1049,7 +1049,7 @@ struct ContactLogView: View {
             }
             .navigationBarTitle("联系记录", displayMode: .inline)
             .navigationBarItems(
-                trailing: Button("完成") {
+                trailing: Button("done".localized) {
                     presentationMode.wrappedValue.dismiss()
                 }
             )

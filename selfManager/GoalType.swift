@@ -55,4 +55,17 @@ public enum GoalType: String, Codable, CaseIterable {
             return Color.green
         }
     }
+
+    var localizedTitle: String {
+        switch self {
+        case .life:
+            return "goal_type_life".localized
+        case .yearly:
+            return "goal_type_yearly".localized
+        case .shortTerm:
+            return "goal_type_short_term".localized
+        case .habit:
+            return "goal_type_habit".localized
+        }
+    }
 }

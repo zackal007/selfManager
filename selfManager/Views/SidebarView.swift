@@ -19,9 +19,9 @@ struct SettingsCardView: View {
         case system
         var title: String {
             switch self {
-            case .light: return "浅色"
-            case .dark: return "深色"
-            case .system: return "跟随系统"
+            case .light: return "appearance_light".localized
+            case .dark: return "appearance_dark".localized
+            case .system: return "appearance_system".localized
             }
         }
     }
@@ -57,7 +57,7 @@ struct SettingsCardView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.systemBlue))
                 
-                Text("设置")
+                Text("settings".localized)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color(UIColor.label))
                 
@@ -71,7 +71,7 @@ struct SettingsCardView: View {
                 // 外观设置
                 VStack(spacing: 8) {
                     HStack {
-                        Text("外观")
+                        Text("appearance".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         Spacer()
@@ -86,13 +86,13 @@ struct SettingsCardView: View {
                                 .foregroundColor(.purple)
                                 .frame(width: 20)
                             
-                            Text("深色模式")
+                            Text("dark_mode".localized)
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(UIColor.label))
                             
                             Spacer()
                         }
-                        Picker("深色模式", selection: $appearanceModeRaw) {
+                        Picker("dark_mode".localized, selection: $appearanceModeRaw) {
                             Text(AppearanceMode.light.title).tag(AppearanceMode.light.rawValue)
                             Text(AppearanceMode.dark.title).tag(AppearanceMode.dark.rawValue)
                             Text(AppearanceMode.system.title).tag(AppearanceMode.system.rawValue)
@@ -131,40 +131,38 @@ struct SettingsCardView: View {
                 // 语言设置
                 VStack(spacing: 8) {
                     HStack {
-                        Text("语言设置")
+                        Text("language_selection".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         Spacer()
                     }
                     .padding(.horizontal, 16)
                     
-                    // 语言选择
+                    // 语言选择（下拉菜单，不弹窗）
                     HStack(spacing: 12) {
                         Image(systemName: "globe")
                             .font(.system(size: 16))
                             .foregroundColor(.blue)
                             .frame(width: 20)
                         
-                        Text("语言")
+                        Text("language".localized)
                             .font(.system(size: 14))
                             .foregroundColor(Color(UIColor.label))
                         
                         Spacer()
                         
-                        Button(action: {
-                            showLanguageSelector = true
-                        }) {
-                            Text(localizationManager.currentLanguage.displayName)
-                                .font(.system(size: 14))
-                                .foregroundColor(.blue)
+                        Picker("language".localized, selection: Binding(get: { localizationManager.currentLanguage }, set: { newLang in
+                            localizationManager.switchLanguage(to: newLang)
+                        })) {
+                            ForEach(AppLanguage.allCases) { lang in
+                                Text(lang.displayName).tag(lang)
+                            }
                         }
+                        .pickerStyle(.menu)
+                        .tint(Color(UIColor.systemBlue))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .sheet(isPresented: $showLanguageSelector) {
-                        LanguageSelectorView(isPresented: $showLanguageSelector)
-                            .environmentObject(LocalizationManager.shared)
-                    }
                     .onLanguageChange {
                         // 强制视图刷新
                         refreshView = UUID()
@@ -176,7 +174,7 @@ struct SettingsCardView: View {
                 // 首页卡片显示设置
                 VStack(spacing: 8) {
                     HStack {
-                        Text("首页卡片显示")
+                        Text("home_cards".localized)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         Spacer()
@@ -191,7 +189,7 @@ struct SettingsCardView: View {
                                 .foregroundColor(.green)
                                 .frame(width: 20)
                             
-                            Text("资产卡片")
+                            Text("asset_card".localized)
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(UIColor.label))
                             
@@ -212,7 +210,7 @@ struct SettingsCardView: View {
                                 .foregroundColor(.blue)
                                 .frame(width: 20)
                             
-                            Text("习惯卡片")
+                            Text("habit_card".localized)
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(UIColor.label))
                             
@@ -233,7 +231,7 @@ struct SettingsCardView: View {
                                 .foregroundColor(.orange)
                                 .frame(width: 20)
                             
-                            Text("成就卡片")
+                            Text("achievement_card".localized)
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(UIColor.label))
                             
@@ -254,7 +252,7 @@ struct SettingsCardView: View {
                                 .foregroundColor(.purple)
                                 .frame(width: 20)
                             
-                            Text("焦虑卡片")
+                            Text("anxiety_card".localized)
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(UIColor.label))
                             
@@ -273,7 +271,7 @@ struct SettingsCardView: View {
             // 回收站设置（移至末尾，单行展示）
             VStack(spacing: 8) {
                 HStack {
-                    Text("回收站")
+                    Text("recycle_bin".localized)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Spacer()
@@ -286,7 +284,7 @@ struct SettingsCardView: View {
                         .foregroundColor(.red)
                         .frame(width: 20)
 
-                    Text("过期时间")
+                    Text("expiration_time".localized)
                         .font(.system(size: 14))
                         .foregroundColor(Color(UIColor.label))
                         .lineLimit(1)
@@ -294,7 +292,7 @@ struct SettingsCardView: View {
 
                     Spacer(minLength: 12)
 
-                    Text("\(trashDays) 天")
+                    Text(String(trashDays) + " " + "days_unit".localized)
                         .font(.system(size: 14))
                         .foregroundColor(.blue)
                         .lineLimit(1)
@@ -337,12 +335,14 @@ struct SidebarMenuItem {
     let icon: String
     let badge: String?
     let action: () -> Void
+    let selectedTabIndex: Int?
     
-    init(title: String, icon: String, badge: String? = nil, action: @escaping () -> Void) {
+    init(title: String, icon: String, badge: String? = nil, selectedTabIndex: Int? = nil, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
         self.badge = badge
         self.action = action
+        self.selectedTabIndex = selectedTabIndex
     }
 }
 
@@ -423,19 +423,19 @@ struct SidebarView: View {
     // 主要导航菜单项
     private var mainMenuItems: [SidebarMenuItem] {
         [
-            SidebarMenuItem(title: "首页", icon: "house.fill") {
+            SidebarMenuItem(title: "home".localized, icon: "house.fill", badge: nil, selectedTabIndex: 0) {
                 selectedTab = 0
                 closeSidebar()
             },
-            SidebarMenuItem(title: "目标", icon: "target", badge: "\(goals.filter { !$0.isDeleted }.count)") {
+            SidebarMenuItem(title: "goals".localized, icon: "target", badge: "\(goals.filter { !$0.isDeleted }.count)", selectedTabIndex: 1) {
                 selectedTab = 1
                 closeSidebar()
             },
-            SidebarMenuItem(title: "记录", icon: "newspaper.fill") {
+            SidebarMenuItem(title: "records".localized, icon: "newspaper.fill", badge: nil, selectedTabIndex: 2) {
                 selectedTab = 2
                 closeSidebar()
             },
-            SidebarMenuItem(title: "人脉", icon: "person.3.fill", badge: "\(contacts.count)") {
+            SidebarMenuItem(title: "contacts".localized, icon: "person.3.fill", badge: "\(contacts.count)", selectedTabIndex: 3) {
                 selectedTab = 3
                 closeSidebar()
             }
@@ -445,7 +445,7 @@ struct SidebarView: View {
     // 工具菜单项
     private var toolMenuItems: [SidebarMenuItem] {
         [
-            SidebarMenuItem(title: "标签管理", icon: "tag.fill", badge: "\(getAllTags().count)") {
+            SidebarMenuItem(title: "tag_management".localized, icon: "tag.fill", badge: "\(getAllTags().count)") {
                 // 将“标签管理”推入当前选中标签页的导航栈
                 switch selectedTab {
                 case 0:
@@ -461,7 +461,7 @@ struct SidebarView: View {
                 }
                 closeSidebar()
             },
-            SidebarMenuItem(title: "帮助与反馈", icon: "questionmark.circle") {
+            SidebarMenuItem(title: "help_feedback".localized, icon: "questionmark.circle") {
                 // 这里可以添加帮助页面的导航逻辑
                 closeSidebar()
             }
@@ -571,18 +571,8 @@ struct SidebarView: View {
     
     // 判断菜单项是否被选中
     private func isMenuItemSelected(_ item: SidebarMenuItem) -> Bool {
-        switch item.title {
-        case "首页":
-            return selectedTab == 0
-        case "目标":
-            return selectedTab == 1
-        case "记录":
-            return selectedTab == 2
-        case "人脉":
-            return selectedTab == 3
-        default:
-            return false
-        }
+        if let idx = item.selectedTabIndex { return selectedTab == idx }
+        return false
     }
 }
 

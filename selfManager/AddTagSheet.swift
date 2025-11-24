@@ -108,13 +108,13 @@ struct AddTagSheet: View {
     private func validateNewName(_ name: String) -> String? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil } // 空名称不显示错误，只是禁用按钮
-        if trimmed.count > 32 { return "标签名称长度不应超过 32 个字符" }
+        if trimmed.count > 32 { return "tag_name_too_long".localized }
         // 禁止与内置标签重复
-        if BuiltInTags.isBuiltIn(trimmed) { return "该标签为系统内置标签，请从列表中选择" }
+        if BuiltInTags.isBuiltIn(trimmed) { return "tag_name_is_built_in".localized }
         // 全局重复检查
         let n = normalize(trimmed)
         let global = Set(allTags.map(normalize))
-        if global.contains(n) { return "该标签已存在，请在列表中选择" }
+        if global.contains(n) { return "tag_already_exists".localized }
         return nil
     }
 
@@ -162,7 +162,7 @@ struct AddTagSheet: View {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
-                        TextField("输入标签名称搜索或创建新标签", text: $newTagName)
+                        TextField("search_or_create_tag_placeholder".localized, text: $newTagName)
                             .textFieldStyle(PlainTextFieldStyle())
                             .onChange(of: newTagName) { _, newValue in
                                 // 输入时自动更新搜索文本
@@ -199,7 +199,7 @@ struct AddTagSheet: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 16))
-                                Text("创建并添加")
+                                Text("create_and_add".localized)
                                     .font(.system(size: 14, weight: .medium))
                             }
                             .foregroundColor(.white)
@@ -258,7 +258,7 @@ struct AddTagSheet: View {
                                     
                                     // 已有标签标识
                                     if existingEntityTags.contains(where: { normalize($0) == normalize(name) }) {
-                                        Text("已有")
+                                        Text("existing".localized)
                                             .font(.caption2)
                                             .foregroundColor(.secondary)
                                             .padding(.horizontal, 6)
@@ -304,7 +304,7 @@ struct AddTagSheet: View {
                     
                     // 分类管理标题（移除右上角“管理”按钮）
                     HStack {
-                        Text("标签分类管理")
+                        Text("tag_category_management".localized)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                         Spacer()
@@ -322,7 +322,7 @@ struct AddTagSheet: View {
                                     HStack(spacing: 4) {
                                         Image(systemName: "square.grid.2x2")
                                             .font(.system(size: 12))
-                                        Text("全部")
+                                        Text("all_categories".localized)
                                             .font(.system(size: 13))
                                     }
                                     .foregroundColor(selectedCategory == nil ? .white : .primary)
@@ -369,7 +369,7 @@ struct AddTagSheet: View {
                         .padding(.horizontal, 8)
                 )
             }
-            .navigationBarTitle("添加标签", displayMode: .inline)
+            .navigationBarTitle("add_tag_action".localized, displayMode: .inline)
             .navigationBarItems(
                 leading: Button(action: {
                     dismiss()
@@ -377,7 +377,7 @@ struct AddTagSheet: View {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("取消")
+                        Text("cancel".localized)
                             .font(.system(size: 17, weight: .medium))
                     }
                     .foregroundColor(Color(UIColor.systemBlue))
@@ -388,7 +388,7 @@ struct AddTagSheet: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .semibold))
-                        Text("添加")
+                        Text("add".localized)
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(.white)

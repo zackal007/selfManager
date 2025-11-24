@@ -123,18 +123,20 @@ class GoalActivityManager {
             let activityText = generateActivityText(goalName: goalName, type: type, oldValue: oldValue, newValue: newValue, message: message)
             
             if let record = todayRecord {
-                // 如果当天日记已存在，追加目标动态记录
+                // 如果当天日记已存在，追加目标动态记录（标题行按当前语言）
                 let separator = record.content.isEmpty ? "" : "\n\n"
-                record.content += separator + "📝 目标动态\n" + activityText
+                record.content += separator + "📝 " + "goal_activity".localized + "\n" + activityText
             } else {
-                // 如果当天日记不存在，创建新的日记记录
+                // 如果当天日记不存在，创建新的日记记录（日期与标题按当前语言）
                 let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy年MM月dd日"
+                formatter.locale = LocalizationManager.shared.currentLanguage.locale
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .none
                 let dateString = formatter.string(from: today)
                 
                 let newRecord = Record(
-                    title: "\(dateString) 日记",
-                    content: "📝 目标动态\n" + activityText,
+                    title: "\(dateString) " + "diary".localized,
+                    content: "📝 " + "goal_activity".localized + "\n" + activityText,
                     recordType: .daily,
                     year: year,
                     month: month,
@@ -154,70 +156,67 @@ class GoalActivityManager {
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         let timeString = timeFormatter.string(from: Date())
-        
         var activityText = "\(timeString) - "
-        
         switch type {
         case "create":
-            activityText += "创建了目标《\(goalName)》"
+            activityText += String(format: "activity_create_format".localized, goalName)
         case "name_change":
-            activityText += "将目标《\(oldValue ?? "")》重命名为《\(goalName)》"
+            activityText += String(format: "activity_name_change_format".localized, oldValue ?? "", goalName)
         case "description_change":
-            activityText += "修改了目标《\(goalName)》的描述"
+            activityText += String(format: "activity_description_change_format".localized, goalName)
         case "progress_change":
             if let old = oldValue, let new = newValue {
-                activityText += "将目标《\(goalName)》的进度从 \(old) 更新为 \(new)"
+                activityText += String(format: "activity_progress_change_from_to_format".localized, goalName, old, new)
             } else {
-                activityText += "更新了目标《\(goalName)》的进度"
+                activityText += String(format: "activity_progress_change_generic_format".localized, goalName)
             }
         case "type_change":
             if let old = oldValue, let new = newValue {
-                activityText += "将目标《\(goalName)》的类型从「\(old)」修改为「\(new)」"
+                activityText += String(format: "activity_type_change_from_to_format".localized, goalName, old, new)
             } else {
-                activityText += "修改了目标《\(goalName)》的类型"
+                activityText += String(format: "activity_type_change_generic_format".localized, goalName)
             }
         case "importance_change":
             if let old = oldValue, let new = newValue {
-                activityText += "将目标《\(goalName)》的重要性从「\(old)」修改为「\(new)」"
+                activityText += String(format: "activity_importance_change_from_to_format".localized, goalName, old, new)
             } else {
-                activityText += "修改了目标《\(goalName)》的重要性"
+                activityText += String(format: "activity_importance_change_generic_format".localized, goalName)
             }
         case "due_date_change":
             if let new = newValue {
-                activityText += "将目标《\(goalName)》的截止日期设置为 \(new)"
+                activityText += String(format: "activity_due_date_set_format".localized, goalName, new)
             } else {
-                activityText += "清除了目标《\(goalName)》的截止日期"
+                activityText += String(format: "activity_due_date_clear_format".localized, goalName)
             }
         case "tag_add":
             if let tag = newValue {
-                activityText += "为目标《\(goalName)》添加了标签「\(tag)」"
+                activityText += String(format: "activity_tag_add_format".localized, tag, goalName)
             }
         case "tag_remove":
             if let tag = oldValue {
-                activityText += "从目标《\(goalName)》移除了标签「\(tag)」"
+                activityText += String(format: "activity_tag_remove_format".localized, tag, goalName)
             }
         case "task_add":
             if let taskTitle = newValue {
-                activityText += "为目标《\(goalName)》添加了任务「\(taskTitle)」"
+                activityText += String(format: "activity_task_add_format".localized, taskTitle, goalName)
             }
         case "task_complete":
             if let taskTitle = newValue {
-                activityText += "完成了目标《\(goalName)》的任务「\(taskTitle)」"
+                activityText += String(format: "activity_task_complete_format".localized, taskTitle, goalName)
             }
         case "task_incomplete":
             if let taskTitle = newValue {
-                activityText += "将目标《\(goalName)》的任务「\(taskTitle)」标记为未完成"
+                activityText += String(format: "activity_task_incomplete_format".localized, taskTitle, goalName)
             }
         case "task_modify":
             if let old = oldValue, let new = newValue {
-                activityText += "将目标《\(goalName)》的任务「\(old)」修改为「\(new)」"
+                activityText += String(format: "activity_task_modify_format".localized, old, new, goalName)
             }
         case "habit_checkin":
-            activityText += "完成了目标《\(goalName)》的习惯打卡"
+            activityText += String(format: "activity_habit_checkin_format".localized, goalName)
         default:
-            activityText += "\(message)《\(goalName)》"
+            activityText += message
         }
-        
         return activityText
     }
 
@@ -495,7 +494,7 @@ class GoalActivityManager {
             addActivityLogWithDiary(
                 goalId: goal.id,
                 goalName: goal.name,
-                type: "duedate_change",
+                type: "due_date_change",
                 oldValue: oldDateString,
                 newValue: newDateString,
                 message: "修改了截止日期",
@@ -504,7 +503,7 @@ class GoalActivityManager {
         } else {
             addActivityLog(
                 goalId: goal.id,
-                type: "duedate_change",
+                type: "due_date_change",
                 oldValue: oldDateString,
                 newValue: newDateString,
                 message: "修改了截止日期"
@@ -646,7 +645,7 @@ class GoalActivityManager {
                 goalName: goal.name,
                 type: "task_add",
                 newValue: task.title,
-                message: "添加了任务: \(task.title)",
+                message: "activity_task_add_short".localized,
                 modelContext: context
             )
         } else {
@@ -654,7 +653,7 @@ class GoalActivityManager {
                 goalId: goal.id,
                 type: "task_add",
                 newValue: task.title,
-                message: "添加了任务: \(task.title)"
+                message: "activity_task_add_short".localized
             )
         }
     }
@@ -668,7 +667,7 @@ class GoalActivityManager {
                 type: "task_complete",
                 oldValue: completed ? "已完成" : "未完成",
                 newValue: completed ? "未完成" : "已完成",
-                message: "\(completed ? "取消完成" : "完成")了任务: \(task.title)",
+                message: completed ? "activity_task_incomplete_short".localized : "activity_task_complete_short".localized,
                 modelContext: context
             )
         } else {
@@ -677,7 +676,7 @@ class GoalActivityManager {
                 type: "task_complete",
                 oldValue: completed ? "已完成" : "未完成",
                 newValue: completed ? "未完成" : "已完成",
-                message: "\(completed ? "取消完成" : "完成")了任务: \(task.title)"
+                message: completed ? "activity_task_incomplete_short".localized : "activity_task_complete_short".localized
             )
         }
     }
@@ -690,7 +689,7 @@ class GoalActivityManager {
                 goalName: goal.name,
                 type: "task_remove",
                 oldValue: taskTitle,
-                message: "删除了任务: \(taskTitle)",
+                message: "activity_task_remove_short".localized,
                 modelContext: context
             )
         } else {
@@ -698,7 +697,7 @@ class GoalActivityManager {
                 goalId: goal.id,
                 type: "task_remove",
                 oldValue: taskTitle,
-                message: "删除了任务: \(taskTitle)"
+                message: "activity_task_remove_short".localized
             )
         }
     }
@@ -712,7 +711,7 @@ class GoalActivityManager {
                 type: "task_modify",
                 oldValue: oldTitle,
                 newValue: newTitle,
-                message: "修改了任务: \(oldTitle) → \(newTitle)",
+                message: "activity_task_modify_short".localized,
                 modelContext: modelContext
             )
         } else {
@@ -721,7 +720,7 @@ class GoalActivityManager {
                 type: "task_modify",
                 oldValue: oldTitle,
                 newValue: newTitle,
-                message: "修改了任务: \(oldTitle) → \(newTitle)"
+                message: "activity_task_modify_short".localized
             )
         }
     }
@@ -734,7 +733,7 @@ class GoalActivityManager {
                 goalName: goal.name,
                 type: "contact_add",
                 newValue: contactName,
-                message: "添加了关联联系人: \(contactName)",
+                message: "activity_contact_add_short".localized,
                 modelContext: context
             )
         } else {
@@ -742,7 +741,7 @@ class GoalActivityManager {
                 goalId: goal.id,
                 type: "contact_add",
                 newValue: contactName,
-                message: "添加了关联联系人: \(contactName)"
+                message: "activity_contact_add_short".localized
             )
         }
     }
@@ -755,7 +754,7 @@ class GoalActivityManager {
                 goalName: goal.name,
                 type: "contact_remove",
                 oldValue: contactName,
-                message: "删除了关联联系人: \(contactName)",
+                message: "activity_contact_remove_short".localized,
                 modelContext: context
             )
         } else {
@@ -763,7 +762,7 @@ class GoalActivityManager {
                 goalId: goal.id,
                 type: "contact_remove",
                 oldValue: contactName,
-                message: "删除了关联联系人: \(contactName)"
+                message: "activity_contact_remove_short".localized
             )
         }
     }
@@ -772,13 +771,13 @@ class GoalActivityManager {
     private func getGoalTypeDisplayName(_ type: GoalType) -> String {
         switch type {
         case .life:
-            return "人生目标"
+            return "goal_type_life".localized
         case .yearly:
-            return "年度目标"
+            return "goal_type_yearly".localized
         case .shortTerm:
-            return "短期目标"
+            return "goal_type_short_term".localized
         case .habit:
-            return "习惯"
+            return "goal_type_habit".localized
         }
     }
     
@@ -786,20 +785,22 @@ class GoalActivityManager {
     private func getImportanceDisplayName(_ importance: Int) -> String {
         switch importance {
         case 1:
-            return "低"
+            return "low".localized
         case 2:
-            return "中"
+            return "medium".localized
         case 3:
-            return "高"
+            return "high".localized
         default:
-            return "未知"
+            return "unknown".localized
         }
     }
     
     // 格式化日期
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        formatter.locale = LocalizationManager.shared.currentLanguage.locale
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
         return formatter.string(from: date)
     }
 }

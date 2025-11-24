@@ -116,14 +116,14 @@ struct TagsView: View {
     
     // 获取标签分类名称
     private func getCategoryName(for tagName: String) -> String? {
-        // 如果是系统内置标签，返回系统内置分类名称
         if BuiltInTags.isBuiltIn(tagName) {
-            return BuiltInTags.systemCategoryName
+            return BuiltInTags.systemCategoryLocalizedName
         }
-        
         guard let tag = getTagObject(for: tagName),
               let categoryID = tag.categoryID else { return nil }
-        
+        if categoryID == BuiltInTags.systemCategoryID {
+            return BuiltInTags.systemCategoryLocalizedName
+        }
         return tagCategories.first { $0.id == categoryID }?.name
     }
     
@@ -160,7 +160,7 @@ var body: some View {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
-                    TextField("搜索标签", text: $searchText)
+                    TextField("search_tags_placeholder".localized, text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                     
                     if !searchText.isEmpty {
@@ -201,14 +201,14 @@ var body: some View {
                             // 标签名称和描述
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack {
-                                    Text(tag)
+                                    Text(BuiltInTags.localizedName(for: tag))
                                         .font(.system(size: 16))
                                         .foregroundColor(.primary)
                                         .fontWeight(.medium)
                                     
                                     // 系统内置标签标识
                                     if BuiltInTags.isBuiltIn(tag) {
-                                        Text("系统")
+                                        Text("system".localized)
                                             .font(.system(size: 10))
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 6)
@@ -222,11 +222,11 @@ var body: some View {
                                 
                                 // 标签描述（如果有）
                                 if let tagObj = getTagObject(for: tag), !tagObj.tagDescription.isEmpty {
-                                    Text(tagObj.tagDescription)
+                                    Text(BuiltInTags.isBuiltIn(tag) ? (BuiltInTags.localizedDescription(for: tag) ?? tagObj.tagDescription) : tagObj.tagDescription)
                                         .font(.system(size: 13))
                                         .foregroundColor(.secondary)
                                         .lineLimit(1)
-                                }
+                                    }
                                 
                                 // 分类名称（如果有）
                                 if let categoryName = getCategoryName(for: tag) {
@@ -271,7 +271,7 @@ var body: some View {
             VStack(spacing: 12) {
                 // 分类管理标题和按钮（始终显示）
                 HStack {
-                    Text("标签分类")
+                    Text("tag_category".localized)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.primary)
                     
@@ -281,7 +281,7 @@ var body: some View {
                         HStack(spacing: 4) {
                             Image(systemName: "folder.circle")
                                 .font(.system(size: 14))
-                            Text("管理")
+                            Text("manage".localized)
                                 .font(.system(size: 14, weight: .medium))
                         }
                         .foregroundColor(.blue)
@@ -306,7 +306,7 @@ var body: some View {
                                 HStack(spacing: 4) {
                                     Image(systemName: "square.grid.2x2")
                                         .font(.system(size: 12))
-                                    Text("全部")
+                                    Text("all".localized)
                                         .font(.system(size: 13))
                                 }
                                 .foregroundColor(selectedCategory == nil ? .white : .primary)
@@ -328,7 +328,7 @@ var body: some View {
                                         Circle()
                                             .fill(Color(hex: category.color) ?? .gray)
                                             .frame(width: 8, height: 8)
-                                        Text(category.name)
+                                        Text(category.id == BuiltInTags.systemCategoryID ? BuiltInTags.systemCategoryLocalizedName : category.name)
                                             .font(.system(size: 13))
                                     }
                                     .foregroundColor(selectedCategory?.id == category.id ? .white : .primary)
@@ -377,7 +377,7 @@ var body: some View {
                             .font(.system(size: 48, weight: .light))
                             .foregroundColor(Color(UIColor.systemBlue))
                         
-                        Text("添加新标签")
+                        Text("add_new_tag_title".localized)
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.primary)
                     }
@@ -386,12 +386,12 @@ var body: some View {
                     // 输入框区域（新标签的名称与描述）
                     VStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("标签名称")
+                            Text("tag_name_label".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
                             // 新标签名称输入框（TextField）
-                            TextField("请输入标签名称", text: $newTag)
+                            TextField("tag_name_placeholder".localized, text: $newTag)
                                 .font(.system(size: 16))
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
@@ -406,12 +406,12 @@ var body: some View {
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("标签描述（可选）")
+                            Text("tag_description_optional_label".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
                             // 新标签描述输入框（TextField）
-                            TextField("请输入标签描述", text: $newTagDescription)
+                            TextField("tag_description_placeholder".localized, text: $newTagDescription)
                                 .font(.system(size: 16))
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
@@ -440,7 +440,7 @@ var body: some View {
                         HStack(spacing: 8) {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("添加标签")
+                            Text("add_tag_action".localized)
                                 .font(.system(size: 17, weight: .semibold))
                         }
                         .foregroundColor(.white)
@@ -1015,12 +1015,12 @@ struct TagDetailView: View {
         }
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
-                title: Text("删除标签"),
-                message: Text("确定要删除标签 \"\(tag)\" 吗？这将从所有相关项目中移除此标签。"),
-                primaryButton: .destructive(Text("删除")) {
+                title: Text("delete_tag_title".localized),
+                message: Text("delete_tag_confirm_before".localized + "\(tag)" + "delete_tag_confirm_after".localized),
+                primaryButton: .destructive(Text("delete".localized)) {
                     deleteTag()
                 },
-                secondaryButton: .cancel()
+                secondaryButton: .cancel(Text("cancel".localized))
             )
         }
         .toolbar(.hidden, for: .tabBar)
@@ -1126,13 +1126,13 @@ struct TagInfoHeader: View {
                         .opacity(0.8)
                     
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(tag)
+                        Text(BuiltInTags.localizedName(for: tag))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
                         HStack(alignment: .center, spacing: 8) {
                             if let category = tagCategory {
-                                Text(category.name)
+                                Text(category.id == BuiltInTags.systemCategoryID ? BuiltInTags.systemCategoryLocalizedName : category.name)
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(tagColor)
                                     .padding(.horizontal, 8)
@@ -1149,21 +1149,21 @@ struct TagInfoHeader: View {
                         }
                         
                         // 始终显示标签描述，即使在非编辑模式下
-                        if let description = tagObject?.tagDescription, !description.isEmpty {
-                            Text(description)
+                            if let description = tagObject?.tagDescription, !description.isEmpty {
+                            Text(BuiltInTags.isBuiltIn(tag) ? (BuiltInTags.localizedDescription(for: tag) ?? description) : description)
                                 .font(.system(size: 15))
                                 .foregroundColor(.secondary)
                                 .lineLimit(3)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .padding(.top, 4)
-                        } else {
-                            Text("暂无描述")
+                            } else {
+                            Text("no_description".localized)
                                 .font(.system(size: 15))
                                 .foregroundColor(.gray.opacity(0.7))
                                 .lineLimit(3)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .padding(.top, 4)
-                        }
+                            }
                     }
                     
                     Spacer()
@@ -1177,7 +1177,7 @@ struct TagInfoHeader: View {
                         HStack(spacing: 6) {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 14, weight: .medium))
-                            Text("系统内置标签")
+                            Text("system_built_in_tag".localized)
                                 .font(.system(size: 15, weight: .medium))
                         }
                         .foregroundColor(.white)
@@ -1212,7 +1212,7 @@ struct TagInfoHeader: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "pencil")
                                     .font(.system(size: 14, weight: .medium))
-                                Text("编辑")
+                                Text("edit".localized)
                                     .font(.system(size: 15, weight: .medium))
                             }
                             .foregroundColor(.white)
@@ -1239,7 +1239,7 @@ struct TagInfoHeader: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "trash")
                                     .font(.system(size: 14, weight: .medium))
-                                Text("删除")
+                                Text("delete".localized)
                                     .font(.system(size: 15, weight: .medium))
                             }
                             .foregroundColor(.white)
@@ -1268,7 +1268,7 @@ struct TagInfoHeader: View {
                     // 基本信息
                     VStack(spacing: 16) {
                         HStack {
-                            Text("基本信息")
+                            Text("basic_info".localized)
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.primary)
                             Spacer()
@@ -1277,11 +1277,11 @@ struct TagInfoHeader: View {
                         VStack(spacing: 16) {
                             // 标签名称输入（TextField）
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("标签名称")
+                                Text("tag_name_label".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
-                                TextField("请输入标签名称", text: $editedTag)
+                                TextField("tag_name_placeholder".localized, text: $editedTag)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)
@@ -1304,11 +1304,11 @@ struct TagInfoHeader: View {
                             
                             // 标签描述输入（TextField）
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("描述（可选）")
+                                Text("description_optional".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
-                                TextField("请输入标签描述", text: $tagDescriptionText)
+                                TextField("tag_description_placeholder".localized, text: $tagDescriptionText)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)
@@ -1326,12 +1326,12 @@ struct TagInfoHeader: View {
                             
                             // 分类选择（Menu 下拉选择器）
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("分类")
+                                Text("category".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
                                 Menu {
-                                    Button("无分类") {
+                                    Button("no_category".localized) {
                                         selectedCategoryID = nil
                                     }
                                     
@@ -1346,7 +1346,7 @@ struct TagInfoHeader: View {
                                            let category = tagCategories.first(where: { $0.id == categoryID }) {
                                             Text(category.name)
                                         } else {
-                                            Text("无分类")
+                                            Text("no_category".localized)
                                         }
                                         Spacer()
                                         Image(systemName: "chevron.down")
@@ -1373,7 +1373,7 @@ struct TagInfoHeader: View {
                                 HStack {
                                     Image(systemName: "folder.badge.plus")
                                         .foregroundColor(.blue)
-                                    Text("管理分类")
+                                    Text("manage_categories".localized)
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.blue)
                                     Spacer()
@@ -1398,7 +1398,7 @@ struct TagInfoHeader: View {
                     // 颜色选择
                     VStack(spacing: 16) {
                         HStack {
-                            Text("颜色")
+                            Text("color".localized)
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.primary)
                             Spacer()

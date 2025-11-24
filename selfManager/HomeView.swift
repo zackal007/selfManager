@@ -304,7 +304,7 @@ struct HomeView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         
-                        Text("我")
+                        Text("me".localized)
                             .font(.system(size: 24, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
                             .padding(.leading, 12)
@@ -341,7 +341,7 @@ struct HomeView: View {
                 case .tags:
                     TagsView()
                         .navigationBarBackButtonHidden(true)
-                        .navigationTitle("我的标签")
+                        .navigationTitle("my_tags".localized)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
                                 Button(action: {
@@ -349,7 +349,7 @@ struct HomeView: View {
                                 }) {
                                     HStack(spacing: 4) {
                                         Image(systemName: "chevron.left")
-                                        Text("返回")
+                                        Text("back".localized)
                                     }
                                 }
                             }
@@ -397,7 +397,7 @@ struct HomeView: View {
                         .navigationTitle("标签详情")
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button("back".localized) {
                                     navigationManager.pop(for: selectedTab)
                                 }
                             }
@@ -989,23 +989,23 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
                 moveModeEnabledForID = id
             }
         } label: {
-            Label("移动位置", systemImage: "arrow.up.arrow.down")
+            Label("move_position".localized, systemImage: "arrow.up.arrow.down")
         }
 
         Button {
             setCardSize(.small, for: id)
         } label: {
-            Label("小尺寸 1×1", systemImage: current == .small ? "checkmark.circle" : "circle")
+            Label("size_small_1x1".localized, systemImage: current == .small ? "checkmark.circle" : "circle")
         }
         Button {
             setCardSize(.medium, for: id)
         } label: {
-            Label("中尺寸 1×2", systemImage: current == .medium ? "checkmark.circle" : "circle")
+            Label("size_medium_1x2".localized, systemImage: current == .medium ? "checkmark.circle" : "circle")
         }
         Button {
             setCardSize(.large, for: id)
         } label: {
-            Label("大尺寸 2×2", systemImage: current == .large ? "checkmark.circle" : "circle")
+            Label("size_large_2x2".localized, systemImage: current == .large ? "checkmark.circle" : "circle")
         }
     }
 }
@@ -1090,16 +1090,16 @@ private func cardContextMenu(for type: HomeCardType) -> some View {
         Button(action: {
             moveModeEnabledForID = id
         }) {
-            Label("移动位置", systemImage: "arrow.up.and.down.and.arrow.left.and.right")
+            Label("move_position".localized, systemImage: "arrow.up.and.down.and.arrow.left.and.right")
         }
         Button(action: { setCardSize(.small, for: id) }) {
-            Label("小尺寸 1×1", systemImage: current == .small ? "checkmark.circle" : "circle")
+            Label("size_small_1x1".localized, systemImage: current == .small ? "checkmark.circle" : "circle")
         }
         Button(action: { setCardSize(.medium, for: id) }) {
-            Label("中尺寸 1×2", systemImage: current == .medium ? "checkmark.circle" : "circle")
+            Label("size_medium_1x2".localized, systemImage: current == .medium ? "checkmark.circle" : "circle")
         }
         Button(action: { setCardSize(.large, for: id) }) {
-            Label("大尺寸 2×2", systemImage: current == .large ? "checkmark.circle" : "circle")
+            Label("size_large_2x2".localized, systemImage: current == .large ? "checkmark.circle" : "circle")
         }
     }
 }
@@ -1217,7 +1217,7 @@ private func tagColor(for tag: String) -> Color {
                             Image(systemName: "face.smiling")
                                 .font(.title3)
                                 .foregroundColor(Color(UIColor.systemYellow))
-                            Text("最近心情")
+                            Text("recent_moods".localized)
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .foregroundColor(Color(UIColor.label))
@@ -1302,7 +1302,7 @@ private func tagColor(for tag: String) -> Color {
                     Image(systemName: "dollarsign.circle.fill")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemGreen))
-                    Text("我的资产")
+                    Text("home_card_asset_title".localized)
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color(UIColor.label))
                 }
@@ -1321,7 +1321,7 @@ private func tagColor(for tag: String) -> Color {
             HStack(spacing: 20) {
                 // 现金
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("现金")
+                    Text("cash".localized)
                         .font(.system(size: 13))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text(String(format: "%.1f", asset.cashAmount))
@@ -1331,7 +1331,7 @@ private func tagColor(for tag: String) -> Color {
                 
                 // 其他资产
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("其他")
+                    Text("other_assets".localized)
                         .font(.system(size: 13))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text(String(format: "%.1f", asset.otherAmount))
@@ -1341,7 +1341,7 @@ private func tagColor(for tag: String) -> Color {
                 
                 // 负债
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("负债")
+                    Text("debt".localized)
                         .font(.system(size: 13))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text(String(format: "%.1f", asset.debtAmount))
@@ -1356,7 +1356,7 @@ private func tagColor(for tag: String) -> Color {
                     Text(String(format: "%.1f", asset.totalAssets))
                         .fontWeight(.heavy)
                         .foregroundColor(Color(UIColor.systemBlue))
-                    Text("W")
+                    Text("ten_thousand_unit".localized)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
                 .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -1735,7 +1735,7 @@ private func tagColor(for tag: String) -> Color {
                     Image(systemName: "trophy.fill")
                         .font(.title3)
                         .foregroundColor(Color(UIColor.systemYellow))
-                    Text("成就")
+                    Text("home_card_achievement_title".localized)
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))
@@ -1760,7 +1760,7 @@ private func tagColor(for tag: String) -> Color {
                 let recentGoals = Array(achievementGoals.prefix(displayCount))
 
                 if recentGoals.isEmpty {
-                    Text("暂无成就")
+                    Text("empty_no_achievements".localized)
                         .font(.subheadline)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                         .padding(.vertical, 8)
@@ -1768,7 +1768,7 @@ private func tagColor(for tag: String) -> Color {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(recentGoals) { goal in
                             HStack {
-                                Text(goal.name.isEmpty ? "未命名成就" : goal.name)
+                                Text(goal.name.isEmpty ? "unnamed_achievement".localized : goal.name)
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
@@ -1799,7 +1799,7 @@ private func tagColor(for tag: String) -> Color {
                 Image(systemName: "trophy.fill")
                     .font(.title3)
                     .foregroundColor(Color(UIColor.systemYellow))
-                Text("成就")
+                Text("home_card_achievement_title".localized)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(Color(UIColor.label))
@@ -1861,7 +1861,7 @@ private func tagColor(for tag: String) -> Color {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemOrange))
-                    Text("焦虑")
+                    Text("home_card_anxiety_title".localized)
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color(UIColor.label))
                     Spacer()
@@ -1885,7 +1885,7 @@ private func tagColor(for tag: String) -> Color {
                 let recentAnxieties = Array(anxietyGoals.prefix(displayCount))
 
                 if recentAnxieties.isEmpty {
-                    Text("暂无焦虑")
+                    Text("empty_no_anxiety".localized)
                         .font(.subheadline)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                         .padding(.vertical, 8)
@@ -1893,7 +1893,7 @@ private func tagColor(for tag: String) -> Color {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(recentAnxieties) { goal in
                             HStack {
-                                Text(goal.name.isEmpty ? "未命名焦虑" : goal.name)
+                                Text(goal.name.isEmpty ? "unnamed_anxiety".localized : goal.name)
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)

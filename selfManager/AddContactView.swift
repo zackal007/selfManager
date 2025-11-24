@@ -54,16 +54,16 @@ struct AddContactView: View {
                     dismissKeyboard()
                 }
                 .background(Color(UIColor.systemBackground))
-                .navigationBarTitle("添加联系人", displayMode: .inline)
+                .navigationBarTitle("add_contact".localized, displayMode: .inline)
                 .navigationBarItems(
                     leading: cancelButton,
                     trailing: saveButton
                 )
                 .alert(isPresented: $showAlert) {
                     Alert(
-                        title: Text("提示"),
+                        title: Text("alert_info_title".localized),
                         message: Text(errorMessage),
-                        dismissButton: .default(Text("确定"))
+                        dismissButton: .default(Text("ok".localized))
                     )
                 }
             }
@@ -119,7 +119,7 @@ struct AddContactView: View {
     // MARK: - Category Field (Horizontal)
     private var contactTypeHorizontalField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("分类")
+            Text("category".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
 
@@ -132,7 +132,7 @@ struct AddContactView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: type.iconName)
                                     .font(.system(size: 12))
-                                Text(type.displayName)
+                                Text(localizedContactTypeName(type))
                                     .font(.system(size: 13))
                             }
                             .foregroundColor(selectedContactType == type ? .white : .primary)
@@ -170,11 +170,11 @@ struct AddContactView: View {
     // MARK: - Individual Field Views
     private var nameField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("姓名")
+            Text("name_label".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入姓名", text: $name)
+            TextField("name_placeholder".localized, text: $name)
                 .font(.system(size: 16))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -191,11 +191,11 @@ struct AddContactView: View {
     
     private var companyField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("公司")
+            Text("company".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入公司名称", text: $company)
+            TextField("company_placeholder".localized, text: $company)
                 .font(.system(size: 16))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -212,11 +212,11 @@ struct AddContactView: View {
     
     private var positionField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("职位")
+            Text("position".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入职位", text: $position)
+            TextField("position_placeholder".localized, text: $position)
                 .font(.system(size: 16))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -233,7 +233,7 @@ struct AddContactView: View {
     
     private var contactTypeField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("分类")
+            Text("category".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
@@ -272,7 +272,7 @@ struct AddContactView: View {
     
     private var importanceField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("重要性")
+            Text("importance".localized)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.primary)
             
@@ -311,7 +311,7 @@ struct AddContactView: View {
     
     private var frequencyField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("联系频率")
+            Text("contact_frequency".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
@@ -322,7 +322,7 @@ struct AddContactView: View {
                     }) {
                         HStack {
                             Image(systemName: "clock")
-                            Text(frequency.displayName)
+                            Text(localizedFrequencyName(frequency))
                         }
                     }
                 }
@@ -350,11 +350,11 @@ struct AddContactView: View {
     
     private var tagsField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("标签")
+            Text("tags".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入标签，用逗号分隔", text: $tags)
+            TextField("search_or_create_tag_placeholder".localized, text: $tags)
                 .font(.system(size: 16))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -372,7 +372,7 @@ struct AddContactView: View {
     private var lastContactDateField: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("最后联系日期")
+                Text("last_contact".localized)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.primary)
                 
@@ -383,8 +383,9 @@ struct AddContactView: View {
             }
             
             if hasLastContactDate {
-                DatePicker("选择日期", selection: $lastContactDate, displayedComponents: .date)
+                DatePicker("", selection: $lastContactDate, displayedComponents: .date)
                     .datePickerStyle(CompactDatePickerStyle())
+                    .environment(\.locale, LocalizationManager.shared.currentLanguage.locale)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .background(
@@ -397,11 +398,11 @@ struct AddContactView: View {
     
     private var phoneField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("电话")
+            Text("phone".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入电话号码", text: $phone)
+            TextField("phone".localized, text: $phone)
                 .font(.system(size: 16))
                 .keyboardType(.phonePad)
                 .padding(.horizontal, 16)
@@ -419,11 +420,11 @@ struct AddContactView: View {
     
     private var emailField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("邮箱")
+            Text("email".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入邮箱地址", text: $email)
+            TextField("email".localized, text: $email)
                 .font(.system(size: 16))
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
@@ -442,11 +443,11 @@ struct AddContactView: View {
     
     private var addressField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("地址")
+            Text("address".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入地址", text: $address)
+            TextField("address".localized, text: $address)
                 .font(.system(size: 16))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -463,11 +464,11 @@ struct AddContactView: View {
     
     private var notesField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("备注（可选）")
+            Text("description_optional".localized)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            TextField("请输入备注信息", text: $notes, axis: .vertical)
+            TextField("note_placeholder".localized, text: $notes, axis: .vertical)
                 .font(.system(size: 16))
                 .lineLimit(3...6)
                 .padding(.horizontal, 16)
@@ -482,6 +483,32 @@ struct AddContactView: View {
                 )
         }
     }
+
+    private func localizedContactTypeName(_ type: ContactType) -> String {
+        switch type {
+        case .family: return "contacts_family".localized
+        case .intimateFriend: return "contacts_friend".localized
+        case .workplace: return "contacts_work".localized
+        case .roleModel: return "contacts_role_model".localized
+        case .doctor: return "contacts_doctor".localized
+        case .lawyer: return "contacts_lawyer".localized
+        case .rich: return "contacts_rich".localized
+        case .official: return "contacts_official".localized
+        case .gangster: return "contacts_gangster".localized
+        case .other: return "contacts_other".localized
+        }
+    }
+
+    private func localizedFrequencyName(_ frequency: ContactFrequency) -> String {
+        switch frequency {
+        case .daily: return "frequency_daily".localized
+        case .weekly: return "frequency_weekly".localized
+        case .monthly: return "frequency_monthly".localized
+        case .quarterly: return "frequency_quarterly".localized
+        case .yearly: return "frequency_yearly".localized
+        case .occasional: return "frequency_occasional".localized
+        }
+    }
     
     // MARK: - Toolbar Buttons
     private var cancelButton: some View {
@@ -491,7 +518,7 @@ struct AddContactView: View {
             HStack(spacing: 4) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .semibold))
-                Text("取消")
+                Text("cancel".localized)
                     .font(.system(size: 17, weight: .medium))
             }
             .foregroundColor(Color(UIColor.systemBlue))
@@ -505,7 +532,7 @@ struct AddContactView: View {
             HStack(spacing: 4) {
                 Image(systemName: "checkmark")
                     .font(.system(size: 14, weight: .semibold))
-                Text("保存")
+                Text("save".localized)
                     .font(.system(size: 14, weight: .semibold))
             }
             .foregroundColor(.white)
@@ -553,20 +580,20 @@ struct AddContactView: View {
     private func validateAndSaveContact() {
         // 验证输入
         if name.isEmpty {
-            errorMessage = "姓名不能为空"
+            errorMessage = "name_empty".localized
             showAlert = true
             return
         }
         
         if name.count < 2 {
-            errorMessage = "姓名至少需要2个字符"
+            errorMessage = "name_min_length".localized
             showAlert = true
             return
         }
         
         // 验证邮箱格式（如果填写了邮箱）
         if !email.isEmpty && !isValidEmail(email) {
-            errorMessage = "请输入有效的邮箱地址"
+            errorMessage = "invalid_email".localized
             showAlert = true
             return
         }
@@ -623,7 +650,7 @@ struct AddContactView: View {
             // 直接关闭表单，不显示成功提示
             isPresented = false
         } catch {
-            errorMessage = "保存失败: \(error.localizedDescription)"
+            errorMessage = "save_failed".localized + ": \(error.localizedDescription)"
             showAlert = true
         }
     }

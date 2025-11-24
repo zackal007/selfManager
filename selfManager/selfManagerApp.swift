@@ -203,28 +203,28 @@ struct selfManagerApp: App {
                         HomeView(selectedTab: $selectedTab)
                             .tabItem {
                                 Image(systemName: "person.fill")
-                                Text("我")
+                                Text("home".localized)
                             }
                             .tag(0)
                         
                         GoalView(selectedTab: $selectedTab)
                             .tabItem {
                                 Image(systemName: "target")
-                                Text("目标")
+                                Text("goals".localized)
                             }
                             .tag(1)
                         
                         RecordView(selectedTab: $selectedTab)
                             .tabItem {
                                 Image(systemName: "newspaper.fill")
-                                Text("记录")
+                                Text("records".localized)
                             }
                             .tag(2)
                         
                         ContactView(selectedTab: $selectedTab)
                             .tabItem {
                                 Image(systemName: "network")
-                                Text("人脉")
+                                Text("contacts".localized)
                             }
                             .tag(3)
                     }

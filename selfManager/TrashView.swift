@@ -42,12 +42,12 @@ struct TrashView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.gray)
                         
-                        Text("回收站为空")
+                        Text("trash_empty_title".localized)
                             .font(.title2)
                             .fontWeight(.medium)
                             .foregroundColor(.primary)
                         
-                        Text("删除的目标会在这里保留\(getTrashExpirationDays())天")
+                        Text("deleted_goals_keep_days_prefix".localized + String(getTrashExpirationDays()) + "days_unit".localized)
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -71,18 +71,18 @@ struct TrashView: View {
                     .listRowBackground(Color.clear)
                 }
             }
-            .navigationTitle("回收站")
+            .navigationTitle("recycle_bin".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("关闭") {
+                    Button("close".localized) {
                         dismiss()
                     }
                 }
                 
                 if !deletedGoals.isEmpty {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("清空回收站") {
+                        Button("empty_trash".localized) {
                             activeAlert = .emptyTrash
                         }
                         .foregroundColor(.red)
@@ -94,10 +94,10 @@ struct TrashView: View {
             switch alert {
             case .restore:
                 return Alert(
-                    title: Text("恢复目标"),
-                    message: Text("确定要恢复目标「\(selectedGoal?.name ?? "")」吗？"),
-                    primaryButton: .cancel(Text("取消")),
-                    secondaryButton: .default(Text("恢复"), action: {
+                    title: Text("restore_goal".localized),
+                    message: Text("restore_goal_confirm_before".localized + (selectedGoal?.name ?? "") + "restore_goal_confirm_after".localized),
+                    primaryButton: .cancel(Text("cancel".localized)),
+                    secondaryButton: .default(Text("restore".localized), action: {
                         if let goal = selectedGoal {
                             restoreGoal(goal)
                         }
@@ -107,10 +107,10 @@ struct TrashView: View {
                 )
             case .permanentDelete:
                 return Alert(
-                    title: Text("永久删除"),
-                    message: Text("确定要永久删除目标「\(selectedGoal?.name ?? "")」吗？此操作无法撤销。"),
-                    primaryButton: .cancel(Text("取消")),
-                    secondaryButton: .destructive(Text("删除"), action: {
+                    title: Text("permanent_delete".localized),
+                    message: Text("permanent_delete_goal_confirm_before".localized + (selectedGoal?.name ?? "") + "permanent_delete_goal_confirm_after".localized),
+                    primaryButton: .cancel(Text("cancel".localized)),
+                    secondaryButton: .destructive(Text("delete".localized), action: {
                         if let goal = selectedGoal {
                             permanentlyDeleteGoal(goal)
                         }
@@ -120,10 +120,10 @@ struct TrashView: View {
                 )
             case .emptyTrash:
                 return Alert(
-                    title: Text("清空回收站"),
-                    message: Text("确定要清空回收站吗？这将永久删除所有已删除的目标，此操作无法撤销。"),
-                    primaryButton: .cancel(Text("取消")),
-                    secondaryButton: .destructive(Text("清空"), action: {
+                    title: Text("empty_trash".localized),
+                    message: Text("empty_trash_confirm_goal".localized),
+                    primaryButton: .cancel(Text("cancel".localized)),
+                    secondaryButton: .destructive(Text("clear".localized), action: {
                         emptyTrash()
                         selectedGoal = nil
                         activeAlert = nil
@@ -182,7 +182,7 @@ struct TrashGoalRow: View {
         
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
-        return "删除于 " + formatter.localizedString(for: deletedDate, relativeTo: Date())
+        return "deleted_on_prefix".localized + formatter.localizedString(for: deletedDate, relativeTo: Date())
     }
     
     private var daysUntilPermanentDeletion: Int {
@@ -213,11 +213,11 @@ struct TrashGoalRow: View {
                 // 删除时间和剩余天数
                 VStack(alignment: .leading, spacing: 2) {
                     if daysUntilPermanentDeletion > 0 {
-                        Text("\(daysUntilPermanentDeletion)天后永久删除")
+                        Text("days_until_permanent_delete_prefix".localized + String(daysUntilPermanentDeletion) + "days_unit".localized)
                             .font(.system(size: 12))
                             .foregroundColor(Color(UIColor.systemOrange))
                     } else {
-                        Text("即将永久删除")
+                        Text("immediate_permanent_delete".localized)
                             .font(.system(size: 12))
                             .foregroundColor(Color(UIColor.systemRed))
                     }

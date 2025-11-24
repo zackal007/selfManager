@@ -86,7 +86,7 @@ struct HabitCardView: View {
                     Image(systemName: "repeat.circle.fill")
                         .font(.title3)
                         .foregroundColor(Color(UIColor.systemGreen))
-                    Text("习惯")
+                    Text("home_card_habit_title".localized)
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))
@@ -111,7 +111,7 @@ struct HabitCardView: View {
                 let limitedItems = Array(displayItems.prefix(displayCount))
 
                 if displayItems.isEmpty {
-                    Text("暂无习惯")
+                    Text("empty_no_habits".localized)
                         .font(.subheadline)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                         .padding(.vertical, 8)
@@ -172,7 +172,7 @@ struct HabitDetailView: View {
                     // 习惯列表
                     if !habits.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("我的习惯")
+                            Text("my_habits".localized)
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .padding(.horizontal)
@@ -192,7 +192,7 @@ struct HabitDetailView: View {
                     // 习惯目标列表
                     if !habitGoals.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("习惯目标")
+                            Text("habit_goals".localized)
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .padding(.horizontal)
@@ -218,11 +218,11 @@ struct HabitDetailView: View {
                                 .font(.system(size: 48))
                                 .foregroundColor(.secondary)
                             
-                            Text("还没有习惯")
+                            Text("no_habits".localized)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             
-                            Text("开始培养第一个好习惯吧")
+                            Text("start_first_habit".localized)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -231,7 +231,7 @@ struct HabitDetailView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("习惯中心")
+            .navigationTitle("habit_center".localized)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -242,7 +242,7 @@ struct HabitDetailView: View {
                         HStack(spacing: 5) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 17, weight: .semibold))
-                            Text("返回")
+                            Text("back".localized)
                         }
                     }
                 }
@@ -358,12 +358,12 @@ struct HabitGoalDetailCard: View {
                         .foregroundColor(Color.habitColor(from: habit.color))
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(habit.name.isEmpty ? "未命名习惯" : habit.name)
+                        Text(habit.name.isEmpty ? "unnamed_habit".localized : habit.name)
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .lineLimit(1)
                         
-                        Text("连续 \(habit.currentStreak) 天")
+                        Text("streak_days_prefix".localized + String(habit.currentStreak) + "days_unit".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -390,12 +390,12 @@ struct HabitGoalDetailCard: View {
                         .foregroundColor(.purple)
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(goal.name.isEmpty ? "未命名目标" : goal.name)
+                        Text(goal.name.isEmpty ? "unnamed_goal".localized : goal.name)
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .lineLimit(1)
                         
-                        Text("进度 \(Int(goal.progress * 100))%")
+                        Text("progress_prefix".localized + String(Int(goal.progress * 100)) + "%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

@@ -23,16 +23,16 @@ enum ContactType: Int, Codable, Hashable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .family: return "家人"
-        case .intimateFriend: return "挚友"
-        case .workplace: return "职场"
-        case .roleModel: return "榜样"
-        case .doctor: return "医生"
-        case .lawyer: return "律师"
-        case .rich: return "富人"
-        case .official: return "官员"
-        case .gangster: return "混混"
-        case .other: return "其他"
+        case .family: return "contacts_family".localized
+        case .intimateFriend: return "contacts_friend".localized
+        case .workplace: return "contacts_work".localized
+        case .roleModel: return "contacts_role_model".localized
+        case .doctor: return "contacts_doctor".localized
+        case .lawyer: return "contacts_lawyer".localized
+        case .rich: return "contacts_rich".localized
+        case .official: return "contacts_official".localized
+        case .gangster: return "contacts_gangster".localized
+        case .other: return "contacts_other".localized
         }
     }
 
@@ -63,12 +63,12 @@ enum ContactFrequency: Int, Codable, Hashable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .daily: return "每日"
-        case .weekly: return "每周"
-        case .monthly: return "每月"
-        case .quarterly: return "每季度"
-        case .yearly: return "每年"
-        case .occasional: return "偶尔"
+        case .daily: return "frequency_daily".localized
+        case .weekly: return "frequency_weekly".localized
+        case .monthly: return "frequency_monthly".localized
+        case .quarterly: return "frequency_quarterly".localized
+        case .yearly: return "frequency_yearly".localized
+        case .occasional: return "frequency_occasional".localized
         }
     }
 }
@@ -82,10 +82,10 @@ enum ContactImportance: Int, Codable, Hashable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .low: return "低"
-        case .medium: return "中"
-        case .high: return "高"
-        case .critical: return "关键"
+        case .low: return "low".localized
+        case .medium: return "medium".localized
+        case .high: return "high".localized
+        case .critical: return "critical".localized
         }
     }
     

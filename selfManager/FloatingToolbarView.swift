@@ -62,7 +62,7 @@ struct FloatingToolbarView: View {
                 if showMoodSelector {
                     Menu {
                         // 清除心情选项
-                        Button("无心情") {
+                        Button("no_mood".localized) {
                             selectedMood = nil
                             onMoodChanged?(nil)
                         }
@@ -98,7 +98,7 @@ struct FloatingToolbarView: View {
                 // 目标引用按钮（#）
                 Menu {
                     // 清除目标引用选项
-                    Button("清除目标引用") {
+                    Button("clear_goal_reference".localized) {
                         insertGoalReference(nil)
                     }
                     
@@ -123,7 +123,7 @@ struct FloatingToolbarView: View {
                 // 人脉引用按钮（@）
                 Menu {
                     // 清除人脉引用选项
-                    Button("清除人脉引用") {
+                    Button("clear_contact_reference".localized) {
                         insertContactReference(nil)
                     }
                     
@@ -147,12 +147,12 @@ struct FloatingToolbarView: View {
                 
                 Spacer()
                 
-                // 字数统计
+                // 字数统计（本地化）
                 HStack(spacing: 4) {
                     Image(systemName: "text.alignleft")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("\(text.count) 字")
+                    Text(String(format: "character_count_format".localized, text.count))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

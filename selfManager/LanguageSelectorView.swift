@@ -40,17 +40,17 @@ struct LanguageSelectorView: View {
                 }
             }
             .listStyle(InsetGroupedListStyle())
-            .navigationTitle("选择语言")
+            .navigationTitle("language_selection".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
+                    Button("cancel".localized) {
                         isPresented = false
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
+                    Button("done".localized) {
                         // 应用语言设置
                         if selectedLanguage != localizationManager.currentLanguage {
                             localizationManager.switchLanguage(to: selectedLanguage)

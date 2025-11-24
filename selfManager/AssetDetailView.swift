@@ -114,7 +114,7 @@ struct AssetDetailView: View {
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .background(Color(UIColor.systemGroupedBackground))
             }
-            .navigationTitle("我的资产")
+            .navigationTitle("my_assets".localized)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -132,7 +132,7 @@ struct AssetDetailView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "保存" : "编辑") {
+                    Button(isEditing ? "save".localized : "edit".localized) {
                         if isEditing {
                             saveAssets()
                         } else {
@@ -141,10 +141,10 @@ struct AssetDetailView: View {
                     }
                 }
             }
-            .alert("资产已更新", isPresented: $showingSaveAlert) {
-                Button("确定", role: .cancel) { }
+            .alert("assets_updated".localized, isPresented: $showingSaveAlert) {
+                Button("done".localized, role: .cancel) { }
             } message: {
-                Text("您的资产信息已成功保存")
+                Text("assets_updated_message".localized)
             }
             .toolbar(.hidden, for: .tabBar)
         }
@@ -154,13 +154,13 @@ struct AssetDetailView: View {
     private var tabView: some View {
         HStack(spacing: 0) {
             ForEach([
-                ("资产详情", "chart.pie.fill"),
-                ("资产趋势", "chart.line.uptrend.xyaxis"),
-                ("资产管理", "gearshape.fill")
+                ("asset_details".localized, "chart.pie.fill"),
+                ("asset_trend".localized, "chart.line.uptrend.xyaxis"),
+                ("asset_management".localized, "gearshape.fill")
             ], id: \.0) { title, icon in
                 Button(action: {
                     withAnimation {
-                        selectedTab = ["资产详情", "资产趋势", "资产管理"].firstIndex(of: title) ?? 0
+                        selectedTab = ["asset_details".localized, "asset_trend".localized, "asset_management".localized].firstIndex(of: title) ?? 0
                     }
                 }) {
                     VStack(spacing: 6) {
@@ -171,7 +171,7 @@ struct AssetDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .foregroundColor(selectedTab == ["资产详情", "资产趋势", "资产管理"].firstIndex(of: title) ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
+                    .foregroundColor(selectedTab == ["asset_details".localized, "asset_trend".localized, "asset_management".localized].firstIndex(of: title) ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -187,7 +187,7 @@ struct AssetDetailView: View {
             // 顶部信息栏
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("总资产")
+                    Text("total_assets".localized)
                         .font(.headline)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     
@@ -221,7 +221,7 @@ struct AssetDetailView: View {
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .foregroundColor(totalAssets >= 0 ? Color(UIColor.systemBlue) : Color(UIColor.systemRed))
                 
-                Text("万元")
+                Text("ten_thousand_unit".localized)
                     .font(.title2)
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .padding(.bottom, 8)
@@ -259,7 +259,7 @@ struct AssetDetailView: View {
                         Circle()
                             .fill(Color(UIColor.systemGreen))
                             .frame(width: 8, height: 8)
-                        Text("现金")
+                        Text("cash".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
@@ -271,7 +271,7 @@ struct AssetDetailView: View {
                         Circle()
                             .fill(Color(UIColor.systemBlue))
                             .frame(width: 8, height: 8)
-                        Text("其他资产")
+                        Text("other_assets".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
@@ -283,7 +283,7 @@ struct AssetDetailView: View {
                         Circle()
                             .fill(Color(UIColor.systemRed))
                             .frame(width: 8, height: 8)
-                        Text("负债")
+                        Text("debt".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
@@ -301,7 +301,7 @@ struct AssetDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             // 标题栏
             HStack {
-                Text("资产详情")
+                Text("asset_details".localized)
                     .font(.headline)
                     .fontWeight(.bold)
                 
@@ -309,7 +309,7 @@ struct AssetDetailView: View {
                 
                 if !isEditing {
                     Button(action: { startEditing() }) {
-                        Label("编辑", systemImage: "pencil")
+                        Label("edit".localized, systemImage: "pencil")
                             .font(.caption)
                             .foregroundColor(Color(UIColor.systemBlue))
                     }
@@ -321,12 +321,12 @@ struct AssetDetailView: View {
                 // 现金资产
                 assetRow(
                     icon: "banknote",
-                    title: "现金资产",
+                    title: "cash".localized,
                     amount: asset.cashAmount,
                     color: Color(UIColor.systemGreen),
                     isEditing: isEditing,
                     editValue: $tempCash,
-                    description: "活期存款、定期存款等"
+                    description: "asset_cash_desc".localized
                 )
                 
                 Divider()
@@ -334,12 +334,12 @@ struct AssetDetailView: View {
                 // 其他资产
                 assetRow(
                     icon: "chart.line.uptrend.xyaxis",
-                    title: "其他资产",
+                    title: "other_assets".localized,
                     amount: asset.otherAmount,
                     color: Color(UIColor.systemBlue),
                     isEditing: isEditing,
                     editValue: $tempOther,
-                    description: "股票、基金、房产等"
+                    description: "asset_other_desc".localized
                 )
                 
                 Divider()
@@ -347,19 +347,19 @@ struct AssetDetailView: View {
                 // 负债
                 assetRow(
                     icon: "creditcard",
-                    title: "负债",
+                    title: "debt".localized,
                     amount: asset.debtAmount,
                     color: Color(UIColor.systemRed),
                     isEditing: isEditing,
                     editValue: $tempDebt,
-                    description: "信用卡、贷款等"
+                    description: "asset_debt_desc".localized
                 )
             }
             
             // 保存按钮 - 仅在编辑模式下显示
             if isEditing {
                 Button(action: { saveAssets() }) {
-                    Text("保存更改")
+                    Text("save_changes".localized)
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -379,7 +379,7 @@ struct AssetDetailView: View {
     // 资产配置饼图
     private var assetAllocationChart: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("资产配置")
+            Text("asset_allocation".localized)
                 .font(.headline)
                 .fontWeight(.bold)
             
@@ -400,11 +400,11 @@ struct AssetDetailView: View {
                 
                 // 中心文本
                 VStack(spacing: 4) {
-                    Text("净资产")
+                    Text("net_assets".localized)
                         .font(.caption)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     
-                    Text(String(format: "%.1f万", totalAssets))
+                    Text(String(format: "%.1f", totalAssets) + "" + "ten_thousand_unit".localized)
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))
@@ -421,12 +421,12 @@ struct AssetDetailView: View {
                         .fill(Color(UIColor.systemGreen))
                         .frame(width: 12, height: 12)
                     
-                    Text("现金资产")
+                    Text("cash".localized)
                         .font(.subheadline)
                     
                     Spacer()
                     
-                    Text(String(format: "%.1f万", asset.cashAmount))
+                    Text(String(format: "%.1f", asset.cashAmount) + "" + "ten_thousand_unit".localized)
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
@@ -442,12 +442,12 @@ struct AssetDetailView: View {
                         .fill(Color(UIColor.systemBlue))
                         .frame(width: 12, height: 12)
                     
-                    Text("其他资产")
+                    Text("other_assets".localized)
                         .font(.subheadline)
                     
                     Spacer()
                     
-                    Text(String(format: "%.1f万", asset.otherAmount))
+                    Text(String(format: "%.1f", asset.otherAmount) + "" + "ten_thousand_unit".localized)
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
@@ -465,12 +465,12 @@ struct AssetDetailView: View {
                         .fill(Color(UIColor.systemRed))
                         .frame(width: 12, height: 12)
                     
-                    Text("负债")
+                    Text("debt".localized)
                         .font(.subheadline)
                     
                     Spacer()
                     
-                    Text(String(format: "%.1f万", asset.debtAmount))
+                    Text(String(format: "%.1f", asset.debtAmount) + "" + "ten_thousand_unit".localized)
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
@@ -490,17 +490,17 @@ struct AssetDetailView: View {
     // 资产趋势卡片 - 更新为实际功能
     private var assetTrendCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("资产趋势")
+            Text("asset_trend".localized)
                 .font(.headline)
                 .fontWeight(.bold)
             
             // 趋势图表区域
             VStack(spacing: 20) {
                 // 时间选择器
-                Picker("时间范围", selection: .constant(0)) {
-                    Text("近3个月").tag(0)
-                    Text("近6个月").tag(1)
-                    Text("近1年").tag(2)
+                Picker("time_range".localized, selection: .constant(0)) {
+                    Text("last_3_months".localized).tag(0)
+                    Text("last_6_months".localized).tag(1)
+                    Text("last_1_year".localized).tag(2)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.bottom, 8)
@@ -554,7 +554,7 @@ struct AssetDetailView: View {
                 HStack(spacing: 20) {
                     // 月均增长
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("月均增长")
+                        Text("monthly_avg_growth".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         
@@ -572,7 +572,7 @@ struct AssetDetailView: View {
                     
                     // 年度目标
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("年度目标")
+                        Text("year_goal".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         
@@ -600,13 +600,13 @@ struct AssetDetailView: View {
     private var assetHistoryCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("记录历史")
+                Text("record_history".localized)
                     .font(.headline)
                     .fontWeight(.bold)
                 
                 Spacer()
                 
-                Button("查看全部") {
+                Button("view_all".localized) {
                     // 查看全部历史记录
                 }
                 .font(.caption)
@@ -629,7 +629,7 @@ struct AssetDetailView: View {
     // 资产管理选项卡片
     private var assetManagementOptionsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("资产管理")
+            Text("asset_management".localized)
                 .font(.headline)
                 .fontWeight(.bold)
             
@@ -641,7 +641,7 @@ struct AssetDetailView: View {
                             .font(.title3)
                             .foregroundColor(Color(UIColor.systemBlue))
                         
-                        Text("添加资产类别")
+                        Text("add_asset_category".localized)
                             .font(.subheadline)
                         
                         Spacer()
@@ -664,7 +664,7 @@ struct AssetDetailView: View {
                             .font(.title3)
                             .foregroundColor(Color(UIColor.systemGreen))
                         
-                        Text("设置资产目标")
+                        Text("set_asset_goal".localized)
                             .font(.subheadline)
                         
                         Spacer()
@@ -687,7 +687,7 @@ struct AssetDetailView: View {
                             .font(.title3)
                             .foregroundColor(Color(UIColor.systemOrange))
                         
-                        Text("导出资产报告")
+                        Text("export_asset_report".localized)
                             .font(.subheadline)
                         
                         Spacer()
@@ -713,7 +713,7 @@ struct AssetDetailView: View {
     // 资产目标设置卡片
     private var assetGoalSettingsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("资产目标")
+            Text("asset_goal".localized)
                 .font(.headline)
                 .fontWeight(.bold)
             
@@ -750,13 +750,13 @@ struct AssetDetailView: View {
                 
                 // 进度说明
                 HStack {
-                    Text("已完成60%")
+                    Text("completed_percent".localized + " 60%")
                         .font(.caption)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     
                     Spacer()
                     
-                    Text("距离年底还有\(daysUntilEndOfYear())天")
+                    Text("days_left_year_prefix".localized + "\(daysUntilEndOfYear())" + "days_unit".localized)
                         .font(.caption)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
@@ -767,13 +767,13 @@ struct AssetDetailView: View {
             
             // 月度增长目标
             VStack(alignment: .leading, spacing: 12) {
-                Text("月度增长目标")
+                Text("monthly_growth_goal".localized)
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("当前")
+                        Text("current".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         
@@ -785,7 +785,7 @@ struct AssetDetailView: View {
                     Spacer()
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("目标")
+                        Text("target".localized)
                             .font(.caption)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         
@@ -796,7 +796,7 @@ struct AssetDetailView: View {
                     Spacer()
                     
                     Button(action: {}) {
-                        Text("调整")
+                        Text("adjust".localized)
                             .font(.caption)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
@@ -826,17 +826,17 @@ struct AssetDetailView: View {
     // 资产管理指导卡片
     private var assetGuidanceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("💡 资产管理小贴士")
+            Text("💡 " + "asset_tips_title".localized)
                 .font(.headline)
                 .fontWeight(.bold)
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("• 建议每月更新一次资产状况")
-                Text("• 关注资产配置的合理性")
-                Text("• 定期评估投资收益和风险")
-                Text("• 保持适当的现金储备")
-                Text("• 设置合理的资产增长目标")
-                Text("• 控制负债比例在总资产的30%以内")
+                Text("• " + "asset_tip_1".localized)
+                Text("• " + "asset_tip_2".localized)
+                Text("• " + "asset_tip_3".localized)
+                Text("• " + "asset_tip_4".localized)
+                Text("• " + "asset_tip_5".localized)
+                Text("• " + "asset_tip_6".localized)
             }
             .font(.subheadline)
             .foregroundColor(Color(UIColor.secondaryLabel))
@@ -872,7 +872,7 @@ struct AssetDetailView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .frame(width: 80)
                             .keyboardType(.decimalPad)
-                        Text("万")
+                        Text("ten_thousand_unit".localized)
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
@@ -882,7 +882,7 @@ struct AssetDetailView: View {
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(color)
-                        Text("万")
+                        Text("ten_thousand_unit".localized)
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                     }
@@ -907,7 +907,7 @@ struct AssetDetailView: View {
                 Text(date)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                Text("总资产 \(String(format: "%.1f", totalAsset))万")
+                Text("total_assets".localized + " " + String(format: "%.1f", totalAsset) + " " + "ten_thousand_unit".localized)
                     .font(.caption)
                     .foregroundColor(Color(UIColor.secondaryLabel))
             }

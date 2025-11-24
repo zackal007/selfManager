@@ -51,7 +51,7 @@ struct TagEditView: View {
                     VStack(spacing: 20) {
                         // 标签预览
                         VStack(spacing: 12) {
-                            Text("预览")
+                            Text("preview".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.secondary)
                             
@@ -60,7 +60,7 @@ struct TagEditView: View {
                                     .fill(selectedColor)
                                     .frame(width: 12, height: 12)
                                 
-                                Text(editedTag.isEmpty ? "标签名称" : editedTag)
+                                Text(editedTag.isEmpty ? "tag_name_label".localized : editedTag)
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundColor(.primary)
                                 
@@ -96,7 +96,7 @@ struct TagEditView: View {
                         // 基本信息
                         VStack(spacing: 16) {
                             HStack {
-                                Text("基本信息")
+                                Text("basic_info".localized)
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.primary)
                                 Spacer()
@@ -105,11 +105,11 @@ struct TagEditView: View {
                             VStack(spacing: 16) {
                                 // 标签名称
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("标签名称")
+                                    Text("tag_name_label".localized)
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(.primary)
-                                    
-                                    TextField("请输入标签名称", text: $editedTag)
+
+                                    TextField("tag_name_placeholder".localized, text: $editedTag)
                                         .font(.system(size: 16))
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 14)
@@ -133,11 +133,11 @@ struct TagEditView: View {
                                 
                                 // 描述
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("描述（可选）")
+                                    Text("tag_description_optional_label".localized)
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(.primary)
-                                    
-                                    TextField("请输入标签描述", text: $tagDescription)
+
+                                    TextField("tag_description_placeholder".localized, text: $tagDescription)
                                         .font(.system(size: 16))
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 14)
@@ -155,12 +155,12 @@ struct TagEditView: View {
                                 
                                 // 分类选择
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("分类")
+                                    Text("category".localized)
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(.primary)
                                     
                                     Menu {
-                                        Button("无分类") {
+                                        Button("no_category".localized) {
                                             selectedCategoryID = nil
                                         }
                                         
@@ -175,7 +175,7 @@ struct TagEditView: View {
                                                let category = tagCategories.first(where: { $0.id == categoryID }) {
                                                 Text(category.name)
                                             } else {
-                                                Text("无分类")
+                                                Text("no_category".localized)
                                             }
                                             Spacer()
                                             Image(systemName: "chevron.down")
@@ -202,7 +202,7 @@ struct TagEditView: View {
                                     HStack {
                                         Image(systemName: "folder.badge.plus")
                                             .foregroundColor(.blue)
-                                        Text("管理分类")
+                                        Text("manage_categories".localized)
                                             .font(.system(size: 16, weight: .medium))
                                             .foregroundColor(.blue)
                                         Spacer()
@@ -227,7 +227,7 @@ struct TagEditView: View {
                         // 颜色选择
                         VStack(spacing: 16) {
                             HStack {
-                                Text("颜色")
+                                Text("color".localized)
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.primary)
                                 Spacer()
@@ -269,7 +269,7 @@ struct TagEditView: View {
             }
             .background(Color(UIColor.systemGroupedBackground))
         }
-        .navigationTitle("编辑标签")
+        .navigationTitle("edit_tag_title".localized)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -279,7 +279,7 @@ struct TagEditView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("取消")
+                        Text("cancel".localized)
                             .font(.system(size: 17, weight: .medium))
                     }
                     .foregroundColor(Color(UIColor.systemBlue))
@@ -293,7 +293,7 @@ struct TagEditView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("保存")
+                        Text("save".localized)
                             .font(.system(size: 17, weight: .semibold))
                     }
                     .foregroundColor(.white)
@@ -319,9 +319,9 @@ struct TagEditView: View {
         }
         .alert(isPresented: $showingSaveAlert) {
             Alert(
-                title: Text("提示"),
+                title: Text("alert_info_title".localized),
                 message: Text(alertMessage),
-                dismissButton: .default(Text("确定"))
+                dismissButton: .default(Text("ok".localized))
             )
         }
         .onAppear {
@@ -339,7 +339,7 @@ struct TagEditView: View {
         let trimmedTag = editedTag.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if trimmedTag.isEmpty {
-            alertMessage = "标签名称不能为空"
+            alertMessage = "tag_name_empty".localized
             showingSaveAlert = true
             return
         }
@@ -384,7 +384,7 @@ struct TagEditView: View {
             try modelContext.save()
             dismiss()
         } catch {
-            alertMessage = "保存失败: \(error.localizedDescription)"
+            alertMessage = "save_failed".localized + ": \(error.localizedDescription)"
             showingSaveAlert = true
         }
     }

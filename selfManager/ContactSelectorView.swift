@@ -27,7 +27,7 @@ struct ContactSelectorView: View {
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
-                    TextField("搜索联系人", text: $searchText)
+                    TextField("search_contacts_placeholder".localized, text: $searchText)
                         .padding(8)
                 }
                 .padding(.horizontal, 16)
@@ -41,7 +41,7 @@ struct ContactSelectorView: View {
                 // 已选联系人
                 if !selectedIds.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("已选联系人")
+                        Text("selected_contacts".localized)
                             .font(.system(size: 16, weight: .medium))
                             .padding(.horizontal, 16)
                             .padding(.top, 8)
@@ -105,10 +105,10 @@ struct ContactSelectorView: View {
                 }
                 .background(Color(UIColor.systemBackground))
             }
-            .navigationTitle("选择联系人")
+            .navigationTitle("choose_contact".localized)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button("cancel".localized) {
                     dismiss()
                 },
                 trailing: Button(action: {
@@ -118,7 +118,7 @@ struct ContactSelectorView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .semibold))
-                        Text("添加")
+                        Text("add".localized)
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(.white)

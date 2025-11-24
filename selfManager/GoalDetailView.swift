@@ -169,7 +169,12 @@ struct GoalDetailView: View {
     @State private var selectedBackgroundImage: String? = nil
     
     // 常量
-    private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
+    private var goalTypes: [String] { [
+        "goal_type_life".localized,
+        "goal_type_yearly".localized,
+        "goal_type_short_term".localized,
+        "goal_type_habit".localized
+    ] }
     private let backgroundImages = [
         "GoalGradientBlue",
         "GoalGradientGreen",
@@ -269,7 +274,7 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.systemBlue))
                     .frame(width: 24, height: 24)
                 
-                Text("截止日期")
+                Text("due_date".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
                 
@@ -348,7 +353,7 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.systemBlue))
                     .frame(width: 24, height: 24)
                 
-                Text("子任务")
+                Text("subtasks".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
                 
@@ -359,7 +364,7 @@ struct GoalDetailView: View {
                     showAddTaskSheet = true
                 }) {
                     HStack(spacing: 4) {
-                        Text("添加")
+                        Text("add".localized)
                             .font(.system(size: 14))
                         Image(systemName: "plus")
                             .font(.system(size: 12))
@@ -375,7 +380,7 @@ struct GoalDetailView: View {
             .padding(.horizontal, 16)
             
             if goal.tasks.isEmpty {
-                Text("暂无子任务")
+                Text("no_subtasks".localized)
                     .font(.system(size: 14))
                     .foregroundColor(Color(UIColor.tertiaryLabel))
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -460,7 +465,7 @@ struct GoalDetailView: View {
             // 上级目标
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("上级目标")
+                    Text("parent_goal".localized)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.label))
                     
@@ -471,7 +476,7 @@ struct GoalDetailView: View {
                         showUpperGoalSelector = true
                     }) {
                         HStack(spacing: 4) {
-                            Text("添加")
+                            Text("add".localized)
                                 .font(.system(size: 14))
                             Image(systemName: "plus")
                                 .font(.system(size: 12))
@@ -485,7 +490,7 @@ struct GoalDetailView: View {
                 }
                 
                 if goal.upperProject.isEmpty {
-                    Text("暂无上级目标")
+                    Text("no_related_goals".localized)
                         .font(.system(size: 14))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -506,7 +511,7 @@ struct GoalDetailView: View {
                                        let targetGoal = allGoals.first(where: { $0.id == uuid }) {
                                         GoalDetailView(goal: targetGoal)
                                     } else {
-                                        Text("目标不存在")
+                                        Text("goal_not_found".localized)
                                     }
                                 }) {
                                     if let uuid = UUID(uuidString: project),
@@ -516,7 +521,7 @@ struct GoalDetailView: View {
                                             .foregroundColor(Color(UIColor.label))
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                     } else {
-                                        Text("未知目标")
+                                        Text("unknown_goal".localized)
                                             .font(.system(size: 15))
                                             .foregroundColor(Color(UIColor.secondaryLabel))
                                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -617,7 +622,7 @@ struct GoalDetailView: View {
                 // 子目标
                 VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("子目标")
+                    Text("subtasks".localized)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(UIColor.label))
                     
@@ -629,7 +634,7 @@ struct GoalDetailView: View {
                     }) {
 
                         HStack(spacing: 4) {
-                            Text("添加")
+                            Text("add".localized)
                                 .font(.system(size: 14))
                             Image(systemName: "plus")
                                 .font(.system(size: 12))
@@ -680,7 +685,7 @@ struct GoalDetailView: View {
                     }
                 }
                 if goal.subProject.isEmpty {
-                    Text("暂无子目标")
+                    Text("no_subtasks".localized)
                         .font(.system(size: 14))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -701,7 +706,7 @@ struct GoalDetailView: View {
                                        let targetGoal = allGoals.first(where: { $0.id == uuid }) {
                                         GoalDetailView(goal: targetGoal)
                                     } else {
-                                        Text("目标不存在")
+                                        Text("goal_not_found".localized)
                                     }
                                 }) {
                                     if let uuid = UUID(uuidString: project),
@@ -711,7 +716,7 @@ struct GoalDetailView: View {
                                             .foregroundColor(Color(UIColor.label))
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                     } else {
-                                        Text("未知目标")
+                                        Text("unknown_goal".localized)
                                             .font(.system(size: 15))
                                             .foregroundColor(Color(UIColor.secondaryLabel))
                                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -777,7 +782,7 @@ struct GoalDetailView: View {
     }
     
     private var formattedDueDate: String {
-        guard let dueDate = goal.dueDate else { return "未设置" }
+        guard let dueDate = goal.dueDate else { return "not_set".localized }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy年MM月dd日"
         return dateFormatter.string(from: dueDate)
@@ -1057,14 +1062,14 @@ struct GoalDetailView: View {
     private var headerView: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("优先级")
+                Text("priority".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
-                Picker("优先级", selection: $editingImportance) {
-                    Text("低").tag(1)
-                    Text("中").tag(2)
-                    Text("高").tag(3)
+                Picker("priority".localized, selection: $editingImportance) {
+                    Text("low".localized).tag(1)
+                    Text("medium".localized).tag(2)
+                    Text("high".localized).tag(3)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .frame(width: 160)
@@ -1160,7 +1165,7 @@ struct GoalDetailView: View {
         HStack {
             if editingField == .name {
                 TextField(
-                    "目标名称",
+                    "goal_name_placeholder".localized,
                     text: $editingValue,
                     onCommit: {
                         // 保存修改
@@ -1205,7 +1210,7 @@ struct GoalDetailView: View {
                 HStack(spacing: 6) {
                     Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.slash.fill" : "pin.fill")
                         .font(.system(size: 13, weight: .semibold))
-                    Text(pingManager.isPinged(goalID: goal.id) ? "取消Ping" : "Ping到主页")
+                    Text(pingManager.isPinged(goalID: goal.id) ? "unpin".localized : "pin_to_home".localized)
                         .font(.system(size: 13, weight: .semibold))
                 }
                 .padding(.horizontal, 10)
@@ -1213,7 +1218,7 @@ struct GoalDetailView: View {
                 .foregroundColor(Color(UIColor.systemBlue))
                 .background(Color(UIColor.systemBlue).opacity(0.12))
                 .clipShape(Capsule())
-                .accessibilityLabel(pingManager.isPinged(goalID: goal.id) ? "取消钉住" : "钉住")
+                .accessibilityLabel(Text(pingManager.isPinged(goalID: goal.id) ? "unpin_label".localized : "pin_label".localized))
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -1270,7 +1275,7 @@ struct GoalDetailView: View {
     private var progressBarSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("进度")
+                Text("progress".localized)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(UIColor.secondaryLabel))
                 Spacer()
@@ -1349,7 +1354,7 @@ struct GoalDetailView: View {
                 
                 HStack {
                     Spacer()
-                    Button("完成") {
+                    Button("done".localized) {
                         // 保存修改
                         let oldDescription = goal.goalDescription
                         goal.goalDescription = editingValue
@@ -1482,7 +1487,7 @@ struct GoalDetailView: View {
                 .foregroundColor(Color(UIColor.systemBlue))
                 .frame(width: 24, height: 24)
 
-            Text("目标类型")
+            Text("goal_type".localized)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(UIColor.label))
 
@@ -1520,7 +1525,7 @@ struct GoalDetailView: View {
                     .foregroundColor(Color(UIColor.systemBlue))
                     .frame(width: 24, height: 24)
 
-                Text("标签")
+                Text("tags".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
 
@@ -1657,7 +1662,7 @@ struct GoalDetailView: View {
                     .font(.system(size: 16))
                     .foregroundColor(Color(UIColor.systemBlue))
                     .frame(width: 24, height: 24)
-                Text("目标描述")
+                Text("goal_description".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
@@ -1669,14 +1674,14 @@ struct GoalDetailView: View {
                     .font(.system(size: 16))
                     .foregroundColor(Color(UIColor.systemRed))
                     .frame(width: 24, height: 24)
-                Text("优先级")
+                Text("priority".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
                 Picker("优先级", selection: $editingImportance) {
-                    Text("低").tag(1)
-                    Text("中").tag(2)
-                    Text("高").tag(3)
+                    Text("low".localized).tag(1)
+                    Text("medium".localized).tag(2)
+                    Text("high".localized).tag(3)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .frame(width: 160)
@@ -1716,7 +1721,7 @@ struct GoalDetailView: View {
                 Image(systemName: "arrow.triangle.branch")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("目标关联")
+                Text("goal_relation".localized)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
@@ -1747,7 +1752,7 @@ struct GoalDetailView: View {
                 Image(systemName: "checklist")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("子任务")
+                Text("subtasks".localized)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
@@ -1755,7 +1760,7 @@ struct GoalDetailView: View {
             .padding(.horizontal, 16)
             VStack(alignment: .leading, spacing: 12) {
                 if goal.tasks.isEmpty {
-                    Text("暂无子任务")
+                    Text("no_subtasks".localized)
                         .font(.system(size: 14))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -1775,7 +1780,7 @@ struct GoalDetailView: View {
                     HStack {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 16))
-                        Text("添加任务")
+                        Text("add_task".localized)
                             .font(.system(size: 16))
                     }
                     .foregroundColor(Color(UIColor.systemBlue))
@@ -1810,12 +1815,12 @@ struct GoalDetailView: View {
                 Image(systemName: "person.2.fill")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("关联人")
+                Text("related_person".localized)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
                 Button(action: { showContactSelector = true }) {
-                    Text("选择")
+                    Text("select".localized)
                         .font(.system(size: 15))
                         .foregroundColor(Color(UIColor.systemBlue))
                         .padding(.horizontal, 10)
@@ -1828,7 +1833,7 @@ struct GoalDetailView: View {
             .padding(.horizontal, 16)
             VStack(alignment: .leading, spacing: 8) {
                 if goal.relatedContactIds.isEmpty {
-                    Text("未关联联系人")
+                    Text("no_related_contact".localized)
                         .font(.system(size: 14))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                         .padding(.horizontal, 16)
@@ -1900,7 +1905,7 @@ struct GoalDetailView: View {
                 Image(systemName: "photo.fill")
                     .font(.system(size: 18))
                     .foregroundColor(Color(UIColor.systemBlue))
-                Text("背景图片")
+                Text("background_image".localized)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
@@ -1909,7 +1914,7 @@ struct GoalDetailView: View {
                     selectedBackgroundImage = goal.backgroundImage
                     showImagePicker = true
                 }) {
-                    Text("选择")
+                    Text("select".localized)
                         .font(.system(size: 15))
                         .foregroundColor(Color(UIColor.systemBlue))
                         .padding(.horizontal, 10)
@@ -1940,7 +1945,7 @@ struct GoalDetailView: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
                                 )
-                                Text("默认")
+                                Text("default".localized)
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(.white)
                             }
@@ -2017,7 +2022,7 @@ struct GoalDetailView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "clock.arrow.circlepath")
                         .font(.system(size: 16))
-                    Text("查看动态")
+                    Text("view_activity".localized)
                         .font(.system(size: 17, weight: .semibold))
                 }
                 .foregroundColor(.white)
@@ -2030,7 +2035,7 @@ struct GoalDetailView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "trash")
                         .font(.system(size: 16))
-                    Text("删除目标")
+                    Text("delete_goal".localized)
                         .font(.system(size: 17, weight: .semibold))
                 }
                 .foregroundColor(.white)
@@ -2074,7 +2079,7 @@ struct GoalDetailView: View {
             }) {
                 HStack(spacing: 5) {
                     Image(systemName: "chevron.left")
-                    Text("返回")
+                    Text("back".localized)
                 }
                 .foregroundColor(Color(UIColor.systemBlue))
             },
@@ -2082,7 +2087,7 @@ struct GoalDetailView: View {
                 // 保存所有修改
                 saveGoal()
             }) {
-                Text("保存")
+                Text("save".localized)
                     .foregroundColor(Color(UIColor.systemBlue))
             }
         )
@@ -2188,12 +2193,12 @@ struct GoalDetailView: View {
         }
         .alert(isPresented: $showDeleteAlert) {
             Alert(
-                title: Text("移到回收站"),
+                title: Text("move_to_trash".localized),
                 message: Text("确定要将目标 \"\(goal.name)\" 移到回收站吗？目标将在回收站保留\(getTrashExpirationDays())天，期间可以恢复。"),
-                primaryButton: .destructive(Text("移到回收站")) {
+                primaryButton: .destructive(Text("move_to_trash".localized)) {
                     deleteGoal()
                 },
-                secondaryButton: .cancel(Text("取消"))
+                secondaryButton: .cancel(Text("cancel".localized))
             )
         }
         .alert("无法删除目标", isPresented: $showDependencyWarning) {
@@ -2285,12 +2290,12 @@ struct EditFormView: View {
                         switch editingField {
                         case .name:
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("目标名称")
+                                Text("goal_name".localized)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
                                 
-                                TextField("请输入目标名称", text: $editingValue)
+                                TextField("goal_name_placeholder".localized, text: $editingValue)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
@@ -2300,7 +2305,7 @@ struct EditFormView: View {
                         
                         case .goalDescription:
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("目标描述")
+                                Text("goal_description".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                     .padding(.horizontal, 16)
@@ -2347,7 +2352,7 @@ struct EditFormView: View {
                         
                         case .tag:
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("标签")
+                                Text("tags".localized)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
@@ -2355,7 +2360,7 @@ struct EditFormView: View {
                                 HStack {
                                     Image(systemName: "tag")
                                         .foregroundColor(.secondary)
-                                    TextField("请输入标签", text: $editingValue)
+                                    TextField("tag_name_placeholder".localized, text: $editingValue)
                                         .font(.system(size: 16))
                                 }
                                 .padding(.horizontal, 16)
@@ -2366,7 +2371,7 @@ struct EditFormView: View {
                         
                         case .upperProject:
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("上级目标")
+                                Text("upper_project".localized)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
@@ -2374,7 +2379,7 @@ struct EditFormView: View {
                                 HStack {
                                     Image(systemName: "arrow.up.circle")
                                         .foregroundColor(.secondary)
-                                    TextField("请输入上级目标", text: $editingValue)
+                                    TextField("goal_name_placeholder".localized, text: $editingValue)
                                         .font(.system(size: 16))
                                 }
                                 .padding(.horizontal, 16)
@@ -2385,7 +2390,7 @@ struct EditFormView: View {
                         
                         case .subProject:
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("子目标")
+                                Text("sub_project".localized)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
@@ -2393,7 +2398,7 @@ struct EditFormView: View {
                                 HStack {
                                     Image(systemName: "arrow.down.circle")
                                         .foregroundColor(.secondary)
-                                    TextField("请输入子目标", text: $editingValue)
+                                    TextField("goal_name_placeholder".localized, text: $editingValue)
                                         .font(.system(size: 16))
                                 }
                                 .padding(.horizontal, 16)
@@ -2405,7 +2410,7 @@ struct EditFormView: View {
                         case .task:
                             VStack(alignment: .leading, spacing: 16) {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("任务")
+                                    Text("task_title".localized)
                                         .font(.system(size: 14))
                                         .foregroundColor(.secondary)
                                         .padding(.horizontal, 16)
@@ -2413,7 +2418,7 @@ struct EditFormView: View {
                                     HStack {
                                         Image(systemName: "checkmark.circle")
                                             .foregroundColor(.secondary)
-                                        TextField("请输入任务", text: $editingValue)
+                                        TextField("enter_task_title".localized, text: $editingValue)
                                             .font(.system(size: 16))
                                     }
                                     .padding(.horizontal, 16)
@@ -2428,7 +2433,7 @@ struct EditFormView: View {
                                 }) {
                                     HStack {
                                         Image(systemName: "bell.fill")
-                                        Text("同步至“提醒事项”")
+                                        Text("sync_to_reminders".localized)
                                             .font(.system(size: 16, weight: .medium))
                                     }
                                     .frame(maxWidth: .infinity)
@@ -2443,7 +2448,7 @@ struct EditFormView: View {
                         
                         case .dueDate:
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("截止日期")
+                                Text("due_date".localized)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
@@ -2451,7 +2456,7 @@ struct EditFormView: View {
                                 HStack {
                                     Image(systemName: "calendar")
                                         .foregroundColor(.secondary)
-                                    Text("请使用日期选择器设置截止日期")
+                                    Text("due_date".localized)
                                         .font(.system(size: 16))
                                         .foregroundColor(.gray)
                                 }
@@ -2462,13 +2467,13 @@ struct EditFormView: View {
                             }
                         
                         case .none:
-                            Text("请选择要编辑的内容")
+                            Text("please_select_content".localized)
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
                                 .padding()
                             
                         @unknown default:
-                            Text("未知编辑类型")
+                            Text("unknown_edit_type".localized)
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
                                 .padding()
@@ -2480,10 +2485,10 @@ struct EditFormView: View {
             }
             .navigationBarTitle(getNavigationTitle(), displayMode: .inline)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button("cancel".localized) {
                     dismiss()
                 },
-                trailing: Button("保存") {
+                trailing: Button("save".localized) {
                     // 直接调用回调函数而不是发送通知
                     if let onSave = onSave {
                         onSave(editingField, editingValue, editingProgress)
@@ -2493,10 +2498,10 @@ struct EditFormView: View {
             )
         }
         .alert(isPresented: $showingAlert) {
-            if alertMessage == "需要访问提醒事项权限才能导入任务" {
-                Alert(title: Text("提醒事项"), message: Text(alertMessage), primaryButton: .default(Text("去设置"), action: { openSettings() }), secondaryButton: .cancel(Text("取消")))
+            if alertMessage == "needs_reminder_permission".localized {
+                Alert(title: Text("reminders".localized), message: Text(alertMessage), primaryButton: .default(Text("settings".localized), action: { openSettings() }), secondaryButton: .cancel(Text("cancel".localized)))
             } else {
-                Alert(title: Text("提醒事项"), message: Text(alertMessage), dismissButton: .default(Text("确定")))
+                Alert(title: Text("reminders".localized), message: Text(alertMessage), dismissButton: .default(Text("ok".localized)))
             }
         }
     }
@@ -2504,25 +2509,25 @@ struct EditFormView: View {
     private func getNavigationTitle() -> String {
         switch editingField {
         case .name:
-            return "编辑目标名称"
+            return "edit_goal_name".localized
         case .goalDescription:
-            return "编辑目标描述"
+            return "edit_goal_description".localized
         case .progress:
-            return "调整进度"
+            return "adjust_progress".localized
         case .tag:
-            return editingValue.isEmpty ? "添加标签" : "编辑标签"
+            return editingValue.isEmpty ? "add_tag".localized : "edit_tag".localized
         case .upperProject:
-            return editingValue.isEmpty ? "添加上级目标" : "编辑上级目标"
+            return editingValue.isEmpty ? "add_upper_project".localized : "edit_upper_project".localized
         case .subProject:
-            return editingValue.isEmpty ? "添加子目标" : "编辑子目标"
+            return editingValue.isEmpty ? "add_sub_project".localized : "edit_sub_project".localized
         case .task:
-            return editingValue.isEmpty ? "添加任务" : "编辑任务"
+            return editingValue.isEmpty ? "add_task".localized : "edit_task".localized
         case .dueDate:
-            return "设置截止日期"
+            return "set_due_date".localized
         case .none:
-            return "编辑"
+            return "edit".localized
         @unknown default:
-            return "编辑"
+            return "edit".localized
         }
     }
     
@@ -2534,7 +2539,7 @@ struct EditFormView: View {
                 if granted {
                     self.createReminder()
                 } else {
-                    self.alertMessage = "需要访问提醒事项权限才能导入任务"
+                    self.alertMessage = "needs_reminder_permission".localized
                     self.showingAlert = true
                 }
             }
@@ -2544,18 +2549,18 @@ struct EditFormView: View {
     // 创建提醒事项
     private func createReminder() {
         let reminder = EKReminder(eventStore: eventStore)
-        reminder.title = editingValue.isEmpty ? "新任务" : editingValue
-        reminder.notes = "从目标管理应用导入"
+        reminder.title = editingValue.isEmpty ? "new_task".localized : editingValue
+        reminder.notes = "imported_from_app".localized
         
         // 获取默认的提醒事项日历
         reminder.calendar = eventStore.defaultCalendarForNewReminders()
         
         do {
             try eventStore.save(reminder, commit: true)
-            alertMessage = "任务已成功导入到提醒事项"
+            alertMessage = "import_success".localized
             showingAlert = true
         } catch {
-            alertMessage = "导入失败：\(error.localizedDescription)"
+            alertMessage = "import_failed_prefix".localized + error.localizedDescription
             showingAlert = true
         }
     }
@@ -2584,7 +2589,7 @@ struct AddTaskView: View {
             VStack(spacing: 16) {
                 // 任务标题输入框
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("任务标题")
+                    Text("task_title".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 16)
@@ -2593,7 +2598,7 @@ struct AddTaskView: View {
                         Image(systemName: "checkmark.circle")
                             .foregroundColor(.gray)
                         
-                        TextField("请输入任务标题", text: $taskTitle)
+                        TextField("enter_task_title".localized, text: $taskTitle)
                             .autocapitalization(.none)
                             .disableAutocorrection(true)
                     }
@@ -2607,10 +2612,10 @@ struct AddTaskView: View {
             }
             .padding(.top, 16)
             .background(Color(.systemBackground))
-            .navigationBarTitle("添加任务", displayMode: .inline)
+            .navigationBarTitle("add_task".localized, displayMode: .inline)
             .navigationBarBackButtonHidden(true)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button("cancel".localized) {
                     dismiss()
                 },
                 trailing: Button(action: {
@@ -2620,7 +2625,7 @@ struct AddTaskView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .semibold))
-                        Text("添加")
+                        Text("add".localized)
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(.white)
@@ -2682,7 +2687,7 @@ struct GoalSelectorView: View {
            let foundGoal = allGoals.first(where: { $0.id == uuid }) {
             return foundGoal.name
         }
-        return "未知目标"
+        return "unknown_goal".localized
     }
     
     var filteredGoals: [String] {
@@ -2704,7 +2709,7 @@ struct GoalSelectorView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                     
-                    TextField("搜索目标", text: $searchText)
+                    TextField("search_goal".localized, text: $searchText)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                     
@@ -2727,7 +2732,7 @@ struct GoalSelectorView: View {
                 // 已选目标
                 if !selectedGoals.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("已选目标")
+                        Text("selected_goals".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .padding(.horizontal)
@@ -2791,9 +2796,9 @@ struct GoalSelectorView: View {
                 }
             }
             .background(Color(.systemBackground))
-            .navigationBarTitle(selectorType == "upperProject" ? "选择上级目标" : "选择子目标", displayMode: .inline)
+            .navigationBarTitle(selectorType == "upperProject" ? "choose_upper_project".localized : "choose_sub_project".localized, displayMode: .inline)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button("cancel".localized) {
                     dismiss()
                 },
                 trailing: Button(action: {
@@ -2803,7 +2808,7 @@ struct GoalSelectorView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .semibold))
-                        Text("添加")
+                        Text("add".localized)
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(.white)

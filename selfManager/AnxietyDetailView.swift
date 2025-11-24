@@ -24,7 +24,7 @@ struct AnxietyDetailView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     AnxietyStatsCard(total: totalCount, weekly: weeklyCount)
-                    SectionHeader(title: "焦虑列表")
+                    SectionHeader(title: "anxiety_list".localized)
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(anxietyGoals) { goal in
                             NavigationLink(destination: GoalDetailView(goal: goal)) {
@@ -35,7 +35,7 @@ struct AnxietyDetailView: View {
                 }
                 .padding(16)
             }
-            .navigationTitle("焦虑中心")
+            .navigationTitle("anxiety_center".localized)
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(UIColor.systemGroupedBackground))
             .navigationBarBackButtonHidden(true)
@@ -51,7 +51,7 @@ struct AnxietyDetailView: View {
                         HStack(spacing: 5) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 17, weight: .semibold))
-                            Text("返回")
+                            Text("back".localized)
                         }
                     }
                 }
@@ -80,7 +80,7 @@ private struct AnxietyStatsCard: View {
         VStack(spacing: 14) {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("总焦虑数")
+                    Text("total_anxiety".localized)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text("\(total)")
@@ -89,7 +89,7 @@ private struct AnxietyStatsCard: View {
                 }
                 Spacer()
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("近7天新增")
+                    Text("weekly_new".localized)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     HStack(alignment: .bottom, spacing: 6) {
@@ -143,7 +143,7 @@ private struct AnxietyCard: View {
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
             }
-            Text("进度 \(Int(goal.progress * 100))%")
+            Text("progress".localized + " \(Int(goal.progress * 100))%")
                 .font(.system(size: 12))
                 .foregroundColor(Color(UIColor.secondaryLabel))
             ProgressView(value: min(max(goal.progress, 0), 1))

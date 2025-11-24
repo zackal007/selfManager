@@ -47,6 +47,31 @@ struct BuiltInTags {
         return allNames.map { normalize($0) }.contains(n)
     }
 
+    static func localizedName(for tag: String) -> String {
+        switch normalize(tag) {
+        case normalize(achievement):
+            return "tag_achievement".localized
+        case normalize(anxiety):
+            return "tag_anxiety".localized
+        default:
+            return tag
+        }
+    }
+
+    static func localizedDescription(for tag: String) -> String? {
+        switch normalize(tag) {
+        case normalize(achievement):
+            return "tag_achievement_desc".localized
+        case normalize(anxiety):
+            return "tag_anxiety_desc".localized
+        default:
+            return nil
+        }
+    }
+
+    static var systemCategoryLocalizedName: String { "tag_category_system_built_in".localized }
+    static var systemCategoryLocalizedDescription: String { "tag_category_system_built_in_desc".localized }
+
     // 规范化（去空白、统一大小写）
     private static func normalize(_ tag: String) -> String {
         tag.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

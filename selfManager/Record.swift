@@ -19,12 +19,12 @@ enum RecordType: Int, Codable, Hashable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .recent: return "近期"
-        case .daily: return "日记"
-        case .weekly: return "周记"
-        case .monthly: return "月记"
-        case .quarterly: return "季记"
-        case .yearly: return "年记"
+        case .recent: return "record_tab_recent".localized
+        case .daily: return "record_tab_daily".localized
+        case .weekly: return "record_tab_weekly".localized
+        case .monthly: return "record_tab_monthly".localized
+        case .quarterly: return "record_tab_quarterly".localized
+        case .yearly: return "record_tab_yearly".localized
         }
     }
 }

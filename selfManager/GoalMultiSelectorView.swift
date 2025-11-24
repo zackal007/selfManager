@@ -38,7 +38,7 @@ struct GoalMultiSelectorView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                     
-                    TextField("搜索目标", text: $searchText)
+                    TextField("search_goal".localized, text: $searchText)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                     
@@ -60,7 +60,7 @@ struct GoalMultiSelectorView: View {
                 // 已选目标
                 if !contact.relatedGoalIds.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("已选目标")
+                        Text("selected_goals".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .padding(.horizontal)
@@ -108,12 +108,12 @@ struct GoalMultiSelectorView: View {
                 }
                 .listStyle(InsetGroupedListStyle())
             }
-            .navigationBarTitle("选择关联目标", displayMode: .inline)
+            .navigationBarTitle("select_related_goals".localized, displayMode: .inline)
             .navigationBarItems(
-                leading: Button("取消") {
+                leading: Button("cancel".localized) {
                     dismiss()
                 },
-                trailing: Button("完成") {
+                trailing: Button("save".localized) {
                     saveChanges()
                     dismiss()
                 }

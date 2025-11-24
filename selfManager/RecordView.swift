@@ -99,12 +99,12 @@ struct RecordView: View {
                         .transition(.opacity)
                     }
                     if selectedRecordType == .recent {
-                        Text("最近记录")
+                        Text("recent_records".localized)
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundColor(Color(UIColor.label))
                             .padding(.leading, 8)
                             .contentTransition(.opacity)
-                            
+                                
                             .transition(.opacity)
                     }
                 }
@@ -155,13 +155,7 @@ struct RecordView: View {
                                     loadCurrentRecord()
                                     contentModified = false
                                 }) {
-                                    Label(
-                                        selectedRecordType == .daily ? "跳转到今天" :
-                                        selectedRecordType == .weekly ? "跳转到本周" :
-                                        selectedRecordType == .monthly ? "跳转到本月" :
-                                        selectedRecordType == .quarterly ? "跳转到本季" : "跳转到本年",
-                                        systemImage: "arrow.uturn.backward.circle"
-                                    )
+                                    Label(jumpLabelKey(for: selectedRecordType).localized, systemImage: "arrow.uturn.backward.circle")
                                 }
                                 if selectedRecordType == .daily {
                                     Divider()
@@ -170,7 +164,7 @@ struct RecordView: View {
                                         GoalActivityManager.shared.syncDailyCompletionSummaryToDiary(for: currentDate, modelContext: modelContext)
                                         loadCurrentRecord()
                                     }) {
-                                        Label("汇总今日目标完成情况", systemImage: "doc.on.doc")
+                                        Label("summarize_today_goals".localized, systemImage: "doc.on.doc")
                                     }
                                 }
                                 if selectedRecordType == .weekly || selectedRecordType == .monthly || selectedRecordType == .quarterly || selectedRecordType == .yearly {
@@ -179,12 +173,7 @@ struct RecordView: View {
                                         dismissKeyboard()
                                         refreshAggregationForCurrentPeriod()
                                     }) {
-                                        Label(
-                                            selectedRecordType == .weekly ? "汇总本周" :
-                                            selectedRecordType == .monthly ? "汇总本月" :
-                                            selectedRecordType == .quarterly ? "汇总本季" : "汇总本年",
-                                            systemImage: "text.append"
-                                        )
+                                        Label(summarizeLabelKey(for: selectedRecordType).localized, systemImage: "text.append")
                                     }
                                 }
                                 Divider()
@@ -192,13 +181,7 @@ struct RecordView: View {
                                     dismissKeyboard()
                                     clearCurrentRecord()
                                 }) {
-                                    Label(
-                                        selectedRecordType == .daily ? "清空日记" :
-                                        selectedRecordType == .weekly ? "清空周记" :
-                                        selectedRecordType == .monthly ? "清空月记" :
-                                        selectedRecordType == .quarterly ? "清空季记" : "清空年记",
-                                        systemImage: "trash"
-                                    )
+                                    Label(clearLabelKey(for: selectedRecordType).localized, systemImage: "trash")
                                 }
                             }
                         }
@@ -316,6 +299,38 @@ private struct TopTabChip: View {
         }
     }
     
+    private func jumpLabelKey(for type: RecordType) -> String {
+        switch type {
+        case .daily: return "jump_to_today"
+        case .weekly: return "jump_to_this_week"
+        case .monthly: return "jump_to_this_month"
+        case .quarterly: return "jump_to_this_quarter"
+        case .yearly: return "jump_to_this_year"
+        default: return "jump_to_today"
+        }
+    }
+    
+    private func summarizeLabelKey(for type: RecordType) -> String {
+        switch type {
+        case .weekly: return "summarize_this_week"
+        case .monthly: return "summarize_this_month"
+        case .quarterly: return "summarize_this_quarter"
+        case .yearly: return "summarize_this_year"
+        default: return "summarize_today_goals"
+        }
+    }
+    
+    private func clearLabelKey(for type: RecordType) -> String {
+        switch type {
+        case .daily: return "clear_daily"
+        case .weekly: return "clear_weekly"
+        case .monthly: return "clear_monthly"
+        case .quarterly: return "clear_quarterly"
+        case .yearly: return "clear_yearly"
+        default: return "clear_daily"
+        }
+    }
+
     // 获取记录类型对应的标题
     private func getRecordTitle(for recordType: RecordType) -> String {
         let calendar = self.calendar
@@ -1226,7 +1241,7 @@ private struct TopTabChip: View {
                                                             .font(.headline)
                                                             .foregroundColor(.secondary)
                                                         
-                                                        Text("开始写下你的第一篇记录吧")
+                                                        Text("start_first_record".localized)
                                                             .font(.body)
                                                             .foregroundColor(.secondary)
                                                             .multilineTextAlignment(.center)
@@ -1438,7 +1453,7 @@ private struct TopTabChip: View {
                         .navigationTitle("我的标签")
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button("back".localized) {
                                     navigationManager.pop(for: selectedTab)
                                 }
                             }
@@ -1449,7 +1464,7 @@ private struct TopTabChip: View {
                         .navigationTitle("设置")
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button("back".localized) {
                                     navigationManager.pop(for: selectedTab)
                                 }
                             }
@@ -1462,7 +1477,7 @@ private struct TopTabChip: View {
                                 .navigationTitle("个人信息")
                                 .toolbar {
                                     ToolbarItem(placement: .navigationBarLeading) {
-                                        Button("返回") {
+                                        Button("back".localized) {
                                             navigationManager.pop(for: selectedTab)
                                         }
                                     }
@@ -1672,65 +1687,77 @@ private struct TopTabChip: View {
 
     // 顶栏内联日期文本：根据记录类型显示不同格式（简洁版）
     var headerInlineDateText: String {
+        let isEnglish = LocalizationManager.shared.currentLanguage == .english
         switch selectedRecordType {
         case .recent:
             return ""
         case .daily:
             let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy年MM月dd日"
+            formatter.dateFormat = isEnglish ? "yyyy.MM.dd" : "yyyy年MM月dd日"
             return formatter.string(from: currentDate)
         case .weekly:
             let calendar = self.calendar
             let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
-            return "\(year)年第\(week)周"
+            return isEnglish ? "\(year) Week \(week)" : "\(year)年第\(week)周"
         case .monthly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
-            return "\(year)年\(month)月"
+            if isEnglish {
+                let mm = String(format: "%02d", month)
+                return "\(year).\(mm)"
+            } else {
+                return "\(year)年\(month)月"
+            }
         case .quarterly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
-            return "\(year)年Q\(quarter)"
+            return isEnglish ? "\(year) Q\(quarter)" : "\(year)年第\(quarter)季度"
         case .yearly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
-            return "\(year)年"
+            return isEnglish ? "\(year)" : "\(year)年"
         }
     }
     
     // 完整日期文本：用于按钮提示或长按菜单
     var headerFullDateText: String {
+        let isEnglish = LocalizationManager.shared.currentLanguage == .english
         switch selectedRecordType {
         case .recent:
             return ""
         case .daily:
             let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy年MM月dd日"
+            formatter.dateFormat = isEnglish ? "yyyy.MM.dd" : "yyyy年MM月dd日"
             return formatter.string(from: currentDate)
         case .weekly:
             let calendar = self.calendar
             let year = calendar.component(.yearForWeekOfYear, from: currentDate)
             let week = calendar.component(.weekOfYear, from: currentDate)
-            return "\(year)年第\(week)周"
+            return isEnglish ? "\(year) Week \(week)" : "\(year)年第\(week)周"
         case .monthly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
-            return "\(year)年\(month)月"
+            if isEnglish {
+                let mm = String(format: "%02d", month)
+                return "\(year).\(mm)"
+            } else {
+                return "\(year)年\(month)月"
+            }
         case .quarterly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
             let month = calendar.component(.month, from: currentDate)
             let quarter = (month - 1) / 3 + 1
-            return "\(year)年第\(quarter)季度"
+            return isEnglish ? "\(year) Q\(quarter)" : "\(year)年第\(quarter)季度"
         case .yearly:
             let calendar = self.calendar
             let year = calendar.component(.year, from: currentDate)
-            return "\(year)年"
+            return isEnglish ? "\(year)" : "\(year)年"
         }
     }
     

@@ -210,10 +210,10 @@ struct ContactView: View {
                     case .tags:
                         TagsView()
                             .navigationBarBackButtonHidden(true)
-                            .navigationTitle("我的标签")
+                            .navigationTitle("tags".localized)
                             .toolbar {
                                 ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("返回") {
+                                    Button("back".localized) {
                                         navigationManager.pop(for: selectedTab)
                                     }
                                 }
@@ -221,10 +221,10 @@ struct ContactView: View {
                     case .settings:
                         SettingsView()
                             .navigationBarBackButtonHidden(true)
-                            .navigationTitle("设置")
+                            .navigationTitle("settings".localized)
                             .toolbar {
                                 ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("返回") {
+                                    Button("back".localized) {
                                         navigationManager.pop(for: selectedTab)
                                     }
                                 }
@@ -234,10 +234,10 @@ struct ContactView: View {
                             if let user = allUsers.first {
                                 UserEditView(user: user)
                                     .navigationBarBackButtonHidden(true)
-                                    .navigationTitle("个人信息")
+                                    .navigationTitle("user_info".localized)
                                     .toolbar {
                                         ToolbarItem(placement: .navigationBarLeading) {
-                                            Button("返回") {
+                                            Button("back".localized) {
                                                 navigationManager.pop(for: selectedTab)
                                             }
                                         }
@@ -342,7 +342,7 @@ struct ContactView: View {
             // 第一行：标题和按钮
             HStack(alignment: .center) {
                 // 移除侧边栏按钮，只保留标题
-                Text("我的人脉")
+                Text("contacts".localized)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(Color(UIColor.label))
                     .padding(.leading, 8)
@@ -381,7 +381,7 @@ struct ContactView: View {
                     Button(action: {
                         showContactTrashView = true
                     }) {
-                        Label("回收站", systemImage: "trash")
+                        Label("recycle_bin".localized, systemImage: "trash")
                     }
                 }
             }
@@ -393,37 +393,37 @@ struct ContactView: View {
                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         // 全部选项
-                        TopTabChip(title: "全部", isSelected: selectedSegment == 0) {
+                        TopTabChip(title: "contacts_all".localized, isSelected: selectedSegment == 0) {
                             selectedSegment = 0
                         }
 
                         // 家人选项
-                        TopTabChip(title: "家人", isSelected: selectedSegment == 1) {
+                        TopTabChip(title: "contacts_family".localized, isSelected: selectedSegment == 1) {
                             selectedSegment = 1
                         }
 
                         // 挚友选项
-                        TopTabChip(title: "挚友", isSelected: selectedSegment == 2) {
+                        TopTabChip(title: "contacts_friend".localized, isSelected: selectedSegment == 2) {
                             selectedSegment = 2
                         }
 
                         // 职场选项
-                        TopTabChip(title: "职场", isSelected: selectedSegment == 3) {
+                        TopTabChip(title: "contacts_work".localized, isSelected: selectedSegment == 3) {
                             selectedSegment = 3
                         }
 
                         // 榜样选项
-                        TopTabChip(title: "榜样", isSelected: selectedSegment == 4) {
+                        TopTabChip(title: "contacts_role_model".localized, isSelected: selectedSegment == 4) {
                             selectedSegment = 4
                         }
 
                         // 其他选项
-                        TopTabChip(title: "其他", isSelected: selectedSegment == 5) {
+                        TopTabChip(title: "contacts_other".localized, isSelected: selectedSegment == 5) {
                             selectedSegment = 5
                         }
 
                         // 有用选项（医生/律师/富人/官员/混混）
-                        TopTabChip(title: "有用", isSelected: selectedSegment == 6) {
+                        TopTabChip(title: "contacts_useful".localized, isSelected: selectedSegment == 6) {
                             selectedSegment = 6
                         }
                     }
@@ -458,37 +458,37 @@ struct ContactView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     // 全部选项
-                    TopTabChip(title: "全部", isSelected: selectedSegment == 0) {
+                    TopTabChip(title: "contacts_all".localized, isSelected: selectedSegment == 0) {
                         selectedSegment = 0
                     }
                     
                     // 家人选项
-                    TopTabChip(title: "家人", isSelected: selectedSegment == 1) {
+                    TopTabChip(title: "contacts_family".localized, isSelected: selectedSegment == 1) {
                         selectedSegment = 1
                     }
                     
                     // 挚友选项
-                    TopTabChip(title: "挚友", isSelected: selectedSegment == 2) {
+                    TopTabChip(title: "contacts_friend".localized, isSelected: selectedSegment == 2) {
                         selectedSegment = 2
                     }
                     
                     // 职场选项
-                    TopTabChip(title: "职场", isSelected: selectedSegment == 3) {
+                    TopTabChip(title: "contacts_work".localized, isSelected: selectedSegment == 3) {
                         selectedSegment = 3
                     }
                     
                     // 榜样选项
-                    TopTabChip(title: "榜样", isSelected: selectedSegment == 4) {
+                    TopTabChip(title: "contacts_role_model".localized, isSelected: selectedSegment == 4) {
                         selectedSegment = 4
                     }
 
                     // 其他选项
-                    TopTabChip(title: "其他", isSelected: selectedSegment == 5) {
+                    TopTabChip(title: "contacts_other".localized, isSelected: selectedSegment == 5) {
                         selectedSegment = 5
                     }
 
                     // 有用选项（医生/律师/富人/官员/混混）
-                    TopTabChip(title: "有用", isSelected: selectedSegment == 6) {
+                    TopTabChip(title: "contacts_useful".localized, isSelected: selectedSegment == 6) {
                         selectedSegment = 6
                     }
                 }
@@ -507,7 +507,7 @@ struct ContactView: View {
                 .foregroundColor(.gray)
             
             // 文本输入框：联系人搜索关键词
-            TextField("搜索联系人", text: $searchText)
+            TextField("search_contacts_placeholder".localized, text: $searchText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
         }
         .padding(.horizontal, 16)
@@ -650,12 +650,12 @@ private struct TopTabChip: View {
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
             
-            Text(searchText.isEmpty ? "暂无联系人" : "未找到匹配的联系人")
+            Text(searchText.isEmpty ? "empty_no_contacts".localized : "empty_no_matches".localized)
                 .font(.title2)
                 .foregroundColor(.gray)
             
             if searchText.isEmpty {
-                Button("添加第一个联系人") {
+                Button("add_first_contact".localized) {
                     showAddContactSheet = true
                 }
                 .buttonStyle(.borderedProminent)
@@ -673,7 +673,7 @@ private struct TopTabChip: View {
                 viewMode = viewMode == .gallery ? .list : .gallery
             }
         }) {
-            Label(viewMode == .gallery ? "列表视图" : "卡片视图", 
+            Label(viewMode == .gallery ? "list_view".localized : "gallery_view".localized, 
                   systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
         }
     }
@@ -684,7 +684,7 @@ private struct TopTabChip: View {
             Button(action: {
                 categoryOption = .time
             }) {
-                Text("时间")
+                Text("category_time".localized)
                 if categoryOption == .time {
                     Image(systemName: "checkmark")
                 }
@@ -693,13 +693,13 @@ private struct TopTabChip: View {
             Button(action: {
                 categoryOption = .type
             }) {
-                Text("类型")
+                Text("category_type".localized)
                 if categoryOption == .type {
                     Image(systemName: "checkmark")
                 }
             }
         } label: {
-            Label("分类", systemImage: "folder")
+            Label("category".localized, systemImage: "folder")
         }
     }
     
@@ -709,7 +709,7 @@ private struct TopTabChip: View {
             Button(action: {
                 sortOption = .name
             }) {
-                Text("姓名")
+                Text("sort_name".localized)
                 if sortOption == .name {
                     Image(systemName: "checkmark")
                 }
@@ -718,7 +718,7 @@ private struct TopTabChip: View {
             Button(action: {
                 sortOption = .createTime
             }) {
-                Text("创建时间")
+                Text("sort_create_time".localized)
                 if sortOption == .createTime {
                     Image(systemName: "checkmark")
                 }
@@ -727,7 +727,7 @@ private struct TopTabChip: View {
             Button(action: {
                 sortOption = .modifyTime
             }) {
-                Text("修改时间")
+                Text("sort_modify_time".localized)
                 if sortOption == .modifyTime {
                     Image(systemName: "checkmark")
                 }
@@ -736,13 +736,13 @@ private struct TopTabChip: View {
             Button(action: {
                 sortOption = .visitTime
             }) {
-                Text("联系时间")
+                Text("sort_visit_time".localized)
                 if sortOption == .visitTime {
                     Image(systemName: "checkmark")
                 }
             }
         } label: {
-            Label("排序", systemImage: "arrow.up.arrow.down")
+            Label("sort".localized, systemImage: "arrow.up.arrow.down")
         }
     }
 }

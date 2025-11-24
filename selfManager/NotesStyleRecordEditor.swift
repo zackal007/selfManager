@@ -107,7 +107,7 @@ struct NotesStyleRecordEditor: View {
             
             
             if text.isEmpty {
-                Text("记录你的想法...")
+                Text("record_editor_placeholder".localized)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 16)

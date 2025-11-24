@@ -244,14 +244,14 @@ struct GoalView: View {
     
     private var sortMenuContent: some View {
         Menu {
-            sortOptionButton(title: "名称", option: .name)
-            sortOptionButton(title: "创建时间", option: .createTime)
-            sortOptionButton(title: "修改时间", option: .modifyTime)
-            sortOptionButton(title: "访问时间", option: .visitTime)
-            sortOptionButton(title: "优先级", option: .importance)
-            sortOptionButton(title: "进度", option: .progress)
+            sortOptionButton(title: "sort_name".localized, option: .name)
+            sortOptionButton(title: "sort_create_time".localized, option: .createTime)
+            sortOptionButton(title: "sort_modify_time".localized, option: .modifyTime)
+            sortOptionButton(title: "sort_visit_time".localized, option: .visitTime)
+            sortOptionButton(title: "priority".localized, option: .importance)
+            sortOptionButton(title: "progress".localized, option: .progress)
         } label: {
-            Label("排序", systemImage: "arrow.up.arrow.down")
+            Label("sort".localized, systemImage: "arrow.up.arrow.down")
         }
     }
     
@@ -265,7 +265,7 @@ struct GoalView: View {
                     viewMode = viewMode == .gallery ? .list : .gallery
                 }
             }) {
-                Label(viewMode == .gallery ? "列表视图" : "卡片视图", 
+                Label(viewMode == .gallery ? "list_view".localized : "gallery_view".localized, 
                       systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
             }
             
@@ -280,7 +280,7 @@ struct GoalView: View {
             Button(action: {
                 showTrashView = true
             }) {
-                Label("回收站", systemImage: "trash")
+                Label("recycle_bin".localized, systemImage: "trash")
             }
         } label: {
             ZStack {
@@ -472,7 +472,7 @@ struct GoalView: View {
                         // 第一行：标题和按钮
                         HStack(alignment: .center) {
                             // 移除侧边栏按钮，只保留标题
-                            Text("目标/计划")
+                            Text("goals_plans".localized)
                                 .font(.system(size: 20, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(UIColor.label))
                                 .padding(.leading, 8)
@@ -513,7 +513,7 @@ struct GoalView: View {
                                     }
                                 }) {
                                     HStack(spacing: 8) {
-                                        Text("\(currentYear)年")
+                                        Text("\(currentYear)" + "year_suffix".localized)
                                             .font(.system(size: 15, weight: .medium))
                                             .foregroundColor(Color(UIColor.label))
                                             .lineLimit(1)
@@ -550,7 +550,7 @@ struct GoalView: View {
                            ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 10) {
                                     // 全部选项
-                                    TopTabChip(title: "所有", isSelected: selectedGoalType == nil) {
+                                    TopTabChip(title: "all".localized, isSelected: selectedGoalType == nil) {
                                         selectedGoalType = nil
                                         selectedSegment = 0
                                         syncGoalTypeIndex()
@@ -558,7 +558,7 @@ struct GoalView: View {
 
                                     // 各种目标类型
                                     ForEach(GoalType.allCases, id: \.self) { type in
-                                        TopTabChip(title: type.rawValue, isSelected: selectedGoalType == type) {
+                                        TopTabChip(title: type.localizedTitle, isSelected: selectedGoalType == type) {
                                             selectedGoalType = type
                                             syncGoalTypeIndex()
                                             // 根据选择的目标类型设置selectedSegment
@@ -626,7 +626,7 @@ struct GoalView: View {
                                         let filtersActive = (popupSelectedGoalType != nil) || (selectedImportance != nil) || (!searchText.isEmpty) || (!selectedTags.isEmpty) || (selectedYear != nil)
                                         if filtersActive {
                                             HStack(spacing: 10) {
-                                                Text("当前为筛选结果")
+                                                Text("filtered_results".localized)
                                                     .font(.caption)
                                                     .foregroundColor(Color(UIColor.secondaryLabel))
                                                     .padding(.horizontal, 12)
@@ -653,7 +653,7 @@ struct GoalView: View {
 
                                                     updateFilteredGoals()
                                                 }) {
-                                                    Text("取消筛选")
+                                                    Text("clear_filter".localized)
                                                         .font(.caption)
                                                         .foregroundColor(Color(UIColor.systemBlue))
                                                         .underline()
@@ -666,7 +666,7 @@ struct GoalView: View {
                                             // 当筛选结果为空时显示“无结果”提示
                                             if allTabDisplayGoals.isEmpty {
                                                 HStack {
-                                                    Text("无结果")
+                                                    Text("no_results".localized)
                                                         .font(.caption)
                                                         .foregroundColor(Color(UIColor.secondaryLabel))
                                                     Spacer()
@@ -805,10 +805,10 @@ struct GoalView: View {
                 case .tags:
                     TagsView()
                         .navigationBarBackButtonHidden(true)
-                        .navigationTitle("我的标签")
+                        .navigationTitle("tags".localized)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button("back".localized) {
                                     navigationManager.pop(for: selectedTab)
                                 }
                             }
@@ -816,10 +816,10 @@ struct GoalView: View {
                 case .settings:
                     SettingsView()
                         .navigationBarBackButtonHidden(true)
-                        .navigationTitle("设置")
+                        .navigationTitle("settings".localized)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Button("返回") {
+                                Button("back".localized) {
                                     navigationManager.pop(for: selectedTab)
                                 }
                             }
@@ -828,10 +828,10 @@ struct GoalView: View {
                     if let user = allUsers.first {
                         UserEditView(user: user)
                             .navigationBarBackButtonHidden(true)
-                            .navigationTitle("我的信息")
+                            .navigationTitle("user_info".localized)
                             .toolbar {
                                 ToolbarItem(placement: .navigationBarLeading) {
-                                    Button("返回") {
+                                    Button("back".localized) {
                                         navigationManager.pop(for: selectedTab)
                                     }
                                 }
@@ -1068,7 +1068,7 @@ struct GoalView: View {
                 .padding(.leading, 8)
             
             // 输入框：搜索关键词（Goal页搜索主入口）
-            TextField("搜索目标...", text: $searchText)
+            TextField("search_goal".localized, text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
                 .onTapGesture {
                     isSearching = true
@@ -1635,7 +1635,7 @@ struct AddGoalView: View {
     // 表单字段
     @State private var goalName = ""
     @State private var goalDescription = ""
-    @State private var selectedCategory = "短期目标"
+    @State private var selectedCategory: GoalType = .shortTerm
     @State private var hasDueDate = false
     @State private var dueDate = Date()
     
@@ -1644,18 +1644,18 @@ struct AddGoalView: View {
     @State private var errorMessage = ""
     
     // 可选类别
-    private let categories = ["人生目标", "年度目标", "短期目标", "习惯"]
+    private let categories: [GoalType] = GoalType.allCases
     
     // 为不同类别提供图标
-    private func categoryIcon(for category: String) -> String {
+    private func categoryIcon(for category: GoalType) -> String {
         switch category {
-        case "人生目标":
+        case .life:
             return "star.fill"
-        case "年度目标":
+        case .yearly:
             return "calendar"
-        case "短期目标":
+        case .shortTerm:
             return "target"
-        case "习惯":
+        case .habit:
             return "repeat"
         default:
             return "circle"
@@ -1685,14 +1685,14 @@ struct AddGoalView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         // 目标名称输入框
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("目标名称")
+                            Text("goal_name".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
                             HStack(spacing: 8) {
                                 Image(systemName: "target")
                                     .foregroundColor(.secondary)
-                                TextField("请输入目标名称", text: $goalName)
+                                TextField("goal_name_placeholder".localized, text: $goalName)
                                     .textFieldStyle(PlainTextFieldStyle())
                                 if !goalName.isEmpty {
                                     Button(action: { goalName = "" }) {
@@ -1706,7 +1706,7 @@ struct AddGoalView: View {
                             .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
                             
                             if goalName.isEmpty {
-                                Text("目标名称不能为空")
+                                Text("goal_name_empty".localized)
                                     .font(.footnote)
                                     .foregroundColor(.red)
                             }
@@ -1714,7 +1714,7 @@ struct AddGoalView: View {
                         
                         // 目标描述输入框
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("目标描述")
+                            Text("goal_description".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
@@ -1722,7 +1722,7 @@ struct AddGoalView: View {
                                 Image(systemName: "text.alignleft")
                                     .foregroundColor(.secondary)
                                     .padding(.top, 2)
-                                TextField("请输入目标描述（可选）", text: $goalDescription, axis: .vertical)
+                                TextField("goal_description_placeholder".localized, text: $goalDescription, axis: .vertical)
                                     .textFieldStyle(PlainTextFieldStyle())
                                     .lineLimit(3...6)
                             }
@@ -1733,32 +1733,32 @@ struct AddGoalView: View {
                         
                         // 目标类别选择
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("目标类别")
+                            Text("goal_type".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 8) {
-                                    ForEach(categories, id: \.self) { category in
-                                        Button(action: {
-                                            selectedCategory = category
-                                        }) {
-                                            HStack(spacing: 4) {
-                                                Image(systemName: categoryIcon(for: category))
-                                                    .font(.system(size: 12))
-                                                Text(category)
-                                                    .font(.system(size: 13))
-                                            }
-                                            .foregroundColor(selectedCategory == category ? .white : .primary)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 8)
-                                            .background(
-                                                Capsule()
-                                                    .fill(selectedCategory == category ? Color.blue : Color(UIColor.systemGray5))
-                                            )
+                                ForEach(categories, id: \.self) { category in
+                                    Button(action: {
+                                        selectedCategory = category
+                                    }) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: categoryIcon(for: category))
+                                                .font(.system(size: 12))
+                                            Text(category.localizedTitle)
+                                                .font(.system(size: 13))
                                         }
-                                        .buttonStyle(PlainButtonStyle())
+                                        .foregroundColor(selectedCategory == category ? .white : .primary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            Capsule()
+                                                .fill(selectedCategory == category ? Color.blue : Color(UIColor.systemGray5))
+                                        )
                                     }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
                                 }
                                 .padding(.horizontal, 16)
                             }
@@ -1769,7 +1769,7 @@ struct AddGoalView: View {
                         // 截止日期设置
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("截止日期")
+                                Text("due_date".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
@@ -1807,7 +1807,7 @@ struct AddGoalView: View {
                 .onTapGesture {
                     dismissKeyboard()
                 }
-                .navigationBarTitle("添加目标", displayMode: .inline)
+                .navigationBarTitle("add_goal".localized, displayMode: .inline)
                 .navigationBarItems(
                     leading: Button(action: {
                         isPresented = false
@@ -1815,7 +1815,7 @@ struct AddGoalView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("取消")
+                            Text("cancel".localized)
                                 .font(.system(size: 17, weight: .medium))
                         }
                         .foregroundColor(Color(UIColor.systemBlue))
@@ -1826,7 +1826,7 @@ struct AddGoalView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 14, weight: .semibold))
-                            Text("保存")
+                            Text("save".localized)
                                 .font(.system(size: 14, weight: .semibold))
                         }
                         .foregroundColor(.white)
@@ -1851,9 +1851,9 @@ struct AddGoalView: View {
                 )
                 .alert(isPresented: $showAlert) {
                     Alert(
-                        title: Text("提示"),
+                        title: Text("alert_info_title".localized),
                         message: Text(errorMessage),
-                        dismissButton: .default(Text("确定"))
+                        dismissButton: .default(Text("ok".localized))
                     )
                 }
             }
@@ -1891,8 +1891,8 @@ struct AddGoalView: View {
             upperProject: [],
             subProject: [],
             recordNum: 0,
-            category: selectedCategory,
-            goalType: GoalType.from(string: selectedCategory), // 根据选择的类别设置goalType
+            category: selectedCategory.rawValue,
+            goalType: selectedCategory, // 根据选择的类别设置goalType
             dueDate: hasDueDate ? dueDate : nil
         )
         
@@ -1917,7 +1917,7 @@ struct AddGoalView: View {
             // 直接关闭表单，不显示成功提示
             isPresented = false
         } catch {
-            errorMessage = "保存失败: \(error.localizedDescription)"
+            errorMessage = "save_failed".localized + ": \(error.localizedDescription)"
             showAlert = true
         }
     }

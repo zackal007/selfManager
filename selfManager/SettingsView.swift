@@ -50,15 +50,15 @@ struct SettingsView: View {
         NavigationView {
             Form {
                 // 外观设置
-                Section(header: Text("外观")) {
+                Section(header: Text("appearance".localized)) {
                     HStack(spacing: 12) {
                         Image(systemName: "moon.circle.fill")
                             .font(.system(size: 18))
                             .foregroundColor(.purple)
-                        Text("深色模式")
+                        Text("dark_mode".localized)
                         Spacer()
                     }
-                    Picker("深色模式", selection: $appearanceModeRaw) {
+                    Picker("dark_mode".localized, selection: $appearanceModeRaw) {
                         Text(AppearanceMode.light.title).tag(AppearanceMode.light.rawValue)
                         Text(AppearanceMode.dark.title).tag(AppearanceMode.dark.rawValue)
                         Text(AppearanceMode.system.title).tag(AppearanceMode.system.rawValue)
@@ -95,7 +95,7 @@ struct SettingsView: View {
                 }
                 
                 // 语言设置
-                Section(header: Text("语言设置")) {
+                Section(header: Text("language".localized)) {
                     HStack {
                         Image(systemName: "globe")
                             .font(.system(size: 18))

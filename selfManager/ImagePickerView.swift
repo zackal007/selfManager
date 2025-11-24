@@ -40,7 +40,7 @@ struct ImagePickerView: View {
             VStack(spacing: 20) {
                 // 预设图片选择区域
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("预设背景")
+                    Text("preset_background".localized)
                         .font(.headline)
                         .padding(.horizontal)
                     
@@ -65,7 +65,7 @@ struct ImagePickerView: View {
                                             .stroke(selectedImage == nil ? Color.blue : Color.clear, lineWidth: 3)
                                     )
                                     
-                                    Text("默认渐变")
+                                    Text("default_gradient".localized)
                                         .font(.system(size: 14, weight: .medium))
                                         .foregroundColor(.white)
                                 }
@@ -101,7 +101,7 @@ struct ImagePickerView: View {
                 
                 // 最近上传的图片区域
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("最近上传")
+                    Text("recent_uploads".localized)
                         .font(.headline)
                         .padding(.horizontal)
                     
@@ -113,11 +113,11 @@ struct ImagePickerView: View {
                                 .foregroundColor(.gray)
                                 .padding(.top, 10)
                             
-                            Text("暂无上传图片")
+                            Text("no_uploaded_images".localized)
                                 .font(.system(size: 14))
                                 .foregroundColor(.gray)
                                 
-                            Text("您可以在下方上传自定义背景图")
+                            Text("upload_custom_background_hint".localized)
                                 .font(.system(size: 12))
                                 .foregroundColor(.gray.opacity(0.8))
                                 .padding(.bottom, 10)
@@ -175,7 +175,7 @@ struct ImagePickerView: View {
                 
                 // 自定义图片选择区域
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("自定义背景")
+                    Text("custom_background".localized)
                         .font(.headline)
                         .padding(.horizontal)
                     
@@ -188,7 +188,7 @@ struct ImagePickerView: View {
                                 HStack {
                                     Image(systemName: "photo.on.rectangle.angled")
                                         .font(.system(size: 18))
-                                    Text("从相册选择")
+                                    Text("choose_from_album".localized)
                                         .font(.system(size: 16))
                                 }
                                 .foregroundColor(.white)
@@ -247,7 +247,7 @@ struct ImagePickerView: View {
                                 HStack {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 16))
-                                    Text("使用此图片")
+                                    Text("use_this_image".localized)
                                         .font(.system(size: 16, weight: .medium))
                                 }
                                 .foregroundColor(.white)
@@ -264,19 +264,19 @@ struct ImagePickerView: View {
                 
                 Spacer()
             }
-            .navigationBarTitle("选择背景图片", displayMode: .inline)
+            .navigationBarTitle("choose_background".localized, displayMode: .inline)
             .onAppear {
                 loadUserUploadedImages()
             }
-            .alert("确认操作", isPresented: $showDeleteConfirmation) {
-                Button("从列表中移除", role: .destructive) {
+            .alert("confirm_action".localized, isPresented: $showDeleteConfirmation) {
+                Button("remove_from_list".localized, role: .destructive) {
                     if let imageName = imageToDelete {
                         deleteUploadedImage(imageName)
                     }
                 }
-                Button("取消", role: .cancel) {}
+                Button("cancel".localized, role: .cancel) {}
             } message: {
-                Text("确定要从最近上传列表中移除这张图片吗？图片文件将被保留，但不会在此列表中显示。")
+                Text("remove_recent_upload_confirm_message".localized)
             }
         }
     }

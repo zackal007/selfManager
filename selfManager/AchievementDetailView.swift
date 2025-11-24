@@ -26,7 +26,7 @@ struct AchievementDetailView: View {
         ScrollView {
             VStack(spacing: 16) {
                 AchievementStatsCard(total: totalCount, completed: completedCount, rate: unlockRate)
-                SectionHeader(title: "成就列表")
+                SectionHeader(title: "achievement_list".localized)
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(achievementGoals) { goal in
                         NavigationLink(destination: GoalDetailView(goal: goal)) {
@@ -37,7 +37,7 @@ struct AchievementDetailView: View {
             }
             .padding(16)
         }
-        .navigationTitle("成就中心")
+        .navigationTitle("achievement_center".localized)
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(UIColor.systemGroupedBackground))
         .navigationBarBackButtonHidden(true)
@@ -49,7 +49,7 @@ struct AchievementDetailView: View {
                     HStack(spacing: 5) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 17, weight: .semibold))
-                        Text("返回")
+                        Text("back".localized)
                     }
                 }
             }
@@ -79,7 +79,7 @@ private struct AchievementStatsCard: View {
         VStack(spacing: 14) {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("总成就数")
+                    Text("total_achievements".localized)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     HStack(alignment: .bottom, spacing: 6) {
@@ -95,7 +95,7 @@ private struct AchievementStatsCard: View {
                 }
                 Spacer()
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("解锁率")
+                    Text("unlock_rate".localized)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     HStack(alignment: .bottom, spacing: 6) {
@@ -158,7 +158,7 @@ private struct AchievementCard: View {
                     .foregroundColor(Color(UIColor.label))
                 Spacer()
             }
-            Text("进度 \(Int(goal.progress * 100))%")
+            Text("progress".localized + " \(Int(goal.progress * 100))%")
                 .font(.system(size: 12))
                 .foregroundColor(Color(UIColor.secondaryLabel))
             ProgressView(value: min(max(goal.progress, 0), 1))

@@ -69,19 +69,19 @@ struct AllTagsCardView: View {
                     .frame(width: 20)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("全部标签")
+                    Text("all_tags_title".localized)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(Color(UIColor.label))
                     
                     let allTags = getAllTags()
-                    Text("共\(allTags.count)个标签")
+                    Text("all_tags_count_prefix".localized + String(allTags.count) + "all_tags_count_suffix".localized)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
                 
                 Spacer()
                 
-                Button("查看全部") {
+                Button("view_all".localized) {
                     showingTagsView = true
                 }
                 .font(.system(size: 12, weight: .medium))
@@ -97,11 +97,11 @@ struct AllTagsCardView: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                     
-                    Text("暂无标签")
+                    Text("no_tags".localized)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     
-                    Text("创建目标或联系人时可以添加标签")
+                    Text("create_goal_or_contact_add_tag_hint".localized)
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                         .multilineTextAlignment(.center)
@@ -149,7 +149,7 @@ struct AllTagsCardView: View {
                             showingTagsView = true
                         }) {
                             HStack {
-                                Text("还有\(allTags.count - 6)个标签")
+                                Text("more_tags_prefix".localized + String(allTags.count - 6) + "more_tags_suffix".localized)
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(Color(UIColor.systemBlue))
                                 

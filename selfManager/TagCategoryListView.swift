@@ -51,14 +51,14 @@ struct TagCategoryListView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("返回")
+                        Text("back".localized)
                             .font(.system(size: 16, weight: .semibold))
                     }
                     .foregroundColor(.blue)
                 }
             }
             ToolbarItem(placement: .principal) {
-                Text("标签分类")
+                Text("tag_category".localized)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.primary)
             }
@@ -103,7 +103,7 @@ struct TagCategoryListView: View {
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 } else {
-                    Text("暂无描述")
+                    Text("no_description".localized)
                         .font(.system(size: 15))
                         .foregroundColor(Color(UIColor.tertiaryLabel))
                         .italic()
@@ -151,7 +151,7 @@ struct TagCategoryListView: View {
         HStack(spacing: 4) {
             Image(systemName: "plus.circle.fill")
                 .font(.system(size: 14, weight: .semibold))
-            Text("添加")
+            Text("add".localized)
                 .font(.system(size: 14, weight: .semibold))
         }
         .foregroundColor(.white)
@@ -196,11 +196,11 @@ struct TagCategoryListView: View {
                         // 输入框区域
                         VStack(spacing: 16) {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("分类名称")
+                                Text("category_name".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
-                                TextField("请输入分类名称", text: $newCategoryName)
+                                TextField("category_name_placeholder".localized, text: $newCategoryName)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)
@@ -215,11 +215,11 @@ struct TagCategoryListView: View {
                             }
                             
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("分类描述（可选）")
+                                Text("category_description_optional".localized)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                 
-                                TextField("请输入分类描述", text: $newCategoryDescription)
+                                TextField("category_description_placeholder".localized, text: $newCategoryDescription)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)
@@ -240,7 +240,7 @@ struct TagCategoryListView: View {
                 }
             }
             .background(Color(UIColor.systemBackground))
-            .navigationTitle("添加标签分类")
+            .navigationTitle("add_tag_category".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -251,7 +251,7 @@ struct TagCategoryListView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("取消")
+                            Text("cancel".localized)
                                 .font(.system(size: 17, weight: .medium))
                         }
                         .foregroundColor(Color(UIColor.systemBlue))
@@ -265,7 +265,7 @@ struct TagCategoryListView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 14, weight: .semibold))
-                            Text("保存")
+                            Text("save".localized)
                                 .font(.system(size: 14, weight: .semibold))
                         }
                         .foregroundColor(.white)
@@ -407,11 +407,11 @@ struct TagCategoryEditView: View {
                     // 输入框区域
                     VStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("分类名称")
+                            Text("category_name".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
-                            TextField("请输入分类名称", text: $editedName)
+                            TextField("category_name_placeholder".localized, text: $editedName)
                                 .font(.system(size: 16))
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
@@ -426,11 +426,11 @@ struct TagCategoryEditView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("分类描述（可选）")
+                            Text("category_description_optional".localized)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
-                            TextField("请输入分类描述", text: $editedDescription)
+                            TextField("category_description_placeholder".localized, text: $editedDescription)
                                 .font(.system(size: 16))
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
@@ -455,7 +455,7 @@ struct TagCategoryEditView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "trash")
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("删除分类")
+                            Text("delete_category".localized)
                                 .font(.system(size: 16, weight: .semibold))
                         }
                         .foregroundColor(.white)
@@ -471,7 +471,7 @@ struct TagCategoryEditView: View {
             }
         }
         .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle(category.name)
+                    .navigationTitle(category.name)
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -482,7 +482,7 @@ struct TagCategoryEditView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("返回")
+                        Text("back".localized)
                             .font(.system(size: 17, weight: .medium))
                     }
                     .foregroundColor(Color(UIColor.systemBlue))
@@ -525,19 +525,19 @@ struct TagCategoryEditView: View {
         .presentationDragIndicator(.visible)
         .alert(isPresented: $showingSaveAlert) {
             Alert(
-                title: Text("保存失败"),
+                title: Text("save_failed".localized),
                 message: Text(alertMessage),
-                dismissButton: .default(Text("确定"))
+                dismissButton: .default(Text("done".localized))
             )
         }
         .alert(isPresented: $showingDeleteAlert) {
             Alert(
-                title: Text("确认删除"),
-                message: Text("确定要删除分类\"\(editedName)\"吗？此操作不可撤销。"),
-                primaryButton: .destructive(Text("删除")) {
+                title: Text("confirm_delete".localized),
+                message: Text("delete_category_confirm_before".localized + "\(editedName)" + "delete_category_confirm_after".localized),
+                primaryButton: .destructive(Text("delete".localized)) {
                     deleteCategory()
                 },
-                secondaryButton: .cancel(Text("取消"))
+                secondaryButton: .cancel(Text("cancel".localized))
             )
         }
         .toolbar(.hidden, for: .tabBar)
@@ -548,7 +548,7 @@ struct TagCategoryEditView: View {
         let trimmedName = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if trimmedName.isEmpty {
-            alertMessage = "分类名称不能为空"
+            alertMessage = "category_name_placeholder".localized
             showingSaveAlert = true
             return
         }
@@ -564,7 +564,7 @@ struct TagCategoryEditView: View {
             try modelContext.save()
             dismiss()
         } catch {
-            alertMessage = "保存失败: \(error.localizedDescription)"
+            alertMessage = "save_failed".localized + ": \(error.localizedDescription)"
             showingSaveAlert = true
         }
     }
@@ -582,7 +582,7 @@ struct TagCategoryEditView: View {
             try modelContext.save()
             dismiss()
         } catch {
-            alertMessage = "删除失败: \(error.localizedDescription)"
+            alertMessage = error.localizedDescription
             showingSaveAlert = true
         }
     }
