@@ -505,7 +505,8 @@ struct SidebarView: View {
                      SettingsCardView()
                  }
                   .padding(.horizontal, 16)
-                  .padding(.top, 30) // 减小顶部内边距，使内容整体向上移动
+                  .padding(.top, 0)
+                  .padding(.bottom, 0)
                       }
                     
                     Spacer()

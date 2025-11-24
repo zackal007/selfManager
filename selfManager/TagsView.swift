@@ -1018,7 +1018,7 @@ struct TagDetailView: View {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 16, weight: .semibold))
                         Text("back".localized)
-                            .font(.system(size: 17, weight: .medium))
+                            .font(AppFont.navBack())
                     }
                 }
                 .foregroundColor(Color(UIColor.systemBlue))

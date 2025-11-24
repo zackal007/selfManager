@@ -305,7 +305,7 @@ struct HomeView: View {
                         .buttonStyle(PlainButtonStyle())
                         
                         Text("me".localized)
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .font(AppFont.navTitle())
                             .foregroundColor(Color(UIColor.label))
                             .padding(.leading, 12)
                         
@@ -1152,12 +1152,12 @@ private func tagColor(for tag: String) -> Color {
                 VStack(alignment: .leading, spacing: 6) {
                     // 用户名
                     Text(user.name)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(AppFont.pageTitle())
                         .foregroundColor(Color(UIColor.label))
                     
                     // 用户描述
                     Text(user.userDescription)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(AppFont.subtextMedium())
                         .foregroundColor(Color(UIColor.secondaryLabel))
                         .lineSpacing(2)
                         .lineLimit(3)
@@ -1352,7 +1352,7 @@ private func tagColor(for tag: String) -> Color {
                     Text("ten_thousand_unit".localized)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(AppFont.sectionTitle())
             }
         }
         .padding(20)
@@ -1495,7 +1495,7 @@ private func tagColor(for tag: String) -> Color {
                                             Image(systemName: "pin.slash.fill")
                                                 .font(.system(size: 14))
                                             Text("取消Ping")
-                                                .font(.system(size: 14, weight: .medium))
+                                                .font(AppFont.subtextMedium())
                                         }
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 12)
@@ -1550,16 +1550,16 @@ private func tagColor(for tag: String) -> Color {
                 // 目标数量
                 HStack(spacing: 4) {
                     Text("\(goals.count)")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(AppFont.subtextMedium())
                         .foregroundColor(Color(UIColor.systemBlue))
                     Text("个目标")
-                        .font(.system(size: 15, weight: .medium))
+                        .font(AppFont.subtextMedium())
                         .foregroundColor(Color(UIColor.secondaryLabel))
                 }
                 
                 // 详情按钮
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
+                    .font(AppFont.assist())
                     .foregroundColor(Color(UIColor.systemGray))
             }
             
@@ -1570,7 +1570,7 @@ private func tagColor(for tag: String) -> Color {
                 // 空状态
                 VStack(spacing: 12) {
                     Text("暂无目标")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(AppFont.bodyMedium())
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Button(action: {
                         // 跳转到目标页面
@@ -1580,7 +1580,7 @@ private func tagColor(for tag: String) -> Color {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 14))
                             Text("添加目标")
-                                .font(.system(size: 14, weight: .medium))
+                                .font(AppFont.subtextMedium())
                         }
                         .foregroundColor(Color(UIColor.systemBlue))
                         .padding(.horizontal, 16)
@@ -1604,7 +1604,7 @@ private func tagColor(for tag: String) -> Color {
                                         .font(.system(size: 14))
                                     
                                     Text(goal.name)
-                                        .font(.system(size: 15, weight: .medium))
+                                        .font(AppFont.subtextMedium())
                                         .lineLimit(1)
                                         .foregroundColor(Color(UIColor.label))
                                 }
@@ -1613,14 +1613,14 @@ private func tagColor(for tag: String) -> Color {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack {
                                         Text(goal.progress >= 1.0 ? "已完成" : "进行中")
-                                            .font(.system(size: 12, weight: .semibold))
+                                            .font(AppFont.assistMedium())
                                             .foregroundColor(goal.progress >= 1.0 ? Color(UIColor.systemGreen) : Color(UIColor.systemBlue))
                                         
                                         Spacer()
                                         
                                         // 目标类型标签
                                         Text(goal.goalType.rawValue)
-                                            .font(.system(size: 10))
+                                            .font(AppFont.badge())
                                             .foregroundColor(Color(UIColor.systemGray))
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
@@ -1643,11 +1643,11 @@ private func tagColor(for tag: String) -> Color {
                             }) {
                                 VStack(spacing: 10) {
                                     Image(systemName: "ellipsis.circle.fill")
-                                        .font(.system(size: 30))
+                                        .font(AppFont.hero())
                                         .foregroundColor(Color(UIColor.systemBlue))
-                                    
+
                                     Text("查看更多")
-                                        .font(.system(size: 14, weight: .medium))
+                                        .font(AppFont.subtextMedium())
                                         .foregroundColor(Color(UIColor.systemBlue))
                                 }
                                 .frame(width: 100, height: 80)
@@ -1736,7 +1736,7 @@ private func tagColor(for tag: String) -> Color {
                                                             
                     // 详情按钮
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
+                        .font(AppFont.assist())
                         .foregroundColor(Color(UIColor.systemGray))
                 }
                 // 根据卡片尺寸展示最多 2/6/12 个成就
@@ -1818,14 +1818,14 @@ private func tagColor(for tag: String) -> Color {
                 HStack(spacing: 10) {
                     ForEach(achievementGoals.prefix(8)) { goal in
                         VStack(spacing: 6) {
-                            Text(goal.name)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(Color(UIColor.label))
-                                .lineLimit(1)
-                                .frame(width: 80)
+                                Text(goal.name)
+                                    .font(AppFont.captionMedium())
+                                    .foregroundColor(Color(UIColor.label))
+                                    .lineLimit(1)
+                                    .frame(width: 80)
                             
                             Text(BuiltInTags.achievement)
-                                .font(.system(size: 10, weight: .medium))
+                                .font(AppFont.badge())
                                 .foregroundColor(tagColor(for: BuiltInTags.achievement))
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -1855,13 +1855,13 @@ private func tagColor(for tag: String) -> Color {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(UIColor.systemOrange))
                     Text("home_card_anxiety_title".localized)
-                        .font(.system(size: 17, weight: .bold))
+                        .font(AppFont.sectionTitle())
                         .foregroundColor(Color(UIColor.label))
                     Spacer()
                     
                     // 详情按钮
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
+                        .font(AppFont.assist())
                         .foregroundColor(Color(UIColor.systemGray))
                 }
                 // 参考“成就”卡片：根据卡片尺寸展示最多 2/6/12 条焦虑
@@ -1887,7 +1887,7 @@ private func tagColor(for tag: String) -> Color {
                         ForEach(recentAnxieties) { goal in
                             HStack {
                                 Text(goal.name.isEmpty ? "unnamed_anxiety".localized : goal.name)
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(AppFont.subtextMedium())
                                     .foregroundColor(Color(UIColor.label))
                                     .lineLimit(1)
                                 Spacer()
@@ -1935,10 +1935,10 @@ private func tagColor(for tag: String) -> Color {
     private func statTile(title: String, value: Int, color: Color) -> some View {
         VStack(spacing: 4) {
             Text("\(value)")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(AppFont.sectionTitle())
                 .foregroundColor(color)
             Text(title)
-                .font(.caption)
+                .font(AppFont.caption())
                 .foregroundColor(Color(UIColor.secondaryLabel))
         }
         .frame(maxWidth: .infinity)

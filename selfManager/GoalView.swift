@@ -473,7 +473,7 @@ struct GoalView: View {
                         HStack(alignment: .center) {
                             // 移除侧边栏按钮，只保留标题
                             Text("goals_plans".localized)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .font(AppFont.navTitle())
                                 .foregroundColor(Color(UIColor.label))
                                 .padding(.leading, 8)
                             

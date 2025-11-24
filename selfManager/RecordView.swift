@@ -69,7 +69,7 @@ struct RecordView: View {
                             }) {
                                 HStack(spacing: 8) {
                                     Text(headerInlineDateText)
-                                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                                        .font(AppFont.navTitle())
                                         .foregroundColor(Color(UIColor.label))
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.9)
@@ -100,7 +100,7 @@ struct RecordView: View {
                     }
                     if selectedRecordType == .recent {
                         Text("recent_records".localized)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(AppFont.navTitle())
                             .foregroundColor(Color(UIColor.label))
                             .padding(.leading, 8)
                             .contentTransition(.opacity)

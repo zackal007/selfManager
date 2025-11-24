@@ -52,7 +52,7 @@ struct TagCategoryListView: View {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 16, weight: .semibold))
                         Text("back".localized)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(AppFont.navBack())
                     }
                     .foregroundColor(.blue)
                 }
