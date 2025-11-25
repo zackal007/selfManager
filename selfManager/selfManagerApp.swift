@@ -117,7 +117,17 @@ struct selfManagerApp: App {
                 Tag.self,
                 TagCategory.self
             ])
-            self.sharedModelContainer = try ModelContainer(for: schema)
+            let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
+            let storeURL = supportDir.appendingPathComponent("default_nocloud.store")
+            let configuration = ModelConfiguration(url: storeURL, cloudKitDatabase: .none)
+            do {
+                self.sharedModelContainer = try ModelContainer(for: schema, configurations: configuration)
+            } catch {
+                let fallbackURL = supportDir.appendingPathComponent("default_nocloud_fallback.store")
+                let fallbackConfig = ModelConfiguration(url: fallbackURL, cloudKitDatabase: .none)
+                self.sharedModelContainer = try ModelContainer(for: schema, configurations: fallbackConfig)
+            }
             
             // 优化动画效果，使其更丝滑
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // 保持ModelContainer初始化后的延迟
@@ -230,11 +240,17 @@ struct selfManagerApp: App {
                     }
                             // 应用全局系统字体修饰符，使文本默认使用系统动态字体
                             .useGlobalSystemTypography()
-                            .onAppear {
-                                // 启动垃圾清理服务
+                    .onAppear {
+                        // 启动垃圾清理服务
                 TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
                 initializeSampleData(modelContext: container.mainContext)
                 normalizeTaskStatus(modelContext: container.mainContext)
+                Task {
+                    await CloudKitSyncManager.shared.checkAccountStatus()
+                    if CloudKitSyncManager.shared.accountAvailable {
+                        await CloudKitSyncManager.shared.startSync(modelContext: container.mainContext)
+                    }
+                }
             }
                             
                             // 侧边栏覆盖层（提升层级，覆盖底部导航栏）

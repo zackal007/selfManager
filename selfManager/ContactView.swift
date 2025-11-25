@@ -171,7 +171,7 @@ struct ContactView: View {
                     // 顶栏悬浮覆盖层的透明占位，避免内容被遮挡
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: max(0, headerHeight - 30 + 8))
+                        .frame(height: max(0, headerHeight - 20 + 20))
 
                     // 搜索输入框：用于搜索联系人
                     if showSearchBar {
@@ -510,6 +510,7 @@ struct ContactView: View {
             TextField("search_contacts_placeholder".localized, text: $searchText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
         }
+        .padding(.top, 12)
         .padding(.horizontal, 16)
         .padding(.bottom, 12)
         .transition(.move(edge: .top).combined(with: .opacity))

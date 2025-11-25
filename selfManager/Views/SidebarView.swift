@@ -67,9 +67,9 @@ struct SettingsCardView: View {
             .padding(.top, 16)
             .padding(.bottom, 12)
             
-            VStack(spacing: 12) {
-                // 外观设置
-                VStack(spacing: 8) {
+                    VStack(spacing: 12) {
+                        // 外观设置
+                        VStack(spacing: 8) {
                     HStack {
                         Text("appearance".localized)
                             .font(.system(size: 14, weight: .medium))
@@ -155,7 +155,9 @@ struct SettingsCardView: View {
                             localizationManager.switchLanguage(to: newLang)
                         })) {
                             ForEach(AppLanguage.allCases) { lang in
-                                Text(lang.displayName).tag(lang)
+                                Text(lang.displayName)
+                                    .font(.system(size: 12))
+                                    .tag(lang)
                             }
                         } label: {
                             Text(localizationManager.currentLanguage == .english ? "EN" : "中文")
@@ -169,6 +171,7 @@ struct SettingsCardView: View {
                                 .lineLimit(1)
                         }
                         .pickerStyle(.menu)
+                        .font(.system(size: 14))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
@@ -177,6 +180,7 @@ struct SettingsCardView: View {
                         refreshView = UUID()
                     }
                 }
+                
 
                 
                 
@@ -325,8 +329,71 @@ struct SettingsCardView: View {
                     }
                 }
             }
+        VStack(spacing: 8) {
+                HStack {
+                    Text("iCloud_sync".localized)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                HStack(spacing: 12) {
+                    Image(systemName: CloudKitSyncManager.shared.accountAvailable ? "icloud" : "icloud.slash")
+                        .font(.system(size: 16))
+                        .foregroundColor(CloudKitSyncManager.shared.accountAvailable ? .blue : .red)
+                        .frame(width: 20)
+                    Text(CloudKitSyncManager.shared.accountAvailable ? "icloud_available".localized : "icloud_unavailable".localized)
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    Button(action: {
+                        Task { await CloudKitSyncManager.shared.checkAccountStatus() }
+                    }) {
+                        Text("refresh".localized)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                HStack(spacing: 12) {
+                    if CloudKitSyncManager.shared.syncing { ProgressView() }
+                    Text(CloudKitSyncManager.shared.syncing ? "syncing".localized : (CloudKitSyncManager.shared.lastSyncDate != nil ? "last_sync".localized + " " + DateFormatter.localizedString(from: CloudKitSyncManager.shared.lastSyncDate!, dateStyle: .short, timeStyle: .short) : ""))
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button(action: { Task { await CloudKitSyncManager.shared.startSync(modelContext: modelContext) } }) {
+                        Text("sync_now".localized)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                .padding(.horizontal, 16)
+                Divider().padding(.leading, 16)
+                HStack(spacing: 12) {
+                    Image(systemName: "arrow.down.circle")
+                        .font(.system(size: 16))
+                        .foregroundColor(.blue)
+                        .frame(width: 20)
+                    Text("app_update".localized)
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    Button(action: {
+                        VersionUpdateManager.shared.checkForUpdate(force: true) { info in
+                            guard let info = info else { return }
+                            VersionUpdateManager.shared.openAppStore(urlString: info.trackViewUrl)
+                        }
+                    }) {
+                        Text("check_update".localized)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(UIColor.systemBlue))
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
         }
-        .padding(.bottom, 16)
+        .padding(.bottom, 24)
         .id(refreshView) // 使用id强制视图在语言变化时刷新
     }
     .background(
@@ -495,21 +562,23 @@ struct SidebarView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                          VStack(spacing: 16) {
-                     // 记录热力图卡片 - 暂时隐藏，下一版本推出
-                     // HeatmapView()
-                     
-                     // 所有标签卡片
-                     AllTagsCardView(showingTagsView: $showingTagsView)
-                     
-                     // 设置项卡片
-                     SettingsCardView()
-                 }
-                  .padding(.horizontal, 16)
-                  .padding(.top, 0)
-                  .padding(.bottom, 0)
+                             // 记录热力图卡片 - 暂时隐藏，下一版本推出
+                             // HeatmapView()
+                             
+                             // 所有标签卡片
+                             AllTagsCardView(showingTagsView: $showingTagsView)
+                             
+                             // 设置项卡片
+                             SettingsCardView()
+                         }
+                          .padding(.horizontal, 16)
+                          .padding(.top, 0)
+                          .padding(.bottom, 0)
+                      }
+                      .safeAreaInset(edge: .bottom) {
+                          Color.clear.frame(height: 20)
                       }
                     
-                    Spacer()
                 }
                 .frame(maxHeight: .infinity)
                 .frame(width: sidebarWidth)
