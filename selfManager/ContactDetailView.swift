@@ -358,7 +358,7 @@ struct ContactDetailView: View {
             if isPinned {
                 pingManager.unping(contactID: contact.id)
             } else {
-                pingManager.ping(contactID: contact.id)
+                pingManager.ping(contact: contact)
             }
         }) {
             Image(systemName: isPinned ? "pin.slash.fill" : "pin.fill")

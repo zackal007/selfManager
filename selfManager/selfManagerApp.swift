@@ -245,10 +245,12 @@ struct selfManagerApp: App {
                 TrashCleanupService.shared.startPeriodicCleanup(modelContext: container.mainContext)
                 initializeSampleData(modelContext: container.mainContext)
                 normalizeTaskStatus(modelContext: container.mainContext)
+                WidgetSharedDataManager.shared.writeSummary(modelContext: container.mainContext)
                 Task {
                     await CloudKitSyncManager.shared.checkAccountStatus()
                     if CloudKitSyncManager.shared.accountAvailable {
                         await CloudKitSyncManager.shared.startSync(modelContext: container.mainContext)
+                        WidgetSharedDataManager.shared.writeSummary(modelContext: container.mainContext)
                     }
                 }
             }
@@ -289,6 +291,9 @@ struct selfManagerApp: App {
                             } else {
                                 isDarkMode = (newMode == "dark")
                             }
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                            WidgetSharedDataManager.shared.writeSummary(modelContext: container.mainContext)
                         }
                     } else {
                         // 空视图，当欢迎页面显示时作为占位符

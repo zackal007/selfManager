@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		15E0010A2E0B109000ABCDEF /* CoreWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 15E001002E0B100000ABCDEF /* CoreWidgets.appex */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		15BD9C8B2E0AE96B00AD4724 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -23,10 +27,25 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		15E001092E0B108000ABCDEF /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				15E0010A2E0B109000ABCDEF /* CoreWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		15BD9C792E0AE96800AD4724 /* selfManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = selfManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		15BD9C8A2E0AE96B00AD4724 /* selfManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = selfManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		15BD9C942E0AE96B00AD4724 /* selfManagerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = selfManagerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		15E001002E0B100000ABCDEF /* CoreWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CoreWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -34,8 +53,17 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Widgets/CoreWidgets.swift,
+				Widgets/Info.plist,
 			);
 			target = 15BD9C782E0AE96800AD4724 /* selfManager */;
+		};
+		15E0010B2E0B10A000ABCDEF /* Exceptions for "selfManager/Widgets" folder in "CoreWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 15E001022E0B104000ABCDEF /* CoreWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -56,6 +84,14 @@
 		15BD9C972E0AE96B00AD4724 /* selfManagerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = selfManagerUITests;
+			sourceTree = "<group>";
+		};
+		15E001012E0B102000ABCDEF /* selfManager/Widgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				15E0010B2E0B10A000ABCDEF /* Exceptions for "selfManager/Widgets" folder in "CoreWidgets" target */,
+			);
+			path = selfManager/Widgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,6 +118,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		15E001042E0B105000ABCDEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -89,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				15BD9C7B2E0AE96800AD4724 /* selfManager */,
+				15E001012E0B102000ABCDEF /* selfManager/Widgets */,
 				15BD9C8D2E0AE96B00AD4724 /* selfManagerTests */,
 				15BD9C972E0AE96B00AD4724 /* selfManagerUITests */,
 				15BD9C7A2E0AE96800AD4724 /* Products */,
@@ -101,6 +145,7 @@
 				15BD9C792E0AE96800AD4724 /* selfManager.app */,
 				15BD9C8A2E0AE96B00AD4724 /* selfManagerTests.xctest */,
 				15BD9C942E0AE96B00AD4724 /* selfManagerUITests.xctest */,
+				15E001002E0B100000ABCDEF /* CoreWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,6 +160,7 @@
 				15BD9C752E0AE96800AD4724 /* Sources */,
 				15BD9C762E0AE96800AD4724 /* Frameworks */,
 				15BD9C772E0AE96800AD4724 /* Resources */,
+				15E001092E0B108000ABCDEF /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -176,6 +222,26 @@
 			productReference = 15BD9C942E0AE96B00AD4724 /* selfManagerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		15E001022E0B104000ABCDEF /* CoreWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 15E001062E0B106000ABCDEF /* Build configuration list for PBXNativeTarget "CoreWidgets" */;
+			buildPhases = (
+				15E001032E0B105000ABCDEF /* Sources */,
+				15E001042E0B105000ABCDEF /* Frameworks */,
+				15E001052E0B105000ABCDEF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				15E001012E0B102000ABCDEF /* selfManager/Widgets */,
+			);
+			name = CoreWidgets;
+			productName = CoreWidgets;
+			productReference = 15E001002E0B100000ABCDEF /* CoreWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -215,6 +281,7 @@
 				15BD9C782E0AE96800AD4724 /* selfManager */,
 				15BD9C892E0AE96B00AD4724 /* selfManagerTests */,
 				15BD9C932E0AE96B00AD4724 /* selfManagerUITests */,
+				15E001022E0B104000ABCDEF /* CoreWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -241,6 +308,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		15E001052E0B105000ABCDEF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -259,6 +333,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		15BD9C902E0AE96B00AD4724 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		15E001032E0B105000ABCDEF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -467,7 +548,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = QKN584YXMF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -486,7 +567,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = QKN584YXMF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -504,7 +585,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = QKN584YXMF;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
@@ -521,7 +602,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = QKN584YXMF;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
@@ -531,6 +612,54 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = selfManager;
+			};
+			name = Release;
+		};
+		15E001072E0B106000ABCDEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = selfManager/Widgets/CoreWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = QKN584YXMF;
+				DONT_GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = selfManager/Widgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = zack.selfManager.CoreWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		15E001082E0B106000ABCDEF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = selfManager/Widgets/CoreWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = QKN584YXMF;
+				DONT_GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = selfManager/Widgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = zack.selfManager.CoreWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -569,6 +698,15 @@
 			buildConfigurations = (
 				15BD9CA62E0AE96B00AD4724 /* Debug */,
 				15BD9CA72E0AE96B00AD4724 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		15E001062E0B106000ABCDEF /* Build configuration list for PBXNativeTarget "CoreWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				15E001072E0B106000ABCDEF /* Debug */,
+				15E001082E0B106000ABCDEF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

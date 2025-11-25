@@ -1202,10 +1202,10 @@ struct GoalDetailView: View {
             // “钉子”按钮：钉住/取消钉住当前目标
             Button(action: {
                 if pingManager.isPinged(goalID: goal.id) {
-                pingManager.unping(goalID: goal.id)
-            } else {
-                pingManager.ping(goalID: goal.id)
-            }
+                    pingManager.unping(goalID: goal.id)
+                } else {
+                    pingManager.ping(goal: goal)
+                }
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: pingManager.isPinged(goalID: goal.id) ? "pin.slash.fill" : "pin.fill")
@@ -1428,7 +1428,7 @@ struct GoalDetailView: View {
             if isPinned {
                 pingManager.unping(goalID: goal.id)
             } else {
-                pingManager.ping(goalID: goal.id)
+                pingManager.ping(goal: goal)
             }
         }) {
             Image(systemName: isPinned ? "pin.slash.fill" : "pin.fill")

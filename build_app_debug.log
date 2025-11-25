@@ -1,0 +1,551 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme selfManager -configuration Debug build
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (2 targets)
+    Target 'selfManager' in project 'selfManager'
+        ➜ Implicit dependency on target 'CoreWidgets' in project 'selfManager' via file 'CoreWidgets.appex' in build phase 'Copy Files'
+    Target 'CoreWidgets' in project 'selfManager' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/yack/Desktop/selfManager/selfManager/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 995c1dce718258cd654053223779cd0a
+Build description path: /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/XCBuildData/995c1dce718258cd654053223779cd0a.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache
+    cd /Users/yack/Desktop/selfManager/selfManager.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -o /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.SwiftFileList (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.SwiftFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.SwiftConstValuesFileList (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-OutputFileMap.json (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.DependencyMetadataFileList (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.LinkFileList (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.LinkFileList
+
+MkDir /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/selfManager.app/PlugIns (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /bin/mkdir -p /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/selfManager.app/PlugIns
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/Entitlements.plist (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/Entitlements.plist
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-OutputFileMap.json (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftConstValuesFileList (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftFileList (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.LinkFileList (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.LinkFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_const_extract_protocols.json (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/Entitlements.plist (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/Entitlements.plist
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.hmap (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.hmap
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.DependencyStaticMetadataFileList (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.DependencyMetadataFileList (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-project-headers.hmap (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-project-headers.hmap
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-own-target-headers.hmap (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-generated-files.hmap (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-generated-files.hmap
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-target-headers.hmap (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-non-framework-target-headers.hmap (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-DebugEntryPoint-normal-arm64.txt (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-DebugEntryPoint-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-DebugDylibPath-normal-arm64.txt (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-DebugDylibInstallName-normal-arm64.txt (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    write-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-DebugDylibInstallName-normal-arm64.txt
+
+MkDir /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /bin/mkdir -p /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex
+
+ProcessProductPackaging /Users/yack/Library/Developer/Xcode/UserData/Provisioning\ Profiles/73aa627e-58cc-4d76-8d1c-22c866b779e2.mobileprovision /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/embedded.mobileprovision (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-productPackagingUtility /Users/yack/Library/Developer/Xcode/UserData/Provisioning\ Profiles/73aa627e-58cc-4d76-8d1c-22c866b779e2.mobileprovision -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/embedded.mobileprovision
+
+ProcessProductPackaging /Users/yack/Desktop/selfManager/selfManager/Widgets/CoreWidgets.entitlements /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.appex.xcent (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "QKN584YXMF.zack.selfManager.CoreWidgets";
+    "com.apple.developer.team-identifier" = QKN584YXMF;
+    "com.apple.security.application-groups" =     (
+        "group.selfmanager.widget"
+    );
+    "get-task-allow" = 1;
+}
+    
+    builtin-productPackagingUtility /Users/yack/Desktop/selfManager/selfManager/Widgets/CoreWidgets.entitlements -entitlements -format xml -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.appex.xcent
+
+ProcessProductPackagingDER /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.appex.xcent /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.appex.xcent.der (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /usr/bin/derq query -f xml -i /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.appex.xcent -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets.appex.xcent.der --raw
+
+ProcessInfoPlistFile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/Info.plist /Users/yack/Desktop/selfManager/selfManager/Widgets/Info.plist (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-infoPlistUtility /Users/yack/Desktop/selfManager/selfManager/Widgets/Info.plist -producttype com.apple.product-type.app-extension -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/Info.plist
+
+Ld /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/__preview.dylib normal (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0 -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -O0 -L/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -install_name @rpath/CoreWidgets.debug.dylib -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -debug_variant -Xlinker -dependency_info -Xlinker /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_dependency_info.dat -Xlinker -no_adhoc_codesign -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/__preview.dylib
+
+SwiftDriver CoreWidgets normal arm64 com.apple.xcode.tools.swift.compiler (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CoreWidgets -Onone -enforce-exclusivity\=checked @/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios17.0 -g -module-cache-path /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -application-extension -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Index.noindex/DataStore -swift-version 5 -I /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -output-file-map /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_const_extract_protocols.json -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-generated-files.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-own-target-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-target-headers.hmap -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-project-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/include -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources-normal/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-Swift.h -working-directory /Users/yack/Desktop/selfManager -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ WidgetLocalization.swift /Users/yack/Desktop/selfManager/selfManager/Widgets/WidgetLocalization.swift (in target 'CoreWidgets' from project 'selfManager')
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Widgets/WidgetLocalization.swift (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+/Users/yack/Desktop/selfManager/selfManager/Widgets/WidgetLocalization.swift:5:35: warning: 'languageCode' was deprecated in iOS 16: renamed to 'language.languageCode.identifier'
+        let code = Locale.current.languageCode?.lowercased() ?? "en"
+                                  ^
+/Users/yack/Desktop/selfManager/selfManager/Widgets/WidgetLocalization.swift:5:35: note: use 'language.languageCode.identifier' instead
+        let code = Locale.current.languageCode?.lowercased() ?? "en"
+                                  ^~~~~~~~~~~~
+                                  language.languageCode.identifier
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ CoreWidgets (in target 'CoreWidgets' from project 'selfManager')
+EmitSwiftModule normal arm64 (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ CoreWidgets.swift /Users/yack/Desktop/selfManager/selfManager/Widgets/CoreWidgets.swift (in target 'CoreWidgets' from project 'selfManager')
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Widgets/CoreWidgets.swift (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling WidgetLocalization.swift (in target 'CoreWidgets' from project 'selfManager')
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for CoreWidgets (in target 'CoreWidgets' from project 'selfManager')
+
+SwiftDriver\ Compilation\ Requirements CoreWidgets normal arm64 com.apple.xcode.tools.swift.compiler (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CoreWidgets -Onone -enforce-exclusivity\=checked @/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios17.0 -g -module-cache-path /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -application-extension -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Index.noindex/DataStore -swift-version 5 -I /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -output-file-map /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_const_extract_protocols.json -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-generated-files.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-own-target-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-target-headers.hmap -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-project-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/include -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources-normal/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-Swift.h -working-directory /Users/yack/Desktop/selfManager -experimental-emit-module-separately -disable-cmo
+
+SwiftMergeGeneratedHeaders /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/CoreWidgets-Swift.h /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-Swift.h (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-swiftHeaderTool -arch arm64 /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-Swift.h -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/CoreWidgets-Swift.h
+
+Copy /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/arm64-apple-ios.abi.json /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.abi.json (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.abi.json /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/arm64-apple-ios.abi.json
+
+Copy /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/arm64-apple-ios.swiftmodule /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftmodule (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftmodule /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/arm64-apple-ios.swiftmodule
+
+Copy /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/arm64-apple-ios.swiftdoc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftdoc (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftdoc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/arm64-apple-ios.swiftdoc
+
+Copy /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftsourceinfo (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftsourceinfo /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo
+
+ProcessProductPackaging /Users/yack/Library/Developer/Xcode/UserData/Provisioning\ Profiles/66330947-43be-4571-be5f-b4fa6aff1673.mobileprovision /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/selfManager.app/embedded.mobileprovision (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-productPackagingUtility /Users/yack/Library/Developer/Xcode/UserData/Provisioning\ Profiles/66330947-43be-4571-be5f-b4fa6aff1673.mobileprovision -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/selfManager.app/embedded.mobileprovision
+
+ProcessProductPackaging /Users/yack/Desktop/selfManager/selfManager/selfManager.entitlements /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.app.xcent (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "QKN584YXMF.zack.selfManager";
+    "aps-environment" = development;
+    "com.apple.developer.icloud-container-environment" = Development;
+    "com.apple.developer.icloud-container-identifiers" =     (
+        "iCloud.zack.selfManager"
+    );
+    "com.apple.developer.icloud-services" =     (
+        CloudKit
+    );
+    "com.apple.developer.team-identifier" = QKN584YXMF;
+    "com.apple.security.application-groups" =     (
+        "group.selfmanager.widget"
+    );
+    "get-task-allow" = 1;
+}
+    
+    builtin-productPackagingUtility /Users/yack/Desktop/selfManager/selfManager/selfManager.entitlements -entitlements -format xml -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.app.xcent
+
+ProcessProductPackagingDER /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.app.xcent /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.app.xcent.der (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /usr/bin/derq query -f xml -i /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.app.xcent -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager.app.xcent.der --raw
+
+SwiftDriver selfManager normal arm64 com.apple.xcode.tools.swift.compiler (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name selfManager -Onone -enforce-exclusivity\=checked @/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios17.0 -g -module-cache-path /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Index.noindex/DataStore -swift-version 5 -I /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -emit-localized-strings -emit-localized-strings-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64 -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -output-file-map /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager_const_extract_protocols.json -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-generated-files.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-own-target-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-all-target-headers.hmap -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-project-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/include -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources-normal/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager-Swift.h -working-directory /Users/yack/Desktop/selfManager -experimental-emit-module-separately -disable-cmo
+
+CompileAssetCatalogVariant thinned /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/selfManager.app /Users/yack/Desktop/selfManager/selfManager/Assets.xcassets (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/yack/Desktop/selfManager/selfManager/Assets.xcassets --compile /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 17.0 --platform iphoneos
+
+SwiftDriverJobDiscovery normal arm64 Compiling CoreWidgets.swift (in target 'CoreWidgets' from project 'selfManager')
+
+SwiftDriver\ Compilation CoreWidgets normal arm64 com.apple.xcode.tools.swift.compiler (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name CoreWidgets -Onone -enforce-exclusivity\=checked @/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios17.0 -g -module-cache-path /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -application-extension -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Index.noindex/DataStore -swift-version 5 -I /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -output-file-map /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_const_extract_protocols.json -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-generated-files.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-own-target-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-all-target-headers.hmap -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-project-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/include -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources-normal/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets-Swift.h -working-directory /Users/yack/Desktop/selfManager -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/CoreWidgets.debug.dylib normal (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0 -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -O0 -L/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -L/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -filelist /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.LinkFileList -install_name @rpath/CoreWidgets.debug.dylib -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/../../Frameworks -dead_strip -Xlinker -object_path_lto -Xlinker /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -debug_variant -Xlinker -dependency_info -Xlinker /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets_dependency_info.dat -fapplication-extension -fobjc-link-runtime -fprofile-instr-generate -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/Objects-normal/arm64/CoreWidgets.swiftmodule -Xlinker -alias -Xlinker _NSExtensionMain -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/CoreWidgets.debug.dylib
+
+SwiftCompile normal arm64 Compiling\ AppEnums.swift,\ UserEditView.swift,\ EnglishStrings.swift,\ RecordCardView.swift,\ BlurView.swift,\ Habit.swift /Users/yack/Desktop/selfManager/selfManager/AppEnums.swift /Users/yack/Desktop/selfManager/selfManager/UserEditView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/EnglishStrings.swift /Users/yack/Desktop/selfManager/selfManager/RecordCardView.swift /Users/yack/Desktop/selfManager/selfManager/SharedComponents/BlurView.swift /Users/yack/Desktop/selfManager/selfManager/Habit.swift (in target 'selfManager' from project 'selfManager')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/yack/Desktop/selfManager/selfManager/Item.swift /Users/yack/Desktop/selfManager/selfManager/Asset.swift /Users/yack/Desktop/selfManager/selfManager/Extensions/SystemTypography.swift /Users/yack/Desktop/selfManager/selfManager/GoalMultiSelectorView.swift /Users/yack/Desktop/selfManager/selfManager/HomeView.swift /Users/yack/Desktop/selfManager/selfManager/TrashCleanupService.swift /Users/yack/Desktop/selfManager/selfManager/Record.swift /Users/yack/Desktop/selfManager/selfManager/NavigationManager.swift /Users/yack/Desktop/selfManager/selfManager/AchievementDetailView.swift /Users/yack/Desktop/selfManager/selfManager/Views/SidebarView.swift /Users/yack/Desktop/selfManager/selfManager/NotesStyleRecordEditor.swift /Users/yack/Desktop/selfManager/selfManager/tag.swift -primary-file /Users/yack/Desktop/selfManager/selfManager/AppEnums.swift -primary-file /Users/yack/Desktop/selfManager/selfManager/UserEditView.swift -primary-file /Users/yack/Desktop/selfManager/selfManager/Utils/EnglishStrings.swift -primary-file /Users/yack/Desktop/selfManager/selfManager/RecordCardView.swift -primary-file /Users/yack/Desktop/selfManager/selfManager/SharedComponents/BlurView.swift -primary-file /Users/yack/Desktop/selfManager/selfManager/Habit.swift /Users/yack/Desktop/selfManager/selfManager/HomeContactCard.swift /Users/yack/Desktop/selfManager/selfManager/ToastView.swift /Users/yack/Desktop/selfManager/selfManager/PingManager.swift /Users/yack/Desktop/selfManager/selfManager/ModelMigrations.swift /Users/yack/Desktop/selfManager/selfManager/ContactView.swift /Users/yack/Desktop/selfManager/selfManager/AddTagSheet.swift /Users/yack/Desktop/selfManager/selfManager/HabitCardView.swift /Users/yack/Desktop/selfManager/selfManager/NavigationRoutes.swift /Users/yack/Desktop/selfManager/selfManager/GoalView.swift /Users/yack/Desktop/selfManager/selfManager/WelcomeView.swift /Users/yack/Desktop/selfManager/selfManager/SharedComponents.swift /Users/yack/Desktop/selfManager/selfManager/User.swift /Users/yack/Desktop/selfManager/selfManager/FloatingToolbarView.swift /Users/yack/Desktop/selfManager/selfManager/TagColorManager.swift /Users/yack/Desktop/selfManager/selfManager/GoalPopupView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/ImageCache.swift /Users/yack/Desktop/selfManager/selfManager/Utils/VersionUpdateManager.swift /Users/yack/Desktop/selfManager/selfManager/ImprovementDetailView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/AppTypography.swift /Users/yack/Desktop/selfManager/selfManager/Utils/CloudKitSyncManager.swift /Users/yack/Desktop/selfManager/selfManager/ContactSelectorView.swift /Users/yack/Desktop/selfManager/selfManager/GoalActivityLogView.swift /Users/yack/Desktop/selfManager/selfManager/TagsView.swift /Users/yack/Desktop/selfManager/selfManager/MarkdownTextEditor.swift /Users/yack/Desktop/selfManager/selfManager/AddContactView.swift /Users/yack/Desktop/selfManager/selfManager/ContactTrashView.swift /Users/yack/Desktop/selfManager/selfManager/GoalActivityManager.swift /Users/yack/Desktop/selfManager/selfManager/GoalType.swift /Users/yack/Desktop/selfManager/selfManager/Widgets/WidgetLocalization.swift /Users/yack/Desktop/selfManager/selfManager/SettingsView.swift /Users/yack/Desktop/selfManager/selfManager/TrashView.swift /Users/yack/Desktop/selfManager/selfManager/Contact.swift /Users/yack/Desktop/selfManager/selfManager/TagCategoryListView.swift /Users/yack/Desktop/selfManager/selfManager/BuiltInTags.swift /Users/yack/Desktop/selfManager/selfManager/Utils/LocalizationManager.swift /Users/yack/Desktop/selfManager/selfManager/Views/Components/HeatmapView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/ChineseStrings.swift /Users/yack/Desktop/selfManager/selfManager/TagEditView.swift /Users/yack/Desktop/selfManager/selfManager/LanguageSelectorView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/WidgetSharedDataManager.swift /Users/yack/Desktop/selfManager/selfManager/ImagePickerView.swift /Users/yack/Desktop/selfManager/selfManager/AnxietyDetailView.swift /Users/yack/Desktop/selfManager/selfManager/SharedComponents/MasonryLayout.swift /Users/yack/Desktop/selfManager/selfManager/GoalDetailHabitDemo.swift /Users/yack/Desktop/selfManager/selfManager/selfManagerApp.swift /Users/yack/Desktop/selfManager/selfManager/Views/Components/AllTagsCardView.swift /Users/yack/Desktop/selfManager/selfManager/ContactDetailView.swift /Users/yack/Desktop/selfManager/selfManager/AssetDetailView.swift /Users/yack/Desktop/selfManager/selfManager/TagCategory.swift /Users/yack/Desktop/selfManager/selfManager/GoalDetailView.swift /Users/yack/Desktop/selfManager/selfManager/RecordView.swift /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/GeneratedAssetSymbols.swift -supplementary-output-file-map /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/supplementaryOutputs-3 -emit-localized-strings -emit-localized-strings-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64 -target arm64-apple-ios17.0 -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -I /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -F /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos -no-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -module-cache-path /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -profile-generate -profile-coverage-mapping -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/selfManager_const_extract_protocols.json -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/yack/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/yack/Desktop/selfManager -resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift -enable-anonymous-context-mangled-names -file-compilation-dir /Users/yack/Desktop/selfManager -Xcc -ivfsstatcache -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-generated-files.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-own-target-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-all-target-headers.hmap -Xcc -iquote -Xcc /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/selfManager-project-headers.hmap -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/include -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources-normal/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/arm64 -Xcc -I/Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources -Xcc -DDEBUG\=1 -module-name selfManager -frontend-parseable-output -disable-clang-spi -target-sdk-version 18.5 -target-sdk-name iphoneos18.5 -external-plugin-path /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/local/lib/swift/host/plugins\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/lib/swift/host/plugins -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/AppEnums.o -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/UserEditView.o -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/EnglishStrings.o -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/RecordCardView.o -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/BlurView.o -o /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/Habit.o -index-unit-output-path /selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/AppEnums.o -index-unit-output-path /selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/UserEditView.o -index-unit-output-path /selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/EnglishStrings.o -index-unit-output-path /selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/RecordCardView.o -index-unit-output-path /selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/BlurView.o -index-unit-output-path /selfManager.build/Debug-iphoneos/selfManager.build/Objects-normal/arm64/Habit.o -index-store-path /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/AppEnums.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/UserEditView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+/Users/yack/Desktop/selfManager/selfManager/UserEditView.swift:173:10: error: ambiguous use of 'toolbar(content:)'
+        .toolbar {
+         ^
+SwiftUI.View.toolbar:2:25: note: found this candidate in module 'SwiftUI'
+nonisolated public func toolbar<Content>(@ViewBuilder content: () -> Content) -> some View where Content : View
+                        ^
+SwiftUI.View.toolbar:2:25: note: found this candidate in module 'SwiftUI'
+nonisolated public func toolbar<Content>(@ToolbarContentBuilder content: () -> Content) -> some View where Content : ToolbarContent
+                        ^
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/EnglishStrings.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/RecordCardView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/SharedComponents/BlurView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Habit.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ Item.swift,\ Asset.swift,\ SystemTypography.swift,\ GoalMultiSelectorView.swift,\ HomeView.swift,\ TrashCleanupService.swift /Users/yack/Desktop/selfManager/selfManager/Item.swift /Users/yack/Desktop/selfManager/selfManager/Asset.swift /Users/yack/Desktop/selfManager/selfManager/Extensions/SystemTypography.swift /Users/yack/Desktop/selfManager/selfManager/GoalMultiSelectorView.swift /Users/yack/Desktop/selfManager/selfManager/HomeView.swift /Users/yack/Desktop/selfManager/selfManager/TrashCleanupService.swift (in target 'selfManager' from project 'selfManager')
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Item.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Asset.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Extensions/SystemTypography.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/GoalMultiSelectorView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/HomeView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TrashCleanupService.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ HomeContactCard.swift,\ ToastView.swift,\ PingManager.swift,\ ModelMigrations.swift,\ ContactView.swift,\ AddTagSheet.swift /Users/yack/Desktop/selfManager/selfManager/HomeContactCard.swift /Users/yack/Desktop/selfManager/selfManager/ToastView.swift /Users/yack/Desktop/selfManager/selfManager/PingManager.swift /Users/yack/Desktop/selfManager/selfManager/ModelMigrations.swift /Users/yack/Desktop/selfManager/selfManager/ContactView.swift /Users/yack/Desktop/selfManager/selfManager/AddTagSheet.swift (in target 'selfManager' from project 'selfManager')
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/HomeContactCard.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/ToastView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/PingManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/ModelMigrations.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/ContactView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/AddTagSheet.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ AssetDetailView.swift,\ TagCategory.swift,\ GoalDetailView.swift,\ RecordView.swift,\ GeneratedAssetSymbols.swift /Users/yack/Desktop/selfManager/selfManager/AssetDetailView.swift /Users/yack/Desktop/selfManager/selfManager/TagCategory.swift /Users/yack/Desktop/selfManager/selfManager/GoalDetailView.swift /Users/yack/Desktop/selfManager/selfManager/RecordView.swift /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'selfManager' from project 'selfManager')
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/AssetDetailView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TagCategory.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/GoalDetailView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/RecordView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/selfManager.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ ChineseStrings.swift,\ TagEditView.swift,\ LanguageSelectorView.swift,\ WidgetSharedDataManager.swift,\ ImagePickerView.swift,\ AnxietyDetailView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/ChineseStrings.swift /Users/yack/Desktop/selfManager/selfManager/TagEditView.swift /Users/yack/Desktop/selfManager/selfManager/LanguageSelectorView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/WidgetSharedDataManager.swift /Users/yack/Desktop/selfManager/selfManager/ImagePickerView.swift /Users/yack/Desktop/selfManager/selfManager/AnxietyDetailView.swift (in target 'selfManager' from project 'selfManager')
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/ChineseStrings.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TagEditView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/LanguageSelectorView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/WidgetSharedDataManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/ImagePickerView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/AnxietyDetailView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ AppTypography.swift,\ CloudKitSyncManager.swift,\ ContactSelectorView.swift,\ GoalActivityLogView.swift,\ TagsView.swift,\ MarkdownTextEditor.swift /Users/yack/Desktop/selfManager/selfManager/Utils/AppTypography.swift /Users/yack/Desktop/selfManager/selfManager/Utils/CloudKitSyncManager.swift /Users/yack/Desktop/selfManager/selfManager/ContactSelectorView.swift /Users/yack/Desktop/selfManager/selfManager/GoalActivityLogView.swift /Users/yack/Desktop/selfManager/selfManager/TagsView.swift /Users/yack/Desktop/selfManager/selfManager/MarkdownTextEditor.swift (in target 'selfManager' from project 'selfManager')
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/AppTypography.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/CloudKitSyncManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/ContactSelectorView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/GoalActivityLogView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TagsView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/MarkdownTextEditor.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ HabitCardView.swift,\ NavigationRoutes.swift,\ GoalView.swift,\ WelcomeView.swift,\ SharedComponents.swift,\ User.swift /Users/yack/Desktop/selfManager/selfManager/HabitCardView.swift /Users/yack/Desktop/selfManager/selfManager/NavigationRoutes.swift /Users/yack/Desktop/selfManager/selfManager/GoalView.swift /Users/yack/Desktop/selfManager/selfManager/WelcomeView.swift /Users/yack/Desktop/selfManager/selfManager/SharedComponents.swift /Users/yack/Desktop/selfManager/selfManager/User.swift (in target 'selfManager' from project 'selfManager')
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/HabitCardView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/NavigationRoutes.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/GoalView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/WelcomeView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/SharedComponents.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/User.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ FloatingToolbarView.swift,\ TagColorManager.swift,\ GoalPopupView.swift,\ ImageCache.swift,\ VersionUpdateManager.swift,\ ImprovementDetailView.swift /Users/yack/Desktop/selfManager/selfManager/FloatingToolbarView.swift /Users/yack/Desktop/selfManager/selfManager/TagColorManager.swift /Users/yack/Desktop/selfManager/selfManager/GoalPopupView.swift /Users/yack/Desktop/selfManager/selfManager/Utils/ImageCache.swift /Users/yack/Desktop/selfManager/selfManager/Utils/VersionUpdateManager.swift /Users/yack/Desktop/selfManager/selfManager/ImprovementDetailView.swift (in target 'selfManager' from project 'selfManager')
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/FloatingToolbarView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TagColorManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/GoalPopupView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/ImageCache.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/VersionUpdateManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/ImprovementDetailView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ TrashView.swift,\ Contact.swift,\ TagCategoryListView.swift,\ BuiltInTags.swift,\ LocalizationManager.swift,\ HeatmapView.swift /Users/yack/Desktop/selfManager/selfManager/TrashView.swift /Users/yack/Desktop/selfManager/selfManager/Contact.swift /Users/yack/Desktop/selfManager/selfManager/TagCategoryListView.swift /Users/yack/Desktop/selfManager/selfManager/BuiltInTags.swift /Users/yack/Desktop/selfManager/selfManager/Utils/LocalizationManager.swift /Users/yack/Desktop/selfManager/selfManager/Views/Components/HeatmapView.swift (in target 'selfManager' from project 'selfManager')
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TrashView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Contact.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/TagCategoryListView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/BuiltInTags.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Utils/LocalizationManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Views/Components/HeatmapView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ selfManager (in target 'selfManager' from project 'selfManager')
+
+EmitSwiftModule normal arm64 (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 Compiling\ Record.swift,\ NavigationManager.swift,\ AchievementDetailView.swift,\ SidebarView.swift,\ NotesStyleRecordEditor.swift,\ tag.swift /Users/yack/Desktop/selfManager/selfManager/Record.swift /Users/yack/Desktop/selfManager/selfManager/NavigationManager.swift /Users/yack/Desktop/selfManager/selfManager/AchievementDetailView.swift /Users/yack/Desktop/selfManager/selfManager/Views/SidebarView.swift /Users/yack/Desktop/selfManager/selfManager/NotesStyleRecordEditor.swift /Users/yack/Desktop/selfManager/selfManager/tag.swift (in target 'selfManager' from project 'selfManager')
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Record.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/NavigationManager.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/AchievementDetailView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/Views/SidebarView.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/NotesStyleRecordEditor.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+SwiftCompile normal arm64 /Users/yack/Desktop/selfManager/selfManager/tag.swift (in target 'selfManager' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    
+
+ConstructStubExecutorLinkFileList /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-ExecutorLinkFileList-normal-arm64.txt (in target 'CoreWidgets' from project 'selfManager')
+    cd /Users/yack/Desktop/selfManager
+    construct-stub-executor-link-file-list /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Products/Debug-iphoneos/CoreWidgets.appex/CoreWidgets.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/yack/Library/Developer/Xcode/DerivedData/selfManager-hcooptdwylxarhaxwwshbftqknlu/Build/Intermediates.noindex/selfManager.build/Debug-iphoneos/CoreWidgets.build/CoreWidgets-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'CoreWidgets' from project 'selfManager')
+
