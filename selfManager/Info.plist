@@ -8,5 +8,9 @@
 	</array>
 	<key>NSRemindersUsageDescription</key>
 	<string>需要访问“提醒事项”以同步和管理您的子任务。</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.1</string>
+	<key>CFBundleVersion</key>
+	<string>2</string>
 </dict>
 </plist>
