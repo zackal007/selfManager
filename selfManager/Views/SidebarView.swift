@@ -174,7 +174,7 @@ struct SettingsCardView: View {
                                 .lineLimit(1)
                         }
                         .pickerStyle(.menu)
-                        .font(.system(size: 14))
+                        .font(.system(size: 8))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)

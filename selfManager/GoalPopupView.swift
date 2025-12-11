@@ -225,6 +225,11 @@ struct GoalPopupView: View {
                     
                     // 年份筛选
                     VStack(alignment: .leading, spacing: 8) {
+                        Text("year".localized)
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                            .padding(.horizontal)
+
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 10) {
                                 // 全部选项

@@ -483,25 +483,7 @@ struct GoalView: View {
                             
                             Spacer()
                             
-                            // 搜索按钮（仅在“全部”页签显示，点击弹出筛选弹窗）
-                            if selectedGoalType == nil {
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        showGoalPopup = true
-                                    }
-                                }) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                            .frame(width: 34, height: 34)
-                                        
-                                        Image(systemName: "line.3.horizontal.decrease.circle")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(Color(UIColor.label))
-                                    }
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
+                            
                             
                             // 年份选择器按钮（仅在年度目标时显示）
                             if selectedGoalType == .yearly {
