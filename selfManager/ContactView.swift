@@ -40,6 +40,7 @@ struct ContactView: View {
     // 搜索相关
     @State private var searchText = ""
     @State private var showSearchBar = false
+    @State private var pullOffset: CGFloat = 0
     
     // 导航状态
     @State private var selectedGoalId: UUID? = nil
@@ -348,30 +349,6 @@ struct ContactView: View {
                     .padding(.leading, 8)
                 
                 Spacer()
-                
-                // 搜索按钮
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showSearchBar.toggle()
-                        if !showSearchBar {
-                            searchText = ""
-                        }
-                    }
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(UIColor.systemGray5).opacity(0.8))
-                            .frame(width: 34, height: 34)
-                        
-                        Image(systemName: showSearchBar ? "xmark.circle.fill" : "magnifyingglass")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(UIColor.label))
-                    }
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                
-                
                 // 使用自定义视图替代复杂的Menu表达式
                 MenuButton {
                     viewModeMenuContent
@@ -570,6 +547,29 @@ struct ContactView: View {
                 .padding(.bottom, 20)
             }
         }
+        .offset(y: pullOffset * 0.35)
+        .simultaneousGesture(
+            DragGesture()
+                .onChanged { value in
+                    let dy = max(0, value.translation.height)
+                    pullOffset = min(dy, 80)
+                    if dy > 30 {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showSearchBar = true
+                        }
+                    }
+                }
+                .onEnded { value in
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.7)) {
+                        pullOffset = 0
+                    }
+                    if value.translation.height < -20 && searchText.isEmpty {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showSearchBar = false
+                        }
+                    }
+                }
+        )
     }
 
     private func filteredContacts(for index: Int) -> [Contact] {

@@ -171,6 +171,8 @@ struct GoalView: View {
     @State private var showSearchBar = false
     @State private var searchText = ""
     @State private var isSearching = false
+    @State private var pullOffset: CGFloat = 0
+    @State private var didTriggerSearchBar = false
 
     // "最近"筛选迁移相关状态变量（保持与 HomeView 一致）
     @State private var showGoalPopup = false
@@ -603,12 +605,13 @@ struct GoalView: View {
                     // 顶栏已迁移为覆盖层，这里加入透明占位以避免初始内容被遮挡
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: max(0, headerHeight-50))
+                        .frame(height: max(0, headerHeight + 20))
                     
                     // 输入框：目标搜索栏（控制关键词与筛选状态）
                     if showSearchBar {
                         searchBarView
-                            .zIndex(9)
+                            .padding(.top, 6)
+                            .zIndex(1)
                     }
                 
                 // 年份选择器已移到顶栏下方的内容区域
@@ -740,38 +743,105 @@ struct GoalView: View {
                                     .padding(.bottom, 16) // 与目标条目之间间隔16px
                                 }
                                 
-                                    // 根据视图模式显示不同的布局
-                                    if viewMode == .gallery {
+                                    let currentGoals: [Goal] = {
                                         switch goalTypes[index] {
                                         case .life:
-                                            LifeGoalGalleryView(goals: processedLifeGoals, geometry: geometry)
+                                            return processedLifeGoals
                                         case .yearly:
-                                            YearGoalGalleryView(goals: processedYearGoals, geometry: geometry)
+                                            return processedYearGoals
                                         case .shortTerm:
-                                            ShortTermGoalGalleryView(goals: processedPeriodGoals, geometry: geometry)
+                                            return processedPeriodGoals
                                         case .habit:
-                                            HabitGoalGalleryView(goals: processedHabitGoals, geometry: geometry)
+                                            return processedHabitGoals
                                         case nil:
-                                            AllGoalGalleryView(goals: sortGoals(allTabDisplayGoals), geometry: geometry)
+                                            return sortGoals(allTabDisplayGoals)
                                         }
+                                    }()
+
+                                    if currentGoals.isEmpty {
+                                        LazyVStack(spacing: 12) {
+                                            VStack(spacing: 16) {
+                                                Image(systemName: "flag")
+                                                    .font(.system(size: 60))
+                                                    .foregroundColor(.gray)
+                                                Text(isSearching ? "no_results".localized : "goals_plans".localized)
+                                                    .font(.title2)
+                                                    .foregroundColor(.gray)
+                                                if !isSearching {
+                                                    Button("add_goal".localized) {
+                                                        showAddGoalSheet = true
+                                                    }
+                                                    .buttonStyle(.borderedProminent)
+                                                }
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.top, 60)
+                                        }
+                                        .padding(.horizontal, 16)
                                     } else {
-                                        switch goalTypes[index] {
-                                        case .life:
-                                            LifeGoalListView(goals: processedLifeGoals)
-                                        case .yearly:
-                                            YearGoalListView(goals: processedYearGoals)
-                                        case .shortTerm:
-                                            ShortTermGoalListView(goals: processedPeriodGoals)
-                                        case .habit:
-                                            HabitGoalListView(goals: processedHabitGoals)
-                                        case nil:
-                                            AllGoalListView(goals: sortGoals(allTabDisplayGoals))
+                                        if viewMode == .gallery {
+                                            switch goalTypes[index] {
+                                            case .life:
+                                                LifeGoalGalleryView(goals: processedLifeGoals, geometry: geometry)
+                                            case .yearly:
+                                                YearGoalGalleryView(goals: processedYearGoals, geometry: geometry)
+                                            case .shortTerm:
+                                                ShortTermGoalGalleryView(goals: processedPeriodGoals, geometry: geometry)
+                                            case .habit:
+                                                HabitGoalGalleryView(goals: processedHabitGoals, geometry: geometry)
+                                            case nil:
+                                                AllGoalGalleryView(goals: sortGoals(allTabDisplayGoals), geometry: geometry)
+                                            }
+                                        } else {
+                                            switch goalTypes[index] {
+                                            case .life:
+                                                LifeGoalListView(goals: processedLifeGoals)
+                                            case .yearly:
+                                                YearGoalListView(goals: processedYearGoals)
+                                            case .shortTerm:
+                                                ShortTermGoalListView(goals: processedPeriodGoals)
+                                            case .habit:
+                                                HabitGoalListView(goals: processedHabitGoals)
+                                            case nil:
+                                                AllGoalListView(goals: sortGoals(allTabDisplayGoals))
+                                            }
                                         }
                                     }
                                 }
                                 .padding(.top, 72)
                                 .padding(.bottom, 16)
                             }
+                            .offset(y: pullOffset * 0.35)
+                            .simultaneousGesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        let dy = max(0, value.translation.height)
+                                        pullOffset = min(dy, 80)
+                                        if dy > 30 {
+                                            if goalTypes[index] == nil {
+                                                withAnimation(.easeInOut(duration: 0.25)) {
+                                                    showGoalPopup = true
+                                                }
+                                            } else {
+                                                withAnimation(.easeInOut(duration: 0.25)) {
+                                                    showSearchBar = true
+                                                    didTriggerSearchBar = true
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .onEnded { value in
+                                        withAnimation(.spring(response: 0.32, dampingFraction: 0.7)) {
+                                            pullOffset = 0
+                                        }
+                                        if !didTriggerSearchBar && value.translation.height < -20 && goalTypes[index] != nil && searchText.isEmpty {
+                                            withAnimation(.easeInOut(duration: 0.25)) {
+                                                showSearchBar = false
+                                            }
+                                        }
+                                        didTriggerSearchBar = false
+                                    }
+                            )
                             .tag(index)
                         }
                     }
@@ -800,6 +870,7 @@ struct GoalView: View {
             }
             .background(Color(UIColor.systemGroupedBackground))
             .edgesIgnoringSafeArea(.bottom)
+            .navigationBarHidden(true)
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {
                 case .tags:
