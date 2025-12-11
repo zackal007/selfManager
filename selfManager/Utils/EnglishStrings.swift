@@ -30,6 +30,7 @@ struct EnglishStrings {
         "habit_card": "Habit Card",
         "achievement_card": "Achievement Card",
         "anxiety_card": "Anxiety Card",
+        "pinned_subtask_card": "Pinned Subtasks Card",
         "appearance_light": "Light",
         "appearance_dark": "Dark",
         "appearance_system": "System",
@@ -53,6 +54,7 @@ struct EnglishStrings {
         "update": "Update",
         "later": "Later",
         "up_to_date": "Already up to date",
+        "already_latest_version": "Already up to date",
         
         // 其他页面标题
         "home": "Home",
@@ -380,6 +382,7 @@ struct EnglishStrings {
         "clear_goal_reference": "Clear Goal Reference",
         "clear_contact_reference": "Clear Contact Reference",
         "empty_no_achievements": "No achievements yet",
+        "empty_no_pinned_subtasks": "No pinned subtasks yet",
         "unnamed_achievement": "Unnamed Achievement",
         "empty_no_anxiety": "No anxieties yet",
         "unnamed_anxiety": "Unnamed Anxiety",
@@ -397,6 +400,12 @@ struct EnglishStrings {
         "set_due_date": "Set Due Date",
         // Ping button
         "pin_to_home": "Pin to Home",
+        "unpin_from_home": "Unpin from Home",
+        "pinned_subtasks_title": "Pinned Subtasks",
+        "pinned_subtasks_manage_title": "Pinned Subtasks",
+        "task_status_all": "All",
+        "task_status_in_progress": "In Progress",
+        "task_status_done": "Done",
         "unpin": "Unpin",
         "pin_label": "Pin",
         "unpin_label": "Unpin",

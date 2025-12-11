@@ -30,6 +30,7 @@ struct ChineseStrings {
         "habit_card": "习惯卡片",
         "achievement_card": "成就卡片",
         "anxiety_card": "焦虑卡片",
+        "pinned_subtask_card": "子任务卡片（置顶子任务）",
         "appearance_light": "浅色",
         "appearance_dark": "深色",
         "appearance_system": "跟随系统",
@@ -53,6 +54,7 @@ struct ChineseStrings {
         "update": "去更新",
         "later": "稍后",
         "up_to_date": "已是最新版本",
+        "already_latest_version": "当前已是最新版本",
         
         // 其他页面标题
         "home": "首页",
@@ -379,6 +381,7 @@ struct ChineseStrings {
         "empty_no_achievements": "暂无成就",
         "unnamed_achievement": "未命名成就",
         "empty_no_anxiety": "暂无焦虑",
+        "empty_no_pinned_subtasks": "暂无置顶子任务",
         "unnamed_anxiety": "未命名焦虑",
         // 目标详情模块 UI
         "please_select_content": "请选择要编辑的内容",
@@ -394,6 +397,12 @@ struct ChineseStrings {
         "set_due_date": "设置截止日期",
         // Ping 按钮
         "pin_to_home": "钉到主页",
+        "unpin_from_home": "取消钉到主页",
+        "pinned_subtasks_title": "置顶子任务",
+        "pinned_subtasks_manage_title": "置顶子任务",
+        "task_status_all": "全部",
+        "task_status_in_progress": "进行中",
+        "task_status_done": "已完成",
         "unpin": "取消钉住",
         "pin_label": "钉住",
         "unpin_label": "取消钉住",

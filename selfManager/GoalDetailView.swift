@@ -2099,6 +2099,7 @@ struct GoalDetailView: View {
                 editingField: $editingField,
                 editingValue: $editingValue,
                 editingProgress: $editingProgress,
+                editingTask: $editingTask,
                 onSave: handleSaveGoalEdit
             )
             .presentationDetents(editingField == .progress ? [.medium] : [.large])
@@ -2270,6 +2271,7 @@ struct EditFormView: View {
     @Binding var editingField: GoalDetailView.EditableField?
     @Binding var editingValue: String
     @Binding var editingProgress: Double
+    @Binding var editingTask: GoalTask?
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.dismiss) private var dismiss
     
@@ -2427,22 +2429,40 @@ struct EditFormView: View {
                                     .padding(.horizontal, 16)
                                 }
                                 
-                                // 导入到提醒事项按钮
-                                Button(action: {
-                                    importToReminders()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "bell.fill")
-                                        Text("sync_to_reminders".localized)
-                                            .font(.system(size: 16, weight: .medium))
+                                HStack(spacing: 10) {
+                                    Button(action: {
+                                        togglePinForEditingTask()
+                                    }) {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: isEditingTaskPinned ? "star.fill" : "star")
+                                                .foregroundColor(isEditingTaskPinned ? Color(UIColor.systemYellow) : Color(UIColor.systemBlue))
+                                            Text(isEditingTaskPinned ? "unpin_from_home".localized : "pin_to_home".localized)
+                                                .font(.system(size: 16, weight: .medium))
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .foregroundColor(.white)
+                                        .background(isEditingTaskPinned ? Color(UIColor.systemYellow) : Color.blue)
+                                        .cornerRadius(12)
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .foregroundColor(.white)
-                                    .background(Color.orange)
-                                    .cornerRadius(12)
+                                    .buttonStyle(PlainButtonStyle())
+
+                                    Button(action: {
+                                        importToReminders()
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "bell.fill")
+                                            Text("sync_to_reminders".localized)
+                                                .font(.system(size: 16, weight: .medium))
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .foregroundColor(.white)
+                                        .background(Color.orange)
+                                        .cornerRadius(12)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal, 16)
                             }
                         
@@ -2504,6 +2524,23 @@ struct EditFormView: View {
                 Alert(title: Text("reminders".localized), message: Text(alertMessage), dismissButton: .default(Text("ok".localized)))
             }
         }
+    }
+
+    private var isEditingTaskPinned: Bool {
+        guard let tid = editingTask?.id else { return false }
+        let arr = UserDefaults.standard.stringArray(forKey: "PinnedSubtaskIDs") ?? []
+        return arr.contains(tid.uuidString)
+    }
+
+    private func togglePinForEditingTask() {
+        guard let tid = editingTask?.id else { return }
+        var arr = UserDefaults.standard.stringArray(forKey: "PinnedSubtaskIDs") ?? []
+        if let idx = arr.firstIndex(of: tid.uuidString) {
+            arr.remove(at: idx)
+        } else {
+            arr.append(tid.uuidString)
+        }
+        UserDefaults.standard.set(arr, forKey: "PinnedSubtaskIDs")
     }
     
     private func getNavigationTitle() -> String {

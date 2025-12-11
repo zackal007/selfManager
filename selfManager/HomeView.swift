@@ -62,6 +62,7 @@ struct HomeView: View {
     @AppStorage("showHabitCard") private var showHabitCard = true
     @AppStorage("showAchievementCard") private var showAchievementCard = true
     @AppStorage("showAnxietyCard") private var showAnxietyCard = true
+    @AppStorage("showPinnedSubtasksCard") private var showPinnedSubtasksCard = true
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
@@ -85,6 +86,7 @@ struct HomeView: View {
         case goals
         case mood      // 心情卡片（独立模块）
         case achievement // 成就卡片（独立模块）
+        case pinnedSubtasks // 置顶子任务卡片（独立模块）
         case improvement
     }
 
@@ -190,6 +192,28 @@ struct HomeView: View {
     }
     private var anxietyGoals: [Goal] {
         goals.filter { !$0.isDeleted && $0.tags.contains(BuiltInTags.anxiety) }
+    }
+
+    // 置顶子任务集合
+    private var pinnedTaskIDs: [UUID] {
+        let arr = UserDefaults.standard.stringArray(forKey: "PinnedSubtaskIDs") ?? []
+        return arr.compactMap { UUID(uuidString: $0) }
+    }
+    private var pinnedSubtasks: [GoalTask] {
+        var result: [GoalTask] = []
+        for g in goals {
+            for t in g.tasks {
+                if pinnedTaskIDs.contains(t.id) { result.append(t) }
+            }
+        }
+        return result
+    }
+    private func unpin(task: GoalTask) {
+        var arr = UserDefaults.standard.stringArray(forKey: "PinnedSubtaskIDs") ?? []
+        if let idx = arr.firstIndex(of: task.id.uuidString) {
+            arr.remove(at: idx)
+            UserDefaults.standard.set(arr, forKey: "PinnedSubtaskIDs")
+        }
     }
 
     // 最近焦虑统计（基于创建时间）
@@ -466,6 +490,7 @@ private func defaultCardOrderIDs() -> [HomeCardID] {
     // 追加其他静态卡片（不包含旧的 .pingedGoals 分组卡片）
     ids.append(contentsOf: [
         .type(.habit),
+        .type(.pinnedSubtasks),
         .type(.achievement),
         .type(.improvement)
     ])
@@ -542,7 +567,7 @@ private func loadCardOrderIDs() {
                 return false
             }
             // 确保静态卡片存在
-            let requiredStatics: [HomeCardType] = [.profile, .asset, .habit, .achievement, .improvement]
+            let requiredStatics: [HomeCardType] = [.profile, .asset, .habit, .pinnedSubtasks, .achievement, .improvement]
             for t in requiredStatics {
                 let tid = HomeCardID.type(t)
                 if !decoded.contains(tid) {
@@ -625,6 +650,8 @@ private func defaultSizeForID(_ id: HomeCardID) -> HomeCardSize {
     case .type(let t):
         switch t {
         case .profile, .asset:
+            return .medium
+        case .pinnedSubtasks:
             return .medium
         default:
             return .small
@@ -751,6 +778,23 @@ private func renderCard(_ type: HomeCardType) -> some View {
         if showAchievementCard {
             withMoveGesture(
                 achievementSection
+                    .frame(height: heightForCard(id))
+                    .background(cardFrameReader(for: type))
+                    .offset(isDragging ? dragOffset : .zero)
+                    .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
+                    .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
+                    .zIndex(isDragging ? 20 : 0)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .contentShape(Rectangle())
+                    .contextMenu { cardContextMenu(for: type) }
+            , for: type)
+        } else {
+            EmptyView()
+        }
+    case .pinnedSubtasks:
+        if showPinnedSubtasksCard {
+            withMoveGesture(
+                pinnedSubtasksSection
                     .frame(height: heightForCard(id))
                     .background(cardFrameReader(for: type))
                     .offset(isDragging ? dragOffset : .zero)
@@ -1733,20 +1777,58 @@ private func tagColor(for tag: String) -> Color {
                         .fontWeight(.bold)
                         .foregroundColor(Color(UIColor.label))
                     Spacer()
-                                                            
+                    
                     // 详情按钮
                     Image(systemName: "chevron.right")
                         .font(AppFont.assist())
                         .foregroundColor(Color(UIColor.systemGray))
+                }
+                // 置顶子任务展示（类似成就中心）
+                if showPinnedSubtasksCard && !pinnedSubtasks.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("pinned_subtasks_title".localized)
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        let idForSize = HomeCardID.type(.achievement)
+                        let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
+                        let displayCount: Int = {
+                            switch size {
+                            case .small: return 2
+                            case .medium: return 6
+                            case .large: return 12
+                            }
+                        }()
+                        ForEach(Array(pinnedSubtasks.prefix(displayCount)), id: \.id) { task in
+                            HStack {
+                                Image(systemName: task.status == .done ? "checkmark.circle.fill" : (task.status == .inProgress ? "minus.circle.fill" : "circle"))
+                                    .foregroundColor(task.status == .done ? Color(UIColor.systemGreen) : (task.status == .inProgress ? Color(UIColor.systemBlue) : Color(UIColor.systemGray)))
+                                Text(task.title)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(Color(UIColor.label))
+                                    .lineLimit(1)
+                                Spacer()
+                                Button(action: { unpin(task: task) }) {
+                                    Image(systemName: "star.slash")
+                                        .foregroundColor(Color(UIColor.systemBlue))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .background(Color(UIColor.systemBackground))
+                            .cornerRadius(8)
+                            .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
+                        }
+                    }
                 }
                 // 根据卡片尺寸展示最多 2/6/12 个成就
                 let idForSize = HomeCardID.type(.achievement)
                 let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
                 let displayCount: Int = {
                     switch size {
-                    case .small: return 2   // 1×1 显示 2 条
-                    case .medium: return 6  // 1×2 显示 6 条
-                    case .large: return 12  // 2×2 显示 12 条
+                        case .small: return 2   // 1×1 显示 2 条
+                        case .medium: return 6  // 1×2 显示 6 条
+                        case .large: return 12  // 2×2 显示 12 条
                     }
                 }()
                 // 使用带有“成就”标签的目标作为数据源（直接展示前 N 条）
@@ -1906,6 +1988,70 @@ private func tagColor(for tag: String) -> Color {
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(16)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    // 置顶子任务展示区域（独立卡片）
+    private var pinnedSubtasksSection: some View {
+        NavigationLink(destination: PinnedSubtasksDetailView()) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "star.fill")
+                    .font(.title3)
+                    .foregroundColor(Color(UIColor.systemYellow))
+                Text("pinned_subtasks_title".localized)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(UIColor.label))
+                Spacer()
+            }
+            let idForSize = HomeCardID.type(.pinnedSubtasks)
+            let size = cardSizesByID[idForSize] ?? defaultSizeForID(idForSize)
+            let displayCount: Int = {
+                switch size {
+                case .small: return 2
+                case .medium: return 6
+                case .large: return 12
+                }
+            }()
+            let items = Array(pinnedSubtasks.prefix(displayCount))
+            if items.isEmpty {
+                Text("empty_no_pinned_subtasks".localized)
+                    .font(.subheadline)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .padding(.vertical, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(items, id: \.id) { task in
+                        HStack {
+                            Image(systemName: task.status == .done ? "checkmark.circle.fill" : (task.status == .inProgress ? "minus.circle.fill" : "circle"))
+                                .foregroundColor(task.status == .done ? Color(UIColor.systemGreen) : (task.status == .inProgress ? Color(UIColor.systemBlue) : Color(UIColor.systemGray)))
+                            Text(task.title)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color(UIColor.label))
+                                .lineLimit(1)
+                            Spacer()
+                            Button(action: { unpin(task: task) }) {
+                                Image(systemName: "star.slash")
+                                    .foregroundColor(Color(UIColor.systemBlue))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(8)
+                        .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(16)
+        .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -2157,6 +2303,158 @@ struct HomeGoalCard: View {
             .shadow(color: Color(UIColor.label).opacity(0.08), radius: 6, x: 0, y: 3)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// 置顶子任务管理页
+struct PinnedSubtasksDetailView: View {
+    @Query(sort: \Goal.createTime, order: .reverse) private var goals: [Goal]
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @State private var refreshID = UUID()
+    @State private var statusFilter: TaskStatus? = nil
+    @State private var searchText: String = ""
+
+    private var pinnedTaskIDs: [UUID] {
+        let arr = UserDefaults.standard.stringArray(forKey: "PinnedSubtaskIDs") ?? []
+        return arr.compactMap { UUID(uuidString: $0) }
+    }
+    private var pinnedSubtasks: [GoalTask] {
+        let set = Set(pinnedTaskIDs)
+        var result: [GoalTask] = []
+        for g in goals where !g.isDeleted {
+            for t in g.tasks {
+                if set.contains(t.id) { result.append(t) }
+            }
+        }
+        return result
+    }
+    private var filteredSubtasks: [GoalTask] {
+        let base = pinnedSubtasks
+        let byStatus = statusFilter == nil ? base : base.filter { $0.status == statusFilter }
+        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return byStatus }
+        return byStatus.filter { $0.title.localizedCaseInsensitiveContains(searchText) || ($0.goal?.name.localizedCaseInsensitiveContains(searchText) ?? false) }
+    }
+    private func unpin(_ task: GoalTask) {
+        var arr = UserDefaults.standard.stringArray(forKey: "PinnedSubtaskIDs") ?? []
+        if let idx = arr.firstIndex(of: task.id.uuidString) {
+            arr.remove(at: idx)
+            UserDefaults.standard.set(arr, forKey: "PinnedSubtaskIDs")
+            refreshID = UUID()
+        }
+    }
+
+    private func toggleStatus(_ task: GoalTask) {
+        let wasDone = task.isCompleted
+        switch task.status {
+        case .todo: task.status = .inProgress
+        case .inProgress: task.status = .done
+        case .done: task.status = .todo
+        }
+        task.isCompleted = (task.status == .done)
+        do { try modelContext.save() } catch { }
+        refreshID = UUID()
+    }
+
+    var body: some View {
+        List {
+            Section {
+                Picker("", selection: Binding(
+                    get: { statusFilter ?? TaskStatus.todo },
+                    set: { newValue in statusFilter = newValue == TaskStatus.todo ? nil : newValue }
+                )) {
+                    Text("task_status_all".localized).tag(TaskStatus.todo)
+                    Text("task_status_in_progress".localized).tag(TaskStatus.inProgress)
+                    Text("task_status_done".localized).tag(TaskStatus.done)
+                }
+                .pickerStyle(.segmented)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+
+                if filteredSubtasks.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "star")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(Color(UIColor.systemGray))
+                        Text("empty_no_pinned_subtasks".localized)
+                            .font(AppFont.subtext())
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 16)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 8, trailing: 16))
+                } else {
+                    ForEach(filteredSubtasks, id: \.id) { task in
+                        HStack(spacing: 12) {
+                            Button { toggleStatus(task) } label: {
+                                ZStack {
+                                    Circle()
+                                        .stroke((task.status == .done || task.status == .inProgress) ? Color.clear : Color(UIColor.systemGray3), lineWidth: 1.5)
+                                        .frame(width: 22, height: 22)
+                                    if task.status == .done {
+                                        Circle().fill(Color(UIColor.systemBlue)).frame(width: 22, height: 22)
+                                        Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(.white)
+                                    } else if task.status == .inProgress {
+                                        Circle().fill(Color(UIColor.systemBlue)).frame(width: 22, height: 22)
+                                        Image(systemName: "minus").font(.system(size: 10, weight: .bold)).foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(task.title)
+                                    .font(AppFont.bodyMedium())
+                                    .foregroundColor(task.status == .done ? Color(UIColor.systemGray) : Color(UIColor.label))
+                                    .strikethrough(task.status == .done)
+                                    .lineLimit(2)
+                                if let name = task.goal?.name, !name.isEmpty {
+                                    Text(name)
+                                        .font(AppFont.assist())
+                                        .foregroundColor(Color(UIColor.secondaryLabel))
+                                }
+                            }
+                            Spacer()
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) { unpin(task) } label: { Text("unpin_from_home".localized) }
+                        }
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    }
+                }
+            } header: {
+                HStack(spacing: 8) {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(Color(UIColor.systemYellow))
+                    Text("pinned_subtasks_manage_title".localized)
+                        .font(AppFont.sectionTitle())
+                        .foregroundColor(Color(UIColor.label))
+                    Spacer()
+                    Text("\(filteredSubtasks.count)")
+                        .font(AppFont.assist())
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color(UIColor.systemGray5).opacity(0.6))
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 16)
+            }
+            .headerProminence(.increased)
+        }
+        .listStyle(.insetGrouped)
+        .searchable(text: $searchText, placement: .navigationBarDrawer)
+        .animation(.spring(response: 0.24, dampingFraction: 0.9), value: statusFilter)
+        .animation(.spring(response: 0.24, dampingFraction: 0.9), value: searchText)
+        .navigationBarTitle(Text("pinned_subtasks_manage_title".localized), displayMode: .inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("back".localized) { dismiss() }
+                    .tint(Color(UIColor.systemBlue))
+            }
+        }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

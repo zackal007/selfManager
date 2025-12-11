@@ -36,6 +36,9 @@ struct SettingsCardView: View {
     @AppStorage("showHabitCard") private var showHabitCard = true
     @AppStorage("showAchievementCard") private var showAchievementCard = true
     @AppStorage("showAnxietyCard") private var showAnxietyCard = true
+    @AppStorage("showPinnedSubtasksCard") private var showPinnedSubtasksCard = true
+    @State private var showingUpdateAlert = false
+    @State private var updateAlertMessage = ""
     
     // 语言设置
     @ObservedObject private var localizationManager = LocalizationManager.shared
@@ -258,6 +261,27 @@ struct SettingsCardView: View {
                         .padding(.vertical, 10)
                         Divider().padding(.leading, 48)
                         
+                        // 子任务卡片（置顶子任务）
+                        HStack(spacing: 12) {
+                            Image(systemName: "star.circle.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.yellow)
+                                .frame(width: 20)
+                            
+                            Text("pinned_subtask_card".localized)
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(UIColor.label))
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $showPinnedSubtasksCard)
+                                .labelsHidden()
+                                .scaleEffect(0.8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        Divider().padding(.leading, 48)
+                        
                         // 焦虑卡片
                         HStack(spacing: 12) {
                             Image(systemName: "brain.head.profile")
@@ -381,8 +405,12 @@ struct SettingsCardView: View {
                     Spacer()
                     Button(action: {
                         VersionUpdateManager.shared.checkForUpdate(force: true) { info in
-                            guard let info = info else { return }
-                            VersionUpdateManager.shared.openAppStore(urlString: info.trackViewUrl)
+                            if let info = info {
+                                VersionUpdateManager.shared.openAppStore(urlString: info.trackViewUrl)
+                            } else {
+                                updateAlertMessage = "already_latest_version".localized
+                                showingUpdateAlert = true
+                            }
                         }
                     }) {
                         Text("check_update".localized)
@@ -391,6 +419,9 @@ struct SettingsCardView: View {
                     }
                 }
                 .padding(.horizontal, 16)
+                .alert(isPresented: $showingUpdateAlert) {
+                    Alert(title: Text("check_update".localized), message: Text(updateAlertMessage), dismissButton: .default(Text("ok".localized)))
+                }
             }
         }
         .padding(.bottom, 24)
