@@ -818,11 +818,7 @@ struct GoalView: View {
                                         let dy = max(0, value.translation.height)
                                         pullOffset = min(dy, 80)
                                         if dy > 30 {
-                                            if goalTypes[index] == nil {
-                                                withAnimation(.easeInOut(duration: 0.25)) {
-                                                    showGoalPopup = true
-                                                }
-                                            } else {
+                                            if goalTypes[index] != nil {
                                                 withAnimation(.easeInOut(duration: 0.25)) {
                                                     showSearchBar = true
                                                     didTriggerSearchBar = true
@@ -834,12 +830,19 @@ struct GoalView: View {
                                         withAnimation(.spring(response: 0.32, dampingFraction: 0.7)) {
                                             pullOffset = 0
                                         }
-                                        if !didTriggerSearchBar && value.translation.height < -20 && goalTypes[index] != nil && searchText.isEmpty {
-                                            withAnimation(.easeInOut(duration: 0.25)) {
-                                                showSearchBar = false
+                                        
+                                        if goalTypes[index] == nil {
+                                            if value.translation.height > 30 {
+                                                showGoalPopup = true
                                             }
+                                        } else {
+                                            if !didTriggerSearchBar && value.translation.height < -20 && searchText.isEmpty {
+                                                withAnimation(.easeInOut(duration: 0.25)) {
+                                                    showSearchBar = false
+                                                }
+                                            }
+                                            didTriggerSearchBar = false
                                         }
-                                        didTriggerSearchBar = false
                                     }
                             )
                             .tag(index)

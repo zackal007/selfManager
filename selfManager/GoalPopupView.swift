@@ -96,9 +96,10 @@ struct GoalPopupView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // 顶部图标（与“添加人脉”一致的方形蓝色样式）
-                VStack(spacing: 12) {
+            ScrollView {
+                VStack(spacing: 0) {
+                    // 顶部图标（与“添加人脉”一致的方形蓝色样式）
+                    VStack(spacing: 12) {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color(UIColor.systemBlue))
                         .frame(width: 56, height: 56)
@@ -250,7 +251,8 @@ struct GoalPopupView: View {
                 .padding(.top)
                 
                 // 移除筛选结果展示区域，保留弹窗仅用于筛选条件设定
-                Spacer()
+            }
+            .frame(maxWidth: .infinity)
             }
             // 点击非输入区域时收起键盘，不影响布局
             .contentShape(Rectangle())
