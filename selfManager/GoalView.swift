@@ -741,9 +741,23 @@ struct GoalView: View {
                                     }()
 
                                     if currentGoals.isEmpty {
+                                        let iconName: String = {
+                                            switch goalTypes[index] {
+                                            case .life:
+                                                return "star.fill"
+                                            case .yearly:
+                                                return "calendar"
+                                            case .shortTerm:
+                                                return "target"
+                                            case .habit:
+                                                return "repeat"
+                                            case nil:
+                                                return "flag"
+                                            }
+                                        }()
                                         LazyVStack(spacing: 12) {
                                             VStack(spacing: 16) {
-                                                Image(systemName: "flag")
+                                                Image(systemName: iconName)
                                                     .font(.system(size: 60))
                                                     .foregroundColor(.gray)
                                                 Text(isSearching ? "no_results".localized : "goals_plans".localized)

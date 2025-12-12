@@ -647,7 +647,7 @@ private struct TopTabChip: View {
     // 空状态视图
     private var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "person.3")
+            Image(systemName: "network")
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
             

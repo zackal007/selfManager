@@ -1236,7 +1236,7 @@ private struct TopTabChip: View {
                                                             .font(.system(size: 48))
                                                             .foregroundColor(.secondary)
                                                         
-                                                        Text("暂无记录")
+                                                        Text("no_records_recent".localized)
                                                             .font(.headline)
                                                             .foregroundColor(.secondary)
                                                         

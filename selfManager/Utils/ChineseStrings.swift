@@ -30,7 +30,7 @@ struct ChineseStrings {
         "habit_card": "习惯卡片",
         "achievement_card": "成就卡片",
         "anxiety_card": "焦虑卡片",
-        "pinned_subtask_card": "子任务卡片（置顶子任务）",
+        "pinned_subtask_card": "子任务卡片",
         "appearance_light": "浅色",
         "appearance_dark": "深色",
         "appearance_system": "跟随系统",
@@ -376,6 +376,7 @@ struct ChineseStrings {
         // 标签管理
         "my_tags": "我的标签",
         "start_first_record": "开始写下你的第一篇记录吧",
+        "no_records_recent": "暂无记录",
         "no_mood": "无心情",
         "clear_goal_reference": "清除目标引用",
         "clear_contact_reference": "清除人脉引用",

@@ -39,6 +39,7 @@ struct SettingsCardView: View {
     @AppStorage("showPinnedSubtasksCard") private var showPinnedSubtasksCard = true
     @State private var showingUpdateAlert = false
     @State private var updateAlertMessage = ""
+    @State private var isExpanded = false
     
     // 语言设置
     @ObservedObject private var localizationManager = LocalizationManager.shared
@@ -65,12 +66,54 @@ struct SettingsCardView: View {
                     .foregroundColor(Color(UIColor.label))
                 
                 Spacer()
+                
+                if !isExpanded {
+                    HStack(spacing: 8) {
+                        Button(action: { Task { await CloudKitSyncManager.shared.startSync(modelContext: modelContext) } }) {
+                            Text("sync_now".localized)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Capsule().fill(Color(UIColor.systemBlue).opacity(0.1)))
+                        }
+                        Button(action: {
+                            VersionUpdateManager.shared.checkForUpdate(force: true) { info in
+                                if let info = info {
+                                    VersionUpdateManager.shared.openAppStore(urlString: info.trackViewUrl)
+                                } else {
+                                    updateAlertMessage = "already_latest_version".localized
+                                    showingUpdateAlert = true
+                                }
+                            }
+                        }) {
+                            Text("check_update".localized)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Capsule().fill(Color(UIColor.systemBlue).opacity(0.1)))
+                        }
+                    }
+                }
+                
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        isExpanded.toggle()
+                    }
+                }) {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .padding(6)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
             .padding(.bottom, 12)
             
-                    VStack(spacing: 12) {
+            if isExpanded {
+                VStack(spacing: 12) {
                         // 外观设置
                         VStack(spacing: 8) {
                     HStack {
@@ -164,7 +207,7 @@ struct SettingsCardView: View {
                             }
                         } label: {
                             Text(localizationManager.currentLanguage == .english ? "EN" : "中文")
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(Color(UIColor.systemBlue))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
@@ -336,6 +379,8 @@ struct SettingsCardView: View {
 
                     Stepper("", value: $trashDays, in: 7...365, step: 1)
                         .labelsHidden()
+                        .controlSize(.mini)
+                        .frame(width: 84)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
@@ -419,15 +464,16 @@ struct SettingsCardView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .alert(isPresented: $showingUpdateAlert) {
-                    Alert(title: Text("check_update".localized), message: Text(updateAlertMessage), dismissButton: .default(Text("ok".localized)))
-                }
             }
+            }
+        }
         }
         .padding(.bottom, 24)
         .id(refreshView) // 使用id强制视图在语言变化时刷新
-    }
-    .background(
+        .alert(isPresented: $showingUpdateAlert) {
+            Alert(title: Text("check_update".localized), message: Text(updateAlertMessage), dismissButton: .default(Text("ok".localized)))
+        }
+        .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(cardBackground)
                 .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
@@ -435,7 +481,7 @@ struct SettingsCardView: View {
     }
 }
 
-// 侧边栏菜单项数据模型
+// MARK: - 侧边栏菜单项数据模型
 struct SidebarMenuItem {
     let id = UUID()
     let title: String

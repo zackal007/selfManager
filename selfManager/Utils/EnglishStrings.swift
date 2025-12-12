@@ -379,6 +379,7 @@ struct EnglishStrings {
         // Tags management
         "my_tags": "My Tags",
         "start_first_record": "Start writing your first record",
+        "no_records_recent": "No records yet",
         "no_mood": "No mood",
         "clear_goal_reference": "Clear Goal Reference",
         "clear_contact_reference": "Clear Contact Reference",

@@ -19,7 +19,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .chinese:
-            return "简体中文"
+            return "中文"
         case .english:
             return "English"
         }
@@ -73,7 +73,13 @@ class LocalizationManager: ObservableObject {
     
     // 切换语言
     func switchLanguage(to language: AppLanguage) {
-        self.currentLanguage = language
+        if Thread.isMainThread {
+            self.currentLanguage = language
+        } else {
+            DispatchQueue.main.async {
+                self.currentLanguage = language
+            }
+        }
     }
 }
 
