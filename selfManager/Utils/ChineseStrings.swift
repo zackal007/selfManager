@@ -399,7 +399,7 @@ struct ChineseStrings {
         // Ping 按钮
         "pin_to_home": "钉到主页",
         "unpin_from_home": "取消钉到主页",
-        "pinned_subtasks_title": "置顶子任务",
+        "pinned_subtasks_title": "置顶任务",
         "pinned_subtasks_manage_title": "置顶子任务",
         "task_status_all": "全部",
         "task_status_in_progress": "进行中",

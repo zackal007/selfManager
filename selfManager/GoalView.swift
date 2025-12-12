@@ -1743,23 +1743,13 @@ struct AddGoalView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("goal_name".localized)
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(Color(UIColor.secondaryLabel))
                             
-                            HStack(spacing: 8) {
-                                Image(systemName: "target")
-                                    .foregroundColor(.secondary)
-                                TextField("goal_name_placeholder".localized, text: $goalName)
-                                    .textFieldStyle(PlainTextFieldStyle())
-                                if !goalName.isEmpty {
-                                    Button(action: { goalName = "" }) {
-                                        Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                            TextField("goal_name_placeholder".localized, text: $goalName)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
                             
                             if goalName.isEmpty {
                                 Text("goal_name_empty".localized)
@@ -1772,26 +1762,21 @@ struct AddGoalView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("goal_description".localized)
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(Color(UIColor.secondaryLabel))
                             
-                            HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "text.alignleft")
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 2)
-                                TextField("goal_description_placeholder".localized, text: $goalDescription, axis: .vertical)
-                                    .textFieldStyle(PlainTextFieldStyle())
-                                    .lineLimit(3...6)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                            TextField("goal_description_placeholder".localized, text: $goalDescription, axis: .vertical)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .lineLimit(3...6)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
                         }
                         
                         // 目标类别选择
                         VStack(alignment: .leading, spacing: 8) {
                             Text("goal_type".localized)
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(Color(UIColor.secondaryLabel))
                             
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 8) {
@@ -1799,19 +1784,15 @@ struct AddGoalView: View {
                                     Button(action: {
                                         selectedCategory = category
                                     }) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: categoryIcon(for: category))
-                                                .font(.system(size: 12))
-                                            Text(category.localizedTitle)
-                                                .font(.system(size: 13))
-                                        }
-                                        .foregroundColor(selectedCategory == category ? .white : .primary)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            Capsule()
-                                                .fill(selectedCategory == category ? Color.blue : Color(UIColor.systemGray5))
-                                        )
+                                        Text(category.localizedTitle)
+                                            .font(.system(size: 13))
+                                            .foregroundColor(selectedCategory == category ? .white : .primary)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 8)
+                                            .background(
+                                                Capsule()
+                                                    .fill(selectedCategory == category ? Color.blue : Color(UIColor.systemGray5))
+                                            )
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
@@ -1827,7 +1808,7 @@ struct AddGoalView: View {
                             HStack {
                                 Text("due_date".localized)
                                     .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
                                 
                                 Spacer()
                                 
@@ -1836,17 +1817,12 @@ struct AddGoalView: View {
                             }
                             
                             if hasDueDate {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "calendar")
-                                        .foregroundColor(.secondary)
-                                    DatePicker("", selection: $dueDate, displayedComponents: [.date])
-                                        .labelsHidden()
-                                        .environment(\.locale, localizationManager.currentLanguage.locale)
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 10)
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                                DatePicker("", selection: $dueDate, displayedComponents: [.date])
+                                    .labelsHidden()
+                                    .environment(\.locale, localizationManager.currentLanguage.locale)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
                             }
                         }
                     }
@@ -1911,6 +1887,20 @@ struct AddGoalView: View {
                         message: Text(errorMessage),
                         dismissButton: .default(Text("ok".localized))
                     )
+                }
+                .onAppear {
+                    switch selectedSegment {
+                    case 0:
+                        selectedCategory = .life
+                    case 1:
+                        selectedCategory = .yearly
+                    case 2:
+                        selectedCategory = .shortTerm
+                    case 3:
+                        selectedCategory = .habit
+                    default:
+                        selectedCategory = .shortTerm
+                    }
                 }
             }
         }

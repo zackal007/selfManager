@@ -402,7 +402,7 @@ struct EnglishStrings {
         // Ping button
         "pin_to_home": "Pin to Home",
         "unpin_from_home": "Unpin from Home",
-        "pinned_subtasks_title": "Pinned Subtasks",
+        "pinned_subtasks_title": "Pinned Tasks",
         "pinned_subtasks_manage_title": "Pinned Subtasks",
         "task_status_all": "All",
         "task_status_in_progress": "In Progress",

@@ -121,7 +121,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("category".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -129,19 +129,15 @@ struct AddContactView: View {
                         Button(action: {
                             selectedContactType = type
                         }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: type.iconName)
-                                    .font(.system(size: 12))
-                                Text(localizedContactTypeName(type))
-                                    .font(.system(size: 13))
-                            }
-                            .foregroundColor(selectedContactType == type ? .white : .primary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule()
-                                    .fill(selectedContactType == type ? Color.blue : Color(UIColor.systemGray5))
-                            )
+                            Text(localizedContactTypeName(type))
+                                .font(.system(size: 13))
+                                .foregroundColor(selectedContactType == type ? .white : .primary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(selectedContactType == type ? Color.blue : Color(UIColor.systemGray5))
+                                )
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -172,7 +168,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("name_label".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("name_placeholder".localized, text: $name)
                 .font(.system(size: 16))
@@ -193,7 +189,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("company".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("company_placeholder".localized, text: $company)
                 .font(.system(size: 16))
@@ -214,7 +210,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("position".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("position_placeholder".localized, text: $position)
                 .font(.system(size: 16))
@@ -235,23 +231,18 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("category".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             Menu {
                 ForEach(ContactType.allCases, id: \.self) { type in
                     Button(action: {
                         selectedContactType = type
                     }) {
-                        HStack {
-                            Image(systemName: type.iconName)
-                            Text(type.displayName)
-                        }
+                        Text(type.displayName)
                     }
                 }
             } label: {
                 HStack {
-                    Image(systemName: selectedContactType.iconName)
-                        .foregroundColor(.blue)
                     Text(selectedContactType.displayName)
                         .foregroundColor(.primary)
                     Spacer()
@@ -274,26 +265,18 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("importance".localized)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             Menu {
                 ForEach(ContactImportance.allCases, id: \.self) { importance in
                     Button(action: {
                         selectedImportance = importance
                     }) {
-                        HStack {
-                            Image(systemName: "star.fill")
-                            Text(importance.displayName)
-                            if selectedImportance == importance {
-                                Image(systemName: "checkmark")
-                            }
-                        }
+                        Text(importance.displayName)
                     }
                 }
             } label: {
                 HStack {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.blue)
                     Text(selectedImportance.displayName)
                         .foregroundColor(.primary)
                     Spacer()
@@ -313,23 +296,18 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("contact_frequency".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             Menu {
                 ForEach(ContactFrequency.allCases, id: \.self) { frequency in
                     Button(action: {
                         selectedFrequency = frequency
                     }) {
-                        HStack {
-                            Image(systemName: "clock")
-                            Text(localizedFrequencyName(frequency))
-                        }
+                        Text(localizedFrequencyName(frequency))
                     }
                 }
             } label: {
                 HStack {
-                    Image(systemName: "clock")
-                        .foregroundColor(.blue)
                     Text(selectedFrequency.displayName)
                         .foregroundColor(.primary)
                     Spacer()
@@ -352,7 +330,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("tags".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("search_or_create_tag_placeholder".localized, text: $tags)
                 .font(.system(size: 16))
@@ -374,7 +352,7 @@ struct AddContactView: View {
             HStack {
                 Text("last_contact".localized)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
                 
                 Spacer()
                 
@@ -400,7 +378,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("phone".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("phone".localized, text: $phone)
                 .font(.system(size: 16))
@@ -422,7 +400,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("email".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("email".localized, text: $email)
                 .font(.system(size: 16))
@@ -445,7 +423,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("address".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("address".localized, text: $address)
                 .font(.system(size: 16))
@@ -466,7 +444,7 @@ struct AddContactView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("description_optional".localized)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.secondaryLabel))
             
             TextField("note_placeholder".localized, text: $notes, axis: .vertical)
                 .font(.system(size: 16))

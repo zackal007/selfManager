@@ -1786,7 +1786,7 @@ private func tagColor(for tag: String) -> Color {
                 // 置顶子任务展示（类似成就中心）
                 if showPinnedSubtasksCard && !pinnedSubtasks.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("pinned_subtasks_title".localized)
+                        Text("置顶任务")
                             .font(.subheadline)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         let idForSize = HomeCardID.type(.achievement)
@@ -2000,7 +2000,7 @@ private func tagColor(for tag: String) -> Color {
                 Image(systemName: "star.fill")
                     .font(.title3)
                     .foregroundColor(Color(UIColor.systemYellow))
-                Text("pinned_subtasks_title".localized)
+                Text("置顶任务")
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(Color(UIColor.label))

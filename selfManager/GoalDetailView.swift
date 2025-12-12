@@ -53,6 +53,7 @@ struct GoalDetailView: View {
     // 打卡按钮状态变量
     @State private var isPressed = false
     @State private var isCheckInAnimating = false
+    @State private var pinRefreshID = UUID()
     
     // 根据目标名称获取目标对象
     private func getGoalByName(name: String) -> Goal? {
@@ -2282,6 +2283,213 @@ struct EditFormView: View {
     @State private var eventStore = EKEventStore()
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    @State private var pinRefreshID = UUID()
+    
+    // 将弹窗内容拆分为独立视图，降低类型检查复杂度
+    @ViewBuilder
+    private func editingFieldView() -> some View {
+        switch editingField {
+        case .name:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("goal_name".localized)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 16)
+                
+                TextField("goal_name_placeholder".localized, text: $editingValue)
+                    .font(.system(size: 16))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                    .padding(.horizontal, 16)
+            }
+        case .goalDescription:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("goal_description".localized)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 16)
+                
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "text.alignleft")
+                        .foregroundColor(.secondary)
+                        .padding(.top, 12)
+                        .padding(.leading, 12)
+                    
+                    TextEditor(text: $editingValue)
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(UIColor.label))
+                        .padding(.vertical, 8)
+                        .padding(.trailing, 12)
+                        .frame(minHeight: 150)
+                        .background(Color.clear)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemGray6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color(UIColor.systemBlue).opacity(0.2), lineWidth: 1)
+                        )
+                )
+                .padding(.horizontal, 16)
+            }
+        case .progress:
+            VStack(spacing: 16) {
+                Text("\(Int(editingProgress * 100))%")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Slider(value: $editingProgress, in: 0...1, step: 0.01)
+                    .padding(.horizontal, 16)
+                    .accentColor(Color.blue)
+            }
+            .padding(.vertical, 16)
+            .padding(.horizontal, 16)
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+            .padding(.horizontal, 16)
+        case .tag:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("tags".localized)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 16)
+                
+                HStack {
+                    Image(systemName: "tag")
+                        .foregroundColor(.secondary)
+                    TextField("tag_name_placeholder".localized, text: $editingValue)
+                        .font(.system(size: 16))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                .padding(.horizontal, 16)
+            }
+        case .upperProject:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("upper_project".localized)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 16)
+                
+                HStack {
+                    Image(systemName: "arrow.up.circle")
+                        .foregroundColor(.secondary)
+                    TextField("goal_name_placeholder".localized, text: $editingValue)
+                        .font(.system(size: 16))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                .padding(.horizontal, 16)
+            }
+        case .subProject:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("sub_project".localized)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 16)
+                
+                HStack {
+                    Image(systemName: "arrow.down.circle")
+                        .foregroundColor(.secondary)
+                    TextField("goal_name_placeholder".localized, text: $editingValue)
+                        .font(.system(size: 16))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                .padding(.horizontal, 16)
+            }
+        case .task:
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("task_title".localized)
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                    
+                    HStack {
+                        Image(systemName: "checkmark.circle")
+                            .foregroundColor(.secondary)
+                        TextField("enter_task_title".localized, text: $editingValue)
+                            .font(.system(size: 16))
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                    .padding(.horizontal, 16)
+                }
+                
+                HStack(spacing: 10) {
+                    Button(action: {
+                        togglePinForEditingTask()
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: isEditingTaskPinned ? "pin.fill" : "pin")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text(isEditingTaskPinned ? "unpin_from_home".localized : "pin_to_home".localized)
+                                .font(.system(size: 16, weight: .medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .foregroundColor(.white)
+                        .background(isEditingTaskPinned ? Color(UIColor.systemYellow) : Color.blue)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: {
+                        importToReminders()
+                    }) {
+                        HStack {
+                            Image(systemName: "bell.fill")
+                            Text("sync_to_reminders".localized)
+                                .font(.system(size: 16, weight: .medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .foregroundColor(.white)
+                        .background(Color.orange)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal, 16)
+                .id(self.pinRefreshID)
+            }
+        case .dueDate:
+            VStack(alignment: .leading, spacing: 8) {
+                Text("due_date".localized)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 16)
+                
+                HStack {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.secondary)
+                    Text("due_date".localized)
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
+                .padding(.horizontal, 16)
+            }
+        case .none:
+            Text("please_select_content".localized)
+                .font(.system(size: 16))
+                .foregroundColor(.secondary)
+                .padding()
+        @unknown default:
+            Text("unknown_edit_type".localized)
+                .font(.system(size: 16))
+                .foregroundColor(.secondary)
+                .padding()
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -2289,215 +2497,7 @@ struct EditFormView: View {
                 // 内容区域
                 ScrollView {
                     VStack(spacing: 16) {
-                        switch editingField {
-                        case .name:
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("goal_name".localized)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
-                                
-                                TextField("goal_name_placeholder".localized, text: $editingValue)
-                                    .font(.system(size: 16))
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                    .padding(.horizontal, 16)
-                            }
-                        
-                        case .goalDescription:
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("goal_description".localized)
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.primary)
-                                    .padding(.horizontal, 16)
-                                
-                                HStack(alignment: .top, spacing: 8) {
-                                    Image(systemName: "text.alignleft")
-                                        .foregroundColor(.secondary)
-                                        .padding(.top, 12)
-                                        .padding(.leading, 12)
-                                    
-                                    TextEditor(text: $editingValue)
-                                        .font(.system(size: 16))
-                                        .foregroundColor(Color(UIColor.label))
-                                        .padding(.vertical, 8)
-                                        .padding(.trailing, 12)
-                                        .frame(minHeight: 150)
-                                        .background(Color.clear)
-                                }
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(UIColor.systemGray6))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color(UIColor.systemBlue).opacity(0.2), lineWidth: 1)
-                                        )
-                                )
-                                .padding(.horizontal, 16)
-                            }
-                        
-                        case .progress:
-                            VStack(spacing: 16) {
-                                Text("\(Int(editingProgress * 100))%")
-                                    .font(.system(size: 32, weight: .bold))
-                                    .foregroundColor(.primary)
-                                
-                                Slider(value: $editingProgress, in: 0...1, step: 0.01)
-                                    .padding(.horizontal, 16)
-                                    .accentColor(Color.blue)
-                            }
-                            .padding(.vertical, 16)
-                            .padding(.horizontal, 16)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                            .padding(.horizontal, 16)
-                        
-                        case .tag:
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("tags".localized)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
-                                
-                                HStack {
-                                    Image(systemName: "tag")
-                                        .foregroundColor(.secondary)
-                                    TextField("tag_name_placeholder".localized, text: $editingValue)
-                                        .font(.system(size: 16))
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                .padding(.horizontal, 16)
-                            }
-                        
-                        case .upperProject:
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("upper_project".localized)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
-                                
-                                HStack {
-                                    Image(systemName: "arrow.up.circle")
-                                        .foregroundColor(.secondary)
-                                    TextField("goal_name_placeholder".localized, text: $editingValue)
-                                        .font(.system(size: 16))
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                .padding(.horizontal, 16)
-                            }
-                        
-                        case .subProject:
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("sub_project".localized)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
-                                
-                                HStack {
-                                    Image(systemName: "arrow.down.circle")
-                                        .foregroundColor(.secondary)
-                                    TextField("goal_name_placeholder".localized, text: $editingValue)
-                                        .font(.system(size: 16))
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                .padding(.horizontal, 16)
-                            }
-                        
-                        case .task:
-                            VStack(alignment: .leading, spacing: 16) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("task_title".localized)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.secondary)
-                                        .padding(.horizontal, 16)
-                                    
-                                    HStack {
-                                        Image(systemName: "checkmark.circle")
-                                            .foregroundColor(.secondary)
-                                        TextField("enter_task_title".localized, text: $editingValue)
-                                            .font(.system(size: 16))
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                    .padding(.horizontal, 16)
-                                }
-                                
-                                HStack(spacing: 10) {
-                                    Button(action: {
-                                        togglePinForEditingTask()
-                                    }) {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: isEditingTaskPinned ? "star.fill" : "star")
-                                                .foregroundColor(isEditingTaskPinned ? Color(UIColor.systemYellow) : Color(UIColor.systemBlue))
-                                            Text(isEditingTaskPinned ? "unpin_from_home".localized : "pin_to_home".localized)
-                                                .font(.system(size: 16, weight: .medium))
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 12)
-                                        .foregroundColor(.white)
-                                        .background(isEditingTaskPinned ? Color(UIColor.systemYellow) : Color.blue)
-                                        .cornerRadius(12)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-
-                                    Button(action: {
-                                        importToReminders()
-                                    }) {
-                                        HStack {
-                                            Image(systemName: "bell.fill")
-                                            Text("sync_to_reminders".localized)
-                                                .font(.system(size: 16, weight: .medium))
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 12)
-                                        .foregroundColor(.white)
-                                        .background(Color.orange)
-                                        .cornerRadius(12)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                                .padding(.horizontal, 16)
-                            }
-                        
-                        case .dueDate:
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("due_date".localized)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
-                                
-                                HStack {
-                                    Image(systemName: "calendar")
-                                        .foregroundColor(.secondary)
-                                    Text("due_date".localized)
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.gray)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.systemGray6)))
-                                .padding(.horizontal, 16)
-                            }
-                        
-                        case .none:
-                            Text("please_select_content".localized)
-                                .font(.system(size: 16))
-                                .foregroundColor(.secondary)
-                                .padding()
-                            
-                        @unknown default:
-                            Text("unknown_edit_type".localized)
-                                .font(.system(size: 16))
-                                .foregroundColor(.secondary)
-                                .padding()
-                        }
+                        editingFieldView()
                     }
                     .padding(.vertical, 20)
                 }
@@ -2541,6 +2541,7 @@ struct EditFormView: View {
             arr.append(tid.uuidString)
         }
         UserDefaults.standard.set(arr, forKey: "PinnedSubtaskIDs")
+        self.pinRefreshID = UUID()
     }
     
     private func getNavigationTitle() -> String {
