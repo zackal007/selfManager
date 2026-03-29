@@ -10,10 +10,22 @@ import UIKit
 import Foundation
 import SwiftData
 
+
 struct GoalDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allGoals: [Goal]
     @Query private var allContacts: [Contact]
+    
+    // 从文档目录加载图片
+    private func loadImageFromDocuments(_ imageName: String) -> UIImage? {
+        let fileURL = getDocumentsDirectory().appendingPathComponent(imageName)
+        return UIImage(contentsOfFile: fileURL.path)
+    }
+    
+    // 获取应用文档目录
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
     
     // 状态变量
     @State private var selectedDate = Date()
@@ -147,7 +159,7 @@ struct GoalDetailView: View {
     private let goalTypes = ["人生目标", "年度目标", "短期目标", "习惯"]
     private let backgroundImages = ["GoalBackground", "GoalBackground2", nil]
     private var availableUpperGoals: [String] {
-        // 过滤掉当前目标、已经是子目标的目标、以及会造成循环引用的目标
+        // 过滤掉当前目标、已经是子目标的目标、回收站中的目标、以及会造成循环引用的目标
         allGoals.filter { otherGoal in
             let otherGoalId = otherGoal.id.uuidString
             let currentGoalId = goal.id.uuidString
@@ -161,13 +173,16 @@ struct GoalDetailView: View {
             // 排除已经将当前目标作为上级目标的目标（防止重复关系）
             if otherGoal.upperProject.contains(currentGoalId) { return false }
             
+            // 排除回收站中的目标
+            if otherGoal.isDeleted { return false }
+            
             // 递归检查是否会造成循环引用
             return !wouldCreateCycle(adding: otherGoalId, as: "upper", to: currentGoalId)
         }.map { $0.id.uuidString }
     }
     
     private var availableSubGoals: [String] { 
-        // 过滤掉当前目标、已经是上级目标的目标、以及会造成循环引用的目标
+        // 过滤掉当前目标、已经是上级目标的目标、回收站中的目标、以及会造成循环引用的目标
         allGoals.filter { otherGoal in
             let otherGoalId = otherGoal.id.uuidString
             let currentGoalId = goal.id.uuidString
@@ -180,6 +195,9 @@ struct GoalDetailView: View {
             
             // 排除已经将当前目标作为子目标的目标（防止重复关系）
             if otherGoal.subProject.contains(currentGoalId) { return false }
+            
+            // 排除回收站中的目标
+            if otherGoal.isDeleted { return false }
             
             // 递归检查是否会造成循环引用
             return !wouldCreateCycle(adding: otherGoalId, as: "sub", to: currentGoalId)
@@ -196,6 +214,7 @@ struct GoalDetailView: View {
     @State private var editingValue: String = ""
     @State private var editingProgress: Double = 0
     @State private var editingTask: GoalTask? = nil
+    @State private var showActivityLog = false
     @Environment(\.presentationMode) var presentationMode
     
     // 可编辑字段枚举
@@ -296,8 +315,12 @@ struct GoalDetailView: View {
                             // 复选框（参考备忘录样式）
                             Button(action: {
                                 // 切换任务完成状态
+                                let oldStatus = task.isCompleted
                                 task.isCompleted.toggle()
                                 goal.modifyTime = Date()
+                                
+                                // 记录任务完成状态变更
+                                GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
                                 
                                 do {
                                     try modelContext.save()
@@ -341,10 +364,13 @@ struct GoalDetailView: View {
                         .cornerRadius(8)
                     }
                     .onDelete(perform: deleteTask)
+                    .onMove(perform: moveTask)
                 }
-                .listStyle(.plain)
-                .frame(height: CGFloat(goal.tasks.count) * 60) // 动态调整高度
+                .listStyle(.insetGrouped)
+                .environment(\.editMode, .constant(.active))
+                // 使用insetGrouped样式使拖动指示器更加明显
                 .padding(.horizontal, 16)
+                // 移除固定高度限制，允许列表自然扩展
             }
         }
     }
@@ -425,6 +451,20 @@ struct GoalDetailView: View {
                                         goal.upperProject.remove(at: index)
                                         // 更新修改时间
                                         goal.modifyTime = Date()
+                                        
+                                        // 同时从上级目标的子目标列表中移除当前目标
+                                        if let uuid = UUID(uuidString: project),
+                                           let upperGoal = allGoals.first(where: { $0.id == uuid }) {
+                                            let currentGoalId = goal.id.uuidString
+                                            if let subIndex = upperGoal.subProject.firstIndex(of: currentGoalId) {
+                                                upperGoal.subProject.remove(at: subIndex)
+                                                upperGoal.modifyTime = Date()
+                                                
+                                                // 记录上级目标删除
+                                                GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name)
+                                            }
+                                        }
+                                        
                                         // 保存更改
                                         do {
                                             try modelContext.save()
@@ -451,8 +491,45 @@ struct GoalDetailView: View {
             Divider()
                 .padding(.horizontal, 16)
             
-            // 子目标
-            VStack(alignment: .leading, spacing: 12) {
+            // 单独添加上级目标的逻辑（确保双向同步）
+                .onChange(of: goal.upperProject, initial: false) { oldUpperProjects, newUpperProjects in
+                    let oldSet = Set(oldUpperProjects)
+                    let newSet = Set(newUpperProjects)
+                    let added = newSet.subtracting(oldSet)
+                    let removed = oldSet.subtracting(newSet)
+                    let currentGoalId = goal.id.uuidString
+                    // 新增上级目标时，自动同步到对应目标的subProject
+                    for upperId in added {
+                        if let uuid = UUID(uuidString: upperId),
+                           let upperGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if !upperGoal.subProject.contains(currentGoalId) {
+                                upperGoal.subProject.append(currentGoalId)
+                                upperGoal.modifyTime = Date()
+                                // 记录上级目标添加
+                                GoalActivityManager.shared.logUpperProjectAdd(goal: goal, upperProject: upperGoal.name)
+                            }
+                        }
+                    }
+                    // 移除上级目标时，自动同步到对应目标的subProject
+                    for upperId in removed {
+                        if let uuid = UUID(uuidString: upperId),
+                           let upperGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if let idx = upperGoal.subProject.firstIndex(of: currentGoalId) {
+                                upperGoal.subProject.remove(at: idx)
+                                upperGoal.modifyTime = Date()
+                                // 记录上级目标删除
+                                GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name)
+                            }
+                        }
+                    }
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to sync upperProject add/remove: \(error)")
+                    }
+                }
+                // 子目标
+                VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("子目标")
                         .font(.system(size: 16, weight: .medium))
@@ -464,6 +541,7 @@ struct GoalDetailView: View {
                     Button(action: {
                         showSubGoalSelector = true
                     }) {
+
                         HStack(spacing: 4) {
                             Text("添加")
                                 .font(.system(size: 14))
@@ -478,6 +556,43 @@ struct GoalDetailView: View {
                     }
                 }
                 
+                // 单独添加子目标的逻辑（确保双向同步）
+                .onChange(of: goal.subProject, initial: false) { oldSubProjects, newSubProjects in
+                    let oldSet = Set(oldSubProjects)
+                    let newSet = Set(newSubProjects)
+                    let added = newSet.subtracting(oldSet)
+                    let removed = oldSet.subtracting(newSet)
+                    let currentGoalId = goal.id.uuidString
+                    // 新增子目标时，自动同步到对应目标的upperProject
+                    for subId in added {
+                        if let uuid = UUID(uuidString: subId),
+                           let subGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if !subGoal.upperProject.contains(currentGoalId) {
+                                subGoal.upperProject.append(currentGoalId)
+                                subGoal.modifyTime = Date()
+                                // 记录子目标添加
+                                GoalActivityManager.shared.logSubProjectAdd(goal: goal, subProject: subGoal.name)
+                            }
+                        }
+                    }
+                    // 移除子目标时，自动同步到对应目标的upperProject
+                    for subId in removed {
+                        if let uuid = UUID(uuidString: subId),
+                           let subGoal = allGoals.first(where: { $0.id == uuid }) {
+                            if let idx = subGoal.upperProject.firstIndex(of: currentGoalId) {
+                                subGoal.upperProject.remove(at: idx)
+                                subGoal.modifyTime = Date()
+                                // 记录子目标删除
+                                GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name)
+                            }
+                        }
+                    }
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Failed to sync subProject add/remove: \(error)")
+                    }
+                }
                 if goal.subProject.isEmpty {
                     Text("暂无子目标")
                         .font(.system(size: 14))
@@ -524,6 +639,20 @@ struct GoalDetailView: View {
                                         goal.subProject.remove(at: index)
                                         // 更新修改时间
                                         goal.modifyTime = Date()
+                                        
+                                        // 同时从子目标的上级目标列表中移除当前目标
+                                        if let uuid = UUID(uuidString: project),
+                                           let subGoal = allGoals.first(where: { $0.id == uuid }) {
+                                            let currentGoalId = goal.id.uuidString
+                                            if let upperIndex = subGoal.upperProject.firstIndex(of: currentGoalId) {
+                                                subGoal.upperProject.remove(at: upperIndex)
+                                                subGoal.modifyTime = Date()
+                                                
+                                                // 记录子目标删除
+                                                GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name)
+                                            }
+                                        }
+                                        
                                         // 保存更改
                                         do {
                                             try modelContext.save()
@@ -593,22 +722,37 @@ struct GoalDetailView: View {
         
         switch field {
         case .name:
+            let oldName = goal.name
             goal.name = value
+            // 记录名称修改
+            GoalActivityManager.shared.logNameChange(goal: goal, oldName: oldName)
         case .goalDescription:
+            let oldDescription = goal.goalDescription
             goal.goalDescription = value
+            // 记录描述修改
+            GoalActivityManager.shared.logDescriptionChange(goal: goal, oldDescription: oldDescription)
         case .progress:
+            let oldProgress = goal.progress
             goal.progress = progress
+            // 记录进度修改
+            GoalActivityManager.shared.logProgressChange(goal: goal, oldProgress: oldProgress)
         case .tag:
             if !value.isEmpty {
                 // 添加新标签
                 if !goal.tags.contains(value) {
                     goal.tags.append(value)
+                    // 记录标签添加
+                    GoalActivityManager.shared.logTagAdd(goal: goal, tag: value)
                 }
             }
         case .task:
             if let task = editingTask {
+                let oldTitle = task.title
                 task.title = value
-            }        case .upperProject, .subProject, .dueDate, .none:
+                // 记录任务修改
+                GoalActivityManager.shared.logTaskModify(goal: goal, oldTitle: oldTitle, newTitle: value)
+            }
+        case .upperProject, .subProject, .dueDate, .none:
             // 这些字段在其他地方处理
             break
         @unknown default:
@@ -629,18 +773,28 @@ struct GoalDetailView: View {
     
     // 保存目标的所有修改
     private func saveGoal() -> Void {
+        // 记录目标类型修改
+        let oldGoalType = goal.goalType
+        
         // 根据selectedGoalType更新goal.goalType
+        var newGoalType: GoalType = .shortTerm
         switch selectedGoalType {
         case 0:
-            goal.goalType = .life
+            newGoalType = .life
         case 1:
-            goal.goalType = .yearly
+            newGoalType = .yearly
         case 2:
-            goal.goalType = .shortTerm
+            newGoalType = .shortTerm
         case 3:
-            goal.goalType = .habit
+            newGoalType = .habit
         default:
             break
+        }
+        
+        // 如果类型有变化，记录日志
+        if oldGoalType != newGoalType {
+            goal.goalType = newGoalType
+            GoalActivityManager.shared.logTypeChange(goal: goal, oldType: oldGoalType)
         }
         
         // 更新修改时间
@@ -685,6 +839,11 @@ struct GoalDetailView: View {
         }
         
         return (hasUpperGoals: !upperGoalNames.isEmpty, hasSubGoals: !subGoalNames.isEmpty, upperGoalNames: upperGoalNames, subGoalNames: subGoalNames)
+    }
+    
+    // 获取用户设置的回收站过期天数
+    private func getTrashExpirationDays() -> Int {
+        return TrashCleanupService.shared.getUserTrashExpirationDays(modelContext: modelContext)
     }
     
     // 删除目标（移到回收站）
@@ -738,6 +897,8 @@ struct GoalDetailView: View {
     private func deleteTask(at offsets: IndexSet) {
         for index in offsets {
             let taskToDelete = goal.tasks[index]
+            // 记录任务删除
+            GoalActivityManager.shared.logTaskRemove(goal: goal, taskTitle: taskToDelete.title)
             modelContext.delete(taskToDelete)
         }
         
@@ -745,6 +906,19 @@ struct GoalDetailView: View {
             try modelContext.save()
         } catch {
             print("Failed to delete task: \(error)")
+        }
+    }
+    
+    // 移动任务（拖动排序）
+    private func moveTask(from source: IndexSet, to destination: Int) {
+        // 使用SwiftUI内置的数组移动方法
+        goal.tasks.move(fromOffsets: source, toOffset: destination)
+        goal.modifyTime = Date()
+        
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to move task: \(error)")
         }
     }
     
@@ -764,8 +938,13 @@ struct GoalDetailView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .frame(width: 160)
                 .onChange(of: editingImportance) { newValue in
+                    let oldImportance = goal.importance
                     goal.importance = newValue
                     goal.modifyTime = Date()
+                    
+                    // 记录重要性修改
+                    GoalActivityManager.shared.logImportanceChange(goal: goal, oldImportance: oldImportance)
+                    
                     do {
                         try modelContext.save()
                     } catch {
@@ -804,6 +983,8 @@ struct GoalDetailView: View {
                                 goal.tags.remove(at: index)
                                 // 更新修改时间
                                 goal.modifyTime = Date()
+                                // 记录标签删除
+                                GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
                                 // 保存更改
                                 do {
                                     try modelContext.save()
@@ -927,6 +1108,8 @@ struct GoalDetailView: View {
         }) {
             HStack {
                 Text(goal.goalDescription)
+                    .lineLimit(3) // 设置为3行高度
+                    .fixedSize(horizontal: false, vertical: true) // 确保显示完整的3行
                     .font(.system(size: 16))
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .multilineTextAlignment(.leading)
@@ -947,9 +1130,7 @@ struct GoalDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // 目标名称和进度
                     goalNameProgressView
-                    
-                        // 背景图片选择部分已移至独立卡片
-                    
+                                                           
                     // 目标类型
                     HStack {
                         Image(systemName: "tag")
@@ -1011,6 +1192,8 @@ struct GoalDetailView: View {
                                     .foregroundColor(Color(UIColor.label))
                                     .multilineTextAlignment(.leading)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .lineLimit(3) // 设置为3行高度
+                                    .fixedSize(horizontal: false, vertical: true) // 确保显示完整的3行
                                 Spacer()
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -1020,7 +1203,7 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    
+                                         
                     // 优先级选择器
                     HStack {
                         Image(systemName: "flag.fill")
@@ -1042,8 +1225,13 @@ struct GoalDetailView: View {
                         .pickerStyle(SegmentedPickerStyle())
                         .frame(width: 160)
                         .onChange(of: editingImportance) { newValue in
+                            let oldImportance = goal.importance
                             goal.importance = newValue
                             goal.modifyTime = Date()
+                            
+                            // 记录重要性修改
+                            GoalActivityManager.shared.logImportanceChange(goal: goal, oldImportance: oldImportance)
+                            
                             do {
                                 try modelContext.save()
                             } catch {
@@ -1053,8 +1241,9 @@ struct GoalDetailView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // 关联人选择区已移至独立卡片
-                    
+                    // 截止日期
+                    dueDateView
+                                        
                     // 标签
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -1112,6 +1301,8 @@ struct GoalDetailView: View {
                                                     goal.tags.remove(at: index)
                                                     // 更新修改时间
                                                     goal.modifyTime = Date()
+                                                    // 记录标签删除
+                                                    GoalActivityManager.shared.logTagRemove(goal: goal, tag: tag)
                                                     // 保存更改
                                                     do {
                                                         try modelContext.save()
@@ -1139,9 +1330,6 @@ struct GoalDetailView: View {
                             .frame(height: 40)
                         }
                     }
-                    
-                    // 截止日期
-                    dueDateView
                 }
                 .padding(.vertical, 16)
                 .background(Color(UIColor.systemBackground))
@@ -1199,8 +1387,12 @@ struct GoalDetailView: View {
                                     HStack(spacing: 12) {
                                         // 复选框
                                         Button(action: {
+                                            let oldStatus = task.isCompleted
                                             task.isCompleted.toggle()
                                             goal.modifyTime = Date()
+                                            
+                                            // 记录任务完成状态变更
+                                            GoalActivityManager.shared.logTaskCompletion(goal: goal, task: task, completed: oldStatus)
                                             
                                             do {
                                                 try modelContext.save()
@@ -1285,23 +1477,19 @@ struct GoalDetailView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color(UIColor.label))
                         Spacer()
+                        Button(action: { showContactSelector = true }) {
+                            Text("选择")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 16)
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Spacer()
-                            Button(action: { showContactSelector = true }) {
-                                Text("选择")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(15)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .padding(.horizontal, 16)
                         // 已选联系人列表
                         if goal.relatedContactIds.isEmpty {
                             Text("未关联联系人")
@@ -1321,6 +1509,19 @@ struct GoalDetailView: View {
                                                     if let idx = goal.relatedContactIds.firstIndex(of: id) {
                                                         goal.relatedContactIds.remove(at: idx)
                                                         goal.modifyTime = Date()
+                                                        
+                                                        // 双向关联：从联系人的关联目标列表中移除当前目标
+                                                        if let contact = allContacts.first(where: { $0.id == id }) {
+                                                            var contactGoalIds = contact.relatedGoalIds
+                                                            if let goalIdx = contactGoalIds.firstIndex(of: goal.id) {
+                                                                contactGoalIds.remove(at: goalIdx)
+                                                                contact.relatedGoalIds = contactGoalIds
+                                                                
+                                                                // 记录关联联系人删除
+                                                                GoalActivityManager.shared.logContactRemove(goal: goal, contactId: id, contactName: contact.name)
+                                                            }
+                                                        }
+                                                        
                                                         do { try modelContext.save() } catch { print("Failed to save contact unlink: \(error)") }
                                                     }
                                                 }) {
@@ -1361,31 +1562,63 @@ struct GoalDetailView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color(UIColor.label))
                         Spacer()
+                        Button(action: {
+                            editingField = .backgroundImage
+                            selectedBackgroundImage = goal.backgroundImage
+                            showImagePicker = true
+                        }) {
+                            Text("选择")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(UIColor.systemBlue))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(UIColor.systemBlue).opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 16)
+                    // 背景图片内容区域
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Spacer()
-                            Button(action: {
-                                editingField = .backgroundImage
-                                selectedBackgroundImage = goal.backgroundImage
-                                showImagePicker = true
-                            }) {
-                                Text("选择")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(Color(UIColor.systemBlue))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Color(UIColor.systemBlue).opacity(0.1))
-                                    .cornerRadius(15)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        
                         // 显示当前背景图片预览
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
-                                ForEach(backgroundImages, id: \.self) { imageName in
+                                // 默认选项
+                                Button(action: {
+                                    goal.backgroundImage = nil
+                                    goal.modifyTime = Date()
+                                    do {
+                                        try modelContext.save()
+                                    } catch {
+                                        print("Failed to save background image: \(error)")
+                                    }
+                                }) {
+                                    ZStack {
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                        .frame(width: 80, height: 60)
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
+                                        )
+                                        
+                                        Text("默认")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                
+                                // 获取用户上传的图片
+                                let userUploadedImages = UserDefaults.standard.stringArray(forKey: "UserUploadedImages") ?? []
+                                let hiddenImages = UserDefaults.standard.stringArray(forKey: "UserHiddenImages") ?? []
+                                let visibleUserImages = userUploadedImages.filter { !hiddenImages.contains($0) }
+                                
+                                // 显示用户上传的图片
+                                ForEach(visibleUserImages, id: \.self) { imageName in
                                     Button(action: {
                                         goal.backgroundImage = imageName
                                         goal.modifyTime = Date()
@@ -1395,7 +1628,7 @@ struct GoalDetailView: View {
                                             print("Failed to save background image: \(error)")
                                         }
                                     }) {
-                                        if let imageName = imageName, let uiImage = UIImage(named: imageName) {
+                                        if let uiImage = loadImageFromDocuments(imageName) {
                                             Image(uiImage: uiImage)
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
@@ -1405,24 +1638,31 @@ struct GoalDetailView: View {
                                                     RoundedRectangle(cornerRadius: 8)
                                                         .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
                                                 )
-                                        } else {
-                                            ZStack {
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.7)]),
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
+                                        }
+                                    }
+                                }
+                                
+                                // 显示系统预设图片
+                                ForEach(backgroundImages.compactMap { $0 }, id: \.self) { imageName in
+                                    Button(action: {
+                                        goal.backgroundImage = imageName
+                                        goal.modifyTime = Date()
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            print("Failed to save background image: \(error)")
+                                        }
+                                    }) {
+                                        if let uiImage = UIImage(named: imageName) {
+                                            Image(uiImage: uiImage)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
                                                 .frame(width: 80, height: 60)
                                                 .cornerRadius(8)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
+                                                        .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
                                                 )
-                                                
-                                                Text("默认")
-                                                    .font(.system(size: 12, weight: .medium))
-                                                    .foregroundColor(.white)
-                                            }
                                         }
                                     }
                                 }
@@ -1440,21 +1680,41 @@ struct GoalDetailView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
                 
-                // 底部删除按钮
-                Button(action: {
-                    showDeleteAlert = true
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 16))
-                        Text("删除目标")
-                            .font(.system(size: 17, weight: .semibold))
+                // 底部按钮区域
+                HStack(spacing: 12) {
+                    // 查看动态按钮
+                    Button(action: {
+                        showActivityLog = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.system(size: 16))
+                            Text("查看动态")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.blue)
+                        .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.red)
-                    .cornerRadius(12)
+                    
+                    // 删除按钮
+                    Button(action: {
+                        showDeleteAlert = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 16))
+                            Text("删除目标")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.red)
+                        .cornerRadius(12)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
@@ -1499,8 +1759,47 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showContactSelector) {
             ContactSelectorView(allContacts: allContacts, selectedIds: goal.relatedContactIds, onSelect: { selectedIds in
+                // 获取之前的关联联系人列表，用于后续比较
+                let previousContactIds = goal.relatedContactIds
+                
+                // 更新目标的关联联系人列表
                 goal.relatedContactIds = selectedIds
                 goal.modifyTime = Date()
+                
+                // 找出被移除的联系人
+                let removedContactIds = previousContactIds.filter { !selectedIds.contains($0) }
+                
+                // 找出新增的联系人
+                let addedContactIds = selectedIds.filter { !previousContactIds.contains($0) }
+                
+                // 处理被移除的联系人：从它们的关联目标列表中移除当前目标
+                for contactId in removedContactIds {
+                    if let contact = allContacts.first(where: { $0.id == contactId }) {
+                        var contactGoalIds = contact.relatedGoalIds
+                        if let idx = contactGoalIds.firstIndex(of: goal.id) {
+                            contactGoalIds.remove(at: idx)
+                            contact.relatedGoalIds = contactGoalIds
+                            
+                            // 记录关联联系人删除
+                            GoalActivityManager.shared.logContactRemove(goal: goal, contactId: contactId, contactName: contact.name)
+                        }
+                    }
+                }
+                
+                // 处理新增的联系人：向它们的关联目标列表中添加当前目标
+                for contactId in addedContactIds {
+                    if let contact = allContacts.first(where: { $0.id == contactId }) {
+                        var contactGoalIds = contact.relatedGoalIds
+                        if !contactGoalIds.contains(goal.id) {
+                            contactGoalIds.append(goal.id)
+                            contact.relatedGoalIds = contactGoalIds
+                            
+                            // 记录关联联系人添加
+                            GoalActivityManager.shared.logContactAdd(goal: goal, contactId: contactId, contactName: contact.name)
+                        }
+                    }
+                }
+                
                 do {
                     try modelContext.save()
                 } catch {
@@ -1519,10 +1818,13 @@ struct GoalDetailView: View {
                 }
             })
         }
+        .sheet(isPresented: $showActivityLog) {
+            GoalActivityLogView(goal: goal)
+        }
         .alert(isPresented: $showDeleteAlert) {
             Alert(
                 title: Text("移到回收站"),
-                message: Text("确定要将目标 \"\(goal.name)\" 移到回收站吗？目标将在回收站保留30天，期间可以恢复。"),
+                message: Text("确定要将目标 \"\(goal.name)\" 移到回收站吗？目标将在回收站保留\(getTrashExpirationDays())天，期间可以恢复。"),
                 primaryButton: .destructive(Text("移到回收站")) {
                     deleteGoal()
                 },
@@ -1713,6 +2015,9 @@ struct AddTaskView: View {
         goal.tasks.append(newTask)
         goal.modifyTime = Date()
         
+        // 记录任务添加
+        GoalActivityManager.shared.logTaskAdd(goal: goal, task: newTask)
+        
         do {
             try modelContext.save()
         } catch {
@@ -1753,8 +2058,12 @@ struct DatePickerView: View {
     }
     
     private func saveDueDate() {
+        let oldDueDate = goal.dueDate
         goal.dueDate = selectedDate
         goal.modifyTime = Date()
+        
+        // 记录截止日期修改
+        GoalActivityManager.shared.logDueDateChange(goal: goal, oldDueDate: oldDueDate)
         
         do {
             try modelContext.save()
@@ -1772,7 +2081,7 @@ struct GoalSelectorView: View {
     var selectorType: String // 用于区分上级目标和子目标
     let goal: Goal
     @Environment(\.modelContext) private var modelContext
-    @Query private var allGoals: [Goal] // 添加查询所有目标
+    @Query(filter: #Predicate<Goal> { $0.isDeleted == false }) private var allGoals: [Goal] // 添加查询未删除的目标
     
     // 根据ID获取目标名称的方法
     private func getGoalName(id: String) -> String {
@@ -1895,6 +2204,8 @@ struct GoalSelectorView: View {
                 }))
                 
                 for upperGoal in removedUpperGoals ?? [] {
+                    // 记录上级目标删除
+                    GoalActivityManager.shared.logUpperProjectRemove(goal: goal, upperProject: upperGoal.name)
                     upperGoal.subProject.removeAll(where: { $0 == currentGoalId })
                     upperGoal.modifyTime = Date()
                 }
@@ -1907,6 +2218,8 @@ struct GoalSelectorView: View {
                 }))
                 
                 for upperGoal in addedUpperGoals ?? [] {
+                    // 记录上级目标添加
+                    GoalActivityManager.shared.logUpperProjectAdd(goal: goal, upperProject: upperGoal.name)
                     if !upperGoal.subProject.contains(currentGoalId) {
                         upperGoal.subProject.append(currentGoalId)
                         upperGoal.modifyTime = Date()
@@ -1939,6 +2252,8 @@ struct GoalSelectorView: View {
                 }))
                 
                 for subGoal in removedSubGoals ?? [] {
+                    // 记录子目标删除
+                    GoalActivityManager.shared.logSubProjectRemove(goal: goal, subProject: subGoal.name)
                     subGoal.upperProject.removeAll(where: { $0 == currentGoalId })
                     subGoal.modifyTime = Date()
                 }
@@ -1951,6 +2266,8 @@ struct GoalSelectorView: View {
                 }))
                 
                 for subGoal in addedSubGoals ?? [] {
+                    // 记录子目标添加
+                    GoalActivityManager.shared.logSubProjectAdd(goal: goal, subProject: subGoal.name)
                     if !subGoal.upperProject.contains(currentGoalId) {
                         subGoal.upperProject.append(currentGoalId)
                         subGoal.modifyTime = Date()

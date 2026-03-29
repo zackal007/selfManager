@@ -47,6 +47,7 @@ struct LinkItem: Identifiable {
 struct MarkdownTextEditor: View {
     @Binding var text: String
     @State private var showLinkSelector = false
+    // 默认选择目标类型作为链接类型
     @State private var selectedLinkType: LinkType = .goal
     @State private var searchText = ""
     @State private var cursorPosition: Int = 0
@@ -116,7 +117,7 @@ struct MarkdownTextEditor: View {
             // 文本编辑器或预览
             if isPreviewMode {
                 MarkdownDisplayView(text: text, onLinkTapped: onLinkTapped)
-                    .frame(minHeight: minHeight, maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .leading)
                     .padding(8)
                     .background(Color(UIColor.systemBackground))
                     .cornerRadius(8)
@@ -214,10 +215,9 @@ struct LinkSelectorView: View {
             items = allContacts.compactMap { contact in
                 LinkItem(id: contact.id, name: contact.name, type: .contact)
             }
-        case .record:
-            items = allRecords.compactMap { record in
-                LinkItem(id: record.id, name: record.title, type: .record)
-            }
+        default:
+            // 不再支持记录类型的链接
+            break
         }
         
         if searchText.isEmpty {
@@ -230,9 +230,9 @@ struct LinkSelectorView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 类型选择器
+                // 类型选择器 - 只显示目标和人脉选项
                 Picker("链接类型", selection: $selectedType) {
-                    ForEach(LinkType.allCases, id: \.self) { type in
+                    ForEach([LinkType.goal, LinkType.contact], id: \.self) { type in
                         HStack {
                             Image(systemName: type.iconName)
                             Text(type.displayName)
@@ -376,7 +376,8 @@ struct MarkdownDisplayView: View {
     
     // 解析链接URL
     private func parseLinkURL(_ url: String) -> (type: LinkType, id: UUID)? {
-        for linkType in LinkType.allCases {
+        // 只处理目标和人脉类型的链接
+        for linkType in [LinkType.goal, LinkType.contact] {
             let prefix = "\(linkType.rawValue)://"
             if url.hasPrefix(prefix) {
                 let idString = String(url.dropFirst(prefix.count))

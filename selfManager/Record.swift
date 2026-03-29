@@ -9,12 +9,24 @@ import Foundation
 import SwiftData
 
 // 记录类型枚举
-enum RecordType: Int, Codable, Hashable {
+enum RecordType: Int, Codable, Hashable, CaseIterable {
     case daily = 0   // 日记
     case weekly = 1  // 周记
     case monthly = 2 // 月记
     case quarterly = 3 // 季记
     case yearly = 4  // 年记
+    case recent = 5   // 近期
+    
+    var displayName: String {
+        switch self {
+        case .daily: return "日记"
+        case .weekly: return "周记"
+        case .monthly: return "月记"
+        case .quarterly: return "季记"
+        case .yearly: return "年记"
+        case .recent: return "近期"
+        }
+    }
 }
 
 @Model

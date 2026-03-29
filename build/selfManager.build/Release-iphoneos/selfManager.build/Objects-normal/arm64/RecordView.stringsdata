@@ -1,0 +1,104 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/RecordView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "记录",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "隐藏日期选择器",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "显示日期选择器",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "跳转到今天",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 270
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 576
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld月",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 624
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 664
+        }
+      },
+      {
+        "comment": "",
+        "key": "Q%lld",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 721
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld年",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 785
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 867
+        }
+      },
+      {
+        "comment": "",
+        "key": "心情",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 953
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存成功",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 992
+        }
+      }
+    ]
+  },
+  "version": 1
+}

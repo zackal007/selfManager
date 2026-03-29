@@ -5,14 +5,25 @@ import SwiftData
 class User {
     var name: String
     var avatar: String // e.g., emoji or image name
-    @Attribute(.externalStorage)
-    var tags: [String]
-    var userDescription: String
+    var tagsString: String = ""
     
-    init(name: String = "张三", avatar: String = "👤", tags: [String] = ["自律", "高效", "成长"], userDescription: String = "热爱生活，追求自我提升的普通人") {
+    // 计算属性，用于获取和设置标签数组
+    var tags: [String] {
+        get {
+            return tagsString.isEmpty ? [] : tagsString.components(separatedBy: ",")
+        }
+        set {
+            tagsString = newValue.joined(separator: ",")
+        }
+    }
+    var userDescription: String
+    var trashExpirationDays: Int = 30 // 回收站内容的默认过期时间（天）
+    
+    init(name: String = "张三", avatar: String = "👤", tags: [String] = ["自律", "高效", "成长"], userDescription: String = "热爱生活，追求自我提升的普通人", trashExpirationDays: Int = 30) {
         self.name = name
         self.avatar = avatar
-        self.tags = tags
+        self.tagsString = tags.joined(separator: ",")
         self.userDescription = userDescription
+        self.trashExpirationDays = trashExpirationDays
     }
 }

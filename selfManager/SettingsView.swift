@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -14,6 +15,9 @@ struct SettingsView: View {
     @AppStorage("dataBackupEnabled") private var dataBackupEnabled = false
     @AppStorage("privacyLockEnabled") private var privacyLockEnabled = false
     @AppStorage("syncFrequency") private var syncFrequency = 1 // 0: 手动, 1: 每天, 2: 每周
+    
+    @Environment(\.modelContext) private var modelContext
+    @State private var trashExpirationDays: Int = 30
     
     @State private var showingAbout = false
     @State private var showingBackupOptions = false
@@ -64,6 +68,22 @@ struct SettingsView: View {
                                 Text(syncOptions[index])
                             }
                         }
+                    }
+                    
+                    HStack {
+                        SettingRow(title: "回收站过期时间", systemImage: "trash.circle.fill", color: .orange)
+                        Spacer()
+                        Stepper(
+                            "",
+                            value: $trashExpirationDays,
+                            in: 1...90,
+                            step: 1,
+                            onEditingChanged: { _ in updateTrashExpirationDays() }
+                        )
+                        .labelsHidden()
+                        Text("\(trashExpirationDays)天")
+                            .foregroundColor(.secondary)
+                            .frame(width: 45, alignment: .trailing)
                     }
                     
                     Button(action: {
@@ -121,6 +141,10 @@ struct SettingsView: View {
             .sheet(isPresented: $showingBackupOptions) {
                 BackupOptionsView()
             }
+            .onAppear {
+                // 加载当前的回收站过期时间设置
+                loadTrashExpirationDays()
+            }
         }
     }
     
@@ -133,6 +157,39 @@ struct SettingsView: View {
                 .font(.system(size: 14, weight: .semibold))
         }
         .padding(.top, 8)
+    }
+    
+    // 加载当前的回收站过期时间设置
+    private func loadTrashExpirationDays() {
+        do {
+            // 查询用户设置
+            let descriptor = FetchDescriptor<User>()
+            let users = try modelContext.fetch(descriptor)
+            
+            // 如果有用户设置，使用第一个用户的设置
+            if let user = users.first {
+                trashExpirationDays = user.trashExpirationDays
+            }
+        } catch {
+            print("获取用户设置失败: \(error)")
+        }
+    }
+    
+    // 更新回收站过期时间设置
+    private func updateTrashExpirationDays() {
+        do {
+            // 查询用户设置
+            let descriptor = FetchDescriptor<User>()
+            let users = try modelContext.fetch(descriptor)
+            
+            // 如果有用户设置，更新第一个用户的设置
+            if let user = users.first {
+                user.trashExpirationDays = trashExpirationDays
+                try modelContext.save()
+            }
+        } catch {
+            print("更新用户设置失败: \(error)")
+        }
     }
 }
 

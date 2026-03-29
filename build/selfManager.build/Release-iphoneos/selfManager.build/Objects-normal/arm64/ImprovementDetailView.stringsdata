@@ -1,0 +1,192 @@
+{
+  "source": "/Users/yack/Desktop/selfManager/selfManager/ImprovementDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "待改进项",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "关闭",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "完成",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "编辑",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "待改进项总数",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "高优先级",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 101
+        }
+      },
+      {
+        "comment": "",
+        "key": "中优先级",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 119
+        }
+      },
+      {
+        "comment": "",
+        "key": "低优先级",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 133
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加待改进项",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 222
+        }
+      },
+      {
+        "comment": "",
+        "key": "删除",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 270
+        }
+      },
+      {
+        "comment": "",
+        "key": "添加待改进项",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 334
+        }
+      },
+      {
+        "comment": "",
+        "key": "基本信息",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 310
+        }
+      },
+      {
+        "comment": "",
+        "key": "详细描述",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 329
+        }
+      },
+      {
+        "comment": "",
+        "key": "名称",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 311
+        }
+      },
+      {
+        "comment": "",
+        "key": "优先级",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 320
+        }
+      },
+      {
+        "comment": "",
+        "key": "图标",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 314
+        }
+      },
+      {
+        "comment": "",
+        "key": "选择图标",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 316
+        }
+      },
+      {
+        "comment": "",
+        "key": "取消",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 338
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 344
+        }
+      }
+    ]
+  },
+  "version": 1
+}

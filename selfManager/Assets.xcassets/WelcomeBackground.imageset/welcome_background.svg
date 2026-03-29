@@ -1,0 +1,38 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 渐变背景 -->
+  <rect width="1024" height="1024" fill="url(#paint0_linear)" />
+  
+  <!-- 装饰元素：抽象形状 -->
+  <path d="M924 224C924 335.046 833.046 426 722 426C610.954 426 520 335.046 520 224C520 112.954 610.954 22 722 22C833.046 22 924 112.954 924 224Z" fill="url(#paint1_radial)" fill-opacity="0.3" />
+  
+  <path d="M304 824C304 935.046 213.046 1026 102 1026C-9.04624 1026 -100 935.046 -100 824C-100 712.954 -9.04624 622 102 622C213.046 622 304 712.954 304 824Z" fill="url(#paint2_radial)" fill-opacity="0.3" />
+  
+  <path d="M824 724C824 780.885 778.885 826 722 826C665.115 826 620 780.885 620 724C620 667.115 665.115 622 722 622C778.885 622 824 667.115 824 724Z" fill="url(#paint3_radial)" fill-opacity="0.2" />
+  
+  <!-- 移除了装饰线条 -->
+  
+  <!-- 定义渐变 -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8F9FA" />
+      <stop offset="1" stop-color="#E9ECEF" />
+    </linearGradient>
+    
+    <radialGradient id="paint1_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(722 224) rotate(90) scale(202)">
+      <stop stop-color="#4263EB" />
+      <stop offset="1" stop-color="#4263EB" stop-opacity="0" />
+    </radialGradient>
+    
+    <radialGradient id="paint2_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(102 824) rotate(90) scale(202)">
+      <stop stop-color="#4263EB" />
+      <stop offset="1" stop-color="#4263EB" stop-opacity="0" />
+    </radialGradient>
+    
+    <radialGradient id="paint3_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(722 724) rotate(90) scale(102)">
+      <stop stop-color="#4263EB" />
+      <stop offset="1" stop-color="#4263EB" stop-opacity="0" />
+    </radialGradient>
+    
+    <!-- 移除了不再使用的线条渐变定义 -->
+  </defs>
+</svg>

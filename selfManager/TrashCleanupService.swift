@@ -9,24 +9,28 @@ import Foundation
 import SwiftData
 
 /// 回收站清理服务
-/// 负责自动清理超过30天的已删除目标
+/// 负责自动清理超过指定天数的已删除目标
 class TrashCleanupService {
     static let shared = TrashCleanupService()
     
     private init() {}
     
-    /// 清理超过30天的已删除目标
+    /// 清理超过指定天数的已删除目标
     /// - Parameter modelContext: SwiftData模型上下文
     func cleanupExpiredGoals(modelContext: ModelContext) {
-        let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        // 获取用户设置的过期天数，默认为30天
+        let expirationDays = getUserTrashExpirationDays(modelContext: modelContext)
+        let expirationDate = Calendar.current.date(byAdding: .day, value: -expirationDays, to: Date()) ?? Date()
         
         do {
-            // 查询超过30天的已删除目标
+            // 查询超过指定天数的已删除目标
             let descriptor = FetchDescriptor<Goal>(
                 predicate: #Predicate<Goal> { goal in
-                    goal.isDeleted == true && 
-                    goal.deletedDate != nil && 
-                    goal.deletedDate! < thirtyDaysAgo
+                    if let date = goal.deletedDate {
+                        return goal.isDeleted == true && date < expirationDate
+                    } else {
+                        return false
+                    }
                 }
             )
             
@@ -47,6 +51,27 @@ class TrashCleanupService {
         } catch {
             print("清理回收站失败: \(error)")
         }
+    }
+    
+    /// 获取用户设置的回收站过期天数
+    /// - Parameter modelContext: SwiftData模型上下文
+    /// - Returns: 过期天数，默认为30天
+    func getUserTrashExpirationDays(modelContext: ModelContext) -> Int {
+        do {
+            // 查询用户设置
+            let descriptor = FetchDescriptor<User>()
+            let users = try modelContext.fetch(descriptor)
+            
+            // 如果有用户设置，返回第一个用户的设置
+            if let user = users.first {
+                return user.trashExpirationDays
+            }
+        } catch {
+            print("获取用户设置失败: \(error)")
+        }
+        
+        // 默认返回30天
+        return 30
     }
     
     /// 启动定期清理任务
