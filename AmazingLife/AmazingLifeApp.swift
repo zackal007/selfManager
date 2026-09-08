@@ -236,6 +236,13 @@ struct AmazingLifeApp: App {
                                 Text("contacts".localized)
                             }
                             .tag(3)
+
+                        PageLayoutDemoView()
+                            .tabItem {
+                                Image(systemName: "square.grid.2x2")
+                                Text("模板演示")
+                            }
+                            .tag(4)
                     }
                             // 应用全局系统字体修饰符，使文本默认使用系统动态字体
                             .useGlobalSystemTypography()
