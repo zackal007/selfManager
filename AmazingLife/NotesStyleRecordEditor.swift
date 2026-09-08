@@ -152,7 +152,7 @@ struct NotesStyleRecordEditor: View {
         }
         .padding(12)
         .background(Color(UIColor.tertiarySystemBackground))
-        .cornerRadius(8)
+        .cornerRadius(DesignToken.cornerRadiusTertiary)
         .simultaneousGesture(
             // 防止点击图片区域时触发外部的onTapGesture
             TapGesture().onEnded { _ in
@@ -172,7 +172,7 @@ struct NotesStyleRecordEditor: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 100, height: 100)
                     .clipped()
-                    .cornerRadius(8)
+                    .cornerRadius(DesignToken.cornerRadiusTertiary)
                     .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
             } else {
                 RoundedRectangle(cornerRadius: 8)

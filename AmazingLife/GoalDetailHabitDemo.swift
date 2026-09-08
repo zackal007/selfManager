@@ -30,7 +30,7 @@ struct GoalDetailHabitDemo: View {
                 }
                 .padding()
                 .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
                 
                 VStack(spacing: 20) {
                     Text("选择目标类型进行测试:")
@@ -56,7 +56,7 @@ struct GoalDetailHabitDemo: View {
                         .foregroundColor(.white)
                         .padding()
                         .background(Color.blue)
-                        .cornerRadius(10)
+                        .cornerRadius(DesignToken.cornerRadiusSmall)
                     }
                 }
                 .padding()
@@ -102,7 +102,7 @@ struct DemoGoalDetailView: View {
                     }
                     .padding()
                     .background(Color(.systemGray6))
-                    .cornerRadius(8)
+                    .cornerRadius(DesignToken.cornerRadiusTertiary)
                 }
                 .padding()
                 

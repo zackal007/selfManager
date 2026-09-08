@@ -135,7 +135,7 @@ struct GoalPopupView: View {
                     }
                     .padding(10)
                     .background(Color(UIColor.systemGray6))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                     .padding(.horizontal)
                     .padding(.top)
                     
@@ -251,7 +251,7 @@ struct GoalPopupView: View {
                     .padding(.bottom)
                 }
                 .background(Color(UIColor.systemBackground))
-                .cornerRadius(16)
+                .cornerRadius(DesignToken.cornerRadius)
                 .shadow(color: Color(UIColor.label).opacity(0.05), radius: 5, x: 0, y: 2)
                 .padding(.horizontal)
                 .padding(.top)
@@ -337,7 +337,7 @@ struct GoalRowView: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color(UIColor.systemGray6))
-                        .cornerRadius(4)
+                        .cornerRadius(DesignToken.cornerRadiusBadge)
                     
                     // 进度文本
                     Text("\(Int(goal.progress * 100))%")

@@ -176,7 +176,7 @@ struct ContactDetailView: View {
                     Spacer()
                 }
                 .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
-                .cornerRadius(8)
+                .cornerRadius(DesignToken.cornerRadiusTertiary)
             } else {
                 VStack(spacing: 12) {
                     ForEach(contact.relatedGoals) { goal in
@@ -208,7 +208,7 @@ struct ContactDetailView: View {
                             }
                             .padding(12)
                             .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(8)
+                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -217,7 +217,7 @@ struct ContactDetailView: View {
         }
         .padding(16)
         .background(cardBackground)
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .overlay {
             if colorScheme == .dark {
                 RoundedRectangle(cornerRadius: 16).stroke(Color(UIColor.separator), lineWidth: 0.5)
@@ -342,7 +342,7 @@ struct ContactDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .background(cardBackground)
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .overlay {
             if colorScheme == .dark {
                 RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
@@ -454,7 +454,7 @@ struct ContactDetailView: View {
         }
         .padding(16)
         .background(cardBackground)
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .overlay {
             if colorScheme == .dark {
                 RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
@@ -500,7 +500,7 @@ struct ContactDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color("AppBlue").opacity(0.05))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
 
                 // 联系频率卡片（就地编辑）
                 VStack(alignment: .leading, spacing: 8) {
@@ -526,7 +526,7 @@ struct ContactDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color("Purple").opacity(0.05))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
                 
                 // 重要程度卡片（就地编辑）
                 VStack(alignment: .leading, spacing: 8) {
@@ -552,7 +552,7 @@ struct ContactDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color(contact.importance.color).opacity(0.05))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
 
                 // 备注编辑区（整合到头像卡片）
                 VStack(alignment: .leading, spacing: 12) {
@@ -569,7 +569,7 @@ struct ContactDetailView: View {
                         .frame(minHeight: 120)
                         .padding(12)
                         .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(8)
+                        .cornerRadius(DesignToken.cornerRadiusTertiary)
                         .onChange(of: contact.notes ?? "") { _ in
                             contact.modifyTime = Date()
                             try? modelContext.save()
@@ -579,7 +579,7 @@ struct ContactDetailView: View {
         }
         .padding(16)
         .background(cardBackground)
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .overlay {
             if colorScheme == .dark {
                 RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
@@ -631,7 +631,7 @@ struct ContactDetailView: View {
                     Spacer()
                 }
                 .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
-                .cornerRadius(8)
+                .cornerRadius(DesignToken.cornerRadiusTertiary)
             } else {
                 // 使用流式布局展示标签 - 参考目标详情页的实现
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -666,7 +666,7 @@ struct ContactDetailView: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(tagColor(for: tag))
-                            .cornerRadius(12)
+                            .cornerRadius(DesignToken.cornerRadiusMedium)
                         }
                         
                         // 添加标签按钮 - 打开可复用的标签添加弹窗
@@ -689,7 +689,7 @@ struct ContactDetailView: View {
         }
         .padding(16)
         .background(cardBackground)
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .overlay {
             if colorScheme == .dark {
                 RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
@@ -754,7 +754,7 @@ struct ContactDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color("Teal").opacity(0.05))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
                 
                 // 下次联系卡片
                 VStack(alignment: .leading, spacing: 8) {
@@ -788,12 +788,12 @@ struct ContactDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Color("AppBlue").opacity(0.05))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
             }
         }
         .padding(16)
         .background(cardBackground)
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .overlay {
             if colorScheme == .dark {
                 RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator), lineWidth: 0.5)
@@ -820,7 +820,7 @@ struct ContactDetailView: View {
                 .padding(.vertical, 14)
                 .background(Color("Red"))
                 .foregroundColor(.white)
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
             }
             .buttonStyle(PlainButtonStyle())
         }

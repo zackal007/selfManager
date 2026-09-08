@@ -120,7 +120,7 @@ private struct AchievementStatsCard: View {
         .padding(16)
         .frame(maxWidth: .infinity)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 6, x: 0, y: 3)
     }
 }
@@ -167,7 +167,7 @@ private struct AchievementCard: View {
         }
         .padding(12)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
     }
 }

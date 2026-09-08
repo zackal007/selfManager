@@ -158,7 +158,7 @@ struct GoalActivityLogView: View {
                                                 .foregroundColor(Color(UIColor.label))
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
-                                                .cornerRadius(4)
+                                                .cornerRadius(DesignToken.cornerRadiusBadge)
                                             Image(systemName: "arrow.right")
                                                 .font(.system(size: 10))
                                                 .foregroundColor(Color(UIColor.tertiaryLabel))
@@ -167,7 +167,7 @@ struct GoalActivityLogView: View {
                                                 .foregroundColor(Color(UIColor.label))
                                                 .padding(.horizontal, 8)
                                                 .padding(.vertical, 2)
-                                                .cornerRadius(4)
+                                                .cornerRadius(DesignToken.cornerRadiusBadge)
                                         }
                                     } else if let onlyNew = log.newValue, !onlyNew.isEmpty {
                                         Text(onlyNew)
@@ -175,14 +175,14 @@ struct GoalActivityLogView: View {
                                             .foregroundColor(Color(UIColor.label))
                                             .padding(.horizontal, 8)
                                             .padding(.vertical, 2)
-                                            .cornerRadius(4)
+                                            .cornerRadius(DesignToken.cornerRadiusBadge)
                                     } else if let onlyOld = log.oldValue, !onlyOld.isEmpty {
                                         Text(onlyOld)
                                             .font(.system(size: 13))
                                             .foregroundColor(Color(UIColor.label))
                                             .padding(.horizontal, 8)
                                             .padding(.vertical, 2)
-                                            .cornerRadius(4)
+                                            .cornerRadius(DesignToken.cornerRadiusBadge)
                                     }
                                 }
                                 .padding(.vertical, 12)
@@ -213,7 +213,7 @@ struct GoalActivityLogView: View {
             }
         }
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)

@@ -23,7 +23,7 @@ struct JiggleEffect: ViewModifier {
             .onAppear {
                 if reduceMotion { return }
                 if isActive {
-                    withAnimation(Animation.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
+                    withAnimation(.appBouncy.repeatForever(autoreverses: true)) {
                         rotation = 1.2
                         sway = 0.8
                     }
@@ -38,7 +38,7 @@ struct JiggleEffect: ViewModifier {
                 if active {
                     rotation = -1.2
                     sway = -0.8
-                    withAnimation(Animation.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
+                    withAnimation(.appBouncy.repeatForever(autoreverses: true)) {
                         rotation = 1.2
                         sway = 0.8
                     }
@@ -735,7 +735,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                 .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                 .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
+                .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                 .contentShape(Rectangle())
                 .contextMenu { cardContextMenu(for: type) }
             , for: type)
@@ -752,7 +752,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
+                    .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
                 , for: type)
@@ -769,7 +769,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
+                    .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
                 , for: type)
@@ -795,7 +795,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
+                    .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
             , for: type)
@@ -812,7 +812,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
+                    .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
             , for: type)
@@ -829,7 +829,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
+                    .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
                 , for: type)
@@ -962,7 +962,7 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
         .onChanged { drag in
             // Track velocity for spring handoff
             let now = Date()
-            let dt = lastDragTime.timeIntervalSince(now)
+            let dt = now.timeIntervalSince(lastDragTime)
             if dt > 0 {
                 let dv = CGSize(
                     width: (drag.translation.width - lastDragLocation.width) / CGFloat(dt),
@@ -1004,9 +1004,9 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
         }
 }
 
-// Rubber-band effect for drag gestures
+// Rubber-band effect for drag gestures (Apple recommended constant: 0.55)
 private func rubberBand(value: CGFloat, bound: CGFloat) -> CGFloat {
-    let constant: CGFloat = 0.4
+    let constant: CGFloat = 0.55
     if value > bound {
         // 向下/向右拖拽超出边界
         return bound + (value - bound) * constant / (1 + constant)
@@ -1092,8 +1092,7 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
 }
 
 private func finalizeDrag(for id: HomeCardID, velocity: CGSize = .zero) {
-    // Use spring animation with velocity for natural momentum
-    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+    withAnimation(.cardAppear) {
         draggingCardID = nil
         dragOffset = .zero
     }
@@ -1140,7 +1139,7 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
             let id = HomeCardID.type(type)
             // Track velocity for spring handoff
             let now = Date()
-            let dt = lastDragTime.timeIntervalSince(now)
+            let dt = now.timeIntervalSince(lastDragTime)
             if dt > 0 {
                 let dv = CGSize(
                     width: (drag.translation.width - lastDragLocation.width) / CGFloat(dt),
@@ -1308,7 +1307,7 @@ private func tagColor(for tag: String) -> Color {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(tagColor(for: tag))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                 }
                 .padding(.vertical, 5)
@@ -1334,7 +1333,7 @@ private func tagColor(for tag: String) -> Color {
                                     .font(.system(size: 24))
                                     .frame(width: 44, height: 44)
                                     .background(Color(UIColor.systemBackground))
-                                    .cornerRadius(12)
+                                    .cornerRadius(DesignToken.cornerRadiusMedium)
                                     .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                             }
                         }
@@ -1372,7 +1371,7 @@ private func tagColor(for tag: String) -> Color {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(10)
+                            .cornerRadius(DesignToken.cornerRadiusSmall)
                         }
                     }
                 }
@@ -1614,7 +1613,7 @@ private func tagColor(for tag: String) -> Color {
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 6)
                                         .background(Color(UIColor.systemOrange))
-                                        .cornerRadius(16)
+                                        .cornerRadius(DesignToken.cornerRadius)
                                         .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 1)
                                     }
                                     .padding(12)
@@ -1699,7 +1698,7 @@ private func tagColor(for tag: String) -> Color {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .cornerRadius(20)
+                        .cornerRadius(DesignToken.cornerRadiusLarge)
                     }
                 }
                 .frame(height: 80)
@@ -1738,14 +1737,14 @@ private func tagColor(for tag: String) -> Color {
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
                                             .background(Color(UIColor.systemGray6))
-                                            .cornerRadius(4)
+                                            .cornerRadius(DesignToken.cornerRadiusBadge)
                                     }
                                 }
                             }
                             .frame(width: 150, height: 80)
                             .padding(16)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(12)
+                            .cornerRadius(DesignToken.cornerRadiusMedium)
                             .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                         }
                         
@@ -1766,7 +1765,7 @@ private func tagColor(for tag: String) -> Color {
                                 .frame(width: 100, height: 80)
                                 .padding(16)
                                 .background(Color(UIColor.systemBlue).opacity(0.05))
-                                .cornerRadius(12)
+                                .cornerRadius(DesignToken.cornerRadiusMedium)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -1780,7 +1779,7 @@ private func tagColor(for tag: String) -> Color {
         }
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
     }
     
@@ -1815,7 +1814,7 @@ private func tagColor(for tag: String) -> Color {
                                 .foregroundColor(getMoodColor(for: index))
                                 .frame(width: 44, height: 44)
                                 .background(Color(UIColor.systemBackground))
-                                .cornerRadius(12)
+                                .cornerRadius(DesignToken.cornerRadiusMedium)
                                 .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                         }
                     }
@@ -1827,7 +1826,7 @@ private func tagColor(for tag: String) -> Color {
             .padding(16)
             .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
-            .cornerRadius(16)
+            .cornerRadius(DesignToken.cornerRadius)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
@@ -1885,7 +1884,7 @@ private func tagColor(for tag: String) -> Color {
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                             .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                         }
                     }
@@ -1921,7 +1920,7 @@ private func tagColor(for tag: String) -> Color {
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                             .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                         }
                     }
@@ -1931,7 +1930,7 @@ private func tagColor(for tag: String) -> Color {
             .padding(16)
             .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
-            .cornerRadius(16)
+            .cornerRadius(DesignToken.cornerRadius)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
@@ -1981,7 +1980,7 @@ private func tagColor(for tag: String) -> Color {
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(tagColor(for: BuiltInTags.achievement).opacity(0.12))
-                                .cornerRadius(6)
+                                .cornerRadius(DesignToken.cornerRadiusEditor)
                         }
                         .frame(width: 100)
                     }
@@ -1993,7 +1992,7 @@ private func tagColor(for tag: String) -> Color {
         }
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
@@ -2046,7 +2045,7 @@ private func tagColor(for tag: String) -> Color {
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                             .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                         }
                     }
@@ -2055,7 +2054,7 @@ private func tagColor(for tag: String) -> Color {
             .padding(16)
             .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
-            .cornerRadius(16)
+            .cornerRadius(DesignToken.cornerRadius)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
@@ -2110,7 +2109,7 @@ private func tagColor(for tag: String) -> Color {
                         .padding(.vertical, 6)
                         .padding(.horizontal, 10)
                         .background(Color(UIColor.systemBackground))
-                        .cornerRadius(8)
+                        .cornerRadius(DesignToken.cornerRadiusTertiary)
                         .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                     }
                 }
@@ -2119,7 +2118,7 @@ private func tagColor(for tag: String) -> Color {
         .padding(16)
         .frame(maxHeight: .infinity, alignment: .top)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
@@ -2142,7 +2141,7 @@ private func tagColor(for tag: String) -> Color {
         }
         .padding(10)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
     }
 
@@ -2159,7 +2158,7 @@ private func tagColor(for tag: String) -> Color {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(color.opacity(0.08))
-        .cornerRadius(10)
+        .cornerRadius(DesignToken.cornerRadiusSmall)
     }
 
     // 迷你柱状图（局部复用）

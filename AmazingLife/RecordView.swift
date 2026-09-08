@@ -800,7 +800,7 @@ private struct TopTabChip: View {
                         }
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                         
                     case .weekly: // 周记
                         VStack(spacing: 8) {
@@ -916,7 +916,7 @@ private struct TopTabChip: View {
                         }
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                         
                     case .monthly: // 月记
                         VStack(spacing: 8) {
@@ -1010,7 +1010,7 @@ private struct TopTabChip: View {
                         }
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                         
                     case .quarterly: // 季记
                         VStack(spacing: 16) {
@@ -1113,7 +1113,7 @@ private struct TopTabChip: View {
                         }
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
                     case .yearly: // 年记
@@ -1179,7 +1179,7 @@ private struct TopTabChip: View {
                         }
                         .padding(.vertical, 4)
                         .background(Color(UIColor.systemGroupedBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                         
                     default:
                         EmptyView()
@@ -1222,7 +1222,7 @@ private struct TopTabChip: View {
                                                         .padding(.vertical, 12)
                                                         .frame(maxWidth: .infinity)
                                                         .background(Color(UIColor.secondarySystemBackground))
-                                                        .cornerRadius(8)
+                                                        .cornerRadius(DesignToken.cornerRadiusTertiary)
                                                     }
                                                     .buttonStyle(PlainButtonStyle())
                                                 }

@@ -59,7 +59,7 @@ struct ImagePickerView: View {
                                         endPoint: .bottomTrailing
                                     )
                                     .frame(width: 120, height: 90)
-                                    .cornerRadius(10)
+                                    .cornerRadius(DesignToken.cornerRadiusSmall)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 10)
                                             .stroke(selectedImage == nil ? Color.blue : Color.clear, lineWidth: 3)
@@ -83,7 +83,7 @@ struct ImagePickerView: View {
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
                                             .frame(width: 120, height: 90)
-                                            .cornerRadius(10)
+                                            .cornerRadius(DesignToken.cornerRadiusSmall)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 10)
                                                     .stroke(selectedImage == imageName ? Color.blue : Color.clear, lineWidth: 3)
@@ -125,7 +125,7 @@ struct ImagePickerView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
                         .background(Color.gray.opacity(0.1))
-                        .cornerRadius(10)
+                        .cornerRadius(DesignToken.cornerRadiusSmall)
                         .padding(.horizontal)
                     } else {
                         // 有上传图片时显示图片列表
@@ -143,7 +143,7 @@ struct ImagePickerView: View {
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fill)
                                                     .frame(width: 120, height: 90)
-                                                    .cornerRadius(10)
+                                                    .cornerRadius(DesignToken.cornerRadiusSmall)
                                                     .overlay(
                                                         RoundedRectangle(cornerRadius: 10)
                                                             .stroke(selectedImage == imageName ? Color.blue : Color.clear, lineWidth: 3)
@@ -195,7 +195,7 @@ struct ImagePickerView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
                                 .background(Color.blue)
-                                .cornerRadius(10)
+                                .cornerRadius(DesignToken.cornerRadiusSmall)
                                 .padding(.horizontal)
                             }
                             .onChange(of: selectedPhotoItem) { _, newItem in
@@ -218,7 +218,7 @@ struct ImagePickerView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
                                     .frame(height: 200)
-                                    .cornerRadius(10)
+                                    .cornerRadius(DesignToken.cornerRadiusSmall)
                                     .padding(.horizontal)
                                 
                                 // 取消上传按钮
@@ -254,7 +254,7 @@ struct ImagePickerView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
                                 .background(Color.blue)
-                                .cornerRadius(10)
+                                .cornerRadius(DesignToken.cornerRadiusSmall)
                                 .padding(.horizontal)
                             }
                         }

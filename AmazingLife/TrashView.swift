@@ -233,7 +233,7 @@ struct TrashGoalRow: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -244,7 +244,7 @@ struct TrashGoalRow: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Color(UIColor.systemRed).opacity(0.1))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -254,7 +254,7 @@ struct TrashGoalRow: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }

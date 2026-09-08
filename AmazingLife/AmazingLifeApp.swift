@@ -19,11 +19,13 @@ class AppAppearance {
         // 设置TabBar选中项的颜色为蓝色
         UITabBar.appearance().tintColor = UIColor.systemBlue
 
-        // 统一 TabBar 外观以与首页一致（使用系统默认的半透明模糊背景）
+        // 统一 TabBar 外观，使用半透明模糊背景材质
         let tabAppearance = UITabBarAppearance()
-        tabAppearance.configureWithDefaultBackground() // 默认模糊半透明样式
-        // 保持系统默认背景颜色与模糊效果，不强制设定为不透明
-        tabAppearance.backgroundColor = nil
+        tabAppearance.configureWithDefaultBackground()
+        // 根据无障碍设置选择是否使用模糊效果
+        if !UIAccessibility.isReduceTransparencyEnabled {
+            tabAppearance.backgroundEffect = UIBlurEffect(style: .systemMaterial)
+        }
         tabAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
 
         let tabBar = UITabBar.appearance()
@@ -36,26 +38,24 @@ class AppAppearance {
         // 设置其他UI元素的颜色
         UIButton.appearance().tintColor = UIColor.systemBlue
 
-        // 统一导航栏外观，避免透明与颜色不一致
+        // 统一导航栏外观，使用半透明模糊背景
         let navAppearance = UINavigationBarAppearance()
-        // 使用不透明背景，防止滚动到顶部时出现透明效果
-        navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = UIColor.systemBackground
-        // 统一标题文字颜色
+        // 使用系统默认模糊背景，内容可滚动到导航栏下方
+        navAppearance.configureWithDefaultBackground()
         navAppearance.titleTextAttributes = [
             .foregroundColor: UIColor.label
         ]
         navAppearance.largeTitleTextAttributes = [
             .foregroundColor: UIColor.label
         ]
-        // 细化阴影线条，弱化分割线存在感（可按需调整或置为nil）
-        navAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.2)
+        // 弱化阴影分割线
+        navAppearance.shadowColor = UIColor.separator.withAlphaComponent(0.15)
 
         let navigationBar = UINavigationBar.appearance()
         navigationBar.standardAppearance = navAppearance
         navigationBar.scrollEdgeAppearance = navAppearance
         navigationBar.compactAppearance = navAppearance
-        navigationBar.isTranslucent = false
+        navigationBar.isTranslucent = true
         navigationBar.tintColor = UIColor.systemBlue
     }
 }
@@ -129,15 +129,14 @@ struct AmazingLifeApp: App {
                 self.sharedModelContainer = try ModelContainer(for: schema, configurations: fallbackConfig)
             }
             
-            // 优化动画效果，使其更丝滑
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // 保持ModelContainer初始化后的延迟
-                withAnimation(.easeInOut(duration: 0.3)) { // isLoading动画时长增加到0.3s
+            // 优化动画效果，使用弹簧动画更有物理感
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.appSnappy) {
                     isLoading = false
                 }
-                
-                // 缩短二次延迟，让isShowingWelcome动画紧随其后
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation(.easeOut(duration: 0.4)) { // isShowingWelcome动画时长增加到0.4s，使用easeOut
+                    withAnimation(.appBouncy) {
                         isShowingWelcome = false
                     }
                 }

@@ -27,7 +27,7 @@ private struct TopTabChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: isSelected ? 14 * 1.15 : 14, weight: isSelected ? .bold : .regular))
+                .font(isSelected ? AppFont.subtextMedium() : AppFont.subtext())
                 .foregroundColor(isSelected ? Color(UIColor.systemBlue) : Color(UIColor.secondaryLabel))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -60,10 +60,10 @@ enum GoalImportance: Int, CaseIterable {
     
     var color: Color {
         switch self {
-        case .low: return Color.gray
-        case .medium: return Color.blue
-        case .high: return Color.orange
-        case .critical: return Color.red
+        case .low: return Color(UIColor.systemGray)
+        case .medium: return Color(UIColor.systemBlue)
+        case .high: return Color(UIColor.systemOrange)
+        case .critical: return Color(UIColor.systemRed)
         }
     }
     
@@ -511,7 +511,7 @@ struct GoalView: View {
                                             .font(.system(size: 10, weight: .semibold))
                                             .foregroundColor(Color(UIColor.label))
                                             .rotationEffect(.degrees(showYearPicker ? 0 : 0))
-                                            .animation(.easeInOut(duration: 0.2), value: showYearPicker)
+                                            .animation(.appSnappy, value: showYearPicker)
                                     }
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -522,7 +522,7 @@ struct GoalView: View {
                                 }
                                 .buttonStyle(PlainButtonStyle())
                                 .scaleEffect(showYearPicker ? 0.98 : 1.0)
-                                .animation(.easeInOut(duration: 0.1), value: showYearPicker)
+                                .animation(.appSnappy, value: showYearPicker)
                             }
                             
                             // 移除顶部添加按钮（改为右下角悬浮按钮）
@@ -619,7 +619,7 @@ struct GoalView: View {
                                                     .padding(.horizontal, 12)
                                                     .padding(.vertical, 6)
                                                     .background(Color(UIColor.systemGray6))
-                                                    .cornerRadius(15)
+                                                    .cornerRadius(DesignToken.cornerRadiusMedium)
 
                                                 Button(action: {
                                                     // 取消筛选：清空筛选条件与结果
@@ -722,7 +722,7 @@ struct GoalView: View {
                                     }
                                     .padding(.vertical, 4)
                                     .background(Color(UIColor.systemGroupedBackground))
-                                    .cornerRadius(12)
+                                    .cornerRadius(DesignToken.cornerRadiusMedium)
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 16) // 与目标条目之间间隔16px
                                 }
@@ -1159,7 +1159,7 @@ struct GoalView: View {
         }
         .padding(.vertical, 8)
         .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .cornerRadius(DesignToken.cornerRadiusSmall)
         .padding(.horizontal)
     }
     
@@ -1510,7 +1510,7 @@ struct GoalCard: View {
                                         .padding(.vertical, 4)
                                         .background(TagColorManager.shared.getColor(for: tag))
                                         .foregroundColor(.white)
-                                        .cornerRadius(12)
+                                        .cornerRadius(DesignToken.cornerRadiusMedium)
                                 }
                                 if goal.tags.count > 3 {
                                     Text("+\(goal.tags.count - 3)")
@@ -1519,7 +1519,7 @@ struct GoalCard: View {
                                         .padding(.vertical, 3)
                                         .background(Color.gray.opacity(0.1))
                                         .foregroundColor(Color.gray)
-                                        .cornerRadius(10)
+                                        .cornerRadius(DesignToken.cornerRadiusSmall)
                                 }
                             }
                         }
@@ -1581,7 +1581,7 @@ struct GoalCard: View {
                         .padding(.top, 8)
                         .padding(.bottom, 8)
                         .background(Color(UIColor.secondarySystemBackground).opacity(0.7))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                         .padding(.horizontal, 8)
                         .padding(.bottom, 20)
                     }
@@ -1653,7 +1653,7 @@ struct GoalListItem: View {
                                         .padding(.vertical, 2)
                                         .background(tagColor(for: tag))
                                         .foregroundColor(.white)
-                                        .cornerRadius(4)
+                                        .cornerRadius(DesignToken.cornerRadiusBadge)
                                 }
                             }
                         }
@@ -1688,7 +1688,7 @@ struct GoalListItem: View {
             }
             .padding(12)
             .background(Color(UIColor.systemBackground))
-            .cornerRadius(12)
+            .cornerRadius(DesignToken.cornerRadiusMedium)
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }
@@ -1748,7 +1748,6 @@ struct AddGoalView: View {
                                     .font(.system(size: 26, weight: .medium))
                                     .foregroundColor(.white)
                             )
-                            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .padding(.top, 20)
                     .padding(.bottom, 24)
@@ -2127,7 +2126,7 @@ struct SimplifiedGoalListItem: View {
             }
             .padding(12)
             .background(Color(UIColor.systemBackground))
-            .cornerRadius(12)
+            .cornerRadius(DesignToken.cornerRadiusMedium)
         }
         .buttonStyle(PlainButtonStyle()) // 移除导航链接的默认样式
     }

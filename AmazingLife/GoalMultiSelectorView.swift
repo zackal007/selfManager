@@ -53,7 +53,7 @@ struct GoalMultiSelectorView: View {
                 }
                 .padding(10)
                 .background(Color(.systemGray6))
-                .cornerRadius(10)
+                .cornerRadius(DesignToken.cornerRadiusSmall)
                 .padding(.horizontal)
                 .padding(.top, 8)
                 
@@ -84,7 +84,7 @@ struct GoalMultiSelectorView: View {
                                         .padding(.vertical, 6)
                                         .background(Color.blue.opacity(0.1))
                                         .foregroundColor(.blue)
-                                        .cornerRadius(15)
+                                        .cornerRadius(DesignToken.cornerRadiusMedium)
                                     }
                                 }
                             }

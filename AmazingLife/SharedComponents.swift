@@ -100,13 +100,14 @@ extension UIViewController {
 }
 
 // 自定义按钮样式，添加缩放效果
+// Apple 原则：按钮反馈应在 pointer-down 时即时响应，使用短时 easeOut 而非 spring
 struct ScaleButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.9 : 1)
-            .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -144,10 +145,18 @@ struct DesignToken {
     // MARK: - Corner Radius
     /// Primary corner radius for cards and containers (16pt)
     static let cornerRadius: CGFloat = 16
-    /// Secondary corner radius for smaller elements (12pt)
-    static let cornerRadiusSmall: CGFloat = 12
+    /// Medium corner radius for input fields and medium elements (12pt)
+    static let cornerRadiusMedium: CGFloat = 12
+    /// Secondary corner radius for smaller elements (10pt)
+    static let cornerRadiusSmall: CGFloat = 10
     /// Tertiary corner radius for chips and tags (8pt)
     static let cornerRadiusTertiary: CGFloat = 8
+    /// Small corner radius for badges and small indicators (4pt)
+    static let cornerRadiusBadge: CGFloat = 4
+    /// Editor corner radius for text input areas (6pt)
+    static let cornerRadiusEditor: CGFloat = 6
+    /// Large corner radius for special cards and overlays (20pt)
+    static let cornerRadiusLarge: CGFloat = 20
 
     // MARK: - Spacing (4pt Grid)
     static let spacing1: CGFloat = 4
@@ -168,6 +177,35 @@ struct DesignToken {
     static let elevatedShadowColor = AppColors.elevatedShadow
     static let elevatedShadowRadius: CGFloat = 12
     static let elevatedShadowY: CGFloat = 6
+
+    /// Dragging shadow for card lift effect
+    static let cardShadowDragging = AppColors.elevatedShadow
+    static let cardShadowDraggingRadius: CGFloat = 12
+    static let cardShadowDraggingY: CGFloat = 8
+
+    // MARK: - Typography (uses system Dynamic Type)
+    /// Large title - display text
+    static let fontLargeTitle = Font.largeTitle
+    /// Title - section headers
+    static let fontTitle = Font.title
+    /// Title 2 - subsection headers
+    static let fontTitle2 = Font.title2
+    /// Title 3 - smaller headers
+    static let fontTitle3 = Font.title3
+    /// Headline - emphasized text
+    static let fontHeadline = Font.headline
+    /// Body - default text
+    static let fontBody = Font.body
+    /// Callout - secondary text
+    static let fontCallout = Font.callout
+    /// Subheadline - tertiary text
+    static let fontSubheadline = Font.subheadline
+    /// Footnote - small text
+    static let fontFootnote = Font.footnote
+    /// Caption - smallest text
+    static let fontCaption = Font.caption
+    /// Caption 2 - tiny text
+    static let fontCaption2 = Font.caption2
 }
 
 // MARK: - App Colors
@@ -228,6 +266,26 @@ extension Color {
     }
 }
 
+// MARK: - Rubber Band Effect
+/// Apple 风格的橡皮筋效果 — 边界处渐进阻力而非硬停止
+/// - Parameters:
+///   - overshoot: 超出边界的距离
+///   - dimension: 可用维度（宽度或高度）
+///   - constant: 阻力常数，默认 0.55
+/// - Returns: 衰减后的偏移量
+func rubberband(overshoot: CGFloat, dimension: CGFloat, constant: CGFloat = 0.55) -> CGFloat {
+    return (overshoot * dimension * constant) / (dimension + constant * abs(overshoot))
+}
+
+/// 对 CGSize 应用橡皮筋效果（用于拖拽边界）
+func rubberbandOffset(_ offset: CGSize, bounds: CGSize) -> CGSize {
+    let dampedX = offset.width > 0 ? rubberband(overshoot: offset.width, dimension: bounds.width)
+                                    : -rubberband(overshoot: -offset.width, dimension: bounds.width)
+    let dampedY = offset.height > 0 ? rubberband(overshoot: offset.height, dimension: bounds.height)
+                                    : -rubberband(overshoot: -offset.height, dimension: bounds.height)
+    return CGSize(width: dampedX, height: dampedY)
+}
+
 // MARK: - App Spring Animations
 extension Animation {
     /// Default UI animation - critically damped, no overshoot
@@ -241,9 +299,30 @@ extension Animation {
 
     /// Sidebar animation
     static let appSidebar = Animation.spring(response: 0.3, dampingFraction: 0.8)
+
+    /// Card appear/disappear animation - gentle and non-distracting
+    static let cardAppear = Animation.spring(response: 0.35, dampingFraction: 0.85)
+
+    /// Sheet/drawer present animation - slightly bouncy for momentum feel
+    static let sheetPresent = Animation.spring(response: 0.3, dampingFraction: 0.8)
+
+    /// Fade in animation for content appearing
+    static let fadeIn = Animation.easeOut(duration: 0.2)
+
+    /// Fade out animation for content disappearing
+    static let fadeOut = Animation.easeIn(duration: 0.15)
+
+    /// Scale appear animation for popups/tooltips
+    static let scaleAppear = Animation.spring(response: 0.25, dampingFraction: 0.7)
+
+    /// Press feedback animation - quick and snappy
+    static let pressFeedback = Animation.spring(response: 0.15, dampingFraction: 0.9)
+
+    /// Tab switch animation
+    static let tabSwitch = Animation.spring(response: 0.2, dampingFraction: 0.85)
 }
 
-// MARK: - Reduced Motion Support
+// MARK: - Reduced Motion & Transparency Support
 extension View {
     /// Apply animation that respects reduced motion settings
     @ViewBuilder
@@ -263,6 +342,20 @@ extension View {
             self.transition(.opacity)
         } else {
             self.animation(animation, value: animation == nil)
+        }
+    }
+
+    /// Apply backdrop blur that respects reduced transparency settings
+    @ViewBuilder
+    func adaptiveBackdrop(_ isBlurred: Bool = true) -> some View {
+        if isBlurred {
+            if UIAccessibility.isReduceTransparencyEnabled {
+                self.background(Color(UIColor.systemBackground))
+            } else {
+                self.background(.ultraThinMaterial)
+            }
+        } else {
+            self
         }
     }
 }
@@ -305,6 +398,13 @@ extension View {
             .clipShape(RoundedRectangle(cornerRadius: DesignToken.cornerRadiusSmall))
             .cardShadow()
     }
+
+    /// Apply standard sheet style with detents for iPad compatibility
+    func standardSheetStyle() -> some View {
+        self
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+    }
 }
 
 // MARK: - Illustrated Empty State
@@ -315,6 +415,7 @@ struct IllustratedEmptyState: View {
     let subtitle: String?      // Optional secondary message
     var actionTitle: String?   // Optional action button title
     var action: (() -> Void)? // Optional action handler
+    var tintColor: Color = .blue  // Semantic color for icon
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -363,58 +464,62 @@ struct IllustratedEmptyState: View {
 
     private var iconBackgroundColor: Color {
         colorScheme == .dark
-            ? Color.white.opacity(0.1)
-            : Color.blue.opacity(0.08)
+            ? tintColor.opacity(0.15)
+            : tintColor.opacity(0.08)
     }
 
     private var iconColor: Color {
         colorScheme == .dark
-            ? Color.blue.opacity(0.8)
-            : Color.blue.opacity(0.7)
+            ? tintColor.opacity(0.85)
+            : tintColor.opacity(0.7)
     }
 }
 
 // MARK: - Predefined Empty States
 extension IllustratedEmptyState {
-    /// Empty state for contacts screen
+    /// Empty state for contacts screen - uses blue for person/network theme
     static func contacts(action: @escaping () -> Void) -> IllustratedEmptyState {
         IllustratedEmptyState(
             icon: "person.crop.circle.badge.plus",
             title: "empty_no_contacts".localized,
             subtitle: "add_first_contact_subtitle".localized,
             actionTitle: "add_first_contact".localized,
-            action: action
+            action: action,
+            tintColor: .blue
         )
     }
 
-    /// Empty state for goals screen
+    /// Empty state for goals screen - uses green for achievement/target theme
     static func goals(action: @escaping () -> Void) -> IllustratedEmptyState {
         IllustratedEmptyState(
             icon: "target",
             title: "empty_no_goals".localized,
             subtitle: "add_first_goal_subtitle".localized,
             actionTitle: "add_first_goal".localized,
-            action: action
+            action: action,
+            tintColor: .green
         )
     }
 
-    /// Empty state for records screen
+    /// Empty state for records screen - uses orange for writing/document theme
     static func records(action: @escaping () -> Void) -> IllustratedEmptyState {
         IllustratedEmptyState(
             icon: "square.and.pencil",
             title: "no_records_recent".localized,
             subtitle: "start_first_record".localized,
             actionTitle: "create_record".localized,
-            action: action
+            action: action,
+            tintColor: .orange
         )
     }
 
-    /// Empty state for search with no results
+    /// Empty state for search with no results - uses gray
     static func noSearchResults(for query: String) -> IllustratedEmptyState {
         IllustratedEmptyState(
             icon: "magnifyingglass",
             title: "no_results_found".localized,
-            subtitle: String(format: "try_different_search".localized, query)
+            subtitle: String(format: "try_different_search".localized, query),
+            tintColor: Color(UIColor.systemGray)
         )
     }
 }

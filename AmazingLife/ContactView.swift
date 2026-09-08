@@ -807,7 +807,7 @@ struct ContactCard: View {
                             .padding(.vertical, 4)
                             .background(TagColorManager.shared.getColor(for: tag))
                             .foregroundColor(.white)
-                            .cornerRadius(8)
+                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                     }
                 }
                 // 估算：每行约24pt高度（含间距），3行≈84pt
@@ -931,13 +931,9 @@ struct ContactListItem: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignToken.cornerRadiusMedium)
                 .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
-                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color(UIColor.separator).opacity(0.18), lineWidth: 1)
-                )
+                .cardShadow()
         )
     }
 }
@@ -1011,7 +1007,7 @@ struct ContactGalleryCard: View {
                                 .padding(.vertical, 5)
                                 .background(TagColorManager.shared.getColor(for: tag))
                                 .foregroundColor(.white)
-                                .cornerRadius(12)
+                                .cornerRadius(DesignToken.cornerRadiusMedium)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -1026,13 +1022,9 @@ struct ContactGalleryCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .center)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignToken.cornerRadiusMedium)
                 .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
-                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color(UIColor.separator).opacity(0.18), lineWidth: 1)
-                )
+                .cardShadow()
         )
     }
 }

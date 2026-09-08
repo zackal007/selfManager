@@ -92,7 +92,7 @@ struct MarkdownTextEditor: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.blue.opacity(0.1))
-                    .cornerRadius(6)
+                    .cornerRadius(DesignToken.cornerRadiusEditor)
                 }
                 
                 if !isPreviewMode {
@@ -108,7 +108,7 @@ struct MarkdownTextEditor: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.blue.opacity(0.1))
-                        .cornerRadius(6)
+                        .cornerRadius(DesignToken.cornerRadiusEditor)
                     }
                 }
             }
@@ -120,7 +120,7 @@ struct MarkdownTextEditor: View {
                     .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .leading)
                     .padding(8)
                     .background(Color(UIColor.systemBackground))
-                    .cornerRadius(8)
+                    .cornerRadius(DesignToken.cornerRadiusTertiary)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.2), lineWidth: 1)
@@ -131,7 +131,7 @@ struct MarkdownTextEditor: View {
                         .frame(minHeight: minHeight)
                         .padding(8)
                         .background(Color(UIColor.systemBackground))
-                        .cornerRadius(8)
+                        .cornerRadius(DesignToken.cornerRadiusTertiary)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)

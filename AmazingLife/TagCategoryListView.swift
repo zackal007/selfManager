@@ -462,7 +462,7 @@ struct TagCategoryEditView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(Color.red)
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)

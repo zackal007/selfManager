@@ -33,7 +33,7 @@ struct ContactSelectorView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(Color(UIColor.systemGray6))
-                .cornerRadius(10)
+                .cornerRadius(DesignToken.cornerRadiusSmall)
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, 8)
@@ -68,7 +68,7 @@ struct ContactSelectorView: View {
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)
                                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                                        .cornerRadius(15)
+                                        .cornerRadius(DesignToken.cornerRadiusMedium)
                                     }
                                 }
                             }

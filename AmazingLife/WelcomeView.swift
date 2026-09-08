@@ -79,11 +79,11 @@ struct WelcomeView: View {
                             .padding(.vertical, 10)
                             .background(Color("AccentColor"))
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .cornerRadius(DesignToken.cornerRadiusSmall)
                         }
                         .padding()
                         .background(Color(.systemBackground).opacity(0.8))
-                        .cornerRadius(16)
+                        .cornerRadius(DesignToken.cornerRadius)
                         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
                     }
                 }

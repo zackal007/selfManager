@@ -54,7 +54,7 @@ struct FloatingToolbarView: View {
                         .foregroundColor(.accentColor)
                         .frame(width: 32, height: 32)
                         .background(Color.accentColor.opacity(0.1))
-                        .cornerRadius(16)
+                        .cornerRadius(DesignToken.cornerRadius)
                 }
                 .buttonStyle(ScaleButtonStyle())
                 .accessibilityLabel("添加图片")
@@ -84,14 +84,14 @@ struct FloatingToolbarView: View {
                                 .font(.system(size: 16))
                                 .frame(width: 32, height: 32)
                                 .background(Color.accentColor.opacity(0.1))
-                                .cornerRadius(16)
+                                .cornerRadius(DesignToken.cornerRadius)
                         } else {
                             Image(systemName: "face.smiling")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.accentColor)
                                 .frame(width: 32, height: 32)
                                 .background(Color.accentColor.opacity(0.1))
-                                .cornerRadius(16)
+                                .cornerRadius(DesignToken.cornerRadius)
                         }
                     }
                     .buttonStyle(ScaleButtonStyle())
@@ -120,7 +120,7 @@ struct FloatingToolbarView: View {
                         .foregroundColor(.accentColor)
                         .frame(width: 32, height: 32)
                         .background(Color.accentColor.opacity(0.1))
-                        .cornerRadius(16)
+                        .cornerRadius(DesignToken.cornerRadius)
                 }
                 .buttonStyle(ScaleButtonStyle())
                 .accessibilityLabel("关联目标")
@@ -147,7 +147,7 @@ struct FloatingToolbarView: View {
                         .foregroundColor(.accentColor)
                         .frame(width: 32, height: 32)
                         .background(Color.accentColor.opacity(0.1))
-                        .cornerRadius(16)
+                        .cornerRadius(DesignToken.cornerRadius)
                 }
                 .buttonStyle(ScaleButtonStyle())
                 .accessibilityLabel("关联人脉")
@@ -167,7 +167,7 @@ struct FloatingToolbarView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.secondary.opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(DesignToken.cornerRadiusTertiary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -198,7 +198,7 @@ struct FloatingToolbarView: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 60, height: 60)
                     .clipped()
-                    .cornerRadius(8)
+                    .cornerRadius(DesignToken.cornerRadiusTertiary)
                     .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
             } else {
                 RoundedRectangle(cornerRadius: 8)

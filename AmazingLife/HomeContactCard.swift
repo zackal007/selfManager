@@ -80,7 +80,7 @@ struct HomeContactCard: View {
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
                                 .background(TagColorManager.shared.getColor(for: tag))
-                                .cornerRadius(12)
+                                .cornerRadius(DesignToken.cornerRadiusMedium)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)

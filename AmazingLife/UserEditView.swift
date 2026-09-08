@@ -78,7 +78,7 @@ struct UserEditView: View {
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
                                 .background(TagColorManager.shared.getColor(for: tag))
-                                .cornerRadius(12)
+                                .cornerRadius(DesignToken.cornerRadiusMedium)
                             }
                             Button(action: {
                                 showAddTagSheet = true
@@ -103,7 +103,7 @@ struct UserEditView: View {
                                     .font(.system(size: 24))
                                     .frame(width: 44, height: 44)
                                     .background(Color(UIColor.systemBackground))
-                                    .cornerRadius(12)
+                                    .cornerRadius(DesignToken.cornerRadiusMedium)
                                     .shadow(color: Color(UIColor.label).opacity(0.06), radius: 2, x: 0, y: 1)
                             }
                         }

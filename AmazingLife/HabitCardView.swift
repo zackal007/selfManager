@@ -128,7 +128,7 @@ struct HabitCardView: View {
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
                             .background(Color(UIColor.systemBackground))
-                            .cornerRadius(8)
+                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                             .shadow(color: Color(UIColor.label).opacity(0.03), radius: 2, x: 0, y: 1)
                         }
                     }
@@ -138,7 +138,7 @@ struct HabitCardView: View {
             .padding(16)
             .frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.secondarySystemGroupedBackground))
-            .cornerRadius(16)
+            .cornerRadius(DesignToken.cornerRadius)
             .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
@@ -310,7 +310,7 @@ struct HabitStatsCard: View {
         }
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.04), radius: 4, x: 0, y: 2)
         .padding(.horizontal)
     }
@@ -411,7 +411,7 @@ struct HabitGoalDetailCard: View {
         }
         .padding(16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color(UIColor.label).opacity(0.04), radius: 2, x: 0, y: 1)
     }
     

@@ -292,7 +292,7 @@ struct AddTagSheet: View {
                     }
                     .listStyle(InsetGroupedListStyle())
                     .background(Color(UIColor.systemBackground))
-                    .cornerRadius(16)
+                    .cornerRadius(DesignToken.cornerRadius)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 8)
                 }

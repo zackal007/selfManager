@@ -122,7 +122,7 @@ struct ImprovementDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(Color(UIColor.systemOrange).opacity(0.08))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
                 
                 VStack(spacing: 6) {
                     Text("高优先")
@@ -135,7 +135,7 @@ struct ImprovementDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(Color(UIColor.systemRed).opacity(0.08))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
             }
             
             // 优先级分布（堆叠条图）
@@ -155,7 +155,7 @@ struct ImprovementDetailView: View {
         }
         .padding(16)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
@@ -198,7 +198,7 @@ struct ImprovementDetailView: View {
             .padding(.vertical, 8)
             .background(selectedPriority == priority ? (priority != nil ? priorityColor(priority!) : Color.gray).opacity(0.2) : Color(UIColor.systemGray6))
             .foregroundColor(selectedPriority == priority ? (priority != nil ? priorityColor(priority!) : Color.gray) : Color(UIColor.label))
-            .cornerRadius(16)
+            .cornerRadius(DesignToken.cornerRadius)
         }
     }
     
@@ -231,7 +231,7 @@ struct ImprovementDetailView: View {
             ForEach(filteredImprovements.indices, id: \.self) { index in
                 improvementRow(improvement: filteredImprovements[index])
                     .background(Color(UIColor.systemBackground))
-                    .cornerRadius(12)
+                    .cornerRadius(DesignToken.cornerRadiusMedium)
                     .padding(.horizontal)
                     .padding(.bottom, 12)
             }
@@ -250,7 +250,7 @@ struct ImprovementDetailView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Color(UIColor.systemOrange).opacity(0.1))
-                    .cornerRadius(12)
+                    .cornerRadius(DesignToken.cornerRadiusMedium)
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
@@ -318,7 +318,7 @@ struct ImprovementDetailView: View {
         }
         .padding(12)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color.black.opacity(0.03), radius: 3, x: 0, y: 1)
     }
     
@@ -330,7 +330,7 @@ struct ImprovementDetailView: View {
             .padding(.vertical, 4)
             .background(priorityColor(priority).opacity(0.2))
             .foregroundColor(priorityColor(priority))
-            .cornerRadius(4)
+            .cornerRadius(DesignToken.cornerRadiusBadge)
     }
     
     // 优先级颜色
@@ -366,7 +366,7 @@ struct ImprovementDetailView: View {
         .frame(width: 90, height: 90)
         .padding(10)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
     }
     
     // 优先级分布堆叠条图
@@ -430,7 +430,7 @@ private var improvementOverviewCard: some View {
     }
     .padding(16)
     .background(Color(UIColor.secondarySystemGroupedBackground))
-    .cornerRadius(16)
+    .cornerRadius(DesignToken.cornerRadius)
     .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
 }
 

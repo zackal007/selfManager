@@ -378,7 +378,7 @@ struct GoalDetailView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(15)
+                    .cornerRadius(DesignToken.cornerRadiusMedium)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -450,7 +450,7 @@ struct GoalDetailView: View {
                         }
                         .padding(10)
                         .background(Color(UIColor.systemGray6))
-                        .cornerRadius(8)
+                        .cornerRadius(DesignToken.cornerRadiusTertiary)
                     }
                     .onDelete(perform: deleteTask)
                     .onMove(perform: moveTask)
@@ -490,7 +490,7 @@ struct GoalDetailView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .cornerRadius(15)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                 }
                 
@@ -648,7 +648,7 @@ struct GoalDetailView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .cornerRadius(15)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                 }
                 
@@ -1095,14 +1095,14 @@ struct GoalDetailView: View {
             }
             .padding(.horizontal, 16)
             .background(Color(UIColor.systemBackground))
-            .cornerRadius(12)
+            .cornerRadius(DesignToken.cornerRadiusMedium)
             .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .padding(.bottom, 16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(DesignToken.cornerRadiusMedium)
         .shadow(color: Color(UIColor.label).opacity(0.1), radius: 2, x: 0, y: 2)
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, alignment: .top)
@@ -1144,7 +1144,7 @@ struct GoalDetailView: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(tagColor(for: tag))
-                            .cornerRadius(12)
+                            .cornerRadius(DesignToken.cornerRadiusMedium)
                 }
                 
                 // 添加标签按钮
@@ -1489,7 +1489,7 @@ struct GoalDetailView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(15)
+                    .cornerRadius(DesignToken.cornerRadiusMedium)
             }
         }
         .padding(.horizontal, 16)
@@ -1546,7 +1546,7 @@ struct GoalDetailView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(tagColor(for: tag))
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
 
                     // 添加标签按钮（使用可复用的 AddTagSheet）
@@ -1783,7 +1783,7 @@ struct GoalDetailView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(Color(UIColor.systemBlue).opacity(0.1))
-                    .cornerRadius(15)
+                    .cornerRadius(DesignToken.cornerRadiusMedium)
                 }
                 .buttonStyle(PlainButtonStyle())
                 Button(action: {
@@ -1855,7 +1855,7 @@ struct GoalDetailView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .cornerRadius(15)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                 }
                 .buttonStyle(PlainButtonStyle())
                 Button(action: {
@@ -1911,7 +1911,7 @@ struct GoalDetailView: View {
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)
                                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                                        .cornerRadius(12)
+                                        .cornerRadius(DesignToken.cornerRadiusMedium)
                                     }
                                 }
                             }
@@ -1961,7 +1961,7 @@ struct GoalDetailView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color(UIColor.systemBlue).opacity(0.1))
-                        .cornerRadius(15)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                 }
                 .buttonStyle(PlainButtonStyle())
                 Button(action: {
@@ -1992,7 +1992,7 @@ struct GoalDetailView: View {
                                         endPoint: .bottomTrailing
                                     )
                                     .frame(width: 80, height: 60)
-                                    .cornerRadius(8)
+                                    .cornerRadius(DesignToken.cornerRadiusTertiary)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .stroke(goal.backgroundImage == nil ? Color.blue : Color.clear, lineWidth: 2)
@@ -2016,7 +2016,7 @@ struct GoalDetailView: View {
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
                                             .frame(width: 80, height: 60)
-                                            .cornerRadius(8)
+                                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
@@ -2035,7 +2035,7 @@ struct GoalDetailView: View {
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
                                             .frame(width: 80, height: 60)
-                                            .cornerRadius(8)
+                                            .cornerRadius(DesignToken.cornerRadiusTertiary)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .stroke(goal.backgroundImage == imageName ? Color.blue : Color.clear, lineWidth: 2)
@@ -2082,7 +2082,7 @@ struct GoalDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Color.blue)
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
             }
             Button(action: { showDeleteAlert = true }) {
                 HStack(spacing: 8) {
@@ -2095,7 +2095,7 @@ struct GoalDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Color.red)
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
             }
         }
         .padding(.horizontal, 16)
@@ -2491,7 +2491,7 @@ struct EditFormView: View {
                         .padding(.vertical, 12)
                         .foregroundColor(.white)
                         .background(isEditingTaskPinned ? Color(UIColor.systemYellow) : Color.blue)
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                     .buttonStyle(PlainButtonStyle())
 
@@ -2507,7 +2507,7 @@ struct EditFormView: View {
                         .padding(.vertical, 12)
                         .foregroundColor(.white)
                         .background(Color.orange)
-                        .cornerRadius(12)
+                        .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -2697,7 +2697,7 @@ struct AddTaskView: View {
                     }
                     .padding(10)
                     .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                     .padding(.horizontal, 16)
                 }
                 
@@ -2817,7 +2817,7 @@ struct GoalSelectorView: View {
                 }
                 .padding(10)
                 .background(Color(.systemGray6))
-                .cornerRadius(10)
+                .cornerRadius(DesignToken.cornerRadiusSmall)
                 .padding(.horizontal)
                 .padding(.top, 16)
                 .padding(.bottom, 8)
@@ -2848,7 +2848,7 @@ struct GoalSelectorView: View {
                                     .padding(.vertical, 6)
                                     .background(Color.blue.opacity(0.1))
                                     .foregroundColor(.blue)
-                                    .cornerRadius(15)
+                                    .cornerRadius(DesignToken.cornerRadiusMedium)
                                 }
                             }
                             .padding(.horizontal)
@@ -2884,7 +2884,7 @@ struct GoalSelectorView: View {
                         }
                     }
                     .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                     .padding(.horizontal)
                 }
             }

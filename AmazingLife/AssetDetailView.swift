@@ -177,7 +177,7 @@ struct AssetDetailView: View {
             }
         }
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(10)
+        .cornerRadius(DesignToken.cornerRadiusSmall)
         .padding(.horizontal, 16)
     }
     
@@ -212,7 +212,7 @@ struct AssetDetailView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(totalAssets >= asset.totalAssets - 1.0 ? Color(UIColor.systemGreen).opacity(0.1) : Color(UIColor.systemRed).opacity(0.1))
-                .cornerRadius(12)
+                .cornerRadius(DesignToken.cornerRadiusMedium)
             }
             
             // 总资产数值 - 大号显示
@@ -248,7 +248,7 @@ struct AssetDetailView: View {
                             .frame(width: geometry.size.width * CGFloat(asset.debtAmount / (asset.cashAmount + asset.otherAmount + asset.debtAmount)))
                     }
                     .frame(height: 8)
-                    .cornerRadius(4)
+                    .cornerRadius(DesignToken.cornerRadiusBadge)
                 }
                 .frame(height: 8)
                 
@@ -292,7 +292,7 @@ struct AssetDetailView: View {
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -365,14 +365,14 @@ struct AssetDetailView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(Color(UIColor.systemBlue))
-                        .cornerRadius(10)
+                        .cornerRadius(DesignToken.cornerRadiusSmall)
                 }
                 .padding(.top, 16)
             }
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -483,7 +483,7 @@ struct AssetDetailView: View {
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -592,7 +592,7 @@ struct AssetDetailView: View {
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -622,7 +622,7 @@ struct AssetDetailView: View {
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -653,7 +653,7 @@ struct AssetDetailView: View {
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -676,7 +676,7 @@ struct AssetDetailView: View {
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -699,14 +699,14 @@ struct AssetDetailView: View {
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(10)
+                    .cornerRadius(DesignToken.cornerRadiusSmall)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -737,13 +737,13 @@ struct AssetDetailView: View {
                         Rectangle()
                             .fill(Color(UIColor.systemGray5))
                             .frame(height: 8)
-                            .cornerRadius(4)
+                            .cornerRadius(DesignToken.cornerRadiusBadge)
                         
                         // 进度
                         Rectangle()
                             .fill(Color(UIColor.systemBlue))
                             .frame(width: geometry.size.width * 0.6, height: 8)
-                            .cornerRadius(4)
+                            .cornerRadius(DesignToken.cornerRadiusBadge)
                     }
                 }
                 .frame(height: 8)
@@ -802,7 +802,7 @@ struct AssetDetailView: View {
                             .padding(.vertical, 6)
                             .background(Color(UIColor.systemBlue))
                             .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .cornerRadius(DesignToken.cornerRadiusMedium)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -810,7 +810,7 @@ struct AssetDetailView: View {
         }
         .padding(20)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
         .shadow(color: Color(UIColor.label).opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
@@ -843,7 +843,7 @@ struct AssetDetailView: View {
         }
         .padding(20)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(DesignToken.cornerRadius)
     }
     
     // 资产行组件
@@ -856,7 +856,7 @@ struct AssetDetailView: View {
                     .foregroundColor(color)
                     .frame(width: 32, height: 32)
                     .background(color.opacity(0.1))
-                    .cornerRadius(8)
+                    .cornerRadius(DesignToken.cornerRadiusTertiary)
                 
                 // 标题
                 Text(title)

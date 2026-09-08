@@ -287,7 +287,7 @@ struct AddContactView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(Color(.systemGray6))
-                .cornerRadius(10)
+                .cornerRadius(DesignToken.cornerRadiusSmall)
             }
         }
     }
