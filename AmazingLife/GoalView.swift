@@ -673,10 +673,10 @@ struct GoalView: View {
                                                 // 显示前20年和后20年，总共41年，当前年份在第21个位置
                                                 ForEach(max(1, yearListBaseYear-20)...(yearListBaseYear+20), id: \.self) { year in
                                                     Button(action: {
-                                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                        withAnimation(.appSnappy) {
                                                             // 只更新选中年份，不调整基准年份，保持滚动位置不变
                                                             currentYear = year
-                                                            
+
                                                             // 设置动画状态
                                                             yearChangeAnimation = true
                                                         }
@@ -921,6 +921,7 @@ struct GoalView: View {
         }
         .sheet(isPresented: $showAddGoalSheet) {
                 AddGoalView(isPresented: $showAddGoalSheet, selectedSegment: $selectedSegment)
+                    .standardSheetStyle()
             }
         // 页签页面右下角蓝色悬浮添加按钮（安全区域内）
         .overlay(
@@ -974,8 +975,9 @@ struct GoalView: View {
         )
         .sheet(isPresented: $showTrashView) {
             TrashView()
+                .standardSheetStyle()
         }
-        // 筛选弹窗（仅“全部”页签入口触发）
+        // 筛选弹窗（仅”全部”页签入口触发）
         .sheet(isPresented: $showGoalPopup) {
             GoalPopupView(
                 goalFilterExpanded: $goalFilterExpanded,
@@ -986,8 +988,7 @@ struct GoalView: View {
                 selectedTags: $selectedTags,
                 selectedYear: $selectedYear
             )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            .standardSheetStyle()
         }
         .onAppear {
             loadSavedGoalFilters()

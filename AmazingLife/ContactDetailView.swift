@@ -104,6 +104,7 @@ struct ContactDetailView: View {
         }
         .sheet(isPresented: $showGoalSelector) {
             GoalMultiSelectorView(contact: contact, allGoals: allGoals)
+                .standardSheetStyle()
         }
         .sheet(isPresented: $showAddTagSheet) {
             AddTagSheet(existingEntityTags: contact.tags) { names in

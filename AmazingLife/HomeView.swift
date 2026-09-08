@@ -730,32 +730,33 @@ private func renderCard(_ type: HomeCardType) -> some View {
         withMoveGesture(
             userProfileSection
                 .frame(height: heightForCard(id))
-                .background(cardFrameReader(for: type))
+                .background(cardFrameReader(for: id))
                 .offset(isDragging ? dragOffset : .zero)
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                 .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                 .zIndex(isDragging ? 20 : 0)
                 .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                 .contentShape(Rectangle())
-                .contextMenu { cardContextMenu(for: type) }
-            , for: type)
+                .contextMenu { cardContextMenu(for: id) }
+            , for: id)
             .sheet(isPresented: $showingEdit) {
                 UserEditView(user: user)
+                    .standardSheetStyle()
             }
     case .asset:
         if showAssetCard {
             withMoveGesture(
                 assetSection
                     .frame(height: heightForCard(id))
-                    .background(cardFrameReader(for: type))
+                    .background(cardFrameReader(for: id))
                     .offset(isDragging ? dragOffset : .zero)
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
                     .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
-                    .contextMenu { cardContextMenu(for: type) }
-                , for: type)
+                    .contextMenu { cardContextMenu(for: id) }
+                , for: id)
         } else {
             EmptyView()
         }
@@ -764,15 +765,15 @@ private func renderCard(_ type: HomeCardType) -> some View {
             withMoveGesture(
                 HabitCardView(cardSizesByID: cardSizesByID, defaultSizeForID: defaultSizeForID)
                     .frame(height: heightForCard(id))
-                    .background(cardFrameReader(for: type))
+                    .background(cardFrameReader(for: id))
                     .offset(isDragging ? dragOffset : .zero)
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
                     .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
-                    .contextMenu { cardContextMenu(for: type) }
-                , for: type)
+                    .contextMenu { cardContextMenu(for: id) }
+                , for: id)
         } else {
             EmptyView()
         }
@@ -790,15 +791,15 @@ private func renderCard(_ type: HomeCardType) -> some View {
             withMoveGesture(
                 achievementSection
                     .frame(height: heightForCard(id))
-                    .background(cardFrameReader(for: type))
+                    .background(cardFrameReader(for: id))
                     .offset(isDragging ? dragOffset : .zero)
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
                     .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
-                    .contextMenu { cardContextMenu(for: type) }
-            , for: type)
+                    .contextMenu { cardContextMenu(for: id) }
+            , for: id)
         } else {
             EmptyView()
         }
@@ -807,15 +808,15 @@ private func renderCard(_ type: HomeCardType) -> some View {
             withMoveGesture(
                 pinnedSubtasksSection
                     .frame(height: heightForCard(id))
-                    .background(cardFrameReader(for: type))
+                    .background(cardFrameReader(for: id))
                     .offset(isDragging ? dragOffset : .zero)
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
                     .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
-                    .contextMenu { cardContextMenu(for: type) }
-            , for: type)
+                    .contextMenu { cardContextMenu(for: id) }
+            , for: id)
         } else {
             EmptyView()
         }
@@ -824,15 +825,15 @@ private func renderCard(_ type: HomeCardType) -> some View {
             withMoveGesture(
                 improvementSection
                     .frame(height: heightForCard(id))
-                    .background(cardFrameReader(for: type))
+                    .background(cardFrameReader(for: id))
                     .offset(isDragging ? dragOffset : .zero)
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
                     .shadow(color: isDragging ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: isDragging ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: isDragging ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
-                    .contextMenu { cardContextMenu(for: type) }
-                , for: type)
+                    .contextMenu { cardContextMenu(for: id) }
+                , for: id)
         } else {
             EmptyView()
         }
@@ -864,7 +865,7 @@ private func renderCard(for id: HomeCardID) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(draggingCardID == id ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 12 : DesignToken.cardShadowRadius, x: 0, y: draggingCardID == id ? 8 : DesignToken.cardShadowY)
+                    .shadow(color: draggingCardID == id ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: draggingCardID == id ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: draggingCardID == id ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                 , for: id)
         } else {
@@ -903,7 +904,7 @@ private func renderCard(for id: HomeCardID) -> some View {
                                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                                 .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                                 .zIndex(draggingCardID == id ? 20 : 0)
-                                .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 12 : DesignToken.cardShadowRadius, x: 0, y: draggingCardID == id ? 8 : DesignToken.cardShadowY)
+                                .shadow(color: draggingCardID == id ? DesignToken.cardShadowDragging : AppColors.cardShadow, radius: draggingCardID == id ? DesignToken.cardShadowDraggingRadius : DesignToken.cardShadowRadius, x: 0, y: draggingCardID == id ? DesignToken.cardShadowDraggingY : DesignToken.cardShadowY)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -997,7 +998,7 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
         }
         .onEnded { _ in
             guard moveModeEnabledForID == id else { return }
-            finalizeDrag(for: id, velocity: dragVelocity)
+            finalizeDrag(for: id)
             withAnimation(.appGesture) {
                 moveModeEnabledForID = nil
             }
@@ -1009,10 +1010,12 @@ private func rubberBand(value: CGFloat, bound: CGFloat) -> CGFloat {
     let constant: CGFloat = 0.55
     if value > bound {
         // 向下/向右拖拽超出边界
-        return bound + (value - bound) * constant / (1 + constant)
+        let overshoot = value - bound
+        return bound + (overshoot * bound * constant) / (bound + constant * abs(overshoot))
     } else if value < -bound {
         // 向上/向左拖拽超出边界
-        return -bound + (value + bound) * constant / (1 + constant)
+        let overshoot = abs(value) - bound
+        return -(bound + (overshoot * bound * constant) / (bound + constant * abs(overshoot)))
     }
     return value
 }
@@ -1091,34 +1094,13 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
     }
 }
 
-private func finalizeDrag(for id: HomeCardID, velocity: CGSize = .zero) {
+private func finalizeDrag(for id: HomeCardID) {
     withAnimation(.cardAppear) {
         draggingCardID = nil
         dragOffset = .zero
     }
     saveCardOrderIDs()
 }
-
-private func cardFrameReader(for type: HomeCardType) -> some View {
-    GeometryReader { geo in
-        Color.clear
-            .preference(key: CardFramePreferenceKey.self,
-                        value: [HomeCardID.type(type): geo.frame(in: .named("scroll"))])
-    }
-}
-
-// 仅在对应卡片处于“移动位置”模式时附加拖拽手势，避免影响滚动
-@ViewBuilder
-private func withMoveGesture<V: View>(_ view: V, for type: HomeCardType) -> some View {
-    // 在移动模式下允许拖拽任意卡片，开始拖拽时自动切换为当前移动目标
-    if moveModeEnabledForID != nil {
-        view.highPriorityGesture(dragIfMoveEnabled(for: type))
-    } else {
-        view
-    }
-}
-
-// （保留上方 ID 版本 shouldUpdateCardFrames 实现，删除重复声明）
 
 // Masonry 跨列设置：个人信息与资产卡片占两列，其余占一列
 private func spanForCard(_ type: HomeCardType) -> Int {
@@ -1129,59 +1111,6 @@ private func spanForCard(_ type: HomeCardType) -> Int {
         return 1
     }
 }
-
-// 使用原生上下文菜单触发移动/调整大小，无需自定义长按手势
-
-// 仅在启用了移动模式后允许拖拽
-private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
-    DragGesture(minimumDistance: 10)
-        .onChanged { drag in
-            let id = HomeCardID.type(type)
-            // Track velocity for spring handoff
-            let now = Date()
-            let dt = now.timeIntervalSince(lastDragTime)
-            if dt > 0 {
-                let dv = CGSize(
-                    width: (drag.translation.width - lastDragLocation.width) / CGFloat(dt),
-                    height: (drag.translation.height - lastDragLocation.height) / CGFloat(dt)
-                )
-                dragVelocity = dv
-            }
-            lastDragLocation = drag.translation
-            lastDragTime = now
-
-            // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
-            guard moveModeEnabledForID != nil else { return }
-            if moveModeEnabledForID != id {
-                withAnimation(.appGesture) {
-                    moveModeEnabledForID = id
-                    draggingCardID = id
-                }
-            } else if draggingCardID != id {
-                withAnimation(.appGesture) {
-                    draggingCardID = id
-                }
-            }
-
-            // 应用拖拽偏移，带有 rubber-band 效果
-            let translation = drag.translation
-            let bounds: CGFloat = 200 // 最大拖拽距离限制
-            dragOffset = CGSize(
-                width: rubberBand(value: translation.width, bound: bounds),
-                height: rubberBand(value: translation.height, bound: bounds)
-            )
-            reorderDuringDrag(for: id, translation: drag.translation)
-        }
-        .onEnded { _ in
-            guard moveModeEnabledForID == HomeCardID.type(type) else { return }
-            finalizeDrag(for: HomeCardID.type(type), velocity: dragVelocity)
-            withAnimation(.appGesture) {
-                moveModeEnabledForID = nil
-            }
-        }
-}
-
-// 类型卡片暂不进行重排，仅支持位置预览拖拽
 
 @ViewBuilder
 private func cardContextMenu(for type: HomeCardType) -> some View {
@@ -1644,6 +1573,7 @@ private func tagColor(for tag: String) -> Color {
                 selectedTags: $selectedTags,
                 selectedYear: $selectedYear
             )
+            .standardSheetStyle()
         }
     }
     

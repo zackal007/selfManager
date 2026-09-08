@@ -255,10 +255,12 @@ struct ContactView: View {
                 // 弹窗：添加联系人表单
                 .sheet(isPresented: $showAddContactSheet) {
                     AddContactView(isPresented: $showAddContactSheet, selectedSegment: $selectedSegment)
+                        .standardSheetStyle()
                 }
                 // 弹窗：回收站视图
                 .sheet(isPresented: $showContactTrashView) {
                     ContactTrashView()
+                        .standardSheetStyle()
                 }
                 .overlay(alignment: .top) {
                     headerView
@@ -933,8 +935,8 @@ struct ContactListItem: View {
         .background(
             RoundedRectangle(cornerRadius: DesignToken.cornerRadiusMedium)
                 .fill(colorScheme == .light ? Color(UIColor.systemBackground) : Color(UIColor.secondarySystemBackground))
-                .cardShadow()
         )
+        .cardShadow()
     }
 }
 

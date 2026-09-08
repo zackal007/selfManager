@@ -100,6 +100,7 @@ struct ImprovementDetailView: View {
             }
             .sheet(isPresented: $showingAddSheet) {
                 addImprovementView
+                    .standardSheetStyle()
             }
         }
     }

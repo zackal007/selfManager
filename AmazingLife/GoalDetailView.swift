@@ -21,7 +21,7 @@ struct GoalDetailView: View {
     
     // 观察TagColorManager的变化以实现即时更新
     @ObservedObject private var tagColorManager = TagColorManager.shared
-    // 观察PingManager以管理“钉住”状态
+    // 观察PingManager以管理"钉住"状态
     @ObservedObject private var pingManager = PingManager.shared
     
     // 从文档目录加载图片
@@ -1204,7 +1204,7 @@ struct GoalDetailView: View {
                     }
             }
 
-            // “钉子”按钮：钉住/取消钉住当前目标
+            // "钉子"按钮：钉住/取消钉住当前目标
             Button(action: {
                 if pingManager.isPinged(goalID: goal.id) {
                     pingManager.unping(goalID: goal.id)
@@ -2158,17 +2158,19 @@ struct GoalDetailView: View {
                 editingTask: $editingTask,
                 onSave: handleSaveGoalEdit
             )
-            .presentationDetents(editingField == .progress ? [.medium] : [.large])
-            .presentationDragIndicator(.visible)
+            .standardSheetStyle()
         }
         .sheet(isPresented: $showAddTaskSheet) {
             AddTaskView(goalId: goal.id.uuidString)
+                .standardSheetStyle()
         }
         .sheet(isPresented: $showUpperGoalSelector) {
             GoalSelectorView(availableGoals: availableUpperGoals, selectedGoals: $goal.upperProject, isPresented: $showUpperGoalSelector, selectorType: "upperProject", goal: goal)
+                .standardSheetStyle()
         }
         .sheet(isPresented: $showSubGoalSelector) {
             GoalSelectorView(availableGoals: availableSubGoals, selectedGoals: $goal.subProject, isPresented: $showSubGoalSelector, selectorType: "subProject", goal: goal)
+                .standardSheetStyle()
         }
         .sheet(isPresented: $showContactSelector) {
             ContactSelectorView(allContacts: allContacts, selectedIds: goal.relatedContactIds, onSelect: { selectedIds in
@@ -2233,8 +2235,9 @@ struct GoalDetailView: View {
         }
         .sheet(isPresented: $showActivityLog) {
             GoalActivityLogView(goal: goal)
+                .standardSheetStyle()
         }
-        // 统一在顶层挂载添加标签弹窗，确保任意“添加标签”按钮都能生效
+        // 统一在顶层挂载添加标签弹窗，确保任意"添加标签"按钮都能生效
         .sheet(isPresented: $showAddTagSheet) {
             AddTagSheet(existingEntityTags: goal.tags) { names in
                 let existing = Set(goal.tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
