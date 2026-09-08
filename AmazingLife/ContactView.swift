@@ -360,6 +360,7 @@ struct ContactView: View {
                     }) {
                         Label("recycle_bin".localized, systemImage: "trash")
                     }
+                    .buttonStyle(ScaleButtonStyle())
                 }
             }
             .padding(.horizontal, 16)
@@ -629,7 +630,7 @@ private struct TopTabChip: View {
                               : Color.clear)
                 )
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(ScaleButtonStyle())
     }
 }
     // 拆分左右列（参考目标模块的瀑布流样式）
@@ -674,9 +675,10 @@ private struct TopTabChip: View {
                 viewMode = viewMode == .gallery ? .list : .gallery
             }
         }) {
-            Label(viewMode == .gallery ? "list_view".localized : "gallery_view".localized, 
+            Label(viewMode == .gallery ? "list_view".localized : "gallery_view".localized,
                   systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
         }
+        .buttonStyle(ScaleButtonStyle())
     }
     
     // 分类菜单内容
@@ -690,7 +692,8 @@ private struct TopTabChip: View {
                     Image(systemName: "checkmark")
                 }
             }
-            
+            .buttonStyle(ScaleButtonStyle())
+
             Button(action: {
                 categoryOption = .type
             }) {
@@ -699,6 +702,7 @@ private struct TopTabChip: View {
                     Image(systemName: "checkmark")
                 }
             }
+            .buttonStyle(ScaleButtonStyle())
         } label: {
             Label("category".localized, systemImage: "folder")
         }
@@ -715,7 +719,8 @@ private struct TopTabChip: View {
                     Image(systemName: "checkmark")
                 }
             }
-            
+            .buttonStyle(ScaleButtonStyle())
+
             Button(action: {
                 sortOption = .createTime
             }) {
@@ -724,7 +729,8 @@ private struct TopTabChip: View {
                     Image(systemName: "checkmark")
                 }
             }
-            
+            .buttonStyle(ScaleButtonStyle())
+
             Button(action: {
                 sortOption = .modifyTime
             }) {
@@ -733,7 +739,8 @@ private struct TopTabChip: View {
                     Image(systemName: "checkmark")
                 }
             }
-            
+            .buttonStyle(ScaleButtonStyle())
+
             Button(action: {
                 sortOption = .visitTime
             }) {
@@ -742,6 +749,7 @@ private struct TopTabChip: View {
                     Image(systemName: "checkmark")
                 }
             }
+            .buttonStyle(ScaleButtonStyle())
         } label: {
             Label("sort".localized, systemImage: "arrow.up.arrow.down")
         }

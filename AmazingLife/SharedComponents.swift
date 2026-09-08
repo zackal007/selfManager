@@ -57,7 +57,7 @@ struct FilterChip: View {
     let isSelected: Bool
     var color: Color? = nil
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             Text(title)
@@ -67,11 +67,12 @@ struct FilterChip: View {
                 .padding(.vertical, 6)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(isSelected 
+                        .fill(isSelected
                               ? (color ?? Color(UIColor.systemBlue)).opacity(0.15)
                               : Color(UIColor.systemGray6))
                 )
         }
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 
@@ -100,7 +101,7 @@ struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.9 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .animation(UIAccessibility.isReduceMotionEnabled ? nil : .spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 

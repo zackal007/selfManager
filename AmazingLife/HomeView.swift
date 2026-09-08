@@ -12,6 +12,7 @@ import UIKit
 // MARK: - 轻微晃动效果（文件作用域）
 struct JiggleEffect: ViewModifier {
     let isActive: Bool
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
     @State private var rotation: Double = -1.2
     @State private var sway: CGFloat = -0.8
 
@@ -20,6 +21,7 @@ struct JiggleEffect: ViewModifier {
             .rotationEffect(.degrees(isActive ? rotation : 0))
             .offset(x: isActive ? sway : 0)
             .onAppear {
+                if reduceMotion { return }
                 if isActive {
                     withAnimation(Animation.easeInOut(duration: 0.16).repeatForever(autoreverses: true)) {
                         rotation = 1.2
@@ -28,6 +30,11 @@ struct JiggleEffect: ViewModifier {
                 }
             }
             .onChange(of: isActive) { active in
+                if reduceMotion {
+                    rotation = 0
+                    sway = 0
+                    return
+                }
                 if active {
                     rotation = -1.2
                     sway = -0.8
@@ -1129,15 +1136,19 @@ private func cardContextMenu(for type: HomeCardType) -> some View {
         }) {
             Label("move_position".localized, systemImage: "arrow.up.and.down.and.arrow.left.and.right")
         }
+        .buttonStyle(ScaleButtonStyle())
         Button(action: { setCardSize(.small, for: id) }) {
             Label("size_small_1x1".localized, systemImage: current == .small ? "checkmark.circle" : "circle")
         }
+        .buttonStyle(ScaleButtonStyle())
         Button(action: { setCardSize(.medium, for: id) }) {
             Label("size_medium_1x2".localized, systemImage: current == .medium ? "checkmark.circle" : "circle")
         }
+        .buttonStyle(ScaleButtonStyle())
         Button(action: { setCardSize(.large, for: id) }) {
             Label("size_large_2x2".localized, systemImage: current == .large ? "checkmark.circle" : "circle")
         }
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 
@@ -1565,7 +1576,7 @@ private func tagColor(for tag: String) -> Color {
         }) {
             goalCardContent
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(ScaleButtonStyle())
         .sheet(isPresented: $showingGoalPopup) {
             GoalPopupView(
                 goalFilterExpanded: $goalFilterExpanded,
@@ -1811,7 +1822,7 @@ private func tagColor(for tag: String) -> Color {
                                     Image(systemName: "star.slash")
                                         .foregroundColor(Color(UIColor.systemBlue))
                                 }
-                                .buttonStyle(PlainButtonStyle())
+                                .buttonStyle(ScaleButtonStyle())
                             }
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)

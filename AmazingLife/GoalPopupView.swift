@@ -130,6 +130,7 @@ struct GoalPopupView: View {
                                 Image(systemName: "xmark.circle.fill")
                                     .foregroundColor(Color(UIColor.systemGray))
                             }
+                            .buttonStyle(ScaleButtonStyle())
                         }
                     }
                     .padding(10)

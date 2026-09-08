@@ -217,11 +217,12 @@ struct GoalView: View {
                 viewMode = viewMode == .gallery ? .list : .gallery
             }
         }) {
-            Label(viewMode == .gallery ? "列表视图" : "卡片视图", 
+            Label(viewMode == .gallery ? "列表视图" : "卡片视图",
                   systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
         }
+        .buttonStyle(ScaleButtonStyle())
     }
-    
+
     // 排序菜单内容 - 点击字段切换正序/倒序
     // 排序选项按钮
     private func sortOptionButton(title: String, option: SortOption) -> some View {
@@ -242,8 +243,9 @@ struct GoalView: View {
                 }
             }
         }
+        .buttonStyle(ScaleButtonStyle())
     }
-    
+
     private var sortMenuContent: some View {
         Menu {
             sortOptionButton(title: "sort_name".localized, option: .name)
@@ -256,7 +258,7 @@ struct GoalView: View {
             Label("sort".localized, systemImage: "arrow.up.arrow.down")
         }
     }
-    
+
     // 省略号菜单内容
     private var ellipsisMenuContent: some View {
         Menu {
@@ -267,23 +269,25 @@ struct GoalView: View {
                     viewMode = viewMode == .gallery ? .list : .gallery
                 }
             }) {
-                Label(viewMode == .gallery ? "list_view".localized : "gallery_view".localized, 
+                Label(viewMode == .gallery ? "list_view".localized : "gallery_view".localized,
                       systemImage: viewMode == .gallery ? "list.bullet" : "square.grid.2x2")
             }
-            
+            .buttonStyle(ScaleButtonStyle())
+
             Divider()
-            
+
             // 2. 排序选项子菜单
             sortMenuContent
-            
+
             Divider()
-            
+
             // 3. 回收站按钮
             Button(action: {
                 showTrashView = true
             }) {
                 Label("recycle_bin".localized, systemImage: "trash")
             }
+            .buttonStyle(ScaleButtonStyle())
         } label: {
             ZStack {
                 Circle()
