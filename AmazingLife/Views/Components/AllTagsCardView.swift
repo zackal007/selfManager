@@ -171,7 +171,7 @@ struct AllTagsCardView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignToken.cornerRadius)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
         )
     }

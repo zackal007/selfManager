@@ -98,7 +98,7 @@ struct SettingsCardView: View {
                 }
                 
                 Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    withAnimation(.appSidebar) {
                         isExpanded.toggle()
                     }
                 }) {
@@ -474,9 +474,9 @@ struct SettingsCardView: View {
             Alert(title: Text("check_update".localized), message: Text(updateAlertMessage), dismissButton: .default(Text("ok".localized)))
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DesignToken.cornerRadius)
                 .fill(cardBackground)
-                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                .cardShadow()
         )
     }
 }
@@ -625,7 +625,9 @@ struct SidebarView: View {
         ZStack {
             // 背景遮罩
             if isPresented {
-                Color.black.opacity(0.3)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .opacity(0.3)
                     .ignoresSafeArea()
                     .onTapGesture {
                         closeSidebar()
@@ -662,7 +664,7 @@ struct SidebarView: View {
                 .background(
                     Color(UIColor.systemGroupedBackground)
                         .ignoresSafeArea(.all)
-                        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 2, y: 0)
+                        .cardShadow()
                 )
                 .offset(x: isPresented ? dragOffset : -sidebarWidth)
                 .gesture(
@@ -679,7 +681,7 @@ struct SidebarView: View {
                                 closeSidebar()
                             } else {
                                 // 否则回弹到原位置
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                withAnimation(.appSidebar) {
                                     dragOffset = 0
                                 }
                             }
@@ -689,7 +691,7 @@ struct SidebarView: View {
                 Spacer()
             }
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPresented)
+        .animation(.appSidebar, value: isPresented)
         .onAppear {
             dragOffset = 0
         }
@@ -719,7 +721,7 @@ struct SidebarView: View {
     
     // 关闭侧边栏
     private func closeSidebar() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+        withAnimation(.appSidebar) {
             isPresented = false
             dragOffset = 0
         }
@@ -800,13 +802,13 @@ class SidebarManager: ObservableObject {
     private init() {}
     
     func showSidebar() {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        withAnimation(.appSidebar) {
             isPresented = true
         }
     }
-    
+
     func hideSidebar() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+        withAnimation(.appSidebar) {
             isPresented = false
         }
     }

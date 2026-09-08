@@ -299,7 +299,7 @@ struct HomeView: View {
                                     .masonrySpan(spanForCard(id))
                             }
                         }
-                        .animation(.interactiveSpring(), value: cardOrderIDs)
+                        .animation(.appGesture, value: cardOrderIDs)
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 30)
@@ -691,7 +691,7 @@ private func saveCardSizes() {
 }
 
 private func setCardSize(_ size: HomeCardSize, for id: HomeCardID) {
-    withAnimation(.spring(response: 0.3, dampingFraction: 0.88)) {
+    withAnimation(.appSnappy) {
         cardSizesByID[id] = size
     }
     saveCardSizes()
@@ -731,7 +731,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                 .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                 .zIndex(isDragging ? 20 : 0)
-                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
                 .contentShape(Rectangle())
                 .contextMenu { cardContextMenu(for: type) }
             , for: type)
@@ -748,7 +748,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
                 , for: type)
@@ -765,7 +765,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
                 , for: type)
@@ -791,7 +791,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
             , for: type)
@@ -808,7 +808,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
             , for: type)
@@ -825,7 +825,7 @@ private func renderCard(_ type: HomeCardType) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(isDragging ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(isDragging ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 10 : 8, x: 0, y: isDragging ? 6 : 4)
+                    .shadow(color: Color(UIColor.label).opacity(isDragging ? 0.12 : 0.06), radius: isDragging ? 12 : DesignToken.cardShadowRadius, x: 0, y: isDragging ? 8 : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                     .contextMenu { cardContextMenu(for: type) }
                 , for: type)
@@ -850,7 +850,7 @@ private func renderCard(for id: HomeCardID) -> some View {
                     .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
                     .frame(height: heightForCard(id), alignment: .top) // 当内容超出时优先显示顶部
                     .clipped() // 防止内部内容越界导致与其他卡片重叠
-                    .clipShape(RoundedRectangle(cornerRadius: 20)) // 与其它卡片保持一致的圆角外观
+                    .clipShape(RoundedRectangle(cornerRadius: DesignToken.cornerRadius)) // 与其它卡片保持一致的圆角外观
                     .background(cardFrameReader(for: id))
                     .offset({
                         let base = cardOffsetsByID[id] ?? .zero
@@ -860,7 +860,7 @@ private func renderCard(for id: HomeCardID) -> some View {
                     .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                     .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                     .zIndex(draggingCardID == id ? 20 : 0)
-                    .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
+                    .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 12 : DesignToken.cardShadowRadius, x: 0, y: draggingCardID == id ? 8 : DesignToken.cardShadowY)
                     .contentShape(Rectangle())
                 , for: id)
         } else {
@@ -875,7 +875,7 @@ private func renderCard(for id: HomeCardID) -> some View {
                                 .layoutValue(key: MasonryHeightKey.self, value: heightForCard(id))
                                 .frame(height: heightForCard(id), alignment: .top)
                                 .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .clipShape(RoundedRectangle(cornerRadius: DesignToken.cornerRadius))
                                 // 右上角类型角标：人脉（保持当前样式不变）
                                 .overlay(alignment: .topTrailing) {
                                     Text("人脉")
@@ -899,7 +899,7 @@ private func renderCard(for id: HomeCardID) -> some View {
                                 .jiggle(moveModeEnabledForID == id && draggingCardID == nil)
                                 .scaleEffect(draggingCardID == id ? 1.02 : (expandedCardsByID.contains(id) ? 1.04 : 1.0))
                                 .zIndex(draggingCardID == id ? 20 : 0)
-                                .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 10 : 8, x: 0, y: draggingCardID == id ? 6 : 4)
+                                .shadow(color: Color(UIColor.label).opacity(draggingCardID == id ? 0.12 : 0.06), radius: draggingCardID == id ? 12 : DesignToken.cardShadowRadius, x: 0, y: draggingCardID == id ? 8 : DesignToken.cardShadowY)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -959,12 +959,12 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
             // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
             guard moveModeEnabledForID != nil else { return }
             if moveModeEnabledForID != id {
-                withAnimation(.interactiveSpring()) {
+                withAnimation(.appGesture) {
                     moveModeEnabledForID = id
                     draggingCardID = id
                 }
             } else if draggingCardID != id {
-                withAnimation(.interactiveSpring()) {
+                withAnimation(.appGesture) {
                     draggingCardID = id
                 }
             }
@@ -974,7 +974,7 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
         .onEnded { _ in
             guard moveModeEnabledForID == id else { return }
             finalizeDrag(for: id)
-            withAnimation(.interactiveSpring()) {
+            withAnimation(.appGesture) {
                 moveModeEnabledForID = nil
             }
         }
@@ -1018,7 +1018,7 @@ private func reorderDuringDrag(for id: HomeCardID, translation: CGSize) {
 
     // 若位置未变化，则不触发动画
     if newOrder != cardOrderIDs {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.9, blendDuration: 0.2)) {
+        withAnimation(.appGesture) {
             cardOrderIDs = newOrder
         }
     }
@@ -1055,7 +1055,7 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
 }
 
 private func finalizeDrag(for id: HomeCardID) {
-    withAnimation(.interactiveSpring()) {
+    withAnimation(.appGesture) {
         draggingCardID = nil
         dragOffset = .zero
     }
@@ -1103,12 +1103,12 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
             // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
             guard moveModeEnabledForID != nil else { return }
             if moveModeEnabledForID != id {
-                withAnimation(.interactiveSpring()) {
+                withAnimation(.appGesture) {
                     moveModeEnabledForID = id
                     draggingCardID = id
                 }
             } else if draggingCardID != id {
-                withAnimation(.interactiveSpring()) {
+                withAnimation(.appGesture) {
                     draggingCardID = id
                 }
             }
@@ -1118,7 +1118,7 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
         .onEnded { _ in
             guard moveModeEnabledForID == HomeCardID.type(type) else { return }
             finalizeDrag(for: HomeCardID.type(type))
-            withAnimation(.interactiveSpring()) {
+            withAnimation(.appGesture) {
                 moveModeEnabledForID = nil
             }
         }
@@ -1324,14 +1324,14 @@ private func tagColor(for tag: String) -> Color {
         .padding(20)
         .frame(maxHeight: .infinity, alignment: .top)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: DesignToken.cornerRadius)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: DesignToken.cornerRadius)
                         .stroke(Color(UIColor.systemGray5).opacity(0.5), lineWidth: 0.5)
                 )
         )
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+        .cardShadow()
     }
     
     // 资产信息卡片
@@ -1413,14 +1413,14 @@ private func tagColor(for tag: String) -> Color {
         .padding(20)
         .frame(maxHeight: .infinity, alignment: .top)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: DesignToken.cornerRadius)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: DesignToken.cornerRadius)
                         .stroke(Color(UIColor.systemGray5).opacity(0.5), lineWidth: 0.5)
                 )
         )
-        .shadow(color: Color(UIColor.label).opacity(0.06), radius: 8, x: 0, y: 4)
+        .cardShadow()
     }
     
     // 目标区域
@@ -2248,12 +2248,12 @@ struct HomeGoalCard: View {
                 let st = style(for: size)
                 ZStack(alignment: .topLeading) {
                     backgroundView(for: size)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignToken.cornerRadius))
 
                     Rectangle()
                         .fill(Color(UIColor.systemBackground).opacity(st.overlayOpacity))
                         .frame(width: size.width, height: size.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignToken.cornerRadius))
 
                     VStack(alignment: .leading, spacing: st.spacing) {
                          HStack {
@@ -2310,8 +2310,8 @@ struct HomeGoalCard: View {
                 .clipped() // 严格隐藏超出边界的内容
             }
             .background(Color(UIColor.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: Color(UIColor.label).opacity(0.08), radius: 6, x: 0, y: 3)
+            .clipShape(RoundedRectangle(cornerRadius: DesignToken.cornerRadius))
+            .shadow(color: Color(UIColor.label).opacity(0.08), radius: DesignToken.cardShadowRadius, x: 0, y: 3)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -2455,8 +2455,8 @@ struct PinnedSubtasksDetailView: View {
         }
         .listStyle(.insetGrouped)
         .searchable(text: $searchText, placement: .navigationBarDrawer)
-        .animation(.spring(response: 0.24, dampingFraction: 0.9), value: statusFilter)
-        .animation(.spring(response: 0.24, dampingFraction: 0.9), value: searchText)
+        .animation(.appSnappy, value: statusFilter)
+        .animation(.appSnappy, value: searchText)
         .navigationBarTitle(Text("pinned_subtasks_manage_title".localized), displayMode: .inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
