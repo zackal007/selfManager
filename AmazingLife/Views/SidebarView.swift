@@ -689,7 +689,7 @@ struct SidebarView: View {
                 Spacer()
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isPresented)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPresented)
         .onAppear {
             dragOffset = 0
         }
@@ -823,7 +823,7 @@ class SidebarManager: ObservableObject {
 // 侧边栏触发按钮
 struct SidebarTriggerButton: View {
     @ObservedObject private var sidebarManager = SidebarManager.shared
-    
+
     var body: some View {
         Button(action: {
             sidebarManager.toggleSidebar()
@@ -831,14 +831,14 @@ struct SidebarTriggerButton: View {
             ZStack {
                 Circle()
                     .fill(Color(UIColor.systemGray5).opacity(0.8))
-                    .frame(width: 38, height: 38)
-                
+                    .frame(width: 44, height: 44)
+
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(UIColor.label))
             }
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 

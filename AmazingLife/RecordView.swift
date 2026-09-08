@@ -121,13 +121,13 @@ struct RecordView: View {
                             ZStack {
                                 Circle()
                                     .fill(Color(UIColor.systemGray5).opacity(0.8))
-                                    .frame(width: 34, height: 34)
+                                    .frame(width: 44, height: 44)
                                 Image(systemName: "arrow.up.arrow.down")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(Color(UIColor.label))
                             }
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .buttonStyle(ScaleButtonStyle())
                         .transition(.opacity)
                     }
                     if selectedRecordType != .recent {
