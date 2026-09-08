@@ -1307,7 +1307,7 @@ struct GoalDetailView: View {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color(UIColor.systemBlue))
                         .frame(width: max(4, geometry.size.width * CGFloat(goal.progress)), height: 8)
-                        .animation(.easeOut(duration: 0.3), value: goal.progress)
+                        .animation(UIAccessibility.isReduceMotionEnabled ? nil : .easeOut(duration: 0.3), value: goal.progress)
                 }
             }
             .frame(height: 8)
@@ -2279,7 +2279,7 @@ struct GoalDetailView: View {
                                 .font(.system(size: 14.4, weight: .black))
                                 .foregroundColor(.white)
                                 .scaleEffect(isCheckInAnimating ? 1.2 : 1.0)
-                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isCheckInAnimating)
+                                .animation(UIAccessibility.isReduceMotionEnabled ? nil : .spring(response: 0.3, dampingFraction: 0.6), value: isCheckInAnimating)
                         }
                         .frame(width: 39.6, height: 39.6)
                         .background(

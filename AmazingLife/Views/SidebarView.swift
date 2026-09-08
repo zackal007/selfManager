@@ -672,12 +672,19 @@ struct SidebarView: View {
                         .onChanged { value in
                             // 只允许向左拖拽关闭
                             if value.translation.width < 0 {
-                                dragOffset = max(value.translation.width, -sidebarWidth)
+                                // 应用 rubber-band 效果：越往左拖，阻力越大
+                                let rawOffset = value.translation.width
+                                let rubberBandOffset = rubberBand(overshoot: rawOffset, dimension: sidebarWidth, constant: 0.4)
+                                dragOffset = rubberBandOffset
                             }
                         }
                         .onEnded { value in
-                            // 如果拖拽距离超过一定阈值，则关闭侧边栏
-                            if value.translation.width < -100 || value.predictedEndTranslation.width < -200 {
+                            // 使用速度投影预测最终位置
+                            let velocity = value.velocity.width
+                            let projectedOffset = projectPosition(currentOffset: dragOffset, velocity: velocity)
+
+                            // 如果投影位置或拖拽距离超过阈值，则关闭侧边栏
+                            if projectedOffset < -sidebarWidth * 0.5 || value.translation.width < -100 {
                                 closeSidebar()
                             } else {
                                 // 否则回弹到原位置
@@ -725,6 +732,18 @@ struct SidebarView: View {
             isPresented = false
             dragOffset = 0
         }
+    }
+
+    // Rubber-band effect: 越往边界外拖，阻力越大
+    private func rubberBand(overshoot: CGFloat, dimension: CGFloat, constant: CGFloat = 0.55) -> CGFloat {
+        return (overshoot * dimension * constant) / (dimension + constant * abs(overshoot))
+    }
+
+    // 使用速度投影预测最终位置 (Apple 设计的动量预测算法)
+    private func projectPosition(currentOffset: CGFloat, velocity: CGFloat) -> CGFloat {
+        // decelerationRate ≈ 0.998 for normal scroll feel
+        let decelerationRate: CGFloat = 0.998
+        return currentOffset + (velocity / 1000) * decelerationRate / (1 - decelerationRate)
     }
     
     // 判断菜单项是否被选中
@@ -841,6 +860,8 @@ struct SidebarTriggerButton: View {
             }
         }
         .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel("打开侧边栏")
+        .accessibilityHint("双击打开菜单、标签和设置")
     }
 }
 

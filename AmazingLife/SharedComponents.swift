@@ -73,6 +73,9 @@ struct FilterChip: View {
                 )
         }
         .buttonStyle(ScaleButtonStyle())
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint("双击切换筛选状态")
     }
 }
 
@@ -156,11 +159,13 @@ struct DesignToken {
     static let spacing8: CGFloat = 32
 
     // MARK: - Shadows
-    static let cardShadowColor = Color.black.opacity(0.06)
+    /// Card shadow color that adapts to dark mode
+    static let cardShadowColor = AppColors.cardShadow
     static let cardShadowRadius: CGFloat = 8
     static let cardShadowY: CGFloat = 4
 
-    static let elevatedShadowColor = Color.black.opacity(0.08)
+    /// Elevated shadow for floating elements
+    static let elevatedShadowColor = AppColors.elevatedShadow
     static let elevatedShadowRadius: CGFloat = 12
     static let elevatedShadowY: CGFloat = 6
 }
@@ -188,6 +193,39 @@ struct AppColors {
     // Fills
     static let fill = Color(UIColor.systemGray5)
     static let fillSecondary = Color(UIColor.systemGray6)
+
+    // Overlays & Scrims (adaptive for dark/light mode)
+    /// Heavy scrim for modals and destructive overlays
+    static let scrimHeavy = Color.black.opacity(0.5)
+    /// Light scrim for subtle overlays
+    static let scrimLight = Color.black.opacity(0.2)
+    /// Card shadow color that adapts to dark mode
+    static let cardShadow = Color(UIColor.label).opacity(0.08)
+    /// Elevated shadow for floating elements
+    static let elevatedShadow = Color(UIColor.label).opacity(0.12)
+    /// Separator color for dividers
+    static let separator = Color(UIColor.separator)
+}
+
+// MARK: - Color Scheme Adaptive Colors
+extension Color {
+    /// Creates a color that adapts to light/dark mode
+    static func adaptive(light: Color, dark: Color) -> Color {
+        return Color(UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                if let cgColor = dark.cgColor {
+                    return UIColor(cgColor: cgColor)
+                }
+                return UIColor.darkGray
+            default:
+                if let cgColor = light.cgColor {
+                    return UIColor(cgColor: cgColor)
+                }
+                return UIColor.lightGray
+            }
+        })
+    }
 }
 
 // MARK: - App Spring Animations
@@ -269,10 +307,123 @@ extension View {
     }
 }
 
+// MARK: - Illustrated Empty State
+/// An illustrated empty state view with SF Symbol icon, title, subtitle, and optional action button
+struct IllustratedEmptyState: View {
+    let icon: String           // SF Symbol name
+    let title: String          // Main message
+    let subtitle: String?      // Optional secondary message
+    var actionTitle: String?   // Optional action button title
+    var action: (() -> Void)? // Optional action handler
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        VStack(spacing: 20) {
+            // Icon container with subtle background
+            ZStack {
+                Circle()
+                    .fill(iconBackgroundColor)
+                    .frame(width: 100, height: 100)
+
+                Image(systemName: icon)
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundColor(iconColor)
+            }
+
+            // Title
+            Text(title)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
+
+            // Subtitle
+            if let subtitle = subtitle {
+                Text(subtitle)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+
+            // Action button
+            if let actionTitle = actionTitle, let action = action {
+                Button(action: action) {
+                    Text(actionTitle)
+                        .fontWeight(.medium)
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 8)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+    }
+
+    private var iconBackgroundColor: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.1)
+            : Color.blue.opacity(0.08)
+    }
+
+    private var iconColor: Color {
+        colorScheme == .dark
+            ? Color.blue.opacity(0.8)
+            : Color.blue.opacity(0.7)
+    }
+}
+
+// MARK: - Predefined Empty States
+extension IllustratedEmptyState {
+    /// Empty state for contacts screen
+    static func contacts(action: @escaping () -> Void) -> IllustratedEmptyState {
+        IllustratedEmptyState(
+            icon: "person.crop.circle.badge.plus",
+            title: "empty_no_contacts".localized,
+            subtitle: "add_first_contact_subtitle".localized,
+            actionTitle: "add_first_contact".localized,
+            action: action
+        )
+    }
+
+    /// Empty state for goals screen
+    static func goals(action: @escaping () -> Void) -> IllustratedEmptyState {
+        IllustratedEmptyState(
+            icon: "target",
+            title: "empty_no_goals".localized,
+            subtitle: "add_first_goal_subtitle".localized,
+            actionTitle: "add_first_goal".localized,
+            action: action
+        )
+    }
+
+    /// Empty state for records screen
+    static func records(action: @escaping () -> Void) -> IllustratedEmptyState {
+        IllustratedEmptyState(
+            icon: "square.and.pencil",
+            title: "no_records_recent".localized,
+            subtitle: "start_first_record".localized,
+            actionTitle: "create_record".localized,
+            action: action
+        )
+    }
+
+    /// Empty state for search with no results
+    static func noSearchResults(for query: String) -> IllustratedEmptyState {
+        IllustratedEmptyState(
+            icon: "magnifyingglass",
+            title: "no_results_found".localized,
+            subtitle: String(format: "try_different_search".localized, query)
+        )
+    }
+}
+
 // MARK: - Menu Button Component
 struct MenuButton<Content: View>: View {
     let content: () -> Content
     @State private var showMenu = false
+    var accessibilityLabel: String = "更多选项"
 
     init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
@@ -293,5 +444,6 @@ struct MenuButton<Content: View>: View {
             }
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
     }
 }

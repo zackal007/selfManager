@@ -164,11 +164,13 @@ struct RecordCardView: View {
 
 // 按钮样式：添加轻微的缩放效果
 struct RecordCardButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+            .animation(reduceMotion ? nil : .spring(response: 0.2, dampingFraction: 0.8), value: configuration.isPressed)
     }
 }
 

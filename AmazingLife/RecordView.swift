@@ -250,10 +250,8 @@ struct RecordView: View {
         }
         .frame(maxWidth: .infinity)
         .safeAreaPadding(.top)
-        .background(
-            BlurView(style: .systemMaterial)
-                .ignoresSafeArea(.all, edges: .top)
-        )
+        .background(.ultraThinMaterial)
+        .ignoresSafeArea(edges: .top)
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
         .zIndex(10)
         .overlay(
@@ -1231,22 +1229,7 @@ private struct TopTabChip: View {
                                                 
                                                 // 如果没有记录，显示空状态
                                                 if filteredRecords.isEmpty {
-                                                    VStack(spacing: 16) {
-                                                        Image(systemName: "doc.text")
-                                                            .font(.system(size: 48))
-                                                            .foregroundColor(.secondary)
-                                                        
-                                                        Text("no_records_recent".localized)
-                                                            .font(.headline)
-                                                            .foregroundColor(.secondary)
-                                                        
-                                                        Text("start_first_record".localized)
-                                                            .font(.body)
-                                                            .foregroundColor(.secondary)
-                                                            .multilineTextAlignment(.center)
-                                                    }
-                                                    .frame(maxWidth: .infinity)
-                                                    .padding(.vertical, 60)
+                                                    IllustratedEmptyState.records { }
                                                 }
                                             }
                                             .padding(.horizontal)

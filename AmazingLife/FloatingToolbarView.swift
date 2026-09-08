@@ -57,7 +57,9 @@ struct FloatingToolbarView: View {
                         .cornerRadius(16)
                 }
                 .buttonStyle(ScaleButtonStyle())
-                
+                .accessibilityLabel("添加图片")
+                .accessibilityHint("双击添加照片到记录")
+
                 // 心情选择按钮（仅图标，仅在日记模式下显示）
                 if showMoodSelector {
                     Menu {
@@ -66,7 +68,7 @@ struct FloatingToolbarView: View {
                             selectedMood = nil
                             onMoodChanged?(nil)
                         }
-                        
+
                         // 心情选项
                         ForEach(["😊", "😢", "😡", "😴", "🤔", "😎"], id: \.self) { mood in
                             Button {
@@ -93,8 +95,10 @@ struct FloatingToolbarView: View {
                         }
                     }
                     .buttonStyle(ScaleButtonStyle())
+                    .accessibilityLabel("选择心情")
+                    .accessibilityHint("双击选择今天的心情")
                 }
-                
+
                 // 目标引用按钮（#）
                 Menu {
                     // 清除目标引用选项
@@ -119,14 +123,16 @@ struct FloatingToolbarView: View {
                         .cornerRadius(16)
                 }
                 .buttonStyle(ScaleButtonStyle())
-                
+                .accessibilityLabel("关联目标")
+                .accessibilityHint("双击选择要关联的目标")
+
                 // 人脉引用按钮（@）
                 Menu {
                     // 清除人脉引用选项
                     Button("clear_contact_reference".localized) {
                         insertContactReference(nil)
                     }
-                    
+
                     // 联系人选项
                     ForEach(contacts, id: \.id) { contact in
                         Button {
@@ -144,6 +150,8 @@ struct FloatingToolbarView: View {
                         .cornerRadius(16)
                 }
                 .buttonStyle(ScaleButtonStyle())
+                .accessibilityLabel("关联人脉")
+                .accessibilityHint("双击选择要关联的联系人")
                 
                 Spacer()
                 
@@ -205,7 +213,7 @@ struct FloatingToolbarView: View {
             
             // 删除按钮
             Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(.appSnappy) {
                     images.remove(at: index)
                     onImagesChanged?(images)
                 }
@@ -256,7 +264,7 @@ struct FloatingToolbarView: View {
             }
             
             await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(.appSnappy) {
                     images.append(contentsOf: newImages)
                     onImagesChanged?(images)
                 }

@@ -413,10 +413,8 @@ struct ContactView: View {
         }
         .frame(maxWidth: .infinity)
         .safeAreaPadding(.top)
-        .background(
-            BlurView(style: .systemMaterial)
-                .ignoresSafeArea(.all, edges: .top)
-        )
+        .background(.ultraThinMaterial)
+        .ignoresSafeArea(edges: .top)
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
         .zIndex(10)
         .overlay(
@@ -647,24 +645,13 @@ private struct TopTabChip: View {
     
     // 空状态视图
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "network")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            
-            Text(searchText.isEmpty ? "empty_no_contacts".localized : "empty_no_matches".localized)
-                .font(.title2)
-                .foregroundColor(.gray)
-            
-            if searchText.isEmpty {
-                Button("add_first_contact".localized) {
-                    showAddContactSheet = true
-                }
-                .buttonStyle(.borderedProminent)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 60)
+        IllustratedEmptyState(
+            icon: searchText.isEmpty ? "person.crop.circle.badge.plus" : "magnifyingglass",
+            title: searchText.isEmpty ? "empty_no_contacts".localized : "empty_no_matches".localized,
+            subtitle: searchText.isEmpty ? "add_first_contact_subtitle".localized : nil,
+            actionTitle: searchText.isEmpty ? "add_first_contact".localized : nil,
+            action: searchText.isEmpty ? { showAddContactSheet = true } : nil
+        )
     }
     
     // 视图模式菜单内容 - 直接切换而非菜单

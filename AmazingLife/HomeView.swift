@@ -23,7 +23,7 @@ struct JiggleEffect: ViewModifier {
             .onAppear {
                 if reduceMotion { return }
                 if isActive {
-                    withAnimation(Animation.easeInOut(duration: 0.16).repeatForever(autoreverses: true)) {
+                    withAnimation(Animation.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
                         rotation = 1.2
                         sway = 0.8
                     }
@@ -38,12 +38,12 @@ struct JiggleEffect: ViewModifier {
                 if active {
                     rotation = -1.2
                     sway = -0.8
-                    withAnimation(Animation.easeInOut(duration: 0.16).repeatForever(autoreverses: true)) {
+                    withAnimation(Animation.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
                         rotation = 1.2
                         sway = 0.8
                     }
                 } else {
-                    withAnimation(.easeOut(duration: 0.12)) {
+                    withAnimation(.appSnappy) {
                         rotation = 0
                         sway = 0
                     }
@@ -125,6 +125,10 @@ struct HomeView: View {
     @State private var expandedCardsByID: Set<HomeCardID> = []
     // 最近一次交换时的拖拽位移基线，避免重复计算导致跳动
     @State private var lastSwapTranslationY: CGFloat = 0
+    // Velocity tracking for drag gesture (for spring velocity handoff)
+    @State private var lastDragLocation: CGSize = .zero
+    @State private var lastDragTime: Date = Date()
+    @State private var dragVelocity: CGSize = .zero
 
     private struct CardFramePreferenceKey: PreferenceKey {
         static var defaultValue: [HomeCardID: CGRect] = [:]
@@ -361,9 +365,9 @@ struct HomeView: View {
                     .padding(.top, 44) // 使用固定值代替弃用的API
                 }
                 .frame(maxWidth: .infinity)
-                .background(BlurView(style: .systemMaterial))
+                .background(.ultraThinMaterial)
                 .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
-                .ignoresSafeArea(.all, edges: .top)
+                .ignoresSafeArea(edges: .top)
             }
             .navigationBarHidden(true)
             // 通过路由类型进行页面 push 映射
@@ -956,6 +960,19 @@ private func spanForCard(_ id: HomeCardID) -> Int {
 private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
     DragGesture(minimumDistance: 10)
         .onChanged { drag in
+            // Track velocity for spring handoff
+            let now = Date()
+            let dt = lastDragTime.timeIntervalSince(now)
+            if dt > 0 {
+                let dv = CGSize(
+                    width: (drag.translation.width - lastDragLocation.width) / CGFloat(dt),
+                    height: (drag.translation.height - lastDragLocation.height) / CGFloat(dt)
+                )
+                dragVelocity = dv
+            }
+            lastDragLocation = drag.translation
+            lastDragTime = now
+
             // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
             guard moveModeEnabledForID != nil else { return }
             if moveModeEnabledForID != id {
@@ -968,16 +985,36 @@ private func dragIfMoveEnabled(for id: HomeCardID) -> some Gesture {
                     draggingCardID = id
                 }
             }
-            dragOffset = drag.translation
+
+            // 应用拖拽偏移，带有 rubber-band 效果
+            let translation = drag.translation
+            let bounds: CGFloat = 200 // 最大拖拽距离限制
+            dragOffset = CGSize(
+                width: rubberBand(value: translation.width, bound: bounds),
+                height: rubberBand(value: translation.height, bound: bounds)
+            )
             reorderDuringDrag(for: id, translation: drag.translation)
         }
         .onEnded { _ in
             guard moveModeEnabledForID == id else { return }
-            finalizeDrag(for: id)
+            finalizeDrag(for: id, velocity: dragVelocity)
             withAnimation(.appGesture) {
                 moveModeEnabledForID = nil
             }
         }
+}
+
+// Rubber-band effect for drag gestures
+private func rubberBand(value: CGFloat, bound: CGFloat) -> CGFloat {
+    let constant: CGFloat = 0.4
+    if value > bound {
+        // 向下/向右拖拽超出边界
+        return bound + (value - bound) * constant / (1 + constant)
+    } else if value < -bound {
+        // 向上/向左拖拽超出边界
+        return -bound + (value + bound) * constant / (1 + constant)
+    }
+    return value
 }
 
 private func reorderDuringDrag(for id: HomeCardID, translation: CGSize) {
@@ -1029,7 +1066,7 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
     let current = cardSizesByID[id] ?? defaultSizeForID(id)
     Group {
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(.appSnappy) {
                 moveModeEnabledForID = id
             }
         } label: {
@@ -1054,8 +1091,9 @@ private func cardContextMenu(for id: HomeCardID) -> some View {
     }
 }
 
-private func finalizeDrag(for id: HomeCardID) {
-    withAnimation(.appGesture) {
+private func finalizeDrag(for id: HomeCardID, velocity: CGSize = .zero) {
+    // Use spring animation with velocity for natural momentum
+    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
         draggingCardID = nil
         dragOffset = .zero
     }
@@ -1100,6 +1138,19 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
     DragGesture(minimumDistance: 10)
         .onChanged { drag in
             let id = HomeCardID.type(type)
+            // Track velocity for spring handoff
+            let now = Date()
+            let dt = lastDragTime.timeIntervalSince(now)
+            if dt > 0 {
+                let dv = CGSize(
+                    width: (drag.translation.width - lastDragLocation.width) / CGFloat(dt),
+                    height: (drag.translation.height - lastDragLocation.height) / CGFloat(dt)
+                )
+                dragVelocity = dv
+            }
+            lastDragLocation = drag.translation
+            lastDragTime = now
+
             // 仅在移动模式下响应拖拽；若当前拖拽的不是已选中的卡片，则切换目标
             guard moveModeEnabledForID != nil else { return }
             if moveModeEnabledForID != id {
@@ -1112,12 +1163,19 @@ private func dragIfMoveEnabled(for type: HomeCardType) -> some Gesture {
                     draggingCardID = id
                 }
             }
-            dragOffset = drag.translation
+
+            // 应用拖拽偏移，带有 rubber-band 效果
+            let translation = drag.translation
+            let bounds: CGFloat = 200 // 最大拖拽距离限制
+            dragOffset = CGSize(
+                width: rubberBand(value: translation.width, bound: bounds),
+                height: rubberBand(value: translation.height, bound: bounds)
+            )
             reorderDuringDrag(for: id, translation: drag.translation)
         }
         .onEnded { _ in
             guard moveModeEnabledForID == HomeCardID.type(type) else { return }
-            finalizeDrag(for: HomeCardID.type(type))
+            finalizeDrag(for: HomeCardID.type(type), velocity: dragVelocity)
             withAnimation(.appGesture) {
                 moveModeEnabledForID = nil
             }

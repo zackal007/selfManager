@@ -571,10 +571,8 @@ struct GoalView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .safeAreaPadding(.top)
-                    .background(
-                        BlurView(style: .systemMaterial)
-                            .ignoresSafeArea(.all, edges: .top)
-                    )
+                    .background(.ultraThinMaterial)
+                    .ignoresSafeArea(edges: .top)
                     .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 3)
                     .zIndex(10)
                     .offset(y: -20)
@@ -1494,7 +1492,7 @@ struct GoalCard: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(progressColor)
                                 .frame(width: max(4, geometry.size.width * CGFloat(goal.progress)), height: 6)
-                                .animation(.easeOut(duration: 0.3), value: goal.progress)
+                                .animation(UIAccessibility.isReduceMotionEnabled ? nil : .easeOut(duration: 0.3), value: goal.progress)
                         }
                     }
                     .frame(height: 6)
